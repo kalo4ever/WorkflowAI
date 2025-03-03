@@ -1,0 +1,18 @@
+{
+    "id": "msg_011FfbzF4F72Gc1rzSvvDCnR",
+    "type": "message",
+    "role": "assistant",
+    "model": "claude-3-5-sonnet-20241022",
+    "content": [
+        {
+            "type": "text",
+            "text": "{\n    \"document_type\": \"PDF\",\n    \"title\": \"Test pdf\",\n    \"content\": \"The document appears to be a blank PDF file with only the text 'Test pdf' at the top\",\n    \"summary\": \"This is an empty test PDF document with minimal content\",\n    \"page_count\": 1\n}"
+        }
+    ],
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "usage": {
+        "input_tokens": 1596,
+        "output_tokens": 79
+    }
+}

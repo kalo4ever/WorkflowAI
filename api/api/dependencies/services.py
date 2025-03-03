@@ -1,0 +1,254 @@
+import os
+from typing import Annotated
+
+from fastapi import Depends
+
+from api.dependencies.analytics import (
+    AnalyticsOrganizationPropertiesDep,
+    AnalyticsTaskPropertiesDep,
+    UserPropertiesDep,
+)
+from api.dependencies.encryption import EncryptionDep
+from api.dependencies.event_router import EventRouterDep
+from api.dependencies.provider_factory import ProviderFactoryDep
+from api.dependencies.security import UserDep
+from api.dependencies.storage import (
+    OrganizationStorageDep,
+    StorageDep,
+    TranscriptionStorageDep,
+)
+from api.services.analytics import AnalyticsService, analytics_service
+from api.services.api_keys import APIKeyService
+from api.services.groups import GroupService
+from api.services.internal_tasks.agent_suggestions_service import TaskSuggestionsService
+from api.services.internal_tasks.internal_tasks_service import InternalTasksService
+from api.services.models import ModelsService
+from api.services.payments import PaymentService
+from api.services.reviews import ReviewsService
+from api.services.run import RunService
+from api.services.runs import RunsService
+from api.services.runs_search import RunsSearchService
+from api.services.task_deployments import TaskDeploymentsService
+from api.services.transcriptions import TranscriptionService
+from api.services.versions import VersionsService
+from core.deprecated.workflowai import WorkflowAI
+from core.domain.users import UserIdentifier
+from core.storage.azure.azure_blob_file_storage import AzureBlobFileStorage, FileStorage
+
+
+async def analytics_service_dependency(
+    organization_properties: AnalyticsOrganizationPropertiesDep,
+    user_properties: UserPropertiesDep,
+    event_router: EventRouterDep,
+    task_properties: AnalyticsTaskPropertiesDep,
+) -> AnalyticsService:
+    return analytics_service(
+        user_properties=user_properties,
+        organization_properties=organization_properties,
+        event_router=event_router,
+        task_properties=task_properties,
+    )
+
+
+AnalyticsServiceDep = Annotated[AnalyticsService, Depends(analytics_service_dependency)]
+
+
+def file_storage_dependency() -> FileStorage:
+    # We return an empty blob storage if the env variables are not set
+    # Currently we instantiate the storage every time but it is rarely needed
+    return AzureBlobFileStorage(
+        os.getenv("WORKFLOWAI_STORAGE_CONNECTION_STRING", ""),
+        os.getenv("WORKFLOWAI_STORAGE_TASK_RUNS_CONTAINER", ""),
+    )
+
+
+FileStorageDep = Annotated[FileStorage, Depends(file_storage_dependency)]
+
+
+def task_suggestions_service() -> TaskSuggestionsService:
+    return TaskSuggestionsService()
+
+
+AgentSuggestionsServiceDep = Annotated[TaskSuggestionsService, Depends(task_suggestions_service)]
+
+
+def group_service(
+    storage: StorageDep,
+    encryption: EncryptionDep,
+    event_router: EventRouterDep,
+    analytics_service: AnalyticsServiceDep,
+    user: UserDep,
+) -> GroupService:
+    return GroupService(
+        storage=storage,
+        encryption=encryption,
+        event_router=event_router,
+        analytics_service=analytics_service,
+        user=UserIdentifier(
+            user_id=user.user_id if user else None,
+            user_email=user.sub if user else None,
+        ),
+    )
+
+
+GroupServiceDep = Annotated[GroupService, Depends(group_service)]
+
+
+def run_service(
+    storage: StorageDep,
+    event_router: EventRouterDep,
+    analytics_service: AnalyticsServiceDep,
+    group_service: GroupServiceDep,
+    user: UserDep,
+) -> RunService:
+    return RunService(
+        storage=storage,
+        event_router=event_router,
+        analytics_service=analytics_service,
+        group_service=group_service,
+        user=UserIdentifier(
+            user_id=user.user_id if user else None,
+            user_email=user.sub if user else None,
+        ),
+    )
+
+
+RunServiceDep = Annotated[RunService, Depends(run_service)]
+
+
+def workflowai_dependency(
+    storage: StorageDep,
+    file_storage: FileStorageDep,
+    run_service: RunServiceDep,
+) -> WorkflowAI:
+    return WorkflowAI(
+        run_service=run_service,
+        storage=storage,
+        file_storage=file_storage,
+        cache_fetcher=storage.task_runs.fetch_cached_run,
+    )
+
+
+WorkflowAIDep = Annotated[WorkflowAI, Depends(workflowai_dependency)]
+
+
+def internal_tasks(
+    wai: WorkflowAIDep,
+    event_router: EventRouterDep,
+    storage: StorageDep,
+) -> InternalTasksService:
+    return InternalTasksService(
+        wai=wai,
+        storage=storage,
+        event_router=event_router,
+    )
+
+
+InternalTasksServiceDep = Annotated[InternalTasksService, Depends(internal_tasks)]
+
+
+def runs_service(
+    storage: StorageDep,
+    provider_factory: ProviderFactoryDep,
+    event_router: EventRouterDep,
+    analytics_service: AnalyticsServiceDep,
+    file_storage: FileStorageDep,
+) -> RunsService:
+    return RunsService(
+        storage=storage,
+        provider_factory=provider_factory,
+        event_router=event_router,
+        analytics_service=analytics_service,
+        file_storage=file_storage,
+    )
+
+
+RunsServiceDep = Annotated[RunsService, Depends(runs_service)]
+
+
+def transcription_service(
+    transcription_storage: TranscriptionStorageDep,
+) -> TranscriptionService:
+    return TranscriptionService(storage=transcription_storage)
+
+
+TranscriptionServiceDep = Annotated[TranscriptionService, Depends(transcription_service)]
+
+
+def api_key_service(
+    organization_storage: OrganizationStorageDep,
+) -> APIKeyService:
+    return APIKeyService(storage=organization_storage)
+
+
+APIKeyServiceDep = Annotated[APIKeyService, Depends(api_key_service)]
+
+
+def reviews_service(
+    backend_storage: StorageDep,
+    internal_tasks: InternalTasksServiceDep,
+    event_router: EventRouterDep,
+) -> ReviewsService:
+    return ReviewsService(
+        backend_storage=backend_storage,
+        internal_tasks=internal_tasks,
+        event_router=event_router,
+    )
+
+
+ReviewsServiceDep = Annotated[ReviewsService, Depends(reviews_service)]
+
+
+def task_deployments_service(
+    storage: StorageDep,
+    run_service: RunServiceDep,
+    group_service: GroupServiceDep,
+    analytics_service: AnalyticsServiceDep,
+) -> TaskDeploymentsService:
+    return TaskDeploymentsService(
+        storage=storage,
+        run_service=run_service,
+        group_service=group_service,
+        analytics_service=analytics_service,
+    )
+
+
+TaskDeploymentsServiceDep = Annotated[TaskDeploymentsService, Depends(task_deployments_service)]
+
+
+def models_service(storage: StorageDep):
+    return ModelsService(storage=storage)
+
+
+ModelsServiceDep = Annotated[ModelsService, Depends(models_service)]
+
+
+def versions_service(storage: StorageDep, event_router: EventRouterDep):
+    return VersionsService(storage=storage, event_router=event_router)
+
+
+VersionsServiceDep = Annotated[VersionsService, Depends(versions_service)]
+
+
+def payment_service(
+    storage: StorageDep,
+    event_router: EventRouterDep,
+    analytics_service: AnalyticsServiceDep,
+) -> PaymentService:
+    return PaymentService(
+        storage=storage,
+        event_router=event_router,
+        analytics_service=analytics_service,
+    )
+
+
+PaymentServiceDep = Annotated[PaymentService, Depends(payment_service)]
+
+
+def runs_search_service(
+    storage: StorageDep,
+) -> RunsSearchService:
+    return RunsSearchService(storage=storage)
+
+
+RunsSearchServiceDep = Annotated[RunsSearchService, Depends(runs_search_service)]

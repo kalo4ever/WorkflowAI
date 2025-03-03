@@ -1,0 +1,97 @@
+# WorkflowAI LLMs Documentation
+
+WorkflowAI is a platform for creating and managing structured AI workflows. This documentation describes the available LLM tasks and agents.
+
+## Authentication
+
+All requests require a Bearer token:
+
+Authorization: Bearer <your_api_token>
+
+## API Quick Start
+
+Basic request structure:
+```
+
+curl -X POST "{{ base_url }}/v1/agents/<task_id>/schemas/<schema_id>/run" \
+  -H "Authorization: Bearer <your_token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "task_input": {},     # Input matching the task schema
+    "version": "latest",  # Or specific version
+    "stream": false,      # Enable streaming responses
+    "use_cache": "auto"   # Cache control
+  }'
+```
+
+## Common Parameters
+
+- `task_input`: object (required)
+  - Must match the task's input schema
+- `version`: string (required)
+  - Task/agent version identifier
+- `stream`: boolean (default: false)
+  - Enable streaming responses
+- `use_cache`: string (default: "auto")
+  - Cache control: "auto" or "never"
+- `metadata`: object (optional)
+  - Additional run metadata
+
+{% if agents %}
+## Available Agents
+
+{% for agent in agents %}
+### {{ agent.name }}
+{% if agent.description %}
+{{ agent.description }}
+{% endif %}
+
+**Input Schema:**
+```json
+{{ agent.input_schema | tojson(indent=2) }}
+```
+
+**Output Schema:**
+```json
+{{ agent.output_schema | tojson(indent=2) }}
+```
+
+**Example:**
+```bash
+curl -X POST "{{ base_url }}/v1/agents/{{ agent.id }}/run" \
+  -H "Authorization: Bearer <your_token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "task_input": {
+      // Your input matching the schema
+    },
+    "version": "{{ agent.version }}"
+  }'
+```
+
+{% if not loop.last %}
+---
+{% endif %}
+{% endfor %}
+{% endif %}
+
+
+## Response Structure
+
+Successful responses include:
+```json
+{
+  "id": "string",              // Run identifier
+  "task_output": {},           // Output matching schema
+  "duration_seconds": 0.0,     // Run duration
+  "cost_usd": 0.0,            // Run cost (if available)
+  "metadata": {},             // Any provided metadata
+  "tool_call_requests": [],   // Tool calls (if any)
+  "reasoning_steps": []       // Reasoning steps (if available)
+}
+```
+
+For detailed API documentation, visit: {{ docs_url | default("https://docs.workflowai.com") }}
+
+
+

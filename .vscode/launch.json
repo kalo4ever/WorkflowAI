@@ -1,0 +1,59 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "API",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "uvicorn",
+            "cwd": "${workspaceFolder}/api",
+            "args": [
+                "api.main:app",
+                "--reload",
+                "--reload-dir",
+                "api",
+                "--reload-dir",
+                "core",
+                "--reload-exclude",
+                "scripts/*",
+                "--reload-exclude",
+                "*_test.py",
+                "--reload-exclude",
+                "tests/*"
+            ],
+            "jinja": true,
+            "justMyCode": false
+        },
+        {
+            "name": "Worker",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "taskiq",
+            "cwd": "${workspaceFolder}/api",
+            "args": [
+                "worker",
+                "api.broker:broker",
+                "--fs-discover",
+                "--tasks-pattern",
+                "api/jobs/*_jobs.py",
+                "--workers",
+                "1",
+                "--reload"
+            ],
+        },
+        {
+            "name": "Python: Debug Tests",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "purpose": [
+                "debug-test"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": false
+        }
+    ]
+}

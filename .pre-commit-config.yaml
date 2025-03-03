@@ -1,0 +1,37 @@
+fail_fast: true
+default_install_hook_types:
+  - pre-commit
+  - pre-push
+repos:
+  - repo: local
+    hooks:
+      - id: ruff
+        name: formatting and linting (ruff)
+        entry: poetry run ruff check
+        language: system
+        pass_filenames: true
+        types: [file, python]
+        stages: [pre-commit]
+      - id: pyright
+        name: type checking (pyright)
+        entry: poetry run pyright
+        language: system
+        pass_filenames: true
+        types: [file, python]
+        stages: [pre-commit]
+      # Can't run the global checks because it would be too slow for the entire monorepo
+      # Maybe if when we switch to lefthook
+      # - id: ruff global
+      #   name: formatting and linting the whole project (ruff)
+      #   entry: poetry run ruff check
+      #   language: system
+      #   pass_filenames: false
+      #   stages: [pre-push]
+      #   types: [file, python]
+      # - id: pyright global
+      #   name: type checking the whole project (pyright)
+      #   entry: poetry run pyright
+      #   language: system
+      #   pass_filenames: false
+      #   stages: [pre-push]
+      #   types: [file, python]

@@ -1,0 +1,244 @@
+import pytest
+
+from core.domain.errors import UnpriceableRunError
+from core.domain.fields.file import File
+from core.domain.message import Message
+from core.domain.models import Model
+from core.domain.tool_call import ToolCall, ToolCallRequestWithID
+from core.providers.base.models import StandardMessage
+from core.providers.fireworks.fireworks_domain import (
+    FireworksAIError,
+    FireworksMessage,
+    FireworksToolCall,
+    FireworksToolCallFunction,
+    FireworksToolMessage,
+    ImageContent,
+    StreamedResponse,
+    TextContent,
+)
+
+
+def test_streamed_response_init():
+    streamed = b'{"id":"chatcmpl-9iYcb4Ciq3vzot8MbmzePysMilDIT","object":"chat.completion.chunk","created":1720406545,"model":"gpt-4o-2024-05-13","system_fingerprint":"fp_d576307f90","choices":[{"index":0,"delta":{"role":"assistant","content":""},"logprobs":null,"finish_reason":null}]}'
+    raw = StreamedResponse.model_validate_json(streamed)
+    assert raw.choices[0].delta.content == ""
+
+
+def test_streamed_response_final():
+    streamed = b'{"id":"chatcmpl-9iYe8rHP2EGOXWywPICQw1pnrrCAz","object":"chat.completion.chunk","created":1720406640,"model":"gpt-4o-2024-05-13","system_fingerprint":"fp_4008e3b719","choices":[{"index":0,"delta":{},"logprobs":null,"finish_reason":"stop"}]}'
+    raw = StreamedResponse.model_validate_json(streamed)
+    assert raw.choices[0].delta.content == ""
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        """{"error":{"message":"'messages' must contain the word 'json' in some form, to use 'response_format' of type 'json_object'.","type":"invalid_request_error","param":"messages","code":null}}""",
+    ],
+)
+def test_error(payload: str):
+    assert FireworksAIError.model_validate_json(payload)
+
+
+class TestFireworksMessageTokenCount:
+    def test_token_count_for_text_message(self):
+        message = FireworksMessage(content="Hello, world!", role="user")
+        assert message.token_count(Model.QWEN_QWQ_32B_PREVIEW) == 4
+
+    def test_token_count_for_text_content_message(self):
+        message = FireworksMessage(
+            content=[TextContent(text="Hello, world!"), TextContent(text="Hello, world!")],
+            role="user",
+        )
+        assert message.token_count(Model.QWEN_QWQ_32B_PREVIEW) == 8
+
+    def test_token_count_for_image_message_raises(self):
+        message = FireworksMessage(
+            content=[ImageContent(image_url=ImageContent.URL(url="https://example.com/image.png"))],
+            role="user",
+        )
+        with pytest.raises(UnpriceableRunError):
+            message.token_count(Model.QWEN_QWQ_32B_PREVIEW)
+
+
+class TestFireworksMessageFromDomain:
+    def test_text_before_files(self):
+        message = Message(
+            role=Message.Role.USER,
+            content="Hello world",
+            files=[File(url="test.png", content_type="image/png")],
+        )
+
+        fireworks_message = FireworksMessage.from_domain(message)
+        assert isinstance(fireworks_message.content, list)
+        assert len(fireworks_message.content) == 2
+        assert isinstance(fireworks_message.content[0], TextContent)
+        assert fireworks_message.content[0].text == "Hello world"
+        assert isinstance(fireworks_message.content[1], ImageContent)
+
+
+class TestFireworksMessageToolCalls:
+    def test_from_domain_with_files_tool_calls(self) -> None:
+        # Create a Message instance with a file and simulate tool call output
+        file = File(url="tool.png", content_type="image/png")
+        message = Message(
+            role=Message.Role.USER,
+            content="Original content",
+            files=[file],
+        )
+        fireworks_message = FireworksMessage.from_domain(message)
+        assert fireworks_message.role == "user"
+        assert isinstance(fireworks_message.content, list)
+        assert len(fireworks_message.content) == 2
+        text_content = fireworks_message.content[0]
+        image_content = fireworks_message.content[1]
+        assert isinstance(text_content, TextContent)
+        assert text_content.text == "Original content"
+        assert isinstance(image_content, ImageContent)
+
+
+class TestFireworksToolMessage:
+    def test_from_domain_with_tool_call_results(self) -> None:
+        message = Message(
+            role=Message.Role.USER,
+            content="Test content",
+            tool_call_results=[
+                ToolCall(
+                    id="test_id_1",
+                    tool_name="test_tool",
+                    tool_input_dict={"key": "value"},
+                    result={"key": "value"},
+                ),
+                ToolCall(
+                    id="test_id_2",
+                    tool_name="test_tool",
+                    tool_input_dict={"key": "value"},
+                    result="string result",
+                ),
+            ],
+        )
+
+        tool_messages = FireworksToolMessage.from_domain(message)
+        assert len(tool_messages) == 2
+        assert tool_messages[0].tool_call_id == "test_id_1"
+        assert tool_messages[0].content == "{'key': 'value'}"
+        assert tool_messages[1].tool_call_id == "test_id_2"
+        assert tool_messages[1].content == "string result"
+
+    def test_from_domain_without_tool_call_results(self) -> None:
+        message = Message(
+            role=Message.Role.USER,
+            content="Test content",
+        )
+
+        tool_messages = FireworksToolMessage.from_domain(message)
+        assert len(tool_messages) == 0
+
+    def test_to_standard(self) -> None:
+        tool_messages = [
+            FireworksToolMessage(
+                tool_call_id="test_id_1",
+                content="test result 1",
+                role="tool",
+            ),
+            FireworksToolMessage(
+                tool_call_id="test_id_2",
+                content="test result 2",
+                role="tool",
+            ),
+        ]
+
+        standard_message: StandardMessage = FireworksToolMessage.to_standard(tool_messages)
+        assert standard_message["role"] == "user"
+        assert isinstance(standard_message["content"], list)
+        content = standard_message["content"]
+        assert len(content) == 2
+        assert content[0]["type"] == "tool_call_result"
+        assert content[0]["id"] == "test_id_1"
+        assert content[0]["result"] == {"result": "test result 1"}
+        assert content[1]["type"] == "tool_call_result"
+        assert content[1]["id"] == "test_id_2"
+        assert content[1]["result"] == {"result": "test result 2"}
+
+
+class TestFireworksMessageNativeToolCalls:
+    def test_from_domain_with_tool_call_requests(self) -> None:
+        message = Message(
+            role=Message.Role.ASSISTANT,
+            content="Test content",
+            tool_call_requests=[
+                ToolCallRequestWithID(
+                    id="test_id_1",
+                    tool_name="test_tool",
+                    tool_input_dict={"key": "value"},
+                ),
+            ],
+        )
+
+        fireworks_message = FireworksMessage.from_domain(message)
+        assert fireworks_message == FireworksMessage(
+            role="assistant",
+            content=[TextContent(text="Test content")],
+            tool_calls=[
+                FireworksToolCall(
+                    id="test_id_1",
+                    type="function",
+                    function=FireworksToolCallFunction(
+                        name="test_tool",
+                        arguments='{"key": "value"}',
+                    ),
+                ),
+            ],
+        )
+
+    def test_to_standard_with_tool_calls(self) -> None:
+        message = FireworksMessage(
+            role="user",
+            content="Test content",
+            tool_calls=[
+                FireworksToolCall(
+                    id="test_id_1",
+                    type="function",
+                    function=FireworksToolCallFunction(
+                        name="test_tool",
+                        arguments='{"key": "value"}',
+                    ),
+                ),
+            ],
+        )
+
+        standard_message: StandardMessage = message.to_standard()
+        assert standard_message["role"] == "user"
+        assert isinstance(standard_message["content"], list)
+        content = standard_message["content"]
+        assert len(content) == 2
+        assert content[0]["type"] == "text"
+        assert content[0]["text"] == "Test content"
+        assert content[1]["type"] == "tool_call_request"
+        assert content[1]["id"] == "test_id_1"
+        assert content[1]["tool_name"] == "test_tool"
+        assert content[1]["tool_input_dict"] == {"key": "value"}
+
+
+class TestStreamedToolCall:
+    def test_streamed_response_with_tool_call(self) -> None:
+        streamed = b'{"id":"test-id","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"id":"test_id_1","type":"function","function":{"name":"test_tool","arguments":"{\\"key\\": \\"value\\"}"}}]}}]}'
+        raw = StreamedResponse.model_validate_json(streamed)
+        assert raw.choices[0].delta.tool_calls is not None
+        assert len(raw.choices[0].delta.tool_calls) == 1
+        assert raw.choices[0].delta.tool_calls[0].index == 0
+        assert raw.choices[0].delta.tool_calls[0].id == "test_id_1"
+        assert raw.choices[0].delta.tool_calls[0].type == "function"
+        assert raw.choices[0].delta.tool_calls[0].function.name == "test_tool"
+        assert raw.choices[0].delta.tool_calls[0].function.arguments == '{"key": "value"}'
+
+    def test_streamed_response_with_partial_tool_call(self) -> None:
+        streamed = b'{"id":"test-id","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"id":"test_id_1","type":"function","function":{"name":"test_tool","arguments":"{\\"key"}}]}}]}'
+        raw = StreamedResponse.model_validate_json(streamed)
+        assert raw.choices[0].delta.tool_calls is not None
+        assert len(raw.choices[0].delta.tool_calls) == 1
+        assert raw.choices[0].delta.tool_calls[0].index == 0
+        assert raw.choices[0].delta.tool_calls[0].id == "test_id_1"
+        assert raw.choices[0].delta.tool_calls[0].type == "function"
+        assert raw.choices[0].delta.tool_calls[0].function.name == "test_tool"
+        assert raw.choices[0].delta.tool_calls[0].function.arguments == '{"key'
