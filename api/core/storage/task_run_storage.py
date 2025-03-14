@@ -1,0 +1,111 @@
+from collections.abc import Sequence
+from typing import Any, AsyncIterator, NotRequired, Protocol, TypedDict
+
+from core.domain.search_query import SearchQuery
+from core.domain.task_run import SerializableTaskRun, SerializableTaskRunBase
+from core.domain.task_run_aggregate_per_day import TaskRunAggregatePerDay
+from core.domain.task_run_query import SerializableTaskRunField, SerializableTaskRunQuery
+from core.storage import TaskTuple
+
+
+class TokenCounts(TypedDict):
+    average_prompt_tokens: float
+    average_completion_tokens: float
+    count: int
+
+
+class RunAggregate(TypedDict):
+    average_cost_usd: NotRequired[float | None]
+    average_duration_seconds: NotRequired[float | None]
+    total_run_count: int
+    failed_run_count: NotRequired[int | None]
+    eval_hashes: Sequence[str]
+
+
+class TaskRunStorage(Protocol):
+    def aggregate_task_run_costs(
+        self,
+        task_uid: int | None,
+        query: SerializableTaskRunQuery,
+        timeout_ms: int = 60_000,
+    ) -> AsyncIterator[TaskRunAggregatePerDay]: ...
+
+    async def aggregate_token_counts(
+        self,
+        task_id: TaskTuple,
+        task_schema_id: int,
+        excluded_models: list[str] | None = None,
+        included_models: list[str] | None = None,
+        maxTimeMS: int = 1_000,
+    ) -> TokenCounts: ...
+
+    def search_task_runs(
+        self,
+        task_uid: TaskTuple,
+        search_fields: list[SearchQuery] | None,
+        limit: int,
+        offset: int,
+        timeout_ms: int = 60_000,
+    ) -> AsyncIterator[SerializableTaskRunBase]: ...
+
+    async def count_filtered_task_runs(
+        self,
+        task_uid: TaskTuple,
+        search_fields: list[SearchQuery] | None,
+        timeout_ms: int = 60_000,
+    ) -> int | None: ...
+
+    async def aggregate_runs(
+        self,
+        task_id: TaskTuple,
+        task_schema_id: int,
+        task_input_hashes: set[str],
+        group_ids: set[str] | None,
+    ) -> dict[str, RunAggregate]:
+        """Aggregate runs by version_ids
+
+        Args:
+            task_uid (int): The task uid
+            task_schema_id (int): The task schema id
+            task_input_hashes (set[str]): The task input hashes
+            group_ids (set[str] | None): The version ids to filter by
+
+        Returns:
+            dict[str, RunAggregate]: A dictionary of version_id to run aggregate
+        """
+        ...
+
+    async def store_task_run(self, task_run: SerializableTaskRun) -> SerializableTaskRun: ...
+
+    async def fetch_task_run_resource(
+        self,
+        task_id: TaskTuple,
+        id: str,
+        include: set[SerializableTaskRunField] | None = None,
+        exclude: set[SerializableTaskRunField] | None = None,
+    ) -> SerializableTaskRun: ...
+
+    def fetch_task_run_resources(
+        self,
+        task_uid: int,
+        query: SerializableTaskRunQuery,
+        timeout_ms: int | None = None,
+    ) -> AsyncIterator[SerializableTaskRun]:
+        """Fetch task runs based on the provided query. The query page token should be updated in page"""
+        ...
+
+    def aggregate_task_metadata_fields(
+        self,
+        task_id: TaskTuple,
+        exclude_prefix: str | None = None,
+    ) -> AsyncIterator[tuple[str, list[Any]]]: ...
+
+    async def fetch_cached_run(
+        self,
+        task_id: TaskTuple,
+        task_schema_id: int,
+        task_input_hash: str,
+        group_id: str,
+        timeout_ms: int | None,
+        success_only: bool = True,
+    ) -> SerializableTaskRun | None: ...

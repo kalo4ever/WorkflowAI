@@ -1,0 +1,145 @@
+import {
+  Building,
+  ChevronsUpDown,
+  LogOut,
+  LucideIcon,
+  Settings,
+} from 'lucide-react';
+import { useState } from 'react';
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from '@/components/ui/Avatar/Avatar';
+import {
+  Command,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from '@/components/ui/Command';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/Popover';
+import { SimpleTooltip } from '@/components/ui/Tooltip';
+import { DISABLE_AUTHENTICATION } from '@/lib/constants';
+import { User } from '@/types/user';
+
+type UserMenuCommandProps = {
+  lucideIcon: LucideIcon;
+  label: string;
+  onSelect: () => void;
+  tooltip?: string;
+};
+
+function UserMenuCommand(props: UserMenuCommandProps) {
+  const { lucideIcon: Icon, label, onSelect, tooltip } = props;
+
+  return (
+    <CommandItem
+      onSelect={onSelect}
+      className='cursor-pointer flex items-center gap-3 text-gray-700 font-lato'
+    >
+      <SimpleTooltip
+        content={tooltip}
+        asChild
+        tooltipDelay={0}
+        side='top'
+        align='center'
+        tooltipClassName='whitespace-pre-line'
+      >
+        <div className='flex items-center gap-2'>
+          <Icon size={16} strokeWidth={1.5} />
+          <span className='text-[13px] font-normal'>{label}</span>
+        </div>
+      </SimpleTooltip>
+    </CommandItem>
+  );
+}
+
+type UserMenuProps = {
+  user: User | null | undefined;
+  hasOrganization: boolean;
+  openUserProfile?: () => void;
+  openOrganizationProfile?: () => void;
+  signOut?: () => void;
+};
+
+export function UserMenu(props: UserMenuProps) {
+  const {
+    user,
+    hasOrganization,
+    openUserProfile,
+    openOrganizationProfile,
+    signOut,
+  } = props;
+  const [open, setOpen] = useState(false);
+  const email = user?.email;
+
+  if (!user || DISABLE_AUTHENTICATION) return null;
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger className='w-full'>
+        <div className='w-full flex gap-1 pl-3 pr-2 py-2 justify-between items-center hover:bg-gray-100 border-b border-gray-200 cursor-pointer rounded-t-sm transition-colors'>
+          <div className='flex flex-row items-center w-full'>
+            <Avatar className='w-5 h-5 shrink-0 mr-3'>
+              <AvatarImage src={user.imageUrl} />
+              <AvatarFallback>
+                {user.fullName?.[0].toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div className='flex flex-row items-center justify-between overflow-hidden w-full'>
+              <div className='max-w-[150px] whitespace-nowrap overflow-hidden text-ellipsis font-medium text-[13px] text-gray-800'>
+                {user.firstName || email}
+              </div>
+              <ChevronsUpDown className='h-4 w-4 shrink-0 text-gray-500' />
+            </div>
+          </div>
+        </div>
+      </PopoverTrigger>
+      <PopoverContent className='w-[auto] min-w-[220px] p-1 rounded-[2px]'>
+        <Command>
+          <CommandList>
+            {!hasOrganization && openOrganizationProfile && (
+              <>
+                <UserMenuCommand
+                  lucideIcon={Building}
+                  label='Create an Organization'
+                  onSelect={openOrganizationProfile}
+                  tooltip={
+                    'Create an organization to start\ncollaborating with your team.'
+                  }
+                />
+                <CommandSeparator />
+              </>
+            )}
+
+            {openUserProfile && (
+              <UserMenuCommand
+                lucideIcon={Settings}
+                label='Manage account'
+                onSelect={openUserProfile}
+              />
+            )}
+            {openOrganizationProfile && hasOrganization && (
+              <UserMenuCommand
+                lucideIcon={Building}
+                label='Organization settings'
+                onSelect={openOrganizationProfile}
+              />
+            )}
+            {signOut && (
+              <UserMenuCommand
+                lucideIcon={LogOut}
+                label='Sign out'
+                onSelect={signOut}
+              />
+            )}
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}

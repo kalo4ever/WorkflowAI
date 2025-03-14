@@ -1,0 +1,79 @@
+import json
+from datetime import datetime
+
+import pytest
+
+from core.domain.models import Provider
+from core.domain.organization_settings import ProviderConfig
+from core.providers.google.google_provider import GoogleProviderConfig
+from core.providers.groq.groq_provider import GroqConfig
+from core.providers.openai.openai_provider import OpenAIConfig
+from core.storage.mongo.models.organizations import (
+    DecryptableProviderSettings,
+    OrganizationDocument,
+    ProviderSettingsSchema,
+)
+from core.utils.encryption import Encryption
+
+
+@pytest.mark.parametrize(
+    "config",
+    [
+        GroqConfig(api_key="key"),
+        OpenAIConfig(api_key="key"),
+        GoogleProviderConfig(vertex_credentials="k", vertex_project="p", vertex_location=["l"]),
+    ],
+)
+def test_provider_settings_schema_sanity(config: ProviderConfig, mock_encryption: Encryption) -> None:
+    schema = ProviderSettingsSchema.from_domain(config, mock_encryption)
+
+    assert schema.provider == config.provider
+    assert schema.secrets
+
+    domain = schema.to_domain()
+    assert domain.decrypt(mock_encryption) == config
+
+
+class TestDecryptableProviderSettings:
+    def test_decrypt_old_google_config(self, mock_encryption: Encryption) -> None:
+        old_config = {
+            "vertex_credentials": "k",
+            "vertex_project": "p",
+            "vertex_location": "l",
+        }
+
+        settings = DecryptableProviderSettings(
+            provider=Provider.GOOGLE,
+            secrets=json.dumps(old_config) + "_encrypted",
+            id="",
+            created_at=datetime.now(),
+        )
+
+        assert settings.decrypt(mock_encryption) == GoogleProviderConfig(
+            vertex_project="p",
+            vertex_credentials="k",
+            vertex_location=["l"],
+        )
+
+
+class TestDeserializeOrganization:
+    def test_anon_organization(self):
+        payload = {
+            "id": "67a505ab458926e9301ba153",
+            "tenant": "8c94d523-da6a-4089-b1d3-34a3ffbce484",
+            "anonymous_user_id": "8c94d523-da6a-4089-b1d3-34a3ffbce484",
+            "domain": "8c94d523-da6a-4089-b1d3-34a3ffbce484",
+            "added_credits_usd": 0.2,
+            "current_credits_usd": 0.2,
+            "no_tasks_yet": True,
+            "anonymous": True,
+            "automatic_payment_enabled": False,
+        }
+
+        org = OrganizationDocument.model_validate(payload)
+        assert org.tenant == "8c94d523-da6a-4089-b1d3-34a3ffbce484"
+        assert org.anonymous_user_id == "8c94d523-da6a-4089-b1d3-34a3ffbce484"
+        assert org.domain == "8c94d523-da6a-4089-b1d3-34a3ffbce484"
+        assert org.added_credits_usd == 0.2
+        assert org.current_credits_usd == 0.2
+        assert org.no_tasks_yet is True

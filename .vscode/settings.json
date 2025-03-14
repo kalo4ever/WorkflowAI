@@ -1,0 +1,60 @@
+{
+  "files.autoSave": "onFocusChange",
+  "editor.formatOnSave": true,
+  "[python]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit",
+      "source.organizeImports": "explicit"
+    },
+    "editor.defaultFormatter": "charliermarsh.ruff"
+  },
+  "python.analysis.typeCheckingMode": "strict",
+  "python.analysis.ignore": [
+    "**/*_pb2.py",
+    "**/*_pb2.pyi",
+    "**/*_pb2_grpc.py",
+    "*.proto"
+  ],
+  "git.autoStash": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true,
+  "python.testing.pytestArgs": ["-vv"],
+  "python.languageServer": "Pylance",
+  "python.analysis.autoImportCompletions": true,
+  "editor.suggestSelection": "first",
+  "editor.quickSuggestions": {
+    "other": true,
+    "comments": false,
+    "strings": false
+  },
+  "editor.acceptSuggestionOnEnter": "on",
+  "editor.tabCompletion": "on",
+  "python.analysis.completeFunctionParens": true,
+  "[dotenv]": {
+    "editor.formatOnSave": false
+  },
+  "yaml.schemas": {
+    "https://json.schemastore.org/github-workflow.json": ".github/workflows/**/*.yml"
+  },
+  "files.associations": {
+    ".env.sample": "properties"
+  },
+  "search.exclude": {
+    ".venv": true,
+    ".mypy_cache": true,
+    "./ai_model_cache": true,
+    "app/logging/*.log.*": true
+  },
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "ai_model_cache": true,
+    ".mypy_cache": true,
+    ".venv": true,
+    ".ruff_cache": true
+  }
+}

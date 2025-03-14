@@ -1,0 +1,49 @@
+import json
+from typing import Optional
+
+import pytest
+from pydantic import BaseModel
+
+from .previews import compute_preview
+
+
+class _Hello(BaseModel):
+    hello: str = "world"
+
+    class Nested(BaseModel):
+        nested: str = "value"
+
+    nested: Nested = Nested()
+
+    a_list: Optional[list[float]] = None
+
+
+@pytest.mark.parametrize(
+    "model, expected",
+    [
+        (_Hello(), 'hello: "world", nested: {nested: "value"}'),
+        (_Hello(hello="world\n"), 'hello: "world ", nested: {nested: "value"}'),
+        ({"hello": "1", "b": None}, 'hello: "1", b: null'),
+        (_Hello(a_list=[1, 2, 3.545]), 'hello: "world", nested: {nested: "value"}, a_list: [1, 2, 3.54]'),
+    ],
+)
+def test_compute_preview(model: BaseModel, expected: str):
+    assert compute_preview(model) == expected
+
+
+@pytest.mark.parametrize(
+    "model, expected",
+    [
+        (_Hello(), 'hello: "wo'),
+    ],
+)
+def test_compute_preview_limit(model: BaseModel, expected: str):
+    assert compute_preview(model, 10) == expected
+
+
+def test_compute_preview_default_limit():
+    d = {
+        "a": "a" * 256,
+    }
+    assert len(json.dumps(d)) > 255, "sanity check"
+    assert len(compute_preview(d)) == 255

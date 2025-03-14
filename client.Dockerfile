@@ -1,0 +1,110 @@
+ARG ENV_NAME
+ARG RELEASE_NAME
+ARG API_URL
+
+FROM node:22.8.0-alpine3.20 AS base
+
+ENV NODE_ENV=production
+
+RUN corepack enable
+RUN corepack prepare yarn@stable --activate
+
+
+FROM base AS deps
+
+WORKDIR /app
+COPY package.json yarn.lock .yarnrc.yml ./
+COPY ./.yarn/releases ./.yarn/releases/
+RUN yarn install --immutable
+
+
+FROM base AS sources
+
+ARG ENV_NAME=''
+ARG SENTRY_DISABLED
+ENV SENTRY_DISABLED=${SENTRY_DISABLED}
+ARG RELEASE_NAME=''
+ENV SENTRY_RELEASE=${RELEASE_NAME}
+ENV ENV_NAME=${ENV_NAME}
+ENV NEXT_PUBLIC_ENV_NAME=${ENV_NAME}
+ARG NEXT_PUBLIC_SENTRY_DSN=''
+ENV NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN}
+ARG API_URL
+ENV NEXT_PUBLIC_WORKFLOWAI_API_URL=${API_URL}
+ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=''
+ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+ARG NEXT_PUBLIC_AMPLITUDE_API_KEY=''
+ENV NEXT_PUBLIC_AMPLITUDE_API_KEY=${NEXT_PUBLIC_AMPLITUDE_API_KEY}
+ARG NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=''
+ENV NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+ENV NEXT_PUBLIC_RELEASE_NAME=${RELEASE_NAME}
+
+ARG NEXT_PUBLIC_HARDCODED_TENANT=''
+ENV NEXT_PUBLIC_HARDCODED_TENANT=${NEXT_PUBLIC_HARDCODED_TENANT}
+ARG NEXT_PUBLIC_DISABLE_AUTHENTICATION=''
+ENV NEXT_PUBLIC_DISABLE_AUTHENTICATION=${NEXT_PUBLIC_DISABLE_AUTHENTICATION}
+
+WORKDIR /app
+
+COPY client/src /app/src
+COPY client/tsconfig.json \
+    client/next.config.mjs \
+    client/postcss.config.js \
+    client/tailwind.config.ts \
+    client/sentry.server.config.ts \
+    client/sentry.client.config.ts \
+    ./
+COPY --from=deps /app/.yarn ./.yarn/
+COPY --from=deps /app/yarn.lock .
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/.yarnrc.yml .
+COPY --from=deps /app/package.json .
+
+FROM sources AS builder
+
+RUN --mount=type=secret,id=sentry_auth_token,env=SENTRY_AUTH_TOKEN NODE_OPTIONS="--max-old-space-size=4096" yarn build
+
+FROM base AS runner
+
+WORKDIR /app
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static/
+COPY client/public ./public/
+
+
+FROM runner AS production
+
+ARG ENV_NAME
+ENV ENV_NAME=${ENV_NAME}
+ENV NEXT_PUBLIC_ENV_NAME=${ENV_NAME}
+
+ARG API_URL
+ENV NEXT_PUBLIC_WORKFLOWAI_API_URL=${API_URL}
+
+ARG NEXT_PUBLIC_SENTRY_DSN
+ENV NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN}
+
+ARG NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+ENV NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+
+ARG NEXT_PUBLIC_HARDCODED_TENANT=''
+ENV NEXT_PUBLIC_HARDCODED_TENANT=${NEXT_PUBLIC_HARDCODED_TENANT}
+ARG NEXT_PUBLIC_DISABLE_AUTHENTICATION=''
+ENV NEXT_PUBLIC_DISABLE_AUTHENTICATION=${NEXT_PUBLIC_DISABLE_AUTHENTICATION}
+
+ARG RELEASE_NAME
+ENV NEXT_PUBLIC_RELEASE_NAME=${RELEASE_NAME}
+ENV SENTRY_RELEASE=${RELEASE_NAME}
+
+WORKDIR /app
+
+USER nextjs
+
+EXPOSE 3000
+
+CMD ["node", "/app/server.js"]
+

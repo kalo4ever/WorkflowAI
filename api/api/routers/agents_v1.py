@@ -1,0 +1,133 @@
+from typing import Any
+
+from fastapi import APIRouter
+from pydantic import BaseModel, Field, model_validator
+
+from api.dependencies.event_router import EventRouterDep
+from api.dependencies.security import UserOrganizationDep
+from api.dependencies.services import AnalyticsServiceDep
+from api.dependencies.storage import StorageDep
+from api.tags import RouteTags
+from core.domain.analytics_events.analytics_events import CreatedTaskProperties, TaskProperties
+from core.domain.errors import BadRequestError
+from core.domain.events import TaskSchemaCreatedEvent
+from core.domain.fields.chat_message import ChatMessage
+from core.domain.task_io import SerializableTaskIO
+from core.domain.task_variant import SerializableTaskVariant
+from core.utils import strings
+from core.utils.fields import datetime_factory
+from core.utils.schema_sanitation import schema_contains_file
+
+router = APIRouter(prefix="/v1/{tenant}/agents", tags=[RouteTags.AGENTS])
+
+
+class CreateAgentRequest(BaseModel):
+    id: str = Field(default="", description="The agent id, must be unique per tenant and URL safe")
+    input_schema: dict[str, Any] = Field(description="The input schema for the agent")
+    output_schema: dict[str, Any] = Field(description="The output schema for the agent")
+    name: str = Field(
+        default="",
+        description="The name of the agent, if not provided, a TitleCase version of the id is used",
+    )
+
+    chat_messages: list[ChatMessage] | None = Field(
+        default=None,
+        description="the chat messages that originated the creation of the task, if created from the chat UI",
+    )
+
+    sanitize_schemas: bool = Field(
+        default=True,
+        description="""By default, the schemas are sanitized to make sure that slight changes in schema do not result
+        in a new agent schema id being generated. The schema that we store is then a schema compatible with the
+        original one for validation purposes.
+        The sanitation includes:
+        - splatting $refs that are not specific to WorkflowAI
+        - replacing nullable optional fields with simply optional fields
+        - ordering the `required` field
+        - removing anyOf, oneOf and allOf when possible
+        - adding missing type keys
+        """,
+    )
+
+    @model_validator(mode="after")
+    def post_validate(self):
+        if self.id:
+            if not strings.is_url_safe(self.id):
+                raise ValueError("The agent id must be URL safe")
+            if not self.name:
+                self.name = strings.to_pascal_case(self.id)
+        elif self.name:
+            self.id = strings.slugify(self.name)
+        else:
+            raise ValueError("Either id or name must be provided")
+
+        return self
+
+
+class CreateAgentResponse(BaseModel):
+    id: str = Field(description="A human readable, url safe id for the agent")
+    uid: int = Field(description="A unique integer identifier for the agent")
+    name: str = Field(description="The name of the agent")
+    schema_id: int = Field(description="The id of the created schema")
+    variant_id: str = Field(description="The id of the created variant")
+
+
+# TODO: all code below should go into a service
+
+
+@router.post(
+    "",
+    description="Create a new agent or add a schema to an existing agent."
+    "The request is idempotent so calling the endpoint multiple times will not "
+    "create multiple identical agents.",
+)
+async def create_agent(
+    request: CreateAgentRequest,
+    storage: StorageDep,
+    event_router: EventRouterDep,
+    analytics_service: AnalyticsServiceDep,
+    user_org: UserOrganizationDep,
+) -> CreateAgentResponse:
+    output_schema = SerializableTaskIO.from_json_schema(request.output_schema, streamline=request.sanitize_schemas)
+    if schema_contains_file(output_schema.json_schema):
+        raise BadRequestError("The output schema contains a file")
+    variant = SerializableTaskVariant(
+        id="",
+        task_id=request.id,
+        task_schema_id=0,
+        name=request.name,
+        input_schema=SerializableTaskIO.from_json_schema(request.input_schema, streamline=request.sanitize_schemas),
+        output_schema=output_schema,
+        created_at=datetime_factory(),
+        creation_chat_messages=request.chat_messages,
+    )
+
+    stored, created = await storage.store_task_resource(variant)
+    if created:
+        event_router(
+            TaskSchemaCreatedEvent(
+                task_id=stored.task_id,
+                task_schema_id=stored.task_schema_id,
+                skip_generation=True,
+            ),
+        )
+
+        # Send analytics event
+        analytics_service.send_event(
+            CreatedTaskProperties,
+            task_properties=lambda: TaskProperties(
+                id=stored.task_id,
+                schema_id=stored.task_schema_id,
+                organization_id=user_org.tenant if user_org else None,
+                organization_name=user_org.name if user_org else None,
+                organization_slug=user_org.slug if user_org else None,
+            ),
+        )
+
+    return CreateAgentResponse(
+        id=stored.task_id,
+        name=request.name,
+        schema_id=stored.task_schema_id,
+        variant_id=stored.id,
+        uid=stored.task_uid,
+    )

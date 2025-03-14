@@ -1,0 +1,38 @@
+import logging
+
+from api.jobs.common import (
+    InternalTasksServiceDep,
+    StorageDep,
+)
+from core.domain.events import TaskInstructionsGeneratedEvent
+
+from ..broker import broker
+
+logger = logging.getLogger(__name__)
+
+
+@broker.task(retry_on_error=True)
+async def create_task_description_and_image(
+    event: TaskInstructionsGeneratedEvent,
+    storage: StorageDep,
+    internal_tasks: InternalTasksServiceDep,
+):
+    # We trigger the task description generation based on the instructions we generated ourselves, to enforce the format:
+    # The descriptions for tasks should mirror the content of the opening line of instructions we generate, minus the "You are…" at the start. So:
+    # Opening line: You are a medical scribe assistant specializing in converting medical transcripts into structured SOAP notes. -> Task description: A medical scribe assistant specializing in converting medical transcripts into structured SOAP notes.
+    # See: https://linear.app/workflowai/issue/WOR-3234/rework-task-descriptions
+
+    # Step 1: Generate the task description
+    async for _ in internal_tasks.set_task_description_if_missing(
+        task_id=event.task_id,
+        task_schema_id=event.task_schema_id,
+        instructions=event.task_instructions,
+    ):
+        # TODO: Convert generate_task_description into an unary function if we do no need the generator in the future
+        pass
+
+    # Step 2: Generate the task image, based on the description
+    await internal_tasks.create_task_image(task_id=event.task_id)
+
+
+JOBS = [create_task_description_and_image]
