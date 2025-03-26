@@ -1,4 +1,5 @@
 import os
+from collections.abc import Callable
 from typing import Annotated
 
 from fastapi import Depends
@@ -11,14 +12,16 @@ from api.dependencies.analytics import (
 from api.dependencies.encryption import EncryptionDep
 from api.dependencies.event_router import EventRouterDep
 from api.dependencies.provider_factory import ProviderFactoryDep
-from api.dependencies.security import UserDep
+from api.dependencies.security import TenantUIDDep, UserDep
 from api.dependencies.storage import (
     OrganizationStorageDep,
     StorageDep,
     TranscriptionStorageDep,
 )
+from api.dependencies.task_info import TaskTupleDep
 from api.services.analytics import AnalyticsService, analytics_service
 from api.services.api_keys import APIKeyService
+from api.services.feedback_svc import FeedbackTokenGenerator
 from api.services.groups import GroupService
 from api.services.internal_tasks.agent_suggestions_service import TaskSuggestionsService
 from api.services.internal_tasks.internal_tasks_service import InternalTasksService
@@ -252,3 +255,28 @@ def runs_search_service(
 
 
 RunsSearchServiceDep = Annotated[RunsSearchService, Depends(runs_search_service)]
+
+_feedback_token_generator = FeedbackTokenGenerator.default_generator()
+
+
+def feedback_token_generator() -> FeedbackTokenGenerator:
+    return _feedback_token_generator
+
+
+FeedbackTokenGeneratorDep = Annotated[FeedbackTokenGenerator, Depends(feedback_token_generator)]
+
+
+def run_feedback_generator(
+    feedback_generator: FeedbackTokenGeneratorDep,
+    task_tuple: TaskTupleDep,
+    tenant_uid: TenantUIDDep,
+) -> Callable[[str], str]:
+    """Returns a function that generates a feedback token for a given run based on the route dependencies"""
+
+    def generate_token(run_id: str) -> str:
+        return feedback_generator.generate_token(tenant_uid, task_tuple[1], run_id)
+
+    return generate_token
+
+
+RunFeedbackGeneratorDep = Annotated[Callable[[str], str], Depends(run_feedback_generator)]

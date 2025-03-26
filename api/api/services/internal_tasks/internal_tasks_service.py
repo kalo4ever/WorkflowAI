@@ -1,4 +1,5 @@
 import asyncio
+import copy
 import json
 import logging
 import os
@@ -6,7 +7,14 @@ from collections.abc import Callable
 from datetime import datetime, timezone
 from typing import Annotated, Any, AsyncIterator, Literal, Optional, Sequence, overload
 
-from api.services.internal_tasks._internal_tasks_utils import file_to_image, internal_tools_description
+from workflowai import Run
+
+from api.services.internal_tasks._internal_tasks_utils import (
+    OFFICIALLY_SUGGESTED_TOOLS,
+    file_to_image,
+    internal_tools_description,
+    officially_suggested_tools,
+)
 from api.services.internal_tasks.improve_prompt_service import ImprovePromptService
 from api.services.internal_tasks.instructions_service import InstructionsService
 from api.services.internal_tasks.moderation_service import ModerationService
@@ -16,6 +24,7 @@ from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task impo
     AgentBuilderInput,
     AgentBuilderOutput,
     AgentSchemaJson,
+    ChatMessageWithExtractedURLContent,
     InputObjectFieldConfig,
     OutputObjectFieldConfig,
     agent_builder,
@@ -70,10 +79,11 @@ from api.tasks.update_correct_outputs_and_instructions import (
     UpdateCorrectOutputsAndInstructionsTaskInput,
     update_correct_outputs_and_instructions,
 )
+from api.tasks.url_finder_agent import URLFinderAgentInput, url_finder_agent
 from core.deprecated.workflowai import WorkflowAI
 from core.domain.changelogs import VersionChangelog
 from core.domain.deprecated.task import Task, TaskInput, TaskOutput
-from core.domain.errors import InternalError, UnparsableChunkError
+from core.domain.errors import InternalError, JSONSchemaValidationError, UnparsableChunkError
 from core.domain.events import EventRouter, TaskInstructionsGeneratedEvent
 from core.domain.fields.chat_message import ChatMessage
 from core.domain.fields.file import File
@@ -83,12 +93,12 @@ from core.domain.run_identifier import RunIdentifier
 from core.domain.task_evaluation import TaskEvaluationScore
 from core.domain.task_evaluator import EvalV2Evaluator
 from core.domain.task_group_properties import TaskGroupProperties
-from core.domain.task_image import TaskImage
+from core.domain.task_io import SerializableTaskIO
 from core.domain.task_run_query import SerializableTaskRunQuery
 from core.domain.task_variant import SerializableTaskVariant
 from core.domain.types import CacheUsage, TaskInputDict
+from core.domain.url_content import URLContent
 from core.domain.version_reference import VersionReference
-from core.providers.dall_e import generate_and_display_image
 from core.runners.workflowai.utils import FileWithKeyPath
 from core.runners.workflowai.workflowai_runner import WorkflowAIRunner
 from core.storage.backend_storage import BackendStorage
@@ -109,9 +119,9 @@ from core.tasks.task_input_example.task_input_migration_task import (
     stream_task_input_migration_task,
 )
 from core.tools import ToolKind
-from core.utils.image_utils import compress_image
 from core.utils.schema_sanitation import streamline_schema
-from core.utils.schemas import strip_json_schema_metadata_keys
+from core.utils.schemas import EXPLAINATION_KEY, schema_needs_explanation, strip_json_schema_metadata_keys
+from core.utils.url_utils import extract_and_fetch_urls
 
 QUICK_MODEL = Model(os.environ.get("QUICK_MODEL", Model.GPT_4O_MINI_2024_07_18))
 AUDIO_TRANSCRIPTION_MODEL = Model(os.environ.get("AUDIO_TRANSCRIPTION_MODEL", Model.GEMINI_1_5_FLASH_002))
@@ -159,6 +169,9 @@ class InternalTasksService:
     # ----------------------------------------
     # New task schema creation (new_task)
 
+    async def _extract_url_content(self, text: str) -> list[URLContent]:
+        return await extract_and_fetch_urls(text)
+
     async def _prepare_agent_builder_input(
         self,
         chat_messages: list[ChatMessage],
@@ -174,9 +187,15 @@ class InternalTasksService:
         )
         current_agents = [str(agent) for agent in current_agents]
 
+        new_message = chat_messages[-1]
+
         return AgentBuilderInput(
             previous_messages=chat_messages[:-1],
-            new_message=chat_messages[-1],
+            new_message=ChatMessageWithExtractedURLContent(
+                role=new_message.role,
+                content=new_message.content,
+                extracted_url_content=await self._extract_url_content(new_message.content),
+            ),
             existing_agent_schema=existing_task,
             user_context=AgentBuilderInput.UserContent(
                 company_name=company_description.company_name if company_description else None,
@@ -186,7 +205,7 @@ class InternalTasksService:
                 company_products=company_description.products if company_description else None,
                 current_agents=current_agents,
             ),
-            available_tools_description=internal_tools_description(all=True),
+            available_tools_description=officially_suggested_tools(),
         )
 
     def _build_input_schema(self, input_schema: InputObjectFieldConfig | None) -> dict[str, Any] | None:
@@ -215,12 +234,54 @@ class InternalTasksService:
         name: str,
         input_schema: InputObjectFieldConfig | None,
         output_schema: OutputObjectFieldConfig | None,
+        partial: bool,
     ) -> AgentSchemaJson:
+        output_json_schema = self._build_output_schema(output_schema)
+        if output_json_schema and not partial:
+            # We only add explaination when the schema is finalized to avoid mistakenly adding it to an intermediate state
+            output_json_schema = self.add_explanation_to_schema_if_needed(output_json_schema, self.logger)
+
         return AgentSchemaJson(
             agent_name=sanitize_agent_name(name),
             input_json_schema=self._build_input_schema(input_schema),
-            output_json_schema=self._build_output_schema(output_schema),
+            output_json_schema=output_json_schema,
         )
+
+    @classmethod
+    def add_explanation_to_schema_if_needed(cls, schema: dict[str, Any], logger: logging.Logger) -> dict[str, Any]:
+        updated_schema = copy.deepcopy(schema)
+        try:
+            # TODO: there is some logic overlap between 'add_explanation_to_schema_if_needed' and 'schema_needs_explanation'
+            # Merge functions ?
+            if schema_needs_explanation(updated_schema):
+                if not updated_schema.get("type") == "object" or not updated_schema.get("properties"):
+                    logger.warning(
+                        "Schema is an enum or boolean, but is not an object with properties",
+                        extra={"schema": updated_schema},
+                    )
+                    return updated_schema
+
+                if EXPLAINATION_KEY in updated_schema["properties"]:
+                    logger.warning(
+                        "Explanation already exists in schema",
+                        extra={"schema": updated_schema},
+                    )
+                    return updated_schema
+
+                updated_schema["properties"] = {
+                    EXPLAINATION_KEY: {
+                        "type": "string",
+                        "description": "Explanation of the choices made in the output",
+                    },
+                    **updated_schema["properties"],
+                }
+            return updated_schema
+        except Exception:
+            logger.warning(
+                "Error adding explanation to schema",
+                exc_info=True,
+            )
+            return updated_schema
 
     async def run_task_schema_iterations(
         self,
@@ -247,6 +308,7 @@ class InternalTasksService:
                 new_task_schema.agent_name,
                 new_task_schema.input_schema,
                 new_task_schema.output_schema,
+                partial=False,
             )
             default_answer_to_user = DEFAULT_NEW_TASK_ASSISTANT_ANSWER_WITH_SCHEMA
 
@@ -258,6 +320,7 @@ class InternalTasksService:
     def _handle_stream_task_iterations_chunk(
         self,
         chunk: AgentBuilderOutput,
+        partial: bool,
     ) -> tuple[Optional[AgentSchemaJson], str]:
         if not hasattr(chunk, "new_agent_schema") or chunk.new_agent_schema is None:
             return None, chunk.answer_to_user
@@ -266,6 +329,7 @@ class InternalTasksService:
                 chunk.new_agent_schema.agent_name,
                 chunk.new_agent_schema.input_schema,
                 chunk.new_agent_schema.output_schema,
+                partial=partial,
             )
 
             return (
@@ -290,72 +354,26 @@ class InternalTasksService:
             await self._prepare_agent_builder_input(chat_messages, user_email, existing_task),
             use_cache="always",
         )
+        chunk: Run[AgentBuilderOutput] | None = None
         async for chunk in iterator:
             try:
-                yield self._handle_stream_task_iterations_chunk(chunk.output)
+                yield self._handle_stream_task_iterations_chunk(chunk.output, partial=True)
             except UnparsableChunkError:
                 self.logger.warning(
                     "Error handling stream task iteration chunk",
                     exc_info=True,
                 )
                 # If anything goes wrong, we skip the chunk, because we may be in an intermediate state in the generation
-
-    async def _generate_task_image(self, task_description: str) -> bytes:
-        prompt = f"""Create an image to follow these style guidelines:
-
-            Without any text, labels, or writing
-
-            Minimalism and Simplicity: The works often feature clean, minimalist designs with simple, flat shapes and a limited color palette, emphasizing essential forms.
-
-            Use of Silhouettes and Shadows: Frequent use of silhouettes and shadows creates depth and contrast, giving the illustrations a striking and dramatic look.
-
-            Bold Color Choices: While the color palette is often limited, the colors used are bold and vibrant, creating a strong visual impact.
-
-            Geometric and Flat Design: The illustrations have a geometric quality, with flat, 2D designs that convey a sense of stylized abstraction.
-
-            Emotional and Narrative Focus: Despite the simplicity, the illustrations often convey a strong emotional or narrative element, capturing moments of contemplation, solitude, and quiet beauty.
-
-            Attention to Composition: There is a keen eye for composition, often using negative space effectively to guide the viewer's eye and enhance the storytelling aspect of the image.
-
-            Atmospheric and Dreamlike Quality: The illustrations often have an atmospheric, almost dreamlike quality, evoking a sense of nostalgia and introspection.
-
-            The illustration should represent the following process: {task_description}"""
-
-        return await generate_and_display_image(prompt, size="1792x1024")
-
-    async def get_task_image(self, task_id: str) -> TaskImage | None:
-        # Will raise an exception if task does not exist
-        await self.storage.get_task(task_id)
-
-        return await self.storage.get_task_image(task_id)
-
-    async def create_task_image(self, task_id: str) -> TaskImage:
-        # Will raise an exception if task does not exist
-
-        existing_task_image = await self.storage.get_task_image(task_id)
-
-        if existing_task_image:
-            return existing_task_image
-
-        task_info = await self.storage.tasks.get_task_info(task_id)
-
-        if task_info.description is None or task_info.description == "":
-            task_description = task_info.name
-            self.logger.warning(
-                "Task description is empty, using task name for image generation",
-                extra={"task_id": task_id, "task_description": task_description},
-            )
-        else:
-            task_description = task_info.description
-
-        new_image = await self._generate_task_image(task_description=task_description)
-
-        compressed_image_data = compress_image(new_image, max_size_kb=1000)
-
-        task_image = TaskImage(task_id=task_id, image_data=new_image, compressed_image_data=compressed_image_data)
-        await self.storage.create_task_image(task_image)
-
-        return task_image
+        if chunk:
+            try:
+                # We stream the last chunk with partial=False, because it is the final chunk
+                yield self._handle_stream_task_iterations_chunk(chunk.output, partial=False)
+            except UnparsableChunkError:
+                self.logger.warning(
+                    "Error handling stream task iteration chunk",
+                    exc_info=True,
+                )
+                # If anything goes wrong, we skip the chunk, because we may be in an intermediate state in the generation
 
     async def generate_task_instructions(
         self,
@@ -581,6 +599,53 @@ class InternalTasksService:
         # In all other cases, generate new instructions
         return new_instructions_stream(required_tool_kinds)
 
+    @classmethod
+    def _get_available_tool_descriptions(
+        cls,
+    ) -> list[TaskInstructionsRequiredToolsPickingTaskInput.ToolDescriptionStr]:
+        return [
+            TaskInstructionsRequiredToolsPickingTaskInput.ToolDescriptionStr.from_tool_description(
+                tool.definition,
+            )
+            for tool_kind, tool in WorkflowAIRunner.internal_tools.items()
+            if tool_kind in OFFICIALLY_SUGGESTED_TOOLS
+        ]
+
+    async def _sanitize_required_tools(
+        self,
+        task_name: str,
+        input_json_schema: dict[str, Any],
+        required_tools_picking_run_id: str,
+        picked_tools: set[ToolKind],
+    ) -> set[ToolKind]:
+        if picked_tools == {ToolKind.WEB_BROWSER_TEXT}:
+            sanitized_picked_tools: set[ToolKind] = set()
+
+            # If the only required tool is WEB_BROWSER_TEXT, we need to check if the agent is a 'scrapping' agent
+            # In order not to add WEB_BROWSER_TEXT for wrong reasons
+            try:
+                url_finder_run = await url_finder_agent(
+                    URLFinderAgentInput(
+                        agent_name=task_name,
+                        agent_input_json_schema=input_json_schema,
+                    ),
+                )
+                if url_finder_run.is_schema_containing_url:
+                    # The agent is a 'scraping' agent, so we keep WEB_BROWSER_TEXT
+                    sanitized_picked_tools = {ToolKind.WEB_BROWSER_TEXT}
+                else:
+                    self.logger.warning(
+                        "The agent is not a 'scraping' agent, so we remove WEB_BROWSER_TEXT",
+                        extra={"tool_picking_run": required_tools_picking_run_id},
+                    )
+                    # The agent is not a 'scraping' agent, so we remove WEB_BROWSER_TEXT
+            except Exception as e:
+                self.logger.exception("Error running URL finder agent", exc_info=e)
+
+            return sanitized_picked_tools
+
+        return picked_tools
+
     async def get_required_tool_kinds(
         self,
         task_name: str,
@@ -596,24 +661,19 @@ class InternalTasksService:
                     input_json_schema=input_json_schema,
                     output_json_schema=output_json_schema,
                 ),
-                available_tools_description=[
-                    TaskInstructionsRequiredToolsPickingTaskInput.ToolDescriptionStr.from_tool_description(
-                        tool.definition,
-                    )
-                    for tool in WorkflowAIRunner.internal_tools.values()
-                ],
+                available_tools_description=self._get_available_tool_descriptions(),
             ),
             use_cache="always",
         )
         out: set[ToolKind] = set()
-        for tool_handle in required_tools_picking_run.required_tools:
+        for tool_handle in required_tools_picking_run.output.required_tools:
             try:
                 out.add(ToolKind(tool_handle))
             except ValueError:
                 self.logger.warning("Tool handle not found in ToolKind", extra={"tool_handle": tool_handle})
                 continue
 
-        return out
+        return await self._sanitize_required_tools(task_name, input_json_schema, required_tools_picking_run.id, out)
 
     async def set_task_description_if_missing(
         self,
@@ -734,8 +794,8 @@ class InternalTasksService:
             output_json_schema=task.output_schema.json_schema,
             additional_instructions=input_instructions
             + (task_input_generation_instructions_run.input_generation_instructions or ""),
+            additional_instructions_url_contents=await extract_and_fetch_urls(input_instructions),
         )
-
         metadata = {"memory_id": gen_task_input.memory_id()}
 
         try:
@@ -1043,4 +1103,38 @@ class InternalTasksService:
         self,
         task_input: GenerateTaskPreviewTaskInput,
     ) -> AsyncIterator[GenerateTaskPreviewTaskOutput]:
+        if task_input.current_preview:
+            self._feed_input_validation_error(task_input)
+            self._feed_output_validation_error(task_input)
+
         return stream_generate_task_preview(task_input)
+
+    def _feed_input_validation_error(self, task_input: GenerateTaskPreviewTaskInput) -> None:
+        if task_input.current_preview is None:
+            return
+
+        try:
+            agent_input = SerializableTaskIO(
+                json_schema=task_input.task_input_schema,
+                version="1",
+            )
+            agent_input.enforce(task_input.current_preview.input)
+        except JSONSchemaValidationError as e:
+            task_input.current_preview_input_validation_error = str(e)
+        except Exception as e:
+            self.logger.exception("Unexpected error while validating current preview input", exc_info=e)
+
+    def _feed_output_validation_error(self, task_input: GenerateTaskPreviewTaskInput) -> None:
+        if task_input.current_preview is None:
+            return
+
+        try:
+            agent_output = SerializableTaskIO(
+                json_schema=task_input.task_output_schema,
+                version="1",
+            )
+            agent_output.enforce(task_input.current_preview.output)
+        except JSONSchemaValidationError as e:
+            task_input.current_preview_output_validation_error = str(e)
+        except Exception as e:
+            self.logger.exception("Unexpected error while validating current preview output", exc_info=e)

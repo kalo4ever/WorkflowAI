@@ -9,8 +9,8 @@ from typing import Annotated, Literal, TypeVar
 from fastapi import APIRouter, HTTPException, Request, Response
 from pydantic import BaseModel, Field
 
-from api.dependencies.security import SystemStorageDep
-from core.storage.organization_storage import SystemOrganizationStorage
+from api.dependencies.security import OrgSystemStorageDep
+from core.storage.organization_storage import OrganizationSystemStorage
 
 router = APIRouter(prefix="/webhooks/clerk", include_in_schema=False)
 _logger = logging.getLogger(__name__)
@@ -114,7 +114,7 @@ class Webhook(BaseModel):
 async def _clerk_organization_webhook(
     type: WebhookTypes,
     organization: Organization,
-    system_storage: SystemOrganizationStorage,
+    system_storage: OrganizationSystemStorage,
 ):
     match type:
         case "organization.created":
@@ -136,7 +136,7 @@ async def _clerk_organization_webhook(
 @router.post("")
 async def clerk_webhook(
     request: Request,
-    system_storage: SystemStorageDep,
+    system_storage: OrgSystemStorageDep,
 ):
     webhook = await _verify_webhook(request, Webhook)
 

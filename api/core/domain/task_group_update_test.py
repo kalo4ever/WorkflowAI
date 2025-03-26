@@ -25,8 +25,6 @@ def test_task_group_update_valid(update_data: dict[str, Any], expected_values: d
 @pytest.mark.parametrize(
     "update_data, expected_error",
     [
-        ({"add_alias": "new_alias"}, "Updating a group alias is deprecated "),
-        ({"remove_alias": "old_alias"}, "Updating a group alias is deprecated "),
         ({}, "At least one of is_favorite, or notes must be set"),
         ({"is_favorite": "yes"}, "Input should be a valid boolean"),
         ({"notes": "   "}, "Notes cannot be whitespace-only strings"),

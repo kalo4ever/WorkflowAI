@@ -31,8 +31,9 @@ class TestSearchTaskRunsRequestQuery:
 
 
 class TestLatestRun:
+    # Making sure the mock happens after the test_api_client is created
     @pytest.fixture(autouse=True)
-    def returned_run(self, mock_storage: Mock):
+    def returned_run(self, test_api_client: AsyncClient, mock_storage: Mock):
         run = task_run_ser(id=str(uuid7()), task_uid=1, task_schema_id=1, status="success")
         mock_storage.task_runs.fetch_task_run_resources.return_value = mock_aiter(run)
         mock_storage.tasks.get_task_info.return_value = TaskInfo(task_id="bla", uid=2)
@@ -41,8 +42,8 @@ class TestLatestRun:
     async def test_latest_run(
         self,
         test_api_client: AsyncClient,
-        returned_run: SerializableTaskRun,
         mock_storage: Mock,
+        returned_run: SerializableTaskRun,
     ):
         response = await test_api_client.get("/v1/_/agents/bla/runs/latest")
         assert response.status_code == 200

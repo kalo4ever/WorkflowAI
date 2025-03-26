@@ -9,7 +9,7 @@ from core.utils.fields import datetime_factory
 
 class BaseDocument(BaseModel):
     # Default is provided for when projections are used
-    tenant: str = Field(default="", description="The tenant this document belongs to")
+    tenant: str | None = Field(default=None, description="The tenant this document belongs to")
     # This field is mostly not used yet, but ultimately it should replace the tenant field
     tenant_uid: int | None = Field(default=None, description="The tenant UID this document belongs to")
 

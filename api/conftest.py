@@ -10,6 +10,8 @@ from fastapi import FastAPI, Request
 from freezegun import freeze_time
 from httpx import ASGITransport, AsyncClient
 
+from core.domain.organization_settings import PublicOrganizationData
+from core.domain.task_info import TaskInfo
 from core.domain.task_io import SerializableTaskIO
 from core.domain.task_variant import SerializableTaskVariant
 from core.domain.users import User
@@ -236,9 +238,11 @@ def mock_key_ring() -> Mock:
 
 @pytest.fixture(scope="function")
 def mock_tenant_dep() -> Mock:
-    from api.dependencies.security import tenant_dependency
+    from api.dependencies.security import final_tenant_data
 
-    return AsyncMock(spec=tenant_dependency)
+    mock = AsyncMock(spec=final_tenant_data)
+    mock.return_value = PublicOrganizationData(tenant="test", uid=1)
+    return mock
 
 
 @pytest.fixture(scope="function")
@@ -399,12 +403,12 @@ def test_app(
     from api.dependencies.security import (
         BearerDep,
         KeyRingDep,
-        SystemStorageDep,
+        OrgSystemStorageDep,
         UserDep,
         UserOrganizationDep,
+        final_tenant_data,
         key_ring_dependency,
         system_org_storage,
-        tenant_dependency,
         url_public_organization,
         user_auth_dependency,
         user_organization,
@@ -423,6 +427,7 @@ def test_app(
     # Ultimately we shoud have a client builder to avoid this boilerplate
     app.dependency_overrides = {}
 
+    mock_storage.tasks.get_task_info.return_value = TaskInfo(task_id="test", uid=1)
     app.dependency_overrides[storage_dependency] = lambda: mock_storage
 
     async def _mock_user_auth_dependency(
@@ -434,7 +439,7 @@ def test_app(
     async def _mock_tenant_dependancy(
         user: UserDep,
         user_org: UserOrganizationDep,
-        system_storage: SystemStorageDep,
+        system_storage: OrgSystemStorageDep,
         request: Request,
         encryption: EncryptionDep,
     ):
@@ -445,13 +450,13 @@ def test_app(
 
     async def _user_organization_dependency(
         user: UserDep,
-        system_storage: SystemStorageDep,
+        system_storage: OrgSystemStorageDep,
     ):
         return await mock_user_org_dep(user, system_storage)
 
     async def _url_public_organization_dependency(
         user: UserDep,
-        system_storage: SystemStorageDep,
+        system_storage: OrgSystemStorageDep,
     ):
         return await mock_url_public_org_dep(user, system_storage)
 
@@ -468,7 +473,7 @@ def test_app(
 
     app.dependency_overrides[key_ring_dependency] = _mock_key_ring_dependency
     app.dependency_overrides[encryption_dependency] = lambda: mock_encryption
-    app.dependency_overrides[tenant_dependency] = _mock_tenant_dependancy
+    app.dependency_overrides[final_tenant_data] = _mock_tenant_dependancy
 
     app.dependency_overrides[group_service] = lambda: mock_group_service
     app.dependency_overrides[event_router_dependency] = lambda: mock_event_router
@@ -558,3 +563,9 @@ def hello_task():
             streamline=True,
         ),
     )
+
+
+@pytest.fixture(scope="function")
+def patch_metric_send():
+    with patch("core.domain.metrics.Metric.send", autospec=True) as m:
+        yield m

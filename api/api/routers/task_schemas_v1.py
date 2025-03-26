@@ -1,4 +1,3 @@
-from datetime import date
 from typing import Any
 
 from fastapi import APIRouter
@@ -8,7 +7,7 @@ from api.dependencies.latest_task_variant import TaskVariantDep
 from api.dependencies.path_params import TaskSchemaID
 from api.dependencies.services import ModelsServiceDep, RunsSearchServiceDep
 from api.dependencies.task_info import TaskTupleDep
-from core.domain.models import Provider
+from api.schemas.models import ModelMetadata, ModelResponse
 from core.domain.page import Page
 from core.domain.search_query import SearchFieldOption
 from core.utils.schemas import FieldType
@@ -17,23 +16,7 @@ from core.utils.templates import InvalidTemplateError, TemplateManager
 router = APIRouter(prefix="/v1/{tenant}/agents/{task_id}/schemas/{task_schema_id}")
 
 
-class ModelMetadata(BaseModel):
-    provider_name: str = Field(description="The name of the provider for the model")
-    price_per_input_token_usd: float = Field(description="The price per input token in USD")
-    price_per_output_token_usd: float = Field(description="The price per output token in USD")
-    release_date: date = Field(description="The date the model was released")
-    context_window_tokens: int = Field(description="The context window of the model in tokens")
-    quality_index: int = Field(
-        description="The quality index of the model, from 0 to 100. None if not available. Source: artificialanalysis.ai",
-    )
-
-
-class ModelResponse(BaseModel):
-    id: str
-    name: str
-    icon_url: str = Field(description="The url of the icon to display for the model")
-    modes: list[str] = Field(description="The modes supported by the model")
-
+class AgentModelResponse(ModelResponse):
     is_not_supported_reason: str | None = Field(
         description="Why the model does not support the current schema. "
         "Only provided if the model is not supported by the current schema.",
@@ -41,21 +24,6 @@ class ModelResponse(BaseModel):
     average_cost_per_run_usd: float | None = Field(
         description="The average cost per run in USD",
     )
-
-    is_latest: bool = Field(
-        description="Whether the model is the latest in its family. In other words"
-        "by default, only models with is_latest=True should be displayed.",
-    )
-
-    metadata: ModelMetadata = Field(description="The metadata of the model")
-
-    # The model list enum will determine the column/priority order
-    is_default: bool = Field(
-        description="If true, the model will be used as default model.",
-        default=False,
-    )
-
-    providers: list[Provider] = Field(description="The providers that support this model")
 
     @classmethod
     def from_model(cls, model: ModelsServiceDep.ModelForTask):
@@ -67,14 +35,7 @@ class ModelResponse(BaseModel):
             is_not_supported_reason=model.is_not_supported_reason,
             average_cost_per_run_usd=model.average_cost_per_run_usd,
             is_latest=model.is_latest,
-            metadata=ModelMetadata(
-                provider_name=model.provider_name,
-                release_date=model.release_date,
-                context_window_tokens=model.context_window_tokens,
-                quality_index=model.quality_index,
-                price_per_input_token_usd=model.price_per_input_token_usd,
-                price_per_output_token_usd=model.price_per_output_token_usd,
-            ),
+            metadata=ModelMetadata.from_service(model),
             is_default=model.is_default,
             providers=model.providers,
         )
@@ -84,9 +45,9 @@ class ModelResponse(BaseModel):
 async def list_models_for_task_schema(
     task: TaskVariantDep,
     models_service: ModelsServiceDep,
-) -> Page[ModelResponse]:
+) -> Page[AgentModelResponse]:
     models = await models_service.models_for_task(task, instructions=None, requires_tools=False)
-    return Page(items=[ModelResponse.from_model(model) for model in models])
+    return Page(items=[AgentModelResponse.from_model(model) for model in models])
 
 
 class ListModelsRequest(BaseModel):
@@ -105,13 +66,13 @@ async def list_models_for_task_schema_and_instructions(
     task: TaskVariantDep,
     models_service: ModelsServiceDep,
     request: ListModelsRequest | None = None,
-) -> Page[ModelResponse]:
+) -> Page[AgentModelResponse]:
     models = await models_service.models_for_task(
         task,
         instructions=request.instructions if request else None,
         requires_tools=request.requires_tools if request else None,
     )
-    return Page(items=[ModelResponse.from_model(model) for model in models])
+    return Page(items=[AgentModelResponse.from_model(model) for model in models])
 
 
 class SearchFields(BaseModel):

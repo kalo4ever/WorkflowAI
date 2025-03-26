@@ -15,6 +15,7 @@ from core.domain.errors import (
     MissingModelError,
     ModelDoesNotSupportMode,
     ProviderBadRequestError,
+    ProviderError,
     ProviderInvalidFileError,
     ProviderRateLimitError,
     UnknownProviderError,
@@ -308,8 +309,17 @@ class GoogleProviderBase(HTTPXProvider[_GoogleConfigVar, CompletionResponse], Ge
     def _unknown_error_message(self, response: httpx.Response):
         return response.text
 
+    # If the error message contains these, we raise an invalid file error and pass the message as is
+    _INVALID_FILE_SEARCH_STRINGS = [
+        "the document has no pages",
+        "unable to process input image",
+    ]
+
     @classmethod
     def _handle_invalid_argument(cls, message: str, response: httpx.Response):
+        error_cls: type[ProviderError] = ProviderBadRequestError
+        error_msg = message
+        capture = False
         match message.lower():
             case lower_msg if any(
                 m in lower_msg
@@ -318,7 +328,7 @@ class GoogleProviderBase(HTTPXProvider[_GoogleConfigVar, CompletionResponse], Ge
                     "exceeds the maximum number of tokens allowed",
                 ]
             ):
-                raise MaxTokensExceededError(message, response=response)
+                error_cls = MaxTokensExceededError
             case lower_msg if any(
                 m in lower_msg
                 for m in [
@@ -326,27 +336,28 @@ class GoogleProviderBase(HTTPXProvider[_GoogleConfigVar, CompletionResponse], Ge
                     "request payload size exceeds the limit",
                 ]
             ):
-                raise ProviderBadRequestError(message, response=response)
+                pass
             case lower_msg if "non-leading vision input which the model does not support" in lower_msg:
                 # Capturing since we should have the data in the model data
-                raise ModelDoesNotSupportMode(message, response=response, capture=True)
+                capture = True
+                error_cls = ModelDoesNotSupportMode
             case lower_msg if "url_error-error_not_found" in lower_msg:
-                raise ProviderInvalidFileError(
-                    "Provider could not retrieve file: URL returned a 404 error",
-                    response=response,
-                )
+                error_msg = "Provider could not retrieve file: URL returned a 404 error"
+                error_cls = ProviderInvalidFileError
             case lower_msg if "url_timeout-timeout_fetchproxy" in lower_msg:
-                raise ProviderInvalidFileError(
-                    "Provider could not retrieve file: URL timed out",
-                    response=response,
-                )
+                error_msg = "Provider could not retrieve file: URL timed out"
+                error_cls = ProviderInvalidFileError
             case lower_msg if "url_unreachable-unreachable_no_response" in lower_msg:
-                raise ProviderInvalidFileError(
-                    "Provider could not retrieve file: No response",
-                    response=response,
-                )
+                error_msg = "Provider could not retrieve file: No response"
+                error_cls = ProviderInvalidFileError
+            case lower_msg if "url_rejected-rejected_rpc_app_error" in lower_msg:
+                error_msg = "Provider could not retrieve file: Rejected"
+                error_cls = ProviderInvalidFileError
+            case lower_msg if any(m in lower_msg for m in cls._INVALID_FILE_SEARCH_STRINGS):
+                error_cls = ProviderInvalidFileError
             case _:
-                pass
+                return
+        raise error_cls(error_msg, response=response, capture=capture)
 
     def _handle_not_found(self, message: str, response: httpx.Response):
         if "models" in message:

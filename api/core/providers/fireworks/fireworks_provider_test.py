@@ -17,6 +17,7 @@ from core.domain.fields.file import File
 from core.domain.fields.internal_reasoning_steps import InternalReasoningStep
 from core.domain.llm_usage import LLMUsage
 from core.domain.message import Message
+from core.domain.metrics import Metric
 from core.domain.models import Model, Provider
 from core.domain.models.model_data import FinalModelData, MaxTokensData
 from core.domain.structured_output import StructuredOutput
@@ -1207,3 +1208,36 @@ class TestUnknownError:
         assert isinstance(e, MaxTokensExceededError)
         assert e.capture is False
         assert not e.store_task_run
+
+
+class TestExtractAndLogRateLimits:
+    async def test_extract_and_log_rate_limits(self, fireworks_provider: FireworksAIProvider, patch_metric_send: Mock):
+        response = Response(
+            status_code=200,
+            headers={
+                "x-ratelimit-remaining-requests": "100",
+                "x-ratelimit-limit-requests": "1000",
+                "x-ratelimit-remaining-tokens-prompt": "10",
+                "x-ratelimit-limit-tokens-prompt": "1000",
+                "x-ratelimit-remaining-tokens-generated": "20",
+                "x-ratelimit-limit-tokens-generated": "1000",
+            },
+        )
+        await fireworks_provider._extract_and_log_rate_limits(response, Model.LLAMA_3_3_70B)  # pyright: ignore[reportPrivateUsage]
+
+        assert patch_metric_send.call_count == 3
+        metrics = sorted(
+            [cast(Metric, call[0][0]) for call in patch_metric_send.call_args_list],
+            key=lambda x: x.tags["limit_name"],
+        )
+
+        assert all(metric.name == "provider_rate_limit" for metric in metrics)
+        assert all(metric.tags["provider"] == "fireworks" for metric in metrics)
+        assert all(metric.tags["model"] == "llama-3.3-70b" for metric in metrics)
+
+        assert metrics[0].tags["limit_name"] == "input_tokens"
+        assert metrics[0].gauge == 0.99
+        assert metrics[1].tags["limit_name"] == "output_tokens"
+        assert metrics[1].gauge == 0.98
+        assert metrics[2].tags["limit_name"] == "requests"
+        assert metrics[2].gauge == 0.9

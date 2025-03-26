@@ -4,8 +4,10 @@ from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
+from api.dependencies.event_router import EventRouterDep
 from api.dependencies.security import UserDep
 from api.dependencies.storage import StorageDep
+from api.schemas.models import ModelResponse
 from api.services.features import (
     FeatureList,
     FeatureOutputPreview,
@@ -13,7 +15,9 @@ from api.services.features import (
     FeatureSectionPreview,
     FeatureService,
 )
+from api.services.models import ModelsService
 from core.domain.features import BaseFeature, DirectToAgentBuilderFeature, FeatureWithImage
+from core.domain.page import Page
 from core.utils.email_utils import safe_domain_from_email
 from core.utils.stream_response_utils import safe_streaming_response
 
@@ -84,10 +88,11 @@ async def list_features_by_tag(
 async def list_feature_by_domain(
     user: UserDep,
     storage: StorageDep,
+    event_router: EventRouterDep,
     company_domain: str,
 ) -> StreamingResponse:
     async def _stream() -> AsyncIterator[BaseModel]:
-        async for item in FeatureService(storage).get_features_by_domain(company_domain):
+        async for item in FeatureService(storage).get_features_by_domain(company_domain, event_router):
             yield item
 
     return safe_streaming_response(_stream)
@@ -143,3 +148,12 @@ async def get_feature_schemas(
         request.feature.specifications,
         request.company_context,
     )
+
+
+@router.get(
+    "/models",
+    description="Preview available models and their associated data",
+)
+async def preview_models() -> Page[ModelResponse]:
+    models = [ModelResponse.from_service(m) async for m in ModelsService.preview_models() if m.is_default]
+    return Page(items=models)

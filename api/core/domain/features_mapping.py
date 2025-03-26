@@ -1,4 +1,4 @@
-from core.domain.features import BaseFeature, DirectToAgentBuilderFeature, FeatureSection, FeatureTag, FeatureWithImage
+from core.domain.features import BaseFeature, FeatureSection, FeatureTag, FeatureWithImage
 
 FEATURES_MAPPING: list[FeatureSection] = [
     FeatureSection(
@@ -21,13 +21,6 @@ FEATURES_MAPPING: list[FeatureSection] = [
                         name="Summarize PDF Content",
                         description="Extract the key information from PDF documents with our summarization tool. This agent analyzes the full content of your PDF and generates a concise text summary highlighting the main points.",
                         specifications="Input: a PDF document. Output: a summary of the content (string).",
-                    ),
-                    DirectToAgentBuilderFeature(
-                        name="Import Prompt",
-                        description="I would like to import my own prompt",
-                        specifications="",
-                        open_agent_builder_with_message="I would like to import my own prompt",
-                        image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/import-prompt.png",
                     ),
                     BaseFeature(
                         name="Generate Versions of Social Media Posts Optimized for Different Platforms",
@@ -58,58 +51,7 @@ FEATURES_MAPPING: list[FeatureSection] = [
                 kind="static",
             ),
             FeatureTag(
-                name="Developer Tools",
-                features=[
-                    BaseFeature(
-                        name="Natural Language SQL Query",
-                        description="Convert natural language questions into SQL queries. This feature transforms your text-based questions into structured database queries, allowing you to extract information from your database using everyday language rather than SQL syntax.",
-                        specifications="Input: a string in natural language. Output: a SQL query. Goal: convert the natural language query into a valid SQL query.",
-                    ),
-                    BaseFeature(
-                        name="Create Bug Ticket Titles From Slack Messages",
-                        description="Generate concise and relevant bug ticket titles for project management systems like Linear or Jira directly from Slack messages. This feature analyzes the content of a Slack message and creates an appropriate title that accurately represents the issue being reported.",
-                        specifications="Input: a single Slack message. Output: a project management (Linear, Jira) ticket title. Goal: compose an appropriate title for an issue that is opened based on the content of the Slack message.",
-                    ),
-                    BaseFeature(
-                        name="Identify Prompt Injection",
-                        description="Analyzes text to detect potential prompt injection attempts. This security feature examines input for manipulative instructions that might override system prompts or extract unauthorized information, providing clear reasoning for its determination.",
-                        specifications="Input: a prompt. Output: whether it is a case of prompt injection or not and why.",
-                    ),
-                    BaseFeature(
-                        name="Summarize Code Changes From a Git Diff",
-                        description="Analyze code changes between two versions and generate a concise summary suitable for commit messages. This tool helps developers document their changes by identifying key modifications and presenting them in a clear, structured format.",
-                        specifications="Input: two blocks of code (before change and after change). Output: a summary of the changes for a commit message.",
-                    ),
-                    BaseFeature(
-                        name="Convert Regular Expressions Into Human-Readable Explanations",
-                        description="Transform complex regular expressions into clear, human-readable explanations. This feature analyzes regex patterns and provides a plain English interpretation of what the expression is designed to match.",
-                        specifications="Input: a regular expression. Output: an explanation of the regular expression in plain English.",
-                    ),
-                    BaseFeature(
-                        name="Explain a Code Snippet in Plain Language",
-                        description="Converts complex code snippets into clear, plain language explanations. This feature analyzes the provided code and generates a human-readable description of what the code does, making it easier to understand programming logic without technical expertise.",
-                        specifications="Input: a code snippet. Output: an explanation of the code snippet's functionality in plain English.",
-                    ),
-                    BaseFeature(
-                        name="Generate Unit Test Cases From Function Definitions",
-                        description="Create comprehensive unit test cases directly from your function definitions. This feature analyzes the function signature and purpose to generate appropriate test cases that verify the function's behavior across various inputs and edge cases.",
-                        specifications="Input: a function definition. Output: unit tests for the given function.",
-                    ),
-                    BaseFeature(
-                        name="Generate Code Documentation From Inline Code Comments",
-                        description="Transform your inline code comments into comprehensive documentation. This feature analyzes your code and extracts meaningful information from comments to create structured documentation that helps maintain code clarity and improves collaboration among developers.",
-                        specifications="Input: some code. Output: documentation for the code, based on the inline comments.",
-                    ),
-                    BaseFeature(
-                        name="Generate Code",
-                        description="Create functional code snippets by providing a description of what you need and your preferred programming language. This agent will generate code that implements your requirements in the specified language.",
-                        specifications="Input: explanation of what you want a code function to accomplish and a coding language. Output: code accomplishing the request in the requested language.",
-                    ),
-                ],
-                kind="static",
-            ),
-            FeatureTag(
-                name="Marketing",
+                name="E-Commerce",
                 features=[
                     BaseFeature(
                         name="Generate Product Descriptions Based on Image",
@@ -117,24 +59,19 @@ FEATURES_MAPPING: list[FeatureSection] = [
                         specifications="Input: an image. Output: a description of the product shown in the image.",
                     ),
                     BaseFeature(
+                        name="Generate Shopping List Based on a Picture of Food",
+                        description="Create a shopping list by uploading a photo of a meal. This agent identifies ingredients in the image and compiles them into a ready-to-use shopping list.",
+                        specifications="Input: an image containing a meal. Output: a shopping list of each item in the picture.",
+                    ),
+                    BaseFeature(
                         name="Generate Ad Copy Based on a Product Description",
                         description="Transform product descriptions into compelling ad copy. This feature analyzes your product information and generates targeted advertising text that highlights key selling points and benefits, helping you create effective marketing materials quickly.",
                         specifications="Input: a product description. Output: ad copy for the product described.",
                     ),
                     BaseFeature(
-                        name="Generate Blog Post",
-                        description="Create complete blog posts by specifying a topic and desired tone. This agent will generate relevant content that matches your requested style, saving time while maintaining your unique voice.",
-                        specifications="Input: a topic and a tone. Output: a blog post about the topic in the requested tone.",
-                    ),
-                    BaseFeature(
-                        name="Generate Versions of Social Media Posts Optimized for Different Platforms",
-                        description="Create platform-specific variations of your social media content. Provide a topic or existing post along with your target platforms, and receive tailored versions optimized for the appropriate tone, format, and length requirements of each selected social media site.",
-                        specifications="Input: a topic or existing post and a list of social media sites. Output: versions of a social media post that contain the same content as the input topic and are tailored to the appropriate tone and length for each of the requested social media sites.",
-                    ),
-                    BaseFeature(
-                        name="Generate Engagement-Driven Email Subject Lines",
-                        description="Create compelling email subject lines based on your email content. This tool analyzes your message body and generates subject lines designed to increase open rates and reader engagement while maintaining authenticity.",
-                        specifications="Input: the body of an email. Output: a subject line for the email that is focused on driving authentic engagement with the email.",
+                        name="Extract Sentiment From Product Review",
+                        description="Analyze product reviews to determine the overall sentiment expressed by customers. This feature processes review text and identifies whether the sentiment is positive, negative, or neutral, helping you understand customer satisfaction at a glance.",
+                        specifications="Input: a product review. Output: the main sentiment of the review.",
                     ),
                     BaseFeature(
                         name="Summarize Common Review Sentiments",
@@ -142,14 +79,29 @@ FEATURES_MAPPING: list[FeatureSection] = [
                         specifications="Input: a list of different reviews for a product. Output: common themes and/or topics identified in the reviews.",
                     ),
                     BaseFeature(
-                        name="Summarize Industry Trends From News and Reports",
-                        description="Analyze news articles and industry reports to identify emerging patterns and developments. This feature extracts key trends from multiple sources, providing a consolidated view of market movements and sector-specific insights.",
-                        specifications="Input: news and reports from various sources. Output: industry trends detected in the input content.",
+                        name="Generate Product Recommendations Based on Purchase History",
+                        description="Analyze customer purchase history to generate targeted product recommendations. This feature identifies patterns in buying behavior and suggests relevant items that align with customer preferences, increasing the likelihood of additional purchases and enhancing the shopping experience.",
+                        specifications="Input: a purchase history. Output: product recommendations. Your goal is to provide the most applicable product recommendations based on an analysis of the user's purchase history.",
                     ),
                     BaseFeature(
-                        name="Extract Key Selling Points From Product Descriptions",
-                        description="Analyze product descriptions to identify and extract the most compelling selling points. This tool transforms lengthy product text into concise, marketable highlights that can be used in promotional materials, product pages, or sales pitches.",
-                        specifications="Input: a product description. Output: key selling points to highlight about the product.",
+                        name="Rewrite Product Descriptions for SEO Optimization",
+                        description="Transform your product descriptions to improve search engine visibility. This feature analyzes your existing content and generates SEO-optimized versions that maintain your brand voice while incorporating relevant keywords and search-friendly structure.",
+                        specifications="Input: a product description. Output: rewritten product description for SEO.",
+                    ),
+                    BaseFeature(
+                        name="Detect Fake or Spam Reviews",
+                        description="Analyze product reviews to identify potential spam or bot-generated content. This tool examines review text patterns and characteristics to flag suspicious submissions, helping maintain review quality and authenticity.",
+                        specifications="Input: a product review. Output: if the review is detected as likely being spam or from a bot.",
+                    ),
+                    BaseFeature(
+                        name="Generate Pros & Cons Lists From Customer Reviews",
+                        description="Transform customer reviews into organized pros and cons lists. This feature analyzes review content to identify positive and negative product aspects, presenting them in a structured format that highlights key customer sentiments and product attributes.",
+                        specifications="Input: a collection of customer reviews. Output: a list of pros and cons about the product as identified in the reviews.",
+                    ),
+                    BaseFeature(
+                        name="Product Review Classification",
+                        description="Analyze product reviews to determine their sentiment. This feature processes review text and classifies it as positive, negative, or neutral, helping businesses understand customer feedback at scale.",
+                        specifications="Input: a product review. Output: the sentiment of the product review.",
                     ),
                 ],
                 kind="static",
@@ -206,6 +158,52 @@ FEATURES_MAPPING: list[FeatureSection] = [
                         name="Generate a Meal Plan for the Week",
                         description="Create a personalized 7-day meal plan tailored to your specific needs. Specify your dietary goals, calorie requirements, food preferences, and allergies to receive a complete plan with breakfast, lunch, dinner, and snack options for each day of the week.",
                         specifications="Input: dietary/health goals, calorie count, dietary preferences, allergies. Output: a meal plan for 7 days that includes breakfast, lunch, dinner, and a snack.",
+                    ),
+                ],
+                kind="static",
+            ),
+            FeatureTag(
+                name="Marketing",
+                features=[
+                    BaseFeature(
+                        name="Generate Product Descriptions Based on Image",
+                        description="Create detailed product descriptions automatically from uploaded images. This agent analyzes the visual content and generates appropriate text describing the product shown, saving time on content creation while maintaining consistency across your product catalog.",
+                        specifications="Input: an image. Output: a description of the product shown in the image.",
+                    ),
+                    BaseFeature(
+                        name="Generate Ad Copy Based on a Product Description",
+                        description="Transform product descriptions into compelling ad copy. This feature analyzes your product information and generates targeted advertising text that highlights key selling points and benefits, helping you create effective marketing materials quickly.",
+                        specifications="Input: a product description. Output: ad copy for the product described.",
+                    ),
+                    BaseFeature(
+                        name="Generate Blog Post",
+                        description="Create complete blog posts by specifying a topic and desired tone. This agent will generate relevant content that matches your requested style, saving time while maintaining your unique voice.",
+                        specifications="Input: a topic and a tone. Output: a blog post about the topic in the requested tone.",
+                    ),
+                    BaseFeature(
+                        name="Generate Versions of Social Media Posts Optimized for Different Platforms",
+                        description="Create platform-specific variations of your social media content. Provide a topic or existing post along with your target platforms, and receive tailored versions optimized for the appropriate tone, format, and length requirements of each selected social media site.",
+                        specifications="Input: a topic or existing post and a list of social media sites. Output: versions of a social media post that contain the same content as the input topic and are tailored to the appropriate tone and length for each of the requested social media sites.",
+                    ),
+                    BaseFeature(
+                        name="Generate Engagement-Driven Email Subject Lines",
+                        description="Create compelling email subject lines based on your email content. This tool analyzes your message body and generates subject lines designed to increase open rates and reader engagement while maintaining authenticity.",
+                        specifications="Input: the body of an email. Output: a subject line for the email that is focused on driving authentic engagement with the email.",
+                    ),
+                    BaseFeature(
+                        name="Summarize Common Review Sentiments",
+                        description="Identify common themes and topics across multiple product reviews. This feature analyzes review content to extract recurring sentiments, helping you understand the collective customer experience without reading each review individually.",
+                        specifications="Input: a list of different reviews for a product. Output: common themes and/or topics identified in the reviews.",
+                    ),
+                    BaseFeature(
+                        name="Summarize Industry Trends From News and Reports",
+                        description="Analyze news articles and industry reports to identify emerging patterns and developments. This feature extracts key trends from multiple sources, providing a consolidated view of market movements and sector-specific insights.",
+                        specifications="Input: news and reports from various sources. Output: industry trends detected in the input content.",
+                    ),
+                    BaseFeature(
+                        name="Extract Key Selling Points From Product Descriptions",
+                        description="Analyze product descriptions to identify and extract the most compelling selling points. This tool transforms lengthy product text into concise, marketable highlights that can be used in promotional materials, product pages, or sales pitches.",
+                        specifications="Input: a product description. Output: key selling points to highlight about the product.",
                     ),
                 ],
                 kind="static",
@@ -287,62 +285,6 @@ FEATURES_MAPPING: list[FeatureSection] = [
                 kind="static",
             ),
             FeatureTag(
-                name="E-Commerce",
-                features=[
-                    BaseFeature(
-                        name="Generate Product Descriptions Based on Image",
-                        description="Create detailed product descriptions automatically from uploaded images. This agent analyzes the visual content and generates appropriate text describing the product shown, saving time on content creation while maintaining consistency across your product catalog.",
-                        specifications="Input: an image. Output: a description of the product shown in the image.",
-                    ),
-                    BaseFeature(
-                        name="Generate Shopping List Based on a Picture of Food",
-                        description="Create a shopping list by uploading a photo of a meal. This agent identifies ingredients in the image and compiles them into a ready-to-use shopping list.",
-                        specifications="Input: an image containing a meal. Output: a shopping list of each item in the picture.",
-                    ),
-                    BaseFeature(
-                        name="Generate Ad Copy Based on a Product Description",
-                        description="Transform product descriptions into compelling ad copy. This feature analyzes your product information and generates targeted advertising text that highlights key selling points and benefits, helping you create effective marketing materials quickly.",
-                        specifications="Input: a product description. Output: ad copy for the product described.",
-                    ),
-                    BaseFeature(
-                        name="Extract Sentiment From Product Review",
-                        description="Analyze product reviews to determine the overall sentiment expressed by customers. This feature processes review text and identifies whether the sentiment is positive, negative, or neutral, helping you understand customer satisfaction at a glance.",
-                        specifications="Input: a product review. Output: the main sentiment of the review.",
-                    ),
-                    BaseFeature(
-                        name="Summarize Common Review Sentiments",
-                        description="Identify common themes and topics across multiple product reviews. This feature analyzes review content to extract recurring sentiments, helping you understand the collective customer experience without reading each review individually.",
-                        specifications="Input: a list of different reviews for a product. Output: common themes and/or topics identified in the reviews.",
-                    ),
-                    BaseFeature(
-                        name="Generate Product Recommendations Based on Purchase History",
-                        description="Analyze customer purchase history to generate targeted product recommendations. This feature identifies patterns in buying behavior and suggests relevant items that align with customer preferences, increasing the likelihood of additional purchases and enhancing the shopping experience.",
-                        specifications="Input: a purchase history. Output: product recommendations. Your goal is to provide the most applicable product recommendations based on an analysis of the user's purchase history.",
-                    ),
-                    BaseFeature(
-                        name="Rewrite Product Descriptions for SEO Optimization",
-                        description="Transform your product descriptions to improve search engine visibility. This feature analyzes your existing content and generates SEO-optimized versions that maintain your brand voice while incorporating relevant keywords and search-friendly structure.",
-                        specifications="Input: a product description. Output: rewritten product description for SEO.",
-                    ),
-                    BaseFeature(
-                        name="Detect Fake or Spam Reviews",
-                        description="Analyze product reviews to identify potential spam or bot-generated content. This tool examines review text patterns and characteristics to flag suspicious submissions, helping maintain review quality and authenticity.",
-                        specifications="Input: a product review. Output: if the review is detected as likely being spam or from a bot.",
-                    ),
-                    BaseFeature(
-                        name="Generate Pros & Cons Lists From Customer Reviews",
-                        description="Transform customer reviews into organized pros and cons lists. This feature analyzes review content to identify positive and negative product aspects, presenting them in a structured format that highlights key customer sentiments and product attributes.",
-                        specifications="Input: a collection of customer reviews. Output: a list of pros and cons about the product as identified in the reviews.",
-                    ),
-                    BaseFeature(
-                        name="Product Review Classification",
-                        description="Analyze product reviews to determine their sentiment. This feature processes review text and classifies it as positive, negative, or neutral, helping businesses understand customer feedback at scale.",
-                        specifications="Input: a product review. Output: the sentiment of the product review.",
-                    ),
-                ],
-                kind="static",
-            ),
-            FeatureTag(
                 name="Social",
                 features=[
                     BaseFeature(
@@ -399,6 +341,57 @@ FEATURES_MAPPING: list[FeatureSection] = [
                         name="Generate the Next Move on a Chess Board",
                         description="Analyze the current chess board state and receive a recommended next move. This feature evaluates the position and suggests a strategic move based on the current game state.",
                         specifications="Input: a chess board state. Output: the next move.",
+                    ),
+                ],
+                kind="static",
+            ),
+            FeatureTag(
+                name="Developer Tools",
+                features=[
+                    BaseFeature(
+                        name="Natural Language SQL Query",
+                        description="Convert natural language questions into SQL queries. This feature transforms your text-based questions into structured database queries, allowing you to extract information from your database using everyday language rather than SQL syntax.",
+                        specifications="Input: a string in natural language. Output: a SQL query. Goal: convert the natural language query into a valid SQL query.",
+                    ),
+                    BaseFeature(
+                        name="Create Bug Ticket Titles From Slack Messages",
+                        description="Generate concise and relevant bug ticket titles for project management systems like Linear or Jira directly from Slack messages. This feature analyzes the content of a Slack message and creates an appropriate title that accurately represents the issue being reported.",
+                        specifications="Input: a single Slack message. Output: a project management (Linear, Jira) ticket title. Goal: compose an appropriate title for an issue that is opened based on the content of the Slack message.",
+                    ),
+                    BaseFeature(
+                        name="Identify Prompt Injection",
+                        description="Analyzes text to detect potential prompt injection attempts. This security feature examines input for manipulative instructions that might override system prompts or extract unauthorized information, providing clear reasoning for its determination.",
+                        specifications="Input: a prompt. Output: whether it is a case of prompt injection or not and why.",
+                    ),
+                    BaseFeature(
+                        name="Summarize Code Changes From a Git Diff",
+                        description="Analyze code changes between two versions and generate a concise summary suitable for commit messages. This tool helps developers document their changes by identifying key modifications and presenting them in a clear, structured format.",
+                        specifications="Input: two blocks of code (before change and after change). Output: a summary of the changes for a commit message.",
+                    ),
+                    BaseFeature(
+                        name="Convert Regular Expressions Into Human-Readable Explanations",
+                        description="Transform complex regular expressions into clear, human-readable explanations. This feature analyzes regex patterns and provides a plain English interpretation of what the expression is designed to match.",
+                        specifications="Input: a regular expression. Output: an explanation of the regular expression in plain English.",
+                    ),
+                    BaseFeature(
+                        name="Explain a Code Snippet in Plain Language",
+                        description="Converts complex code snippets into clear, plain language explanations. This feature analyzes the provided code and generates a human-readable description of what the code does, making it easier to understand programming logic without technical expertise.",
+                        specifications="Input: a code snippet. Output: an explanation of the code snippet's functionality in plain English.",
+                    ),
+                    BaseFeature(
+                        name="Generate Unit Test Cases From Function Definitions",
+                        description="Create comprehensive unit test cases directly from your function definitions. This feature analyzes the function signature and purpose to generate appropriate test cases that verify the function's behavior across various inputs and edge cases.",
+                        specifications="Input: a function definition. Output: unit tests for the given function.",
+                    ),
+                    BaseFeature(
+                        name="Generate Code Documentation From Inline Code Comments",
+                        description="Transform your inline code comments into comprehensive documentation. This feature analyzes your code and extracts meaningful information from comments to create structured documentation that helps maintain code clarity and improves collaboration among developers.",
+                        specifications="Input: some code. Output: documentation for the code, based on the inline comments.",
+                    ),
+                    BaseFeature(
+                        name="Generate Code",
+                        description="Create functional code snippets by providing a description of what you need and your preferred programming language. This agent will generate code that implements your requirements in the specified language.",
+                        specifications="Input: explanation of what you want a code function to accomplish and a coding language. Output: code accomplishing the request in the requested language.",
                     ),
                 ],
                 kind="static",
@@ -471,46 +464,53 @@ FEATURES_MAPPING: list[FeatureSection] = [
             FeatureTag(
                 name="Our Customers",
                 features=[
-                    BaseFeature(
-                        name="From M1: Extract Meeting Notes from a Transcript",
+                    FeatureWithImage(
+                        name="Extract Meeting Notes from a Transcript - by M1",
                         description="Transform meeting transcripts into structured notes with this feature. It analyzes transcript content and generates organized notes with clear titles and bullet-pointed details, making it easier to review and share key information from your meetings.",
                         specifications="Input: a transcript of a meeting. Output: a list of notes from the content of the meeting. Each note should have a title and a body that is written in bullet point form.",
-                    ),
-                    BaseFeature(
-                        name="From M1: Extract Tasks From a Meeting Transcript",
-                        description="Automatically identify and extract tasks from meeting transcripts. This agent analyzes the conversation text and generates a structured list of tasks, each with a title, description, and the original quote from which it was derived.",
-                        specifications="Input: a written transcript of a meeting. Output: a list of tasks extracted from the transcript. Each task should include a title, description, and a corresponding quote in the transcript.",
-                    ),
-                    BaseFeature(
-                        name="From M1: Summarize Meeting Content From a Transcript",
-                        description="Transform meeting transcripts into concise bullet-point summaries. This feature analyzes the content of your meeting transcript and generates a structured summary highlighting key points, decisions, and action items.",
-                        specifications="Input: (string) a transcript of a meeting. Output: (string) a summary of the meeting in bullet points.",
+                        image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/m1-extract-meeting-notes-from-transcipt.png",
                     ),
                     FeatureWithImage(
-                        name="From Amo: Generate Sassy Image Description",
+                        name="Extract Tasks From a Meeting Transcript - by M1",
+                        description="Automatically identify and extract tasks from meeting transcripts. This agent analyzes the conversation text and generates a structured list of tasks, each with a title, description, and the original quote from which it was derived.",
+                        specifications="Input: a written transcript of a meeting. Output: a list of tasks extracted from the transcript. Each task should include a title, description, and a corresponding quote in the transcript.",
+                        image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/m1-extract-tasks-from-trancript.png",
+                    ),
+                    FeatureWithImage(
+                        name="Summarize Meeting Content From a Transcript - by M1",
+                        description="Transform meeting transcripts into concise bullet-point summaries. This feature analyzes the content of your meeting transcript and generates a structured summary highlighting key points, decisions, and action items.",
+                        specifications="Input: (string) a transcript of a meeting. Output: (string) a summary of the meeting in bullet points.",
+                        image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/m1-summarize-meeting-content-from-transcript.png",
+                    ),
+                    FeatureWithImage(
+                        name="Generate Sassy Image Description - by Amo",
                         description="Create short, witty image descriptions with a sassy twist. This feature analyzes images and generates humorous captions (5 words maximum) that add personality while remaining appropriate.",
                         specifications="Input: an image. Output: a short (5 words max) description of the image. Goal: the description should be sassy, humorous, but not offensive.",
                         image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/amo-sassy-image-description.png",
                     ),
-                    BaseFeature(
-                        name="From Berry Street: Generate SOAP Notes From Transcript",
+                    FeatureWithImage(
+                        name="Generate SOAP Notes From Transcript - by Berry Street",
                         description="Convert audio recordings into structured SOAP notes. This feature analyzes your audio files and automatically generates clinical documentation in the SOAP format (Subjective, Objective, Assessment, Plan), helping clinicians transform verbal sessions into organized medical records.",
                         specifications="Input: an audio file. Output: SOAP notes from the audio file.",
+                        image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/berrystreet-generate-soap-notes-from-transcript.png",
                     ),
-                    BaseFeature(
-                        name="From Berry Street: 7 Day Meal Planner",
+                    FeatureWithImage(
+                        name="7 Day Meal Planner - by Berry Street",
                         description="Plan your entire week's meals with personalized recommendations based on your dietary needs. Specify restrictions, preferences, calorie goals, and household considerations to receive a complete 7-day plan with breakfast, lunch, dinner, and snacks. Each meal includes nutritional information with calorie count and macronutrient breakdown.",
                         specifications="Goal is to create a meal plan for the week. Input: dietary restrictions and allergies (string), food preferences (string), calorie and macro requirement (string), household considerations (string). Output: breakfast, lunch, dinner, and a snack for each day of the week. Each item (breakfast, lunch, dinner, snack) should have a title (string), a description (string), the calories for the meal (number), and protein (number), fat (number), carb (number) breakdown.",
+                        image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/berrystreet-7-day-meal-planner.png",
                     ),
-                    BaseFeature(
-                        name="From Berry Street: Create a Shopping List From a Meal Plan",
+                    FeatureWithImage(
+                        name="Create a Shopping List From a Meal Plan - by Berry Street",
                         description="Transform your meal plan into an organized shopping list. This feature takes your selected meals and recipes, then generates a complete shopping list with item names, quantities, and units for all ingredients needed.",
                         specifications="Input: a list of meals (title and recipe). Output: a shopping list. Each item in the shopping list should have a name 'item', quantity, and unit.",
+                        image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/berrystreet-generated-shopping-list-from-meal-plan.png",
                     ),
-                    BaseFeature(
-                        name="From Berry Street: Food Image Journaling",
+                    FeatureWithImage(
+                        name="Food Image Journaling - by Berry Street",
                         description="Capture images of your meals to automatically generate detailed food descriptions and nutritional information. This tool analyzes your food photos to provide estimated calorie counts and nutrient content, helping you track your dietary intake with visual documentation.",
                         specifications="Input: an image of a meal. Output: a description of the food included in the picture, along with estimated nutritional information.",
+                        image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/berrystreet-food-image-journaling.png",
                     ),
                 ],
                 kind="static",

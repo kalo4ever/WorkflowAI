@@ -1,12 +1,13 @@
 from datetime import datetime
-from typing import Any, Protocol
+from typing import Any, Protocol, override
 
 from core.domain.task_info import TaskInfo
 from core.storage import ObjectNotFoundException, TenantTuple
 from core.storage.models import TaskUpdate
-from core.storage.mongo.models.task import TaskDocument
+from core.storage.mongo.models.task_document import TaskDocument
 from core.storage.mongo.mongo_types import AsyncCollection
 from core.storage.mongo.partials.base_partial_storage import PartialStorage
+from core.storage.task_storage import TaskStorage
 from core.utils.ids import id_uint32
 
 
@@ -14,7 +15,7 @@ class _PartialTaskVariantStorage(Protocol):
     async def update_task(self, task_id: str, is_public: bool | None, name: str | None): ...
 
 
-class MongoTaskStorage(PartialStorage[TaskDocument]):
+class MongoTaskStorage(PartialStorage[TaskDocument], TaskStorage):
     def __init__(
         self,
         tenant: TenantTuple,
@@ -24,6 +25,7 @@ class MongoTaskStorage(PartialStorage[TaskDocument]):
         super().__init__(tenant, collection, TaskDocument)
         self._task_variants = task_variants
 
+    @override
     async def is_task_public(self, task_id: str) -> bool:
         result = await self._collection.find_one(
             filter={"task_id": task_id, "is_public": True, "tenant": self._tenant},
@@ -31,6 +33,7 @@ class MongoTaskStorage(PartialStorage[TaskDocument]):
         )
         return result is not None
 
+    @override
     async def get_task_info(self, task_id: str) -> TaskInfo:
         doc = await self._find_one(
             filter={"task_id": task_id},
@@ -64,6 +67,7 @@ class MongoTaskStorage(PartialStorage[TaskDocument]):
             pass
 
     # TODO: test
+    @override
     async def update_task(self, task_id: str, update: TaskUpdate):
         _set: dict[str, Any] = {}
         if update.is_public is not None:
@@ -89,7 +93,7 @@ class MongoTaskStorage(PartialStorage[TaskDocument]):
             update_ops["$set"] = {"ban": update.ban.model_dump()}
 
         uid = id_uint32()
-        update_ops["$setOnInsert"] = {"uid": uid}
+        update_ops["$setOnInsert"] = {"uid": uid, "tenant_uid": self._tenant_uid}
 
         doc = await self._find_one_and_update(
             filter={"task_id": task_id},
@@ -101,3 +105,13 @@ class MongoTaskStorage(PartialStorage[TaskDocument]):
         # TODO:We should not have to update the task variant here
         await self._task_variants.update_task(task_id, update.is_public, update.name)
         return doc.to_domain()
+
+    @override
+    async def get_public_task_info(self, task_uid: int):
+        doc = await self._collection.find_one(
+            filter={"uid": task_uid},
+            projection={"task_id": 1, "name": 1, "is_public": 1, "tenant": 1, "tenant_uid": 1, "uid": 1},
+        )
+        if doc is None:
+            raise ObjectNotFoundException(f"Task with uid {task_uid} not found")
+        return TaskDocument.model_validate(doc).to_public_domain()

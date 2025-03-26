@@ -2,7 +2,7 @@ from typing import Any, Self
 
 import workflowai
 from pydantic import BaseModel, Field
-from workflowai import Model
+from workflowai import Model, Run
 
 from core.domain.fields.chat_message import ChatMessage
 from core.domain.tool import Tool
@@ -45,10 +45,10 @@ class TaskInstructionsRequiredToolsPickingTaskOutput(BaseModel):
     )
 
 
-@workflowai.agent(id="task-instructions-required-tools-picking", model=Model.MISTRAL_LARGE_2_LATEST)
+@workflowai.agent(id="task-instructions-required-tools-picking", model=Model.O3_MINI_2025_01_31_MEDIUM_REASONING_EFFORT)
 async def run_task_instructions_required_tools_picking(
     task_input: TaskInstructionsRequiredToolsPickingTaskInput,
-) -> TaskInstructionsRequiredToolsPickingTaskOutput:
+) -> Run[TaskInstructionsRequiredToolsPickingTaskOutput]:
     """You are a tool selection specialist tasked with analyzing task requirements to identify the necessary tools.
 
     Examine the input data, which includes chat messages, task details, and available tools.
@@ -58,16 +58,18 @@ async def run_task_instructions_required_tools_picking(
     The tools can be included in the 'required_tools' for very specific use cases.
     ONLY add tools in the 'required_tools' if the output can not be generated at all without using the tool.
 
-    ONLY add @search for:
+    ONLY add perplexity-sonar-pro for:
     - open-ended web browsing (market research, etc.) where we do not know the URL to browse in advance
     - when in need for very "fresh" data (ex: real-time weather, stock price, news, etc.)
-    DO NOT add @search for travel destination searchs and similar, nor search about artists. Those are considered as 'internal knownledge' of models.
+    DO NOT add perplexity-sonar-pro for travel destination searchs and similar, nor search about artists. Those are considered as 'internal knownledge' of models.
 
-    ONLY add @browser-text when:
-    - there is a specific need to fetch an URL that present in the task input
-    - when there is a need to browse an URL that would have been found by the @search tool
+    ONLY add browser-text when:
+    - there is a specific need to fetch an URL that present in the 'input_json_schema'
+    - when there is a need to browse an URL that would have been found by the perplexity-sonar-pro tool
 
     DO NOT use tools for general knowledge like travel destinations, etc.
+
+    If the "ASSISTANT" has proposed to use a tool in the "chat_messages" and if the "USER" either not answered or answered negativelly, do not add the proposed tool in "required_tools"
 
     Keep in mind that the user can always add tools later, so when in doubt or if the conditions above are not fully met, do not add tools in the 'required_tools'.
 

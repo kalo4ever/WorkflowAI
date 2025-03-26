@@ -11,6 +11,7 @@ from api.errors import configure_scope_for_error
 from api.utils import close_metrics, setup_metrics
 from core.domain.errors import InternalError
 from core.domain.metrics import Metric
+from core.utils.background import wait_for_background_tasks
 
 setup()
 
@@ -98,6 +99,5 @@ async def worker_startup(state: TaskiqState):
 @broker.on_event(TaskiqEvents.WORKER_SHUTDOWN)
 async def worker_shutdown(state: TaskiqState):
     await close_metrics(state.metrics_service)
-    from api.services.security_svc import SecurityService
 
-    await SecurityService.wait_for_background_tasks()
+    await wait_for_background_tasks()

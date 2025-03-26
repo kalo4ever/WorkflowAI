@@ -4,6 +4,7 @@ from typing import Any, Literal, Protocol, Self
 from pydantic import BaseModel, field_validator, model_validator
 
 from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task import AgentSchemaJson
+from api.tasks.meta_agent import MetaAgentChatMessage
 from core.domain.analytics_events.analytics_events import (
     FullAnalyticsEvent,
     OrganizationProperties,
@@ -204,11 +205,20 @@ class TaskInstructionsGeneratedEvent(TaskEvent):
 
 
 class MetaAgentChatMessagesSent(Event):
-    messages: list[ChatMessage]
+    messages: list[MetaAgentChatMessage]
 
 
-class MetaAgentChatSessionStartedEvent(Event):
-    pass
+class FeaturesByDomainGenerationStarted(Event):
+    company_domain: str
+
+
+class FeedbackCreatedEvent(Event):
+    feedback_id: str
+    task_uid: int
+    user_id: str | None
+    run_id: str
+    outcome: Literal["positive", "negative"]
+    comment: str | None
 
 
 class EventRouter(Protocol):

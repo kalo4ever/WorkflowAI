@@ -75,10 +75,6 @@ class AbstractMigration(ABC):
         return self.storage._tasks_collection  # pyright: ignore [reportPrivateUsage]
 
     @property
-    def _task_images_collection(self) -> AsyncCollection:
-        return self.storage._task_images_collection  # pyright: ignore [reportPrivateUsage]
-
-    @property
     def _dataset_benchmarks_collection(self) -> AsyncCollection:
         return self.storage._dataset_benchmarks_collection  # pyright: ignore [reportPrivateUsage]
 
@@ -109,3 +105,7 @@ class AbstractMigration(ABC):
     @property
     def _task_group_semvers_collection(self) -> AsyncCollection:
         return self.storage._task_group_semvers_collection  # pyright: ignore [reportPrivateUsage]
+
+    @property
+    def _feedback_collection(self) -> AsyncCollection:
+        return self.storage._feedback_collection  # pyright: ignore [reportPrivateUsage]

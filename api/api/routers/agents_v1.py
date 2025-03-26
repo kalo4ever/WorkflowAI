@@ -1,6 +1,7 @@
-from typing import Any
+from datetime import datetime, timedelta
+from typing import Annotated, Any
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from pydantic import BaseModel, Field, model_validator
 
 from api.dependencies.event_router import EventRouterDep
@@ -12,6 +13,7 @@ from core.domain.analytics_events.analytics_events import CreatedTaskProperties,
 from core.domain.errors import BadRequestError
 from core.domain.events import TaskSchemaCreatedEvent
 from core.domain.fields.chat_message import ChatMessage
+from core.domain.page import Page
 from core.domain.task_io import SerializableTaskIO
 from core.domain.task_variant import SerializableTaskVariant
 from core.utils import strings
@@ -131,3 +133,25 @@ async def create_agent(
         variant_id=stored.id,
         uid=stored.task_uid,
     )
+
+
+class AgentStat(BaseModel):
+    agent_uid: int
+    run_count: int
+    total_cost_usd: float
+
+
+@router.get("/stats")
+async def get_agent_stats(
+    storage: StorageDep,
+    from_date: Annotated[
+        datetime | None,
+        Query(description="The date to filter versions by. Defaults to 7 days ago."),
+    ] = None,
+) -> Page[AgentStat]:
+    from_date = from_date or datetime.now() - timedelta(days=7)
+    items = [
+        AgentStat(agent_uid=stat.agent_uid, run_count=stat.run_count, total_cost_usd=stat.total_cost_usd)
+        async for stat in storage.task_runs.run_count_by_agent_uid(from_date)
+    ]
+    return Page(items=items)

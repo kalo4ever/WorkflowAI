@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import AsyncIterator, Optional
+from typing import AsyncIterator, Optional, Protocol
 
 from core.domain.analytics_events.analytics_events import SourceType
 from core.domain.errors import InternalError
@@ -8,7 +8,6 @@ from core.domain.task_example import SerializableTaskExample
 from core.domain.task_example_query import SerializableTaskExampleQuery
 from core.domain.task_group import TaskGroup
 from core.domain.task_group_properties import TaskGroupProperties
-from core.domain.task_image import TaskImage
 from core.domain.task_input import TaskInput, TaskInputFields
 from core.domain.task_run import SerializableTaskRun
 from core.domain.task_variant import SerializableTaskVariant
@@ -16,17 +15,35 @@ from core.domain.users import UserIdentifier
 from core.storage.abstract_storage import AbstractStorage
 from core.storage.changelogs_storage import ChangeLogStorage
 from core.storage.evaluator_storage import EvaluatorStorage
+from core.storage.feedback_storage import FeedbackStorage, FeedbackSystemStorage
 from core.storage.input_evaluations_storage import InputEvaluationStorage
-from core.storage.organization_storage import OrganizationStorage
+from core.storage.organization_storage import OrganizationStorage, OrganizationSystemStorage
 from core.storage.review_benchmark_storage import ReviewBenchmarkStorage
 from core.storage.reviews_storage import ReviewsStorage
 from core.storage.task_deployments_storage import TaskDeploymentsStorage
 from core.storage.task_group_storage import TaskGroupStorage
 from core.storage.task_input_storage import TaskInputsStorage
 from core.storage.task_run_storage import TaskRunStorage
-from core.storage.task_storage import TaskStorage
+from core.storage.task_storage import TaskStorage, TaskSystemStorage
 from core.storage.task_variants_storage import TaskVariantsStorage
 from core.storage.transcription_storage import TranscriptionStorage
+
+
+class SystemBackendStorage(Protocol):
+    @property
+    @abstractmethod
+    def organizations(self) -> OrganizationSystemStorage:
+        pass
+
+    @property
+    @abstractmethod
+    def feedback(self) -> FeedbackSystemStorage:
+        pass
+
+    @property
+    @abstractmethod
+    def tasks(self) -> TaskSystemStorage:
+        pass
 
 
 class BackendStorage(AbstractStorage):
@@ -102,6 +119,11 @@ class BackendStorage(AbstractStorage):
     def task_deployments(self) -> TaskDeploymentsStorage:
         pass
 
+    @property
+    @abstractmethod
+    def feedback(self) -> FeedbackStorage:
+        pass
+
     @abstractmethod
     async def is_ready(self) -> bool:
         pass
@@ -152,14 +174,6 @@ class BackendStorage(AbstractStorage):
     @abstractmethod
     async def set_task_description(self, task_id: str, description: str) -> None:
         """Set the description of a task"""
-        pass
-
-    @abstractmethod
-    async def get_task_image(self, task_id: str) -> TaskImage | None:
-        pass
-
-    @abstractmethod
-    async def create_task_image(self, task_image: TaskImage) -> None:
         pass
 
     @abstractmethod

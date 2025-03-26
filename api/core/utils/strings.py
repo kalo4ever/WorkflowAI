@@ -1,4 +1,5 @@
 import base64
+import contextlib
 import re
 import string
 import unicodedata
@@ -66,3 +67,11 @@ def is_url_safe(input_str: str) -> bool:
 
 def remove_empty_lines(text: str) -> str:
     return re.sub(r"\n+", "\n", text)
+
+
+def safe_b64decode(input_str: str | None) -> bytes | None:
+    if not input_str:
+        return None
+    with contextlib.suppress(Exception):
+        return base64.b64decode(input_str)
+    return None

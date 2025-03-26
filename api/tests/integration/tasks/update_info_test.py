@@ -1,3 +1,5 @@
+from unittest import mock
+
 from freezegun.api import FrozenDateTimeFactory
 from httpx import AsyncClient
 from pytest_httpx import HTTPXMock
@@ -30,6 +32,7 @@ async def test_update_info_and_schema(
         "is_public": False,
         "name": "Greet",
         "tenant": "",
+        "uid": mock.ANY,
         "versions": [
             {
                 "created_at": "2024-08-12T00:00:00Z",

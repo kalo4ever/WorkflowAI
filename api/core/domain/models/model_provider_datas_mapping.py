@@ -1200,6 +1200,20 @@ FIREWORKS_PROVIDER_DATA: ProviderDataByModel = {
         ),
         # see: https://docs.fireworks.ai/guides/function-calling#supported-models
     ),
+    Model.DEEPSEEK_R1_2501_BASIC: ModelProviderData(
+        text_price=TextPricePerToken(
+            prompt_cost_per_token=0.55 / 1_000_000,
+            completion_cost_per_token=2.19 / 1_000_000,
+            source="https://fireworks.ai/pricing",
+        ),
+    ),
+    Model.DEEPSEEK_V3_0324: ModelProviderData(
+        text_price=TextPricePerToken(
+            prompt_cost_per_token=1.20 / 1_000_000,
+            completion_cost_per_token=1.20 / 1_000_000,
+            source="https://fireworks.ai/pricing",
+        ),
+    ),
 }
 
 type ProviderModelDataMapping = dict[Provider, ProviderDataByModel]

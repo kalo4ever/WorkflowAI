@@ -22,7 +22,6 @@ async def create_task_description_and_image(
     # Opening line: You are a medical scribe assistant specializing in converting medical transcripts into structured SOAP notes. -> Task description: A medical scribe assistant specializing in converting medical transcripts into structured SOAP notes.
     # See: https://linear.app/workflowai/issue/WOR-3234/rework-task-descriptions
 
-    # Step 1: Generate the task description
     async for _ in internal_tasks.set_task_description_if_missing(
         task_id=event.task_id,
         task_schema_id=event.task_schema_id,
@@ -30,9 +29,6 @@ async def create_task_description_and_image(
     ):
         # TODO: Convert generate_task_description into an unary function if we do no need the generator in the future
         pass
-
-    # Step 2: Generate the task image, based on the description
-    await internal_tasks.create_task_image(task_id=event.task_id)
 
 
 JOBS = [create_task_description_and_image]

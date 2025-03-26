@@ -5,9 +5,11 @@ from taskiq import Context, TaskiqDepends
 from api.services import storage as storage_service
 from api.services.analytics import AnalyticsService
 from api.services.background_run import BackgroundRunService
+from api.services.features import FeatureService
 from api.services.groups import GroupService
 from api.services.internal_tasks.internal_tasks_service import InternalTasksService
 from api.services.internal_tasks.meta_agent_service import MetaAgentService
+from api.services.models import ModelsService
 from api.services.payments import PaymentService
 from api.services.reviews import ReviewsService
 from api.services.run import RunService
@@ -19,7 +21,7 @@ from core.domain.events import Event, EventRouter
 from core.domain.users import UserIdentifier
 from core.providers.factory.local_provider_factory import shared_provider_factory
 from core.storage.azure.azure_blob_file_storage import FileStorage
-from core.storage.backend_storage import BackendStorage
+from core.storage.backend_storage import BackendStorage, SystemBackendStorage
 from core.utils.encryption import Encryption
 
 
@@ -74,6 +76,13 @@ def analytics_service_dep(event: EventDep, event_router: EventRouterDep) -> Anal
 
 
 AnalyticsServiceDep = Annotated[AnalyticsService, TaskiqDepends(analytics_service_dep)]
+
+
+def system_storage_dep() -> SystemBackendStorage:
+    return storage_service.system_storage()
+
+
+SystemStorageDep = Annotated[SystemBackendStorage, TaskiqDepends(system_storage_dep)]
 
 
 def storage_dep(event: EventDep, event_router: EventRouterDep) -> BackendStorage:
@@ -196,8 +205,25 @@ def review_service_dep(
 ReviewsServiceDep = Annotated[ReviewsService, TaskiqDepends(review_service_dep)]
 
 
-def meta_agent_service_dep(storage: StorageDep, event_router: EventRouterDep) -> MetaAgentService:
-    return MetaAgentService(storage=storage, event_router=event_router)
+def models_service(storage: StorageDep):
+    return ModelsService(storage=storage)
+
+
+ModelsServiceDep = Annotated[ModelsService, TaskiqDepends(models_service)]
+
+
+def meta_agent_service_dep(
+    storage: StorageDep,
+    event_router: EventRouterDep,
+    runs_service: RunsServiceDep,
+    models_service: ModelsServiceDep,
+) -> MetaAgentService:
+    return MetaAgentService(
+        storage=storage,
+        event_router=event_router,
+        runs_service=runs_service,
+        models_service=models_service,
+    )
 
 
 MetaAgentServiceDep = Annotated[MetaAgentService, TaskiqDepends(meta_agent_service_dep)]
@@ -243,3 +269,12 @@ def background_run_service_dep(
 
 
 BackgroundRunServiceDep = Annotated[BackgroundRunService, TaskiqDepends(background_run_service_dep)]
+
+
+def feature_service_dep(storage: StorageDep, event_router: EventRouterDep) -> FeatureService:
+    from api.services.features import FeatureService
+
+    return FeatureService(storage=storage)
+
+
+FeatureServiceDep = Annotated[FeatureService, TaskiqDepends(feature_service_dep)]

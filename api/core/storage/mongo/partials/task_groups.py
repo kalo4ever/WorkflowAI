@@ -96,10 +96,6 @@ class MongoTaskGroupStorage(PartialStorage[TaskGroupDocument]):
     ) -> TaskGroup:
         u: defaultdict[str, dict[str, Any]] = defaultdict(dict)
 
-        # Alias addition and removal handling
-        if update.add_alias or update.remove_alias:
-            raise InternalError("Updating a group alias is no longer supported")
-
         # Update 'is_favorite' field
         if update.is_favorite is not None:
             if update.is_favorite:

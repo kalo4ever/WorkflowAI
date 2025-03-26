@@ -535,3 +535,53 @@ def is_schema_only_containing_one_property(
         )
 
     return IsSchemaOnlyContainingOneFileProperty(value=False, field_description=None)
+
+
+EXPLAINATION_KEY = "explanation"
+
+
+def schema_needs_explanation(schema: dict[str, Any]) -> bool:
+    """
+    Detects schemas that need an 'explaination':
+    - Schemas that are a single boolean (should not exist in WorkflowAI in theory, but we handle the case)
+    - Schemas that are an enum (should not exist in WorkflowAI in theory, but we handle the case)
+    - Schemas that are an array of enums (should not exist in WorkflowAI in theory, but we handle the case)
+    - Schemas that are objects with a single property that is a boolean, enum, or array of enums
+    """
+
+    # Check if the schema is an object with a single property that is a boolean, enum, or array of enums
+    if schema.get("type") == "object" and "properties" in schema:
+        properties = schema.get("properties", {})
+        if len(properties) == 1 and EXPLAINATION_KEY not in properties.keys():
+            property_schema = next(iter(properties.values()))
+            if _is_enum_or_boolean(property_schema):
+                return True
+
+    # Not an enum or boolean
+    return False
+
+
+def _is_enum_or_boolean(schema: dict[str, Any]) -> bool:
+    """Helper function to check if a schema is directly a boolean, enum, or array of enums"""
+    # Check if it's a boolean
+    if schema.get("type") == "boolean":
+        return True
+
+    # Check if it's directly an enum
+    if "enum" in schema:
+        return True
+
+    # Check if it's an array of enums
+    if schema.get("type") == "array" and "items" in schema:
+        items_schema = schema["items"]
+        if "enum" in items_schema:
+            return True
+
+    # Handle oneOf, anyOf, allOf if they contain enums
+    for key in ["oneOf", "anyOf", "allOf"]:
+        if key in schema and len(schema[key]) == 1:
+            sub_schema = schema[key][0]
+            if "enum" in sub_schema:
+                return True
+
+    return False

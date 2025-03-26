@@ -7,6 +7,8 @@ from core.runners.workflowai.workflowai_runner import WorkflowAIRunner
 from core.tools import ToolKind
 from core.utils.tool_utils.tool_utils import get_tools_description
 
+OFFICIALLY_SUGGESTED_TOOLS = {ToolKind.WEB_BROWSER_TEXT, ToolKind.WEB_SEARCH_PERPLEXITY_SONAR_PRO}
+
 
 # Even though the types almost match, we keep objects separate to make sure we notice changes in the SDK
 def file_to_image(file: FileWithKeyPath) -> Image:
@@ -37,3 +39,14 @@ def internal_tools_description(all: bool = False, include: set[ToolKind] | None 
         return ""
 
     return get_tools_description(tools_to_describe)
+
+
+def officially_suggested_tools() -> str:
+    """A set of tools that are officially suggested by WorkflowAI for user's agents.
+
+    Other tools will work if they are already in the user's instructions, but we won't suggest those anymore (ex: @search-google)
+    """
+
+    return internal_tools_description(
+        include=OFFICIALLY_SUGGESTED_TOOLS,
+    )

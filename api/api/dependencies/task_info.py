@@ -15,7 +15,6 @@ async def task_info_dependency(
     task_id: TaskID,
     storage: StorageDep,
 ) -> TaskInfo | None:
-    """Dependency that checks if a task is banned and raises 403 if it is"""
     try:
         return await storage.tasks.get_task_info(task_id)
     except Exception as e:
@@ -33,9 +32,7 @@ async def task_info_dependency(
 TaskInfoDep = Annotated[TaskInfo | None, Depends(task_info_dependency)]
 
 
-async def task_tuple_dependency(
-    task_info: TaskInfoDep,
-) -> TaskTuple:
+async def task_tuple_dependency(task_info: TaskInfoDep) -> TaskTuple:
     if task_info is None:
         raise HTTPException(status_code=404, detail="Task info not found")
     return task_info.id_tuple

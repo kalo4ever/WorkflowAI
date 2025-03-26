@@ -494,3 +494,15 @@ class MongoTaskRunStorage(PartialStorage[TaskRunDocument], TaskRunStorage):
             return await anext(self.fetch_task_run_resources(task_uid=task_id[1], query=query, timeout_ms=timeout_ms))
         except StopAsyncIteration:
             return None
+
+    @override
+    def run_count_by_version_id(
+        self,
+        agent_uid: int,
+        from_date: datetime,
+    ) -> AsyncIterator[TaskRunStorage.VersionRunCount]:
+        raise NotImplementedError()
+
+    @override
+    def run_count_by_agent_uid(self, from_date: datetime) -> AsyncIterator[TaskRunStorage.AgentRunCount]:
+        raise NotImplementedError()

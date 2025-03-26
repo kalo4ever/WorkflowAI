@@ -903,3 +903,18 @@ class TestUnknownError:
         assert isinstance(err, ProviderBadRequestError)
         assert str(err) == "messages.1.content.1.image.source.base64: invalid base64 data"
         assert err.capture
+
+    def test_unknown_error_max_tokens_exceeded(self, anthropic_provider: AnthropicProvider):
+        payload = {
+            "error": {
+                "message": "prompt is too long: 201135 tokens > 200000 maximum",
+                "type": "invalid_request_error",
+            },
+            "type": "error",
+        }
+        response = Response(status_code=400, text=json.dumps(payload))
+        err = anthropic_provider._unknown_error(response)  # pyright: ignore[reportPrivateUsage]
+
+        assert isinstance(err, MaxTokensExceededError)
+        assert str(err) == "prompt is too long: 201135 tokens > 200000 maximum"
+        assert not err.capture

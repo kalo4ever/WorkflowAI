@@ -370,3 +370,5 @@ class AmazonBedrockProvider(HTTPXProvider[AmazonBedrockConfig, CompletionRespons
         if enabled_tools and model in _NON_STREAMING_WITH_TOOLS_MODELS:
             return False
         return True
+
+    # Bedrock does not expose rate limits

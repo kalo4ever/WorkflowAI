@@ -1,5 +1,6 @@
 from collections.abc import Sequence
-from typing import Any, AsyncIterator, NotRequired, Protocol, TypedDict
+from datetime import datetime
+from typing import Any, AsyncIterator, NamedTuple, NotRequired, Protocol, TypedDict
 
 from core.domain.search_query import SearchQuery
 from core.domain.task_run import SerializableTaskRun, SerializableTaskRunBase
@@ -109,3 +110,16 @@ class TaskRunStorage(Protocol):
         timeout_ms: int | None,
         success_only: bool = True,
     ) -> SerializableTaskRun | None: ...
+
+    class VersionRunCount(NamedTuple):
+        version_id: str
+        run_count: int
+
+    def run_count_by_version_id(self, agent_uid: int, from_date: datetime) -> AsyncIterator[VersionRunCount]: ...
+
+    class AgentRunCount(NamedTuple):
+        agent_uid: int
+        run_count: int
+        total_cost_usd: float
+
+    def run_count_by_agent_uid(self, from_date: datetime) -> AsyncIterator[AgentRunCount]: ...

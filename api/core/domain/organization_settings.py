@@ -41,3 +41,4 @@ class TenantData(PublicOrganizationData):
         default=None,
         title="Automatic payment balance to maintain",
     )
+    feedback_slack_hook: str | None = Field(default=None, title="Slack webhook URL for feedback notifications")

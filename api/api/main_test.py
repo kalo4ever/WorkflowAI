@@ -7,7 +7,11 @@ from fastapi import FastAPI, HTTPException
 from httpx import AsyncClient
 from starlette.routing import Route
 
-from api.dependencies.security import tenant_dependency, url_public_organization, user_auth_dependency
+from api.dependencies.security import (
+    final_tenant_data,
+    url_public_organization,
+    user_auth_dependency,
+)
 from api.services.keys import InvalidToken
 from core.domain.models import Model
 from core.domain.organization_settings import PublicOrganizationData, TenantData
@@ -52,6 +56,7 @@ def authenticated_routes(
         "/organizations/{tenant}",
         "/agents/home/messages",
         "/agents/home/agents/preview",
+        "/v1/feedback",
     }
 
     method_predicate = _include_methods(methods, exc_methods)
@@ -111,7 +116,7 @@ class TestAuthentication:
         mock_encryption: Mock,
         test_app: FastAPI,
     ):
-        del test_app.dependency_overrides[tenant_dependency]
+        del test_app.dependency_overrides[final_tenant_data]
         del test_app.dependency_overrides[url_public_organization]
         del test_app.dependency_overrides[user_auth_dependency]
 
@@ -161,5 +166,4 @@ class TestAuthentication:
         assert isinstance(data, list)
         assert data[0] == Model.GPT_4O_LATEST.value
         assert data[1] == Model.GEMINI_2_0_FLASH_LATEST.value
-        assert data[2] == Model.CLAUDE_3_5_SONNET_LATEST.value
-        assert data[3] == Model.GEMINI_1_5_FLASH_LATEST.value
+        assert data[2] == Model.CLAUDE_3_7_SONNET_LATEST.value

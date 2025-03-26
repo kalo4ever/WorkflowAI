@@ -113,6 +113,9 @@ class OrganizationDocument(BaseDocumentWithID):
         title="Automatic payment balance to maintain",
     )
 
+    # For now the field is filled manually
+    feedback_slack_hook: str | None = None
+
     @classmethod
     def from_domain(cls, org_settings: TenantData, no_tasks_yet: bool | None = None) -> Self:
         return cls(
@@ -136,6 +139,7 @@ class OrganizationDocument(BaseDocumentWithID):
             anonymous=org_settings.anonymous,
             anonymous_user_id=org_settings.anonymous_user_id or None,
             owner_id=org_settings.owner_id or None,
+            feedback_slack_hook=org_settings.feedback_slack_hook or None,
         )
 
     def to_domain(self) -> TenantData:
@@ -143,7 +147,7 @@ class OrganizationDocument(BaseDocumentWithID):
             uid=self.uid,
             slug=self.slug or "",
             name=self.display_name or "",
-            tenant=self.tenant,
+            tenant=self.tenant or "",
             providers=[s.to_domain() for s in self.providers] if self.providers else [],
             added_credits_usd=self.added_credits_usd,
             current_credits_usd=self.current_credits_usd,
@@ -157,6 +161,7 @@ class OrganizationDocument(BaseDocumentWithID):
             anonymous=self.anonymous,
             anonymous_user_id=self.anonymous_user_id or None,
             owner_id=self.owner_id or None,
+            feedback_slack_hook=self.feedback_slack_hook or None,
         )
 
     def to_domain_public(self) -> PublicOrganizationData:
@@ -164,6 +169,6 @@ class OrganizationDocument(BaseDocumentWithID):
             uid=self.uid,
             slug=self.slug or "",
             name=self.display_name or "",
-            tenant=self.tenant,
+            tenant=self.tenant or "",
             org_id=self.org_id,
         )

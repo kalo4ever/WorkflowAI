@@ -355,3 +355,10 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
             self._anonymous_user_id_filter(anon_id),
             {"$set": update},
         )
+
+    @override
+    async def feedback_slack_hook_for_tenant(self, tenant_uid: int) -> str | None:
+        doc = await self._collection.find_one({"uid": tenant_uid}, projection={"feedback_slack_hook": 1})
+        if not doc:
+            raise ObjectNotFoundException("Organization not found", code="organization_not_found")
+        return doc.get("feedback_slack_hook")

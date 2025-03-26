@@ -3,8 +3,10 @@ from base64 import b64decode
 
 from core.domain.events import EventRouter
 from core.storage.azure.azure_blob_file_storage import AzureBlobFileStorage, FileStorage
+from core.storage.backend_storage import SystemBackendStorage
 from core.storage.combined.combined_storage import CombinedStorage
 from core.storage.mongo.mongo_storage import MongoStorage
+from core.utils import no_op
 from core.utils.aeshmac import AESHMAC
 from core.utils.encryption import Encryption
 
@@ -35,6 +37,10 @@ def storage_for_tenant(
         event_router=event_router,
         clickhouse_dsn=os.getenv("CLICKHOUSE_CONNECTION_STRING"),
     )
+
+
+def system_storage(encryption: Encryption | None = None) -> SystemBackendStorage:
+    return storage_for_tenant("__system__", -1, no_op.event_router, encryption)
 
 
 # TODO: add tenant param + prefix all file paths with the tenant

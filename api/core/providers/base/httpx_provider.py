@@ -37,6 +37,7 @@ from core.providers.base.abstract_provider import AbstractProvider, ProviderConf
 from core.providers.base.client_pool import ClientPool
 from core.providers.base.provider_options import ProviderOptions
 from core.providers.base.streaming_context import StreamingContext, ToolCallRequestBuffer
+from core.utils.background import add_background_task
 from core.utils.dicts import InvalidKeyPathError, set_at_keypath_str
 from core.utils.json_utils import extract_json_str
 from core.utils.streams import JSONStreamError, standard_wrap_sse
@@ -187,7 +188,7 @@ class HTTPXProvider(AbstractProvider[ProviderConfigVar, dict[str, Any]], Generic
                 raise self._provider_rate_limit_error(response)
             case 500 | 520 | 530:
                 raise self._provider_internal_error(response)
-            case 502 | 503:
+            case 502 | 503 | 522:
                 raise self._provider_unavailable_error(response)
             case 529:
                 raise self._server_overloaded_error(response)
@@ -254,6 +255,10 @@ class HTTPXProvider(AbstractProvider[ProviderConfigVar, dict[str, Any]], Generic
 
         return body, raw
 
+    async def _extract_and_log_rate_limits(self, response: Response, model: Model):
+        """Use _log_rate_limit from the base class to track rate limits"""
+        pass
+
     @override
     async def _single_complete(
         self,
@@ -274,6 +279,7 @@ class HTTPXProvider(AbstractProvider[ProviderConfigVar, dict[str, Any]], Generic
                     headers=headers,
                     timeout=options.timeout,
                 )
+                add_background_task(self._extract_and_log_rate_limits(response, options.model))
                 response.raise_for_status()
                 response_status_200 = True
                 return self._parse_response(response, output_factory=output_factory, raw_completion=raw_completion)
@@ -409,6 +415,7 @@ class HTTPXProvider(AbstractProvider[ProviderConfigVar, dict[str, Any]], Generic
                     headers=headers,
                     timeout=options.timeout,
                 ) as response:
+                    add_background_task(self._extract_and_log_rate_limits(response, options.model))
                     if not response.is_success:
                         # We need to read the response to get the error message
                         await response.aread()

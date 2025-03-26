@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Literal, NamedTuple
+from typing import Literal, NamedTuple, TypeAlias
 
 import html2text
 import httpx
@@ -15,7 +15,11 @@ class FetchUrlContentResult(NamedTuple):
     error: Literal["content_not_reachable", "internal_tool_error", "unknown_error"] | None
 
 
-async def _fetch_url_content_firecrawl(url: str) -> FetchUrlContentResult:
+# Stealth is more "solid" but much slower, use "premium" if you want a good balance between speed and reliability
+ProxySetting: TypeAlias = Literal["classic", "premium", "stealth"]
+
+
+async def _fetch_url_content_firecrawl(url: str, proxy_setting: ProxySetting = "stealth") -> FetchUrlContentResult:
     """Browses the URL passed as argument and extracts the web page content in markdown format."""
 
     async with httpx.AsyncClient() as client:
@@ -40,17 +44,27 @@ async def _fetch_url_content_firecrawl(url: str) -> FetchUrlContentResult:
     return FetchUrlContentResult(content=response.text, error="unknown_error")
 
 
-async def fetch_url_content_scrapingbee(url: str) -> FetchUrlContentResult:
+async def fetch_url_content_scrapingbee(
+    url: str,
+    proxy_setting: ProxySetting = "stealth",
+) -> FetchUrlContentResult:
     """Browses the URL passed as argument and extracts the web page content in markdown format."""
+
+    body_params = {
+        "api_key": os.environ["SCRAPINGBEE_API_KEY"],
+        "url": url,
+    }
+
+    if proxy_setting == "stealth":
+        # this proxy is required to have a better rate of success, without it around 15% of scraping request fail.
+        body_params["stealth_proxy"] = "true"
+    elif proxy_setting == "premium":
+        body_params["premium_proxy"] = "true"
 
     async with httpx.AsyncClient() as client:
         response = await client.get(
             "https://app.scrapingbee.com/api/v1",
-            params={
-                "api_key": os.environ["SCRAPINGBEE_API_KEY"],
-                "url": url,
-                "stealth_proxy": True,  # this proxy is required to have a better rate of success, without it around 15% of scraping request fail.
-            },
+            params=body_params,
             timeout=TIMEOUT_SECONDS,
         )
     if response.status_code == 200:
@@ -67,8 +81,11 @@ async def fetch_url_content_scrapingbee(url: str) -> FetchUrlContentResult:
     return FetchUrlContentResult(content=response.text, error="unknown_error")
 
 
-async def browser_text(url: str) -> str:
-    """Browses the URL passed as argument and extracts the web page content in markdown format."""
+async def browser_text_with_proxy_setting(url: str, proxy_setting: ProxySetting = "stealth") -> str:
+    """Browses the URL passed as argument and extracts the web page content in markdown format.
+
+    Not DRY at all from the browser_text above, but we wan to keep  "browser_text" untouched because it's an internal tool for agents.
+    """
 
     pipeline = [
         fetch_url_content_scrapingbee,  # ScrapingBee is first because we have less failed request with ScrapingBee.
@@ -80,7 +97,7 @@ async def browser_text(url: str) -> str:
 
     for func in pipeline:
         try:
-            result = await func(url)
+            result = await func(url, proxy_setting)
             if result.error:
                 error_details = f"{result.content if result and result.content else ''} {result.error if result and result.error else ''}"
                 logger.warning(
@@ -99,3 +116,10 @@ async def browser_text(url: str) -> str:
             continue
 
     return f"error fetching url content: {url}, no scraping service succeeded, latest error is: {error_details}"
+
+
+# WARNING update this function's name and signature with caution since it's an internal tool for agent.
+async def browser_text(url: str) -> str:
+    """Browses the URL passed as argument and extracts the web page content in markdown format."""
+
+    return await browser_text_with_proxy_setting(url, proxy_setting="stealth")

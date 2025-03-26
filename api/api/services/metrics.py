@@ -17,12 +17,13 @@ class BetterStackMetricsService:
         self,
         tags: dict[str, str],
         betterstack_api_key: str,
+        betterstack_api_url: str | None = None,
         send_interval_seconds: float = 30,
         max_buffer_size: int = 50,
         client: BetterStackClient | None = None,
     ):
         self._tasks: set[asyncio.Task[None]] = set()
-        self._client = client or BetterStackClient(betterstack_api_key)
+        self._client = client or BetterStackClient(betterstack_api_key, betterstack_api_url)
         self._tags = tags
         self._buffer: list[Metric] = []
         self._logger = logging.getLogger(__name__)

@@ -1,10 +1,15 @@
 from typing import Protocol
 
-from core.domain.task_info import TaskInfo
+from core.domain.task_info import PublicTaskInfo, TaskInfo
 from core.storage.models import TaskUpdate
 
 
-class TaskStorage(Protocol):
+class TaskSystemStorage(Protocol):
+    async def get_public_task_info(self, task_uid: int) -> PublicTaskInfo: ...
+
+
+class TaskStorage(TaskSystemStorage):
+    # TODO: move to a system storage that takes tenant_uid and task_id
     async def is_task_public(self, task_id: str) -> bool: ...
 
     async def get_task_info(self, task_id: str) -> TaskInfo: ...

@@ -5,7 +5,7 @@ from typing import Annotated, Any, Literal
 from fastapi import APIRouter, Query
 from pydantic import BaseModel, Field
 
-from api.dependencies.services import RunsSearchServiceDep, RunsServiceDep
+from api.dependencies.services import RunFeedbackGeneratorDep, RunsSearchServiceDep, RunsServiceDep
 from api.dependencies.task_info import TaskInfoDep, TaskTupleDep
 from api.schemas.api_tool_call_request import APIToolCallRequest
 from api.schemas.reasoning_step import ReasoningStep
@@ -77,6 +77,16 @@ class _BaseRunV1(BaseModel):
     user_review: Literal["positive", "negative"] | None
     ai_review: Literal["positive", "negative", "unsure", "in_progress"] | None
 
+    class Feedback(BaseModel):
+        outcome: Literal["positive", "negative"]
+        annotation: Literal["resolved", "incorrect", "correct"] | None
+
+    feedback: list[Feedback] | None = None
+
+    feedback_token: str = Field(
+        description="A signed token that can be used to post feedback from a client side application",
+    )
+
 
 class RunItemV1(_BaseRunV1):
     task_input_preview: str = Field(description="A preview of the input data")
@@ -96,7 +106,7 @@ class RunItemV1(_BaseRunV1):
     error: Error | None
 
     @classmethod
-    def from_domain(cls, run: SerializableTaskRunBase):
+    def from_domain(cls, run: SerializableTaskRunBase, feedback_token: str):
         return cls(
             id=run.id,
             task_id=run.task_id,
@@ -111,6 +121,7 @@ class RunItemV1(_BaseRunV1):
             created_at=run.created_at,
             user_review=run.user_review,
             ai_review=run.ai_review,
+            feedback_token=feedback_token,
         )
 
 
@@ -119,6 +130,7 @@ async def search_runs(
     request: SearchTaskRunsRequest,
     service: RunsSearchServiceDep,
     task: TaskInfoDep,
+    feedback_token_generator: RunFeedbackGeneratorDep,
 ) -> Page[RunItemV1]:
     if not task:
         raise ObjectNotFoundException("Task not found")
@@ -127,7 +139,7 @@ async def search_runs(
         request.field_queries,
         request.limit,
         request.offset,
-        RunItemV1.from_domain,
+        lambda run: RunItemV1.from_domain(run, feedback_token_generator(run.id)),
     )
 
 
@@ -158,7 +170,7 @@ class RunV1(_BaseRunV1):
     )
 
     @classmethod
-    def from_domain_task_run(cls, run: SerializableTaskRun):
+    def from_domain_task_run(cls, run: SerializableTaskRun, feedback_token: str):
         return cls(
             id=run.id,
             task_id=run.task_id,
@@ -179,6 +191,7 @@ class RunV1(_BaseRunV1):
                 APIToolCallRequest.from_domain,
                 logger=_logger,
             ),
+            feedback_token=feedback_token,
         )
 
 
@@ -190,17 +203,23 @@ class RunV1(_BaseRunV1):
 async def get_latest_run(
     task_tuple: TaskTupleDep,
     runs_service: RunsServiceDep,
+    feedback_token_generator: RunFeedbackGeneratorDep,
     schema_id: Annotated[int | None, Query(ge=1)] = None,
     is_success: Annotated[bool | None, Query()] = None,
 ) -> RunV1:
     run = await runs_service.latest_run(task_tuple, schema_id, is_success)
-    return RunV1.from_domain_task_run(run)
+    return RunV1.from_domain_task_run(run, feedback_token_generator(run.id))
 
 
 @router.get("/{run_id}", response_model_exclude_none=True)
-async def get_run(task_tuple: TaskTupleDep, run_id: str, runs_service: RunsServiceDep) -> RunV1:
+async def get_run(
+    task_tuple: TaskTupleDep,
+    run_id: str,
+    runs_service: RunsServiceDep,
+    feedback_token_generator: RunFeedbackGeneratorDep,
+) -> RunV1:
     run = await runs_service.run_by_id(task_tuple, run_id)
-    return RunV1.from_domain_task_run(run)
+    return RunV1.from_domain_task_run(run, feedback_token_generator(run.id))
 
 
 # We use response_model_exclude_none to hide the empty field in standard messages, payload

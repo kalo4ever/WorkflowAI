@@ -15,3 +15,4 @@ class ProviderOptions(BaseModel):
     structured_generation: bool = False
     timeout: Optional[float] = 180
     enabled_tools: list[Tool] | None = None
+    tenant: str | None = None

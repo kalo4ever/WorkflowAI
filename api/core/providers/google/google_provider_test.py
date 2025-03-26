@@ -1291,13 +1291,21 @@ class TestHandleStatusCode:
         assert e.value.code == "invalid_file"
         assert not e.value.store_task_run
 
-    def test_timeout_when_fetching_file(self, google_provider: GoogleProvider):
+    @pytest.mark.parametrize(
+        "message",
+        [
+            "URL_TIMEOUT-TIMEOUT_FETCHPROXY",
+            "URL_UNREACHABLE-UNREACHABLE_NO_RESPONSE",
+            "URL_REJECTED-REJECTED_RPC_APP_ERROR",
+        ],
+    )
+    def test_timeout_when_fetching_file(self, google_provider: GoogleProvider, message: str):
         mock_response = Mock(spec=httpx.Response)
         mock_response.status_code = 400
         mock_response.json.return_value = {
             "error": {
                 "code": 400,
-                "message": "Cannot fetch content from the provided URL. Please ensure the URL is valid and accessible by Vertex AI. Vertex AI respects robots.txt rules, so confirm the URL is allowed to be crawled. Status: URL_TIMEOUT-TIMEOUT_FETCHPROXY",
+                "message": f"Cannot fetch content from the provided URL. Please ensure the URL is valid and accessible by Vertex AI. Vertex AI respects robots.txt rules, so confirm the URL is allowed to be crawled. Status: {message}",
                 "status": "INVALID_ARGUMENT",
             },
         }
@@ -1323,6 +1331,28 @@ class TestHandleStatusCode:
         assert not e.value.capture
         assert e.value.code == "bad_request"
         assert not e.value.store_task_run
+
+    @pytest.mark.parametrize(
+        "message",
+        [
+            "The document has no pages.",
+            "Unable to process input image. Please retry or report in https://developers.generativeai.google/guide/troubleshooting",
+        ],
+    )
+    def test_invalid_file_no_pages(self, google_provider: GoogleProvider, message: str):
+        mock_response = Mock(spec=httpx.Response)
+        mock_response.status_code = 400
+        mock_response.json.return_value = {
+            "error": {
+                "code": 400,
+                "message": message,
+                "status": "INVALID_ARGUMENT",
+            },
+        }
+        with pytest.raises(ProviderInvalidFileError) as e:
+            google_provider._handle_error_status_code(mock_response)  # pyright: ignore [reportPrivateUsage]
+        assert not e.value.capture
+        assert e.value.code == "invalid_file"
 
 
 class TestBuildRequest:

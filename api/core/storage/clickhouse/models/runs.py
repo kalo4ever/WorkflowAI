@@ -1,7 +1,7 @@
 import json
 import logging
 from collections.abc import Callable
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from typing import Annotated, Any
 from uuid import UUID
 
@@ -36,6 +36,8 @@ from core.storage.clickhouse.models.utils import (
     RoundedFloat,
     clickhouse_query,
     dump_ck_str_list,
+    id_lower_bound,
+    id_upper_bound,
     json_query,
     parse_ck_str_list,
     validate_fixed,
@@ -665,16 +667,6 @@ class ClickhouseRun(BaseModel):
 
     @classmethod
     def _time_clause(cls, operation: SearchOperation):  # noqa: C901
-        def id_lower_bound(value: datetime):
-            # We just 0 the gen as a lower bound
-            time_ms = int((value).timestamp() * 1000)
-            return uuid7(ms=lambda: time_ms, rand=lambda: 0)
-
-        def id_upper_bound(value: datetime):
-            # As an upper bound, we need to add a second to the id
-            time_ms = int((value + timedelta(seconds=1)).timestamp() * 1000)
-            return uuid7(ms=lambda: time_ms, rand=lambda: 0)
-
         if isinstance(operation, SearchOperationSingle):
             if not isinstance(operation.value, datetime):
                 raise BadRequestError("invalid search operation for time", capture=True)
@@ -692,7 +684,7 @@ class ClickhouseRun(BaseModel):
 
             w = W("created_at_date", operator=op, value=operation.value.date(), type="Date")
             if compared_id:
-                w &= W("run_uuid", operator=op, value=compared_id.int, type="UInt128")
+                w &= W("run_uuid", operator=op, value=compared_id, type="UInt128")
             return w
 
         v1, v2 = operation.value

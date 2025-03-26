@@ -2,7 +2,7 @@ import copy
 import json
 from abc import abstractmethod
 from json import JSONDecodeError
-from typing import Any, Generic, Protocol, TypeVar
+from typing import Any, Generic, Protocol, TypeVar, override
 
 from httpx import Response
 from pydantic import BaseModel, ValidationError
@@ -515,3 +515,18 @@ class OpenAIProviderBase(HTTPXProvider[_OpenAIConfigVar, CompletionResponse], Ge
             for tool_call in choice.message.tool_calls or []
         ]
         return tool_calls
+
+    @override
+    async def _extract_and_log_rate_limits(self, response: Response, model: Model):
+        await self._log_rate_limit_remaining(
+            "requests",
+            remaining=response.headers.get("x-ratelimit-remaining-requests"),
+            total=response.headers.get("x-ratelimit-limit-requests"),
+            model=model,
+        )
+        await self._log_rate_limit_remaining(
+            "tokens",
+            remaining=response.headers.get("x-ratelimit-remaining-tokens"),
+            total=response.headers.get("x-ratelimit-limit-tokens"),
+            model=model,
+        )

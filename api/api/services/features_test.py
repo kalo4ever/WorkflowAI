@@ -11,7 +11,7 @@ from api.services.features import (
     FeatureSectionPreview,
     FeatureService,
 )
-from api.services.internal_tasks._internal_tasks_utils import internal_tools_description
+from api.services.internal_tasks._internal_tasks_utils import officially_suggested_tools
 from api.tasks.agent_input_output_example import SuggestedAgentInputOutputExampleOutput
 from api.tasks.agent_output_example import SuggestedAgentOutputExampleInput
 from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task import (
@@ -49,12 +49,12 @@ class TestFeatureService:
                         kind="company_specific",
                     ),  # Placeholder for where the company-specific features will go.
                     FeatureSectionPreview.TagPreview(name="Featured", kind="static"),
-                    FeatureSectionPreview.TagPreview(name="Developer Tools", kind="static"),
-                    FeatureSectionPreview.TagPreview(name="Marketing", kind="static"),
-                    FeatureSectionPreview.TagPreview(name="Healthcare", kind="static"),
-                    FeatureSectionPreview.TagPreview(name="Productivity", kind="static"),
                     FeatureSectionPreview.TagPreview(name="E-Commerce", kind="static"),
+                    FeatureSectionPreview.TagPreview(name="Healthcare", kind="static"),
+                    FeatureSectionPreview.TagPreview(name="Marketing", kind="static"),
+                    FeatureSectionPreview.TagPreview(name="Productivity", kind="static"),
                     FeatureSectionPreview.TagPreview(name="Social", kind="static"),
+                    FeatureSectionPreview.TagPreview(name="Developer Tools", kind="static"),
                 ],
             ),
             FeatureSectionPreview(
@@ -85,12 +85,12 @@ class TestFeatureService:
                 tags=[
                     FeatureSectionPreview.TagPreview(name="example.com", kind="company_specific"),
                     FeatureSectionPreview.TagPreview(name="Featured", kind="static"),
-                    FeatureSectionPreview.TagPreview(name="Developer Tools", kind="static"),
-                    FeatureSectionPreview.TagPreview(name="Marketing", kind="static"),
-                    FeatureSectionPreview.TagPreview(name="Healthcare", kind="static"),
-                    FeatureSectionPreview.TagPreview(name="Productivity", kind="static"),
                     FeatureSectionPreview.TagPreview(name="E-Commerce", kind="static"),
+                    FeatureSectionPreview.TagPreview(name="Healthcare", kind="static"),
+                    FeatureSectionPreview.TagPreview(name="Marketing", kind="static"),
+                    FeatureSectionPreview.TagPreview(name="Productivity", kind="static"),
                     FeatureSectionPreview.TagPreview(name="Social", kind="static"),
+                    FeatureSectionPreview.TagPreview(name="Developer Tools", kind="static"),
                 ],
             ),
             FeatureSectionPreview(
@@ -347,7 +347,7 @@ async def test_get_features_by_domain_e2e(  # noqa: C901
         patch.object(service, "_stream_feature_suggestions", mock_stream_feature_suggestions),
     ):
         # Collect all outputs from the generator
-        actual_outputs = [output async for output in service.get_features_by_domain(company_domain)]
+        actual_outputs = [output async for output in service.get_features_by_domain(company_domain, Mock())]
 
         # Compare with expected outputs
         assert len(actual_outputs) == len(expected_outputs)
@@ -726,7 +726,7 @@ async def test_get_agent_schemas() -> None:
                 agent_name="Test Agent",
                 agent_description="Test Description",
                 agent_specifications="Test Specifications",
-                available_tools_description=internal_tools_description(all=True),
+                available_tools_description=officially_suggested_tools(),
                 company_context="Some company context",
             ),
         )

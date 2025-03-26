@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 from api.tasks.extract_company_info_from_domain_task import Product
 from core.domain.fields.chat_message import ChatMessage
 from core.domain.models import Model
+from core.domain.url_content import URLContent
 
 logger = logging.getLogger(__name__)
 
@@ -107,11 +108,18 @@ class OutputArrayFieldConfig(BaseFieldConfig):
     item_type: OutputItemType = Field(default=None, description="The type of the items in the array")
 
 
+class ChatMessageWithExtractedURLContent(ChatMessage):
+    extracted_url_content: list[URLContent] | None = Field(
+        default=None,
+        description="The content of the URLs contained in 'content', if any",
+    )
+
+
 class AgentBuilderInput(BaseModel):
     previous_messages: list[ChatMessage] = Field(
         description="List of previous messages exchanged between the user and the assistant",
     )
-    new_message: ChatMessage = Field(
+    new_message: ChatMessageWithExtractedURLContent = Field(
         description="The new message received from the user, based on which the routing decision is made",
     )
     existing_agent_schema: AgentSchemaJson | None = Field(
@@ -200,7 +208,7 @@ async def agent_builder(
     - Do not extrapolate user's instructions and create too many fields. Always use the minimum fields to perform the agent goal described by the user. Better to start with a simple schema and refine, than the opposite.
     - Do not add extra fields that are not asked by the user.
     - Use 'enum' field type in the 'input_schema' IF AND ONLY IF the user EXPLICITLY requests to use 'enums" (ex: "this field should be an enum"), if the word "enum" is absent from the user's message, you CAN NOT use enums in the input schema. Prefer using 'string', even for fields that can have a predefined, limited set of values. Example. Note that those restrictions do not apply to 'output_schema' where the use of enums is encouraged, when that makes sense.
-    - For agents (and ONLY those) that have a predefined set of values in the output (ex: boolean, enum), you can add a 'explaination' field at the beginning of the 'output_schema'. Justify this choice in the 'answer_to_user' by saying that this choice enhances reasonning and transparency of the result.
+    - Do not add an 'explanation' field in the 'output_schema' unless asked by the user.
     - For classification cases, make sure to include an additional "UNSURE" option, for the cases that are undetermined. Do not use a "confidence_score" unless asked by the user.
     - Make sure to strictly enforce the output schema, even if the user asks otherwise, e.g the 'input_schema' can not contain any examples.
     - When refusing a query, propose an alternative.
@@ -261,11 +269,7 @@ async def agent_builder(
     For schema creation (existing_agent_schema is None), acknowledge the creation of the schema. You must use the following template to introduce the concept of 'agent' and 'schema':
 
     <template_for_first_schema_iteration>
-    I’ve created a draft for your [INSERT agent goal] AI agent. AI agents are mini-programs that use AI algorithms (LLMs) as their brain to accomplish tasks typically provided by users. In the context of [INSERT agent goal], your AI agent [insert a very quick explaination of the steps required to complete the task].
-
-    Behind the scenes, this AI agent follows a structured format called a schema. The schema created for [INSERT agent goal] defines the input ([INSERT insert the agent input]) and specifies how the agent should produce its output ([INSERT insert the agent input]). While most of the heavy lifting — [INSERT agent goal] — is done by the AI agent itself, the schema ensures the incoming data and the output response are formatted correctly for your use case.
-
-    The schema is a structural guide only; it doesn’t dictate how the AI agent should behave or reason. To customize how the AI agent processes or interprets data, you can do so by adjusting your Instructions on the Playground the next screen you’ll encounter.
+    I’ve created a schema for your [INSERT agent goal] feature. The schema defines the input variables and outlines how the AI feature should format its output. However, it doesn’t dictate its reasoning or behavior. Review the schema to ensure it looks good. You’ll be able to adjust the instructions in the Playground after saving.
     </template_for_first_schema_iteration>
 
 

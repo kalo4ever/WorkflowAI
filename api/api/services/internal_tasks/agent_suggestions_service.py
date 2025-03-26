@@ -4,6 +4,7 @@ from typing import Any, AsyncIterator
 from pydantic import Field
 from typing_extensions import Literal
 
+from api.services.internal_tasks.internal_tasks_service import InternalTasksService
 from api.services.tasks import list_agent_summaries
 from api.tasks.agent_input_output_example import (
     SuggestedAgentInputOutputExampleInput,
@@ -12,6 +13,7 @@ from api.tasks.agent_input_output_example import (
 )
 from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task import (
     AgentBuilderInput,
+    ChatMessageWithExtractedURLContent,
     InputSchemaFieldType,
     OutputSchemaFieldType,
     agent_builder,
@@ -32,7 +34,6 @@ from api.tasks.suggest_llm_features_for_company_agent import (
     SuggestLlmAgentForCompanyOutput,
     suggest_llm_agents_for_company,
 )
-from core.domain.fields.chat_message import ChatMessage
 from core.runners.workflowai.workflowai_runner import WorkflowAIRunner
 from core.storage.backend_storage import BackendStorage
 from core.utils.iter_utils import safe_map
@@ -147,7 +148,7 @@ Output: {suggested_agent.output_specifications}
             # User content is omitted here for latency reasons, this endpoint needs to be fast
             AgentBuilderInput(
                 previous_messages=[],
-                new_message=ChatMessage(role="USER", content=agent_schema_gen_message),
+                new_message=ChatMessageWithExtractedURLContent(role="USER", content=agent_schema_gen_message),
             ),
             use_cache="always",
         )
@@ -162,6 +163,9 @@ Output: {suggested_agent.output_specifications}
             if agent_schema_gen_output.new_agent_schema
             else None
         )
+
+        if output_schema:
+            output_schema = InternalTasksService.add_explanation_to_schema_if_needed(output_schema, self._logger)
 
         agent_output_example_input = SuggestedAgentInputOutputExampleInput(
             agent_description=suggested_agent.agent_description,

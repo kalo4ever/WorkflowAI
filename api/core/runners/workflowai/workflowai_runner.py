@@ -783,6 +783,7 @@ class WorkflowAIRunner(AbstractRunner[WorkflowAIRunnerOptions]):
             output_schema=self.task_output_schema(),
             task_name=self.task.name,
             structured_generation=is_structured_generation_enabled,
+            tenant=self.task.tenant,
         )
 
         provider = self._build_provider(provider_type, provider_config)

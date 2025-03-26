@@ -1,3 +1,4 @@
+from typing import Any, AsyncIterator
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
@@ -131,7 +132,7 @@ class TestImprovePrompt:
         mock_storage.store_task_resource.return_value = fetched_variant.model_copy(update={"id": "new_id"}), True
 
         # Act
-        result = await improve_prompt_service.run(("", 1), "1", "This is a user evaluation.")
+        result = await improve_prompt_service.run(("", 1), "1", None, None, "This is a user evaluation.")
 
         # Assert
         # Test that we stored a new task variant, since there are schema updates
@@ -173,7 +174,7 @@ class TestImprovePrompt:
         # Check that the improve prompt task was called with the correct input
         patched_improve_prompt_run.assert_awaited_once()
         task_input = patched_improve_prompt_run.call_args.args[0]
-        assert task_input.agent_run.user_evaluation == "This is a user evaluation."
+        assert task_input.user_evaluation == "This is a user evaluation."
 
     async def test_run_no_field_updates(
         self,
@@ -184,7 +185,7 @@ class TestImprovePrompt:
         patched_improve_prompt_run.return_value = _improve_task_output()
 
         # Act
-        result = await improve_prompt_service.run(("", 1), "1", "This is a user evaluation.")
+        result = await improve_prompt_service.run(("", 1), "1", None, None, "This is a user evaluation.")
 
         # Assert
         # Test that we did not store a new task variant, since there is no 'improved_output_schema'
@@ -263,6 +264,8 @@ class TestImprovePrompt:
             async for c in improve_prompt_service.stream(
                 task_tuple=("", 1),
                 run_id="1",
+                variant_id=None,
+                instructions=None,
                 user_evaluation="This is a user evaluation.",
             )
         ]
@@ -316,6 +319,8 @@ class TestImprovePrompt:
             async for c in improve_prompt_service.stream(
                 task_tuple=("", 1),
                 run_id="1",
+                variant_id=None,
+                instructions=None,
                 user_evaluation="This is a user evaluation.",
             )
         ]
@@ -355,6 +360,8 @@ class TestImprovePrompt:
         result = await improve_prompt_service.run(
             task_tuple=("", 1),
             run_id="1",
+            variant_id=None,
+            instructions=None,
             user_evaluation="This is a user evaluation.",
         )
 
@@ -429,6 +436,8 @@ class TestImprovePrompt:
             async for c in improve_prompt_service.stream(
                 task_tuple=("", 1),
                 run_id="1",
+                variant_id=None,
+                instructions=None,
                 user_evaluation="This is a user evaluation.",
             )
         ]
@@ -437,3 +446,138 @@ class TestImprovePrompt:
         mock_storage.store_task_resource.assert_not_called()
         patched_logger.exception.assert_called_once()
         assert patched_logger.exception.call_args.args[0] == "Error handling improved output schema"
+
+    @pytest.mark.parametrize(
+        "model_responses,expected_result",
+        [
+            (
+                [
+                    _improve_task_output(improved_prompt="First model success"),
+                    None,  # Second model not called
+                    None,  # Third model not called
+                ],
+                ("First model success", ["Minor tweaks"]),
+            ),
+            (
+                [
+                    Exception("First model failed"),
+                    _improve_task_output(improved_prompt="Second model success"),
+                    None,  # Third model not called
+                ],
+                ("Second model success", ["Minor tweaks"]),
+            ),
+            (
+                [
+                    Exception("First model failed"),
+                    Exception("Second model failed"),
+                    _improve_task_output(improved_prompt="Third model success"),
+                ],
+                ("Third model success", ["Minor tweaks"]),
+            ),
+            (
+                [
+                    Exception("All models failed"),
+                    Exception("All models failed"),
+                    Exception("All models failed"),
+                ],
+                ("You are a helpful assistant.", ["Failed to improve prompt"]),
+            ),
+        ],
+    )
+    async def test_model_fallback_behavior(
+        self,
+        improve_prompt_service: ImprovePromptService,
+        patched_improve_prompt_run: Mock,
+        model_responses: list[ImprovePromptAgentOutput | Exception | None],
+        expected_result: tuple[str, list[str]],
+    ) -> None:
+        """Test that we try multiple models in sequence and fall back appropriately"""
+        # Setup the mock to return different responses for each model
+        patched_improve_prompt_run.side_effect = model_responses
+
+        # Act
+        result = await improve_prompt_service.run(
+            task_tuple=("", 1),
+            run_id="1",
+            variant_id=None,
+            instructions=None,
+            user_evaluation="This is a user evaluation.",
+        )
+
+        # Assert
+        assert result[0].instructions == expected_result[0]
+        assert result[1] == expected_result[1]
+        assert patched_improve_prompt_run.call_count == len([r for r in model_responses if r is not None])
+
+    @pytest.mark.parametrize(
+        "model_responses,expected_chunks",
+        [
+            (
+                [
+                    mock_aiter(
+                        _run(_improve_task_output(improved_prompt="First model success")),
+                    ),
+                    None,  # Second model not called
+                    None,  # Third model not called
+                ],
+                [("First model success", ["Minor tweaks"])],
+            ),
+            (
+                [
+                    Exception("First model failed"),
+                    mock_aiter(
+                        _run(_improve_task_output(improved_prompt="Second model success")),
+                    ),
+                    None,  # Third model not called
+                ],
+                [("Second model success", ["Minor tweaks"])],
+            ),
+            (
+                [
+                    Exception("First model failed"),
+                    Exception("Second model failed"),
+                    mock_aiter(
+                        _run(_improve_task_output(improved_prompt="Third model success")),
+                    ),
+                ],
+                [("Third model success", ["Minor tweaks"])],
+            ),
+            (
+                [
+                    Exception("All models failed"),
+                    Exception("All models failed"),
+                    Exception("All models failed"),
+                ],
+                [("You are a helpful assistant.", ["Failed to improve prompt"])],
+            ),
+        ],
+    )
+    async def test_stream_model_fallback_behavior(
+        self,
+        improve_prompt_service: ImprovePromptService,
+        patched_improve_prompt_stream: Mock,
+        model_responses: list[AsyncIterator[Run[Any]] | Exception | None],
+        expected_chunks: list[tuple[str, list[str]]],
+    ) -> None:
+        """Test that we try multiple models in sequence and fall back appropriately in stream mode"""
+        # Setup the mock to return different responses for each model
+        patched_improve_prompt_stream.side_effect = model_responses
+
+        # Act
+        chunks = [
+            c
+            async for c in improve_prompt_service.stream(
+                task_tuple=("", 1),
+                run_id="1",
+                variant_id=None,
+                instructions=None,
+                user_evaluation="This is a user evaluation.",
+            )
+        ]
+
+        # Assert
+        assert len(chunks) == len(expected_chunks)
+        for chunk, expected in zip(chunks, expected_chunks):
+            assert chunk[0].instructions == expected[0]
+            assert chunk[1] == expected[1]
+        assert patched_improve_prompt_stream.call_count == len([r for r in model_responses if r is not None])

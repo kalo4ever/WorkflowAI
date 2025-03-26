@@ -159,14 +159,6 @@ class FirstMigration(AbstractMigration):
             background=True,
         )
 
-    async def create_task_images_indices(self):
-        await self._task_images_collection.create_index(
-            [("tenant", 1), ("task_id", 1)],
-            name="task_images_tenant_task_id_index",
-            unique=True,
-            background=True,
-        )
-
     async def apply(self) -> None:
         await self.create_task_variants_indices()
         await self.create_task_schema_id_indices()
@@ -184,7 +176,6 @@ class FirstMigration(AbstractMigration):
 
         await self.create_task_indices()
         await self.create_task_input_indices()
-        await self.create_task_images_indices()
 
     async def rollback(self) -> None:
         pass

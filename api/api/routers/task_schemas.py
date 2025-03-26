@@ -543,6 +543,8 @@ async def improve_prompt(
         improved_properties, changelog = await internal_tasks.improve_prompt.run(
             task_id,
             run_id=request.task_run_id,
+            variant_id=None,
+            instructions=None,
             user_evaluation=request.user_evaluation,
         )
         return JSONResponse(
@@ -556,6 +558,8 @@ async def improve_prompt(
         async for chunk in internal_tasks.improve_prompt.stream(
             task_id,
             run_id=request.task_run_id,
+            variant_id=None,
+            instructions=None,
             user_evaluation=request.user_evaluation,
         ):
             yield format_model_for_sse(

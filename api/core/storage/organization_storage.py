@@ -11,7 +11,7 @@ from core.domain.users import UserIdentifier
 from core.providers.base.config import ProviderConfig
 
 
-class SystemOrganizationStorage(Protocol):
+class OrganizationSystemStorage(Protocol):
     async def get_public_organization(self, slug: str) -> PublicOrganizationData: ...
 
     async def find_tenant_for_api_key(self, hashed_key: str) -> TenantData: ...
@@ -31,6 +31,8 @@ class SystemOrganizationStorage(Protocol):
     async def find_tenant_for_owner_id(self, owner_id: str) -> TenantData: ...
 
     async def find_anonymous_tenant(self, anon_id: str) -> TenantData: ...
+
+    async def feedback_slack_hook_for_tenant(self, tenant_uid: int) -> str | None: ...
 
     async def add_credits_to_tenant(self, tenant: str, credits: float) -> None: ...
 
@@ -62,7 +64,7 @@ class SystemOrganizationStorage(Protocol):
         ...
 
 
-class OrganizationStorage(SystemOrganizationStorage, Protocol):
+class OrganizationStorage(OrganizationSystemStorage, Protocol):
     @property
     def tenant(self) -> str: ...
 
