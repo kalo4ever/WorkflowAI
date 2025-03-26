@@ -12,11 +12,7 @@ export type RecentTasksEntry = {
 interface RecentTasksStore {
   // Record instead of Map becasue Map is not correctly supported with the zustand persist
   recentTasksByScope: Record<string, RecentTasksEntry[]>;
-  addRecentTask: (
-    tenant: TenantID | undefined,
-    taskId: TaskID,
-    taskSchemaId: TaskSchemaID | undefined
-  ) => void;
+  addRecentTask: (tenant: TenantID | undefined, taskId: TaskID, taskSchemaId: TaskSchemaID | undefined) => void;
 }
 
 export const useRecentTasksStore = create<RecentTasksStore>()(
@@ -38,10 +34,7 @@ export const useRecentTasksStore = create<RecentTasksStore>()(
             const filteredScopeHistory = scopeHistory.filter(
               (historyEntry: RecentTasksEntry) => historyEntry.taskId !== taskId
             );
-            state.recentTasksByScope[scope] = [
-              entry,
-              ...filteredScopeHistory.slice(0, MAX_ENTRIES - 1),
-            ];
+            state.recentTasksByScope[scope] = [entry, ...filteredScopeHistory.slice(0, MAX_ENTRIES - 1)];
           })
         );
       },

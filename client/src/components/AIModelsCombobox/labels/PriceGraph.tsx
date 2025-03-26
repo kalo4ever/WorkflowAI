@@ -45,10 +45,7 @@ function calculateMarkersAndWidth(price: number) {
 
 export function PriceGraph(props: PriceGraphProps) {
   const { price } = props;
-  const { markers, barWidth } = useMemo(
-    () => calculateMarkersAndWidth(price),
-    [price]
-  );
+  const { markers, barWidth } = useMemo(() => calculateMarkersAndWidth(price), [price]);
 
   return (
     <div className='flex flex-row gap-2 w-full items-start'>
@@ -68,16 +65,10 @@ export function PriceGraph(props: PriceGraphProps) {
 
         <div className='w-full flex flex-col gap-2 relative py-[2px]'>
           <div className='h-[20px] relative'>
-            <div
-              className='absolute h-full bg-gray-700 rounded-r-[2px]'
-              style={{ width: `${barWidth}%` }}
-            />
+            <div className='absolute h-full bg-gray-700 rounded-r-[2px]' style={{ width: `${barWidth}%` }} />
           </div>
           <div className='h-[20px] relative'>
-            <div
-              className='absolute h-full bg-indigo-800 rounded-r-[2px]'
-              style={{ width: `${barWidth}%` }}
-            />
+            <div className='absolute h-full bg-indigo-800 rounded-r-[2px]' style={{ width: `${barWidth}%` }} />
           </div>
         </div>
       </div>

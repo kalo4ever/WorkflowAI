@@ -21,9 +21,7 @@ export function CostChartHeader(props: CostChartHeaderProps) {
       </div>
       <div className='flex flex-col p-4'>
         <div className='text-[13px] font-medium text-gray-500'>{topText}</div>
-        <div className='text-[24px] font-semibold text-gray-900'>
-          {bottomText}
-        </div>
+        <div className='text-[24px] font-semibold text-gray-900'>{bottomText}</div>
       </div>
     </div>
   );

@@ -1,22 +1,9 @@
-import {
-  DeviceEqFilled,
-  DocumentBulletList16Regular,
-} from '@fluentui/react-icons';
+import { DeviceEqFilled, DocumentBulletList16Regular } from '@fluentui/react-icons';
 import { cx } from 'class-variance-authority';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import {
-  Command,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/Command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/Popover';
+import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/Command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover';
 import { SelectableFieldType } from '@/lib/schemaEditorUtils';
 import { ImagePlaceholderIcon } from '../icons/ImagePlaceholderIcon';
 import { Button } from '../ui/Button';
@@ -45,12 +32,7 @@ function FieldTypeDisplay(props: { type: SelectableFieldType }) {
   } else if (type === 'audio') {
     return <FieldTypeWithIcon title='audio' icon={<DeviceEqFilled />} />;
   } else if (type === 'document') {
-    return (
-      <FieldTypeWithIcon
-        title='document'
-        icon={<DocumentBulletList16Regular />}
-      />
-    );
+    return <FieldTypeWithIcon title='document' icon={<DocumentBulletList16Regular />} />;
   }
   return type;
 }
@@ -83,15 +65,7 @@ type SchemaTypeSelectorProps = {
 };
 
 export function SchemaTypeSelector(props: SchemaTypeSelectorProps) {
-  const {
-    type,
-    onChange,
-    noArray,
-    disableImage,
-    disableAudio,
-    disableDocuments,
-    disabled = false,
-  } = props;
+  const { type, onChange, noArray, disableImage, disableAudio, disableDocuments, disabled = false } = props;
 
   const selectableFieldTypes = useMemo(() => {
     return REGULAR_FIELD_TYPES.filter((fieldType) => {
@@ -128,10 +102,7 @@ export function SchemaTypeSelector(props: SchemaTypeSelectorProps) {
       </PopoverTrigger>
       <PopoverContent className='w-[150px] p-0 rounded-[2px] border-gray-300 font-lato'>
         <Command>
-          <CommandInput
-            placeholder='Search...'
-            className='h-8 font-lato font-normal text-[13px] text-gray-900'
-          />
+          <CommandInput placeholder='Search...' className='h-8 font-lato font-normal text-[13px] text-gray-900' />
           <CommandList>
             <CommandGroup>
               {selectableFieldTypes.map((fieldType) => (
@@ -148,10 +119,7 @@ export function SchemaTypeSelector(props: SchemaTypeSelectorProps) {
                   <div className='flex items-center gap-2 font-lato font-normal text-[13px] text-gray-500'>
                     <Check
                       size={14}
-                      className={cx(
-                        'text-indigo-700',
-                        fieldType === type ? 'opacity-100' : 'opacity-0'
-                      )}
+                      className={cx('text-indigo-700', fieldType === type ? 'opacity-100' : 'opacity-0')}
                     />
                     <FieldTypeDisplay type={fieldType} />
                   </div>

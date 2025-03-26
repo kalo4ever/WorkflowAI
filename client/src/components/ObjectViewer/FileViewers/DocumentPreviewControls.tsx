@@ -27,18 +27,11 @@ export function DocumentPreviewControls(props: DocumentPreviewControlsProps) {
       <Dialog open={dialogOpen} onOpenChange={toggleDialog}>
         <DialogContent className='p-0 gap-0 flex flex-col h-[95vh] max-w-[95vw] overflow-hidden'>
           <DialogHeader title='Preview' onClose={toggleDialog} />
-          <div className='p-4 flex-1 overflow-y-auto max-h-full'>
-            {dialogContent || children}
-          </div>
+          <div className='p-4 flex-1 overflow-y-auto max-h-full'>{dialogContent || children}</div>
         </DialogContent>
       </Dialog>
       <div className='absolute left-2 top-2 flex gap-1 items-center z-10'>
-        <Button
-          variant='newDesign'
-          icon={<Dismiss16Regular />}
-          onClick={onResetField}
-          className='w-7 h-7 px-0 py-0'
-        />
+        <Button variant='newDesign' icon={<Dismiss16Regular />} onClick={onResetField} className='w-7 h-7 px-0 py-0' />
         <Button
           variant='newDesign'
           icon={<ArrowExpand16Regular />}

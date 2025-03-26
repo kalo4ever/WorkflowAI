@@ -18,11 +18,7 @@ export function ManageApiKeysButton(props: ManageApiKeysButtonProps) {
 
   return (
     <div>
-      <Button
-        variant={hasApiKeys ? 'newDesign' : 'newDesignIndigo'}
-        onClick={handleClick}
-        disabled={disabled}
-      >
+      <Button variant={hasApiKeys ? 'newDesign' : 'newDesignIndigo'} onClick={handleClick} disabled={disabled}>
         {hasApiKeys ? 'Manage Secret Keys' : 'Create Secret Key'}
       </Button>
     </div>

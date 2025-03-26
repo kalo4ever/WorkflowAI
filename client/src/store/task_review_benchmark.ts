@@ -2,10 +2,7 @@ import { enableMapSet, produce } from 'immer';
 import { create } from 'zustand';
 import { client } from '@/lib/api';
 import { TaskID, TaskSchemaID, TenantID } from '@/types/aliases';
-import {
-  PatchReviewBenchmarkRequest,
-  ReviewBenchmark,
-} from '@/types/workflowAI';
+import { PatchReviewBenchmarkRequest, ReviewBenchmark } from '@/types/workflowAI';
 import { buildScopeKey, taskSchemaSubPath } from './utils';
 
 enableMapSet();
@@ -15,11 +12,7 @@ interface ReviewBenchmarkState {
   isLoadingByScope: Map<string, boolean>;
   isInitializedByScope: Map<string, boolean>;
 
-  fetchBenchmark: (
-    tenant: TenantID,
-    taskId: TaskID,
-    taskSchemaId: TaskSchemaID
-  ) => Promise<void>;
+  fetchBenchmark: (tenant: TenantID, taskId: TaskID, taskSchemaId: TaskSchemaID) => Promise<void>;
 
   updateBenchmark: (
     tenant: TenantID,
@@ -35,11 +28,7 @@ export const useReviewBenchmark = create<ReviewBenchmarkState>((set, get) => ({
   isLoadingByScope: new Map(),
   isInitializedByScope: new Map(),
 
-  fetchBenchmark: async (
-    tenant: TenantID,
-    taskId: TaskID,
-    taskSchemaId: TaskSchemaID
-  ) => {
+  fetchBenchmark: async (tenant: TenantID, taskId: TaskID, taskSchemaId: TaskSchemaID) => {
     const scopeKey = buildScopeKey({
       tenant,
       taskId,

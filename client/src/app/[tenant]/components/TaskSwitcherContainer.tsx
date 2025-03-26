@@ -3,17 +3,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { useMemo } from 'react';
 import { useIsAllowed } from '@/lib/hooks/useIsAllowed';
 import { useLoggedInTenantID, useTaskParams } from '@/lib/hooks/useTaskParams';
-import {
-  replaceTaskId,
-  replaceTaskSchemaId,
-  replaceTenant,
-  taskSchemaRoute,
-} from '@/lib/routeFormatter';
-import {
-  getActiveSchemaIds,
-  getHiddenSchemaIds,
-  getVisibleSchemaIds,
-} from '@/lib/taskUtils';
+import { replaceTaskId, replaceTaskSchemaId, replaceTenant, taskSchemaRoute } from '@/lib/routeFormatter';
+import { getActiveSchemaIds, getHiddenSchemaIds, getVisibleSchemaIds } from '@/lib/taskUtils';
 import { useOrFetchTask, useTasks } from '@/store';
 import { TaskID, TaskSchemaID, TenantID } from '@/types/aliases';
 import { SerializableTask } from '@/types/workflowAI';
@@ -31,14 +22,7 @@ type TaskSwitcherContainerProps = {
 };
 
 export function TaskSwitcherContainer(props: TaskSwitcherContainerProps) {
-  const {
-    mode = TaskSwitcherMode.TASKS_AND_SCHEMAS,
-    tasks,
-    open,
-    setOpen,
-    trigger,
-    titleForFeatures,
-  } = props;
+  const { mode = TaskSwitcherMode.TASKS_AND_SCHEMAS, tasks, open, setOpen, trigger, titleForFeatures } = props;
   const { taskSchemaId, taskId, tenant } = useTaskParams();
 
   const fetchTask = useTasks((state) => state.fetchTask);
@@ -46,12 +30,7 @@ export function TaskSwitcherContainer(props: TaskSwitcherContainerProps) {
 
   // Fetch the task when the popover is opened and the mode supports showing schemas
   useEffect(() => {
-    if (
-      open &&
-      !!taskId &&
-      (mode === TaskSwitcherMode.TASKS_AND_SCHEMAS ||
-        mode === TaskSwitcherMode.SCHEMAS)
-    ) {
+    if (open && !!taskId && (mode === TaskSwitcherMode.TASKS_AND_SCHEMAS || mode === TaskSwitcherMode.SCHEMAS)) {
       fetchTask(tenant, taskId);
     }
   }, [fetchTask, tenant, taskId, open, mode]);
@@ -93,8 +72,7 @@ export function TaskSwitcherContainer(props: TaskSwitcherContainerProps) {
       if (!newTask || !loggedInTenant) return;
       let newUrl: string;
 
-      const newTaskSchemaId =
-        `${getVisibleSchemaIds(newTask)[0] ?? getHiddenSchemaIds(newTask)[0]}` as TaskSchemaID;
+      const newTaskSchemaId = `${getVisibleSchemaIds(newTask)[0] ?? getHiddenSchemaIds(newTask)[0]}` as TaskSchemaID;
 
       if (!!taskSchemaId) {
         // We want to replace the current task name in the URL
@@ -159,8 +137,7 @@ type SchemaSelectorContainerProps = {
 };
 
 export function SchemaSelectorContainer(props: SchemaSelectorContainerProps) {
-  const { selectedSchemaId, taskId, tenant, setSelectedSchemaId, showSlash } =
-    props;
+  const { selectedSchemaId, taskId, tenant, setSelectedSchemaId, showSlash } = props;
 
   const fetchTask = useTasks((state) => state.fetchTask);
   const { task: currentTask } = useOrFetchTask(tenant, taskId);
@@ -211,14 +188,7 @@ export function SchemaSelectorContainer(props: SchemaSelectorContainerProps) {
       }
       router.push(newUrl);
     },
-    [
-      pathname,
-      router,
-      taskId,
-      loggedInTenant,
-      selectedSchemaId,
-      setSelectedSchemaId,
-    ]
+    [pathname, router, taskId, loggedInTenant, selectedSchemaId, setSelectedSchemaId]
   );
 
   const isActive = useMemo(() => {
@@ -231,12 +201,7 @@ export function SchemaSelectorContainer(props: SchemaSelectorContainerProps) {
       mode={TaskSwitcherMode.SCHEMAS}
       trigger={
         <div>
-          <SchemaSection
-            taskSchemaId={selectedSchemaId}
-            isSelected={open}
-            isActive={isActive}
-            showSlash={showSlash}
-          />
+          <SchemaSection taskSchemaId={selectedSchemaId} isSelected={open} isActive={isActive} showSlash={showSlash} />
         </div>
       }
       taskOptions={[]}

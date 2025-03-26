@@ -1,13 +1,6 @@
 import { captureMessage } from '@sentry/nextjs';
 
-export type JsonSchemaType =
-  | 'string'
-  | 'number'
-  | 'integer'
-  | 'boolean'
-  | 'object'
-  | 'array'
-  | 'null';
+export type JsonSchemaType = 'string' | 'number' | 'integer' | 'boolean' | 'object' | 'array' | 'null';
 
 export interface BaseSchema {
   title?: string;
@@ -55,12 +48,7 @@ export type JsonSchema = (JsonObjectSchema | JsonArraySchema) & {
   $defs?: JsonSchemaDefinitions;
 };
 
-export type JsonStringFormat =
-  | 'date-time'
-  | 'date'
-  | 'timezone'
-  | 'html'
-  | 'url';
+export type JsonStringFormat = 'date-time' | 'date' | 'timezone' | 'html' | 'url';
 
 export type JsonSchemaStringExtraFields = {
   format?: JsonStringFormat | string;
@@ -123,19 +111,13 @@ class InvalidSchemaError extends Error {
   }
 }
 
-function getSubSchemaNoRef(
-  current: JsonValueSchema,
-  key: string
-): JsonValueSchema {
+function getSubSchemaNoRef(current: JsonValueSchema, key: string): JsonValueSchema {
   if (current.type === 'object' || 'properties' in current) {
     const next = current?.properties?.[key];
     if (next) {
       return next;
     }
-    if (
-      current.additionalProperties &&
-      typeof current.additionalProperties === 'object'
-    ) {
+    if (current.additionalProperties && typeof current.additionalProperties === 'object') {
       return current.additionalProperties;
     }
     throw new InvalidSchemaError(`Invalid schema key ${key}`, key, current);
@@ -145,11 +127,7 @@ function getSubSchemaNoRef(
     const next = current.items;
     const idx = parseInt(key, 10);
     if (Number.isNaN(idx)) {
-      throw new InvalidSchemaError(
-        `Invalid schema key for array index`,
-        key,
-        current
-      );
+      throw new InvalidSchemaError(`Invalid schema key for array index`, key, current);
     }
 
     if (Array.isArray(next)) {
@@ -190,10 +168,7 @@ function filterAnyOneAllOf(
   return { ...schema, [type]: filtered };
 }
 
-export function ignoreNulls(
-  schema: JsonValueSchema,
-  addNullable: boolean = false
-): JsonValueSchema {
+export function ignoreNulls(schema: JsonValueSchema, addNullable: boolean = false): JsonValueSchema {
   if ('anyOf' in schema && schema.anyOf) {
     const { anyOf, ...rest } = schema;
     return filterAnyOneAllOf(rest, 'anyOf', anyOf, addNullable);
@@ -220,10 +195,7 @@ export function sanitizeRef(ref: string) {
   return key;
 }
 
-export function extractSchemaRefName(
-  schema: JsonValueSchema | undefined,
-  key: string
-) {
+export function extractSchemaRefName(schema: JsonValueSchema | undefined, key: string) {
   if (!schema) {
     return undefined;
   }
@@ -240,23 +212,17 @@ export function extractSchemaRefName(
   if ('$ref' in next) {
     return sanitizeRef(next.$ref);
   } else if ('anyOf' in next) {
-    const ref = next.anyOf.find((s) => '$ref' in s) as
-      | JsonRefSchema
-      | undefined;
+    const ref = next.anyOf.find((s) => '$ref' in s) as JsonRefSchema | undefined;
     if (ref) {
       return sanitizeRef(ref.$ref);
     }
   } else if ('oneOf' in next) {
-    const ref = next.oneOf.find((s) => '$ref' in s) as
-      | JsonRefSchema
-      | undefined;
+    const ref = next.oneOf.find((s) => '$ref' in s) as JsonRefSchema | undefined;
     if (ref) {
       return sanitizeRef(ref.$ref);
     }
   } else if ('allOf' in next) {
-    const ref = next.allOf.find((s) => '$ref' in s) as
-      | JsonRefSchema
-      | undefined;
+    const ref = next.allOf.find((s) => '$ref' in s) as JsonRefSchema | undefined;
     if (ref) {
       return sanitizeRef(ref.$ref);
     }
@@ -267,10 +233,7 @@ export function extractSchemaRefName(
 /**
  * Makes sure the current schema does not contain anyOf, oneOf, allOf or $ref
  */
-export function sanitizeSchema(
-  schema: JsonValueSchema,
-  defs: JsonSchemaDefinitions | undefined
-) {
+export function sanitizeSchema(schema: JsonValueSchema, defs: JsonSchemaDefinitions | undefined) {
   const next = ignoreNulls(schema, true);
   if ('$ref' in next && next.$ref) {
     const refName = sanitizeRef(next.$ref);

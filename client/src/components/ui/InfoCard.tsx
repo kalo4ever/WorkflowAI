@@ -16,9 +16,7 @@ export function InfoCard(props: InfoCardProps) {
         {title && <div>{title}</div>}
         {content && <div className='text-sm'>{content}</div>}
       </div>
-      {onClose && (
-        <X size={24} className='cursor-pointer shrink-0' onClick={onClose} />
-      )}
+      {onClose && <X size={24} className='cursor-pointer shrink-0' onClick={onClose} />}
     </div>
   );
 }

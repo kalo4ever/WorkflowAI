@@ -1,9 +1,4 @@
-import {
-  AddressElement,
-  CardElement,
-  useElements,
-  useStripe,
-} from '@stripe/react-stripe-js';
+import { AddressElement, CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import { useCallback, useState } from 'react';
 import { TenantID } from '@/types/aliases';
 import { BottomButtonBar } from './BottomButtonBar';
@@ -51,30 +46,20 @@ export function AddPaymentMethodContent(props: AddPaymentMethodContentProps) {
 
       <form onSubmit={handleSubmit}>
         <div className='flex flex-col px-6 py-4'>
-          <div className='text-gray-700 font-normal text-[13px]'>
-            Add your card details below
-          </div>
+          <div className='text-gray-700 font-normal text-[13px]'>Add your card details below</div>
           <div className='text-gray-500 font-normal text-[12px]'>
-            This card will be save to your account and can be removed at any
-            time
+            This card will be save to your account and can be removed at any time
           </div>
         </div>
 
         <div className='flex flex-col px-6 pb-4 pt-2 gap-2'>
-          <div className='text-gray-900 font-medium text-[13px]'>
-            Card Information
-          </div>
+          <div className='text-gray-900 font-medium text-[13px]'>Card Information</div>
           <CardElement className='py-3 px-2 border border-gray-200 rounded-[2px] bg-white text-gray-900 font-lato text-[13px]' />
         </div>
 
         <div className='flex flex-col px-6 pb-4 pt-2 gap-2'>
-          <div className='text-gray-900 font-medium text-[13px]'>
-            Billing Address
-          </div>
-          <AddressElement
-            options={{ mode: 'billing' }}
-            className='font-light text-[13px]'
-          />
+          <div className='text-gray-900 font-medium text-[13px]'>Billing Address</div>
+          <AddressElement options={{ mode: 'billing' }} className='font-light text-[13px]' />
         </div>
 
         <BottomButtonBar

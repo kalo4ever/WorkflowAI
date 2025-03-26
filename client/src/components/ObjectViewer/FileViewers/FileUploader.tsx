@@ -1,7 +1,4 @@
-import {
-  ArrowUploadFilled,
-  DocumentBulletListRegular,
-} from '@fluentui/react-icons';
+import { ArrowUploadFilled, DocumentBulletListRegular } from '@fluentui/react-icons';
 import { cx } from 'class-variance-authority';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useRef } from 'react';
@@ -18,17 +15,10 @@ type FileUploadDragContentProps = {
 };
 
 function FileUploadDragContent(props: FileUploadDragContentProps) {
-  const { fileInputRef, accept, text, handleImportClick, handleFileChange } =
-    props;
+  const { fileInputRef, accept, text, handleImportClick, handleFileChange } = props;
   return (
     <div>
-      <input
-        type='file'
-        ref={fileInputRef}
-        accept={accept}
-        onChange={handleFileChange}
-        className='hidden'
-      />
+      <input type='file' ref={fileInputRef} accept={accept} onChange={handleFileChange} className='hidden' />
       <div
         onClick={handleImportClick}
         className='flex flex-col gap-1 items-center justify-center w-full h-full cursor-pointer'
@@ -39,9 +29,7 @@ function FileUploadDragContent(props: FileUploadDragContentProps) {
         <div className='text-sm font-medium text-gray-900 text-center'>
           Drag here or <span className='underline'>choose a file</span>
         </div>
-        <div className='text-xs text-gray-500 font-normal text-center'>
-          {text}
-        </div>
+        <div className='text-xs text-gray-500 font-normal text-center'>{text}</div>
       </div>
     </div>
   );

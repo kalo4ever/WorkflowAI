@@ -41,11 +41,7 @@ export function PageContainer(props: PageContainerProps) {
   if (!task) {
     return (
       <div className='flex flex-col h-full w-full font-lato p-6'>
-        <ExtendedBordersContainer
-          className='flex flex-col h-full w-full'
-          borderColor='gray-100'
-          margin={24}
-        >
+        <ExtendedBordersContainer className='flex flex-col h-full w-full' borderColor='gray-100' margin={24}>
           <div
             className={cn(
               'flex items-center h-[48px] w-full flex-shrink-0 px-4 font-semibold text-base text-gray-700',
@@ -62,28 +58,19 @@ export function PageContainer(props: PageContainerProps) {
 
   return (
     <div className='flex flex-col h-full w-full font-lato p-6'>
-      <ExtendedBordersContainer
-        className='flex flex-col h-full w-full'
-        borderColor='gray-100'
-        margin={24}
-      >
+      <ExtendedBordersContainer className='flex flex-col h-full w-full' borderColor='gray-100' margin={24}>
         <PageHeader
           task={task}
           name={name}
           className={cn(
-            'flex items-center gap-2 h-[60px] flex-shrink-0',
+            'flex items-center gap-2 h-[60px] flex-shrink-0 overflow-hidden',
             showBottomBorder && 'border-b border-dashed border-gray-200'
           )}
           showSchema={showSchema}
         >
           {extraButton}
           {showCopyLink && (
-            <Button
-              variant='newDesign'
-              icon={<Link16Regular />}
-              onClick={copyUrl}
-              className='w-9 h-9 px-0 py-0'
-            />
+            <Button variant='newDesign' icon={<Link16Regular />} onClick={copyUrl} className='w-9 h-9 px-0 py-0' />
           )}
           {rightBarChildren}
         </PageHeader>

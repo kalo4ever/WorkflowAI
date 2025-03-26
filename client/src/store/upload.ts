@@ -32,14 +32,7 @@ export const useUpload = create<UploadState>()(
   persist(
     (set, get) => ({
       uploadURLsByHash: {},
-      getUploadURL: async ({
-        tenant,
-        taskId,
-        form,
-        hash,
-        token,
-        onProgress,
-      }) => {
+      getUploadURL: async ({ tenant, taskId, form, hash, token, onProgress }) => {
         const existing = get().uploadURLsByHash[hash];
         if (existing) return existing;
         const { url } = await client.uploadFile<UploadFileResponse>(

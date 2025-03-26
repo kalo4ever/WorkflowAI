@@ -13,9 +13,7 @@ type VersionInputOutputSchemasProps = {
   openSchemasByDefault: boolean;
 };
 
-export function VersionInputOutputSchemas(
-  props: VersionInputOutputSchemasProps
-) {
+export function VersionInputOutputSchemas(props: VersionInputOutputSchemasProps) {
   const { tenant, taskId, entry, openSchemasByDefault } = props;
 
   const [isOpen, setIsOpen] = useState(openSchemasByDefault);
@@ -29,21 +27,13 @@ export function VersionInputOutputSchemas(
         )}
         onClick={() => setIsOpen(!isOpen)}
       >
-        <div className='text-gray-700 text-[13px] font-semibold'>
-          Description and Examples
-        </div>
+        <div className='text-gray-700 text-[13px] font-semibold'>Description and Examples</div>
 
-        <ChevronDownRegular
-          className={cn('h-4 w-4 text-gray-700', isOpen && 'rotate-180')}
-        />
+        <ChevronDownRegular className={cn('h-4 w-4 text-gray-700', isOpen && 'rotate-180')} />
       </div>
       {!!entry.versions[0].id && isOpen && (
         <div className='flex h-max w-full p-4'>
-          <InputOutputSchemas
-            tenant={tenant}
-            taskId={taskId}
-            versionId={entry.versions[0].id}
-          />
+          <InputOutputSchemas tenant={tenant} taskId={taskId} versionId={entry.versions[0].id} />
         </div>
       )}
     </div>

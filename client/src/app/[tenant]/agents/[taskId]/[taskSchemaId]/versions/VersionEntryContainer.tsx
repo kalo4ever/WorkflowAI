@@ -23,32 +23,15 @@ type VersionEntryContainerProps = {
 };
 
 export function VersionEntryContainer(props: VersionEntryContainerProps) {
-  const {
-    entry,
-    previousEntry,
-    isLatest,
-    tenant,
-    taskId,
-    taskSchemaId,
-    openSchemasByDefault,
-  } = props;
+  const { entry, previousEntry, isLatest, tenant, taskId, taskSchemaId, openSchemasByDefault } = props;
 
   return (
     <div className='flex flex-col w-full h-max border-gray-200 border rounded-[2px]'>
-      <VersionEntryContainerHeader
-        entry={entry}
-        previousEntry={previousEntry}
-        isLatest={isLatest}
-      />
+      <VersionEntryContainerHeader entry={entry} previousEntry={previousEntry} isLatest={isLatest} />
 
       <div className='flex flex-row'>
         <div className='flex w-[438px] flex-shrink-0'>
-          <VersionEntryContainerVersions
-            entry={entry}
-            tenant={tenant}
-            taskId={taskId}
-            taskSchemaId={taskSchemaId}
-          />
+          <VersionEntryContainerVersions entry={entry} tenant={tenant} taskId={taskId} taskSchemaId={taskSchemaId} />
         </div>
         <VersionEntryContainerProperties entry={entry} />
       </div>

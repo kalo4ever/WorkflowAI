@@ -64,14 +64,5 @@ export function WorkflowAIGradientIcon(props: WorkflowAILogoProps) {
   const { ratio = 1, className = '' } = props;
   const width = 16 * ratio;
   const height = 16 * ratio;
-  return (
-    <Image
-      src={LogoSrc}
-      width={width}
-      height={height}
-      className={className}
-      alt='Workflow AI Logo'
-      priority
-    />
-  );
+  return <Image src={LogoSrc} width={width} height={height} className={className} alt='Workflow AI Logo' priority />;
 }

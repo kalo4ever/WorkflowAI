@@ -12,22 +12,12 @@ export type LeaderboardTaskData = {
   readonly benchmark: ReviewBenchmark;
 };
 
-export function leaderboardScope({
-  tenantId,
-  taskId,
-  schemaId,
-}: LeaderboardTaskEntry) {
+export function leaderboardScope({ tenantId, taskId, schemaId }: LeaderboardTaskEntry) {
   return `${tenantId}/${taskId}/${schemaId}`;
 }
 
-async function fetchTaskData({
-  tenantId,
-  taskId,
-  schemaId,
-}: LeaderboardTaskEntry): Promise<LeaderboardTaskData> {
-  const task = await client.get<SerializableTask>(
-    `${rootTaskPath(tenantId)}/${taskId}`
-  );
+async function fetchTaskData({ tenantId, taskId, schemaId }: LeaderboardTaskEntry): Promise<LeaderboardTaskData> {
+  const task = await client.get<SerializableTask>(`${rootTaskPath(tenantId)}/${taskId}`);
 
   const benchmark = await client.get<ReviewBenchmark>(
     `${taskSchemaSubPath(tenantId, taskId, schemaId, '/reviews/benchmark')}`
@@ -78,9 +68,7 @@ export const useLeaderboardStore = create<LeaderboardState>((set, get) => ({
 export function useLeaderboard(entries: readonly LeaderboardTaskEntry[]) {
   const leaderboard = useLeaderboardStore((state) => state.leaderboard);
   const isLoading = useLeaderboardStore((state) => state.isLoading);
-  const fetchLeaderboard = useLeaderboardStore(
-    (state) => state.fetchLeaderboard
-  );
+  const fetchLeaderboard = useLeaderboardStore((state) => state.fetchLeaderboard);
 
   useEffect(() => {
     for (const entry of entries) {

@@ -1,11 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { Plus } from 'lucide-react';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/Tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/Tooltip';
 
 /**
  * A popup that displays information related to an element when the element

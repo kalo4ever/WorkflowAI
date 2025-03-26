@@ -23,10 +23,7 @@ function pickBestOneYet(
     return { value: newValue, keys: [newKey] };
   }
 
-  if (
-    (ascending && newValue < bestValue) ||
-    (!ascending && newValue > bestValue)
-  ) {
+  if ((ascending && newValue < bestValue) || (!ascending && newValue > bestValue)) {
     return { value: newValue, keys: [newKey] };
   }
 
@@ -38,10 +35,7 @@ function pickBestOneYet(
 }
 
 export function findScore(result: VersionResult): number {
-  const totalReviews =
-    result.positive_review_count +
-    result.negative_review_count +
-    result.unsure_review_count;
+  const totalReviews = result.positive_review_count + result.negative_review_count + result.unsure_review_count;
 
   if (totalReviews === 0) {
     return 0;
@@ -64,13 +58,7 @@ export function findBestOnes(results: VersionResult[]): BenchmarkBestPicks {
       return;
     }
 
-    const bestScoreResult = pickBestOneYet(
-      findScore(result),
-      result.iteration,
-      bestScore,
-      bestScoreKeys,
-      false
-    );
+    const bestScoreResult = pickBestOneYet(findScore(result), result.iteration, bestScore, bestScoreKeys, false);
     bestScore = bestScoreResult.value;
     bestScoreKeys = bestScoreResult.keys;
 
@@ -84,13 +72,7 @@ export function findBestOnes(results: VersionResult[]): BenchmarkBestPicks {
     bestDuration = bestDurationResult.value;
     bestDurationKeys = bestDurationResult.keys;
 
-    const bestPriceResult = pickBestOneYet(
-      result.average_cost_usd,
-      result.iteration,
-      bestPrice,
-      bestPriceKeys,
-      true
-    );
+    const bestPriceResult = pickBestOneYet(result.average_cost_usd, result.iteration, bestPrice, bestPriceKeys, true);
     bestPrice = bestPriceResult.value;
     bestPriceKeys = bestPriceResult.keys;
   });
@@ -139,10 +121,7 @@ export enum BenchmarkResultsSortKey {
   Model = 'model',
 }
 
-export function sortBenchmarkResults(
-  results: VersionResult[],
-  sortMode: BenchmarkResultsSortKey
-): VersionResult[] {
+export function sortBenchmarkResults(results: VersionResult[], sortMode: BenchmarkResultsSortKey): VersionResult[] {
   switch (sortMode) {
     case BenchmarkResultsSortKey.Version:
       return results.toSorted((lhs, rhs) => {
@@ -166,11 +145,7 @@ export function sortBenchmarkResults(
           return 0;
         }
 
-        return compareBenchmarkValues(
-          lhs.average_cost_usd,
-          rhs.average_cost_usd,
-          lhs.iteration - rhs.iteration
-        );
+        return compareBenchmarkValues(lhs.average_cost_usd, rhs.average_cost_usd, lhs.iteration - rhs.iteration);
       });
 
     case BenchmarkResultsSortKey.Score:
@@ -182,11 +157,7 @@ export function sortBenchmarkResults(
         return compareBenchmarkValues(
           findScore(lhs),
           findScore(rhs),
-          compareBenchmarkValues(
-            lhs.average_cost_usd,
-            rhs.average_cost_usd,
-            lhs.iteration - rhs.iteration
-          ),
+          compareBenchmarkValues(lhs.average_cost_usd, rhs.average_cost_usd, lhs.iteration - rhs.iteration),
           false
         );
       });

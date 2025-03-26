@@ -8,33 +8,24 @@ import { Dialog, DialogContent } from '@/components/ui/Dialog';
 import { Textarea } from '@/components/ui/Textarea';
 
 type PlaygroundInputSettingsModalProps = {
-  onModalGenerateInput: (
-    instructions: string | undefined,
-    temperature: number
-  ) => void;
+  onModalGenerateInput: (instructions: string | undefined, temperature: number) => void;
   toggleModal: () => void;
   open: boolean;
 };
 
-export function PlaygroundInputSettingsModal(
-  props: PlaygroundInputSettingsModalProps
-) {
+export function PlaygroundInputSettingsModal(props: PlaygroundInputSettingsModalProps) {
   const { onModalGenerateInput, toggleModal, open } = props;
 
   const [instruction, setInstruction] = useState('');
   const [temperature, setTemperature] = useState(0);
 
-  const handleInstructionChange = useCallback(
-    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      setInstruction(e.target.value);
-    },
-    []
-  );
+  const handleInstructionChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInstruction(e.target.value);
+  }, []);
 
   const handleGenerateInput = useCallback(() => {
     const trimmedInstruction = instruction.trim();
-    const instructions =
-      trimmedInstruction !== '' ? trimmedInstruction : undefined;
+    const instructions = trimmedInstruction !== '' ? trimmedInstruction : undefined;
     onModalGenerateInput(instructions, temperature);
   }, [instruction, onModalGenerateInput, temperature]);
 
@@ -51,25 +42,17 @@ export function PlaygroundInputSettingsModal(
               size='none'
             />
 
-            <h1 className='text-base font-semibold text-gray-900'>
-              Input Settings
-            </h1>
+            <h1 className='text-base font-semibold text-gray-900'>Input Settings</h1>
 
             <div className='flex justify-end gap-2 w-full'>
-              <Button
-                onClick={handleGenerateInput}
-                variant='newDesign'
-                icon={<Wand16Regular className='h-4 w-4' />}
-              >
+              <Button onClick={handleGenerateInput} variant='newDesign' icon={<Wand16Regular className='h-4 w-4' />}>
                 Generate Input
               </Button>
             </div>
           </div>
 
           <div className='flex flex-col p-4 pb-4'>
-            <div className='mb-1 text-gray-900 text-[13px] font-medium'>
-              Input instructions
-            </div>
+            <div className='mb-1 text-gray-900 text-[13px] font-medium'>Input instructions</div>
 
             <Textarea
               className='min-h-[80px] font-lato border-gray-200 text-gray-800'
@@ -79,15 +62,10 @@ export function PlaygroundInputSettingsModal(
               autoFocus
             />
 
-            <div className='mb-1 text-gray-900 text-[13px] font-medium pt-2.5'>
-              Temperature
-            </div>
+            <div className='mb-1 text-gray-900 text-[13px] font-medium pt-2.5'>Temperature</div>
 
             <div className='w-fit'>
-              <TemperatureSelector
-                temperature={temperature}
-                setTemperature={setTemperature}
-              />
+              <TemperatureSelector temperature={temperature} setTemperature={setTemperature} />
             </div>
           </div>
         </div>

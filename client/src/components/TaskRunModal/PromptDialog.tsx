@@ -13,11 +13,7 @@ import { useOrFetchRunCompletions } from '@/store/fetchers';
 import { TaskID } from '@/types/aliases';
 import { TenantID } from '@/types/aliases';
 import { LLMCompletionTypedMessages } from '@/types/workflowAI';
-import {
-  MessagePreparedForDisplay,
-  prepareMessageForDisplay,
-  processResponse,
-} from './utils';
+import { MessagePreparedForDisplay, prepareMessageForDisplay, processResponse } from './utils';
 
 type CodeProps = {
   inline?: boolean;
@@ -28,11 +24,7 @@ type CodeProps = {
 function CodeBlock(props: { language: string; value: string }) {
   const { language, value } = props;
   return (
-    <SyntaxHighlighter
-      style={xcode}
-      language={language}
-      className='border border-gray-200 p-2 my-2'
-    >
+    <SyntaxHighlighter style={xcode} language={language} className='border border-gray-200 p-2 my-2'>
       {value}
     </SyntaxHighlighter>
   );
@@ -42,12 +34,7 @@ const MARKDOWN_COMPONENTS = {
   code({ inline, className, children, ...props }: CodeProps) {
     const match = /language-(\w+)/.exec(className || '');
     if (!inline && match) {
-      return (
-        <CodeBlock
-          language={match[1]}
-          value={String(children).replace(/\n$/, '')}
-        />
-      );
+      return <CodeBlock language={match[1]} value={String(children).replace(/\n$/, '')} />;
     } else {
       return (
         <code className={className} {...props}>
@@ -56,15 +43,8 @@ const MARKDOWN_COMPONENTS = {
       );
     }
   },
-  img: ({ src }: React.ImgHTMLAttributes<HTMLImageElement>) => (
-    <div>{`<img src='${src}'/>`}</div>
-  ),
-  a: ({
-    children,
-    ...props
-  }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
-    <span {...props}>{children}</span>
-  ),
+  img: ({ src }: React.ImgHTMLAttributes<HTMLImageElement>) => <div>{`<img src='${src}'/>`}</div>,
+  a: ({ children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => <span {...props}>{children}</span>,
 };
 
 type PromptEntryProps = {
@@ -83,9 +63,7 @@ function PromptEntry(props: PromptEntryProps) {
   return (
     <div className='flex flex-col w-full max-h-[420px] border border-gray-200 rounded-[2px] bg-gradient-to-b from-white/90 to-white/0'>
       <div className='flex justify-between items-center text-gray-700 w-full px-4 border-b border-gray-200 border-dashed'>
-        <div className='text-gray-700 text-[14px] font-semibold py-3'>
-          {title}
-        </div>
+        <div className='text-gray-700 text-[14px] font-semibold py-3'>{title}</div>
         <Button
           variant='newDesign'
           icon={<Copy16Regular className='w-[18px] h-[18px]' />}
@@ -111,8 +89,7 @@ type CompletionEntryProps = {
 
 function CompletionEntry(props: CompletionEntryProps) {
   const { key, index, indexToShow, completion, selected, onSelect } = props;
-  const cost =
-    formatFractionalCurrency(completion.usage.completion_cost_usd) ?? '-';
+  const cost = formatFractionalCurrency(completion.usage.completion_cost_usd) ?? '-';
 
   const [isHovering, setIsHovering] = useState(false);
 
@@ -127,22 +104,10 @@ function CompletionEntry(props: CompletionEntryProps) {
       onMouseLeave={() => setIsHovering(false)}
       onClick={() => onSelect(index)}
     >
-      <div
-        className={cx(
-          'text-[13px] font-semibold',
-          isHovering || selected ? 'text-indigo-700' : 'text-gray-700'
-        )}
-      >
+      <div className={cx('text-[13px] font-semibold', isHovering || selected ? 'text-indigo-700' : 'text-gray-700')}>
         {`Completion #${indexToShow + 1}`}
       </div>
-      <div
-        className={cx(
-          'text-[13px]',
-          isHovering || selected ? 'text-indigo-700' : 'text-gray-500'
-        )}
-      >
-        {cost}
-      </div>
+      <div className={cx('text-[13px]', isHovering || selected ? 'text-indigo-700' : 'text-gray-500')}>{cost}</div>
     </div>
   );
 }
@@ -190,12 +155,7 @@ function PromptDialogContent(props: PromptDialogContentProps) {
       )}
       <div className='flex flex-col flex-1 gap-4 items-top overflow-y-auto py-3 px-4'>
         {messagesPreparedForDisplay.map((message, index) => (
-          <PromptEntry
-            key={index}
-            title={message.title}
-            text={message.text}
-            orginalText={message.orginalText}
-          />
+          <PromptEntry key={index} title={message.title} text={message.text} orginalText={message.orginalText} />
         ))}
         {!!selectedCompletion?.response && (
           <PromptEntry
@@ -220,11 +180,7 @@ type PromptDialogProps = {
 export function PromptDialog(props: PromptDialogProps) {
   const { open, onOpenChange, taskId, tenant, taskRunId } = props;
 
-  const { completions, isInitialized } = useOrFetchRunCompletions(
-    tenant,
-    taskId,
-    taskRunId
-  );
+  const { completions, isInitialized } = useOrFetchRunCompletions(tenant, taskId, taskRunId);
 
   const llmCompletions = useMemo(() => {
     if (!completions || !completions.length) {
@@ -233,8 +189,7 @@ export function PromptDialog(props: PromptDialogProps) {
     return [...completions].reverse();
   }, [completions]);
 
-  const [selectedCompletionIndex, setSelectedCompletionIndex] =
-    useState<number>(0);
+  const [selectedCompletionIndex, setSelectedCompletionIndex] = useState<number>(0);
 
   useEffect(() => {
     if (open) {
@@ -246,13 +201,10 @@ export function PromptDialog(props: PromptDialogProps) {
     return llmCompletions?.[selectedCompletionIndex];
   }, [llmCompletions, selectedCompletionIndex]);
 
-  const messagesPreparedForDisplay: MessagePreparedForDisplay[] =
-    useMemo(() => {
-      const messages = selectedCompletion?.messages ?? [];
-      return messages.map((message: Record<string, unknown>) =>
-        prepareMessageForDisplay(message)
-      );
-    }, [selectedCompletion]);
+  const messagesPreparedForDisplay: MessagePreparedForDisplay[] = useMemo(() => {
+    const messages = selectedCompletion?.messages ?? [];
+    return messages.map((message: Record<string, unknown>) => prepareMessageForDisplay(message));
+  }, [selectedCompletion]);
 
   const processedResponse = useMemo(() => {
     if (!selectedCompletion) {
@@ -273,9 +225,7 @@ export function PromptDialog(props: PromptDialogProps) {
               className='w-7 h-7'
               size='none'
             />
-            <h1 className='text-gray-900 text-[16px] font-semibold px-2'>
-              Prompt details
-            </h1>
+            <h1 className='text-gray-900 text-[16px] font-semibold px-2'>Prompt details</h1>
           </div>
           <PromptDialogContent
             isInitialized={isInitialized}

@@ -12,8 +12,7 @@ const badgeVariants = cva(
         default: 'bg-gray-700 text-gray-50',
         secondary: 'bg-gray-50 text-gray-500 border border-gray-200',
         tertiary: 'bg-white text-gray-700 border border-gray-200',
-        tertiaryWithHover:
-          'bg-white text-gray-700 border border-gray-200 hover:bg-gray-100',
+        tertiaryWithHover: 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-100',
         destructive: 'bg-red-50 text-red-700 border border-red-200',
         warning: 'bg-yellow-50 text-yellow-700 border border-yellow-200',
         success: 'bg-green-50 text-green-700 border border-green-200',
@@ -28,44 +27,21 @@ const badgeVariants = cva(
   }
 );
 
-export interface BadgeProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof badgeVariants> {
+export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {
   onClose?: () => void;
   lucideIcon?: LucideIcon;
   icon?: React.ReactNode;
 }
 
 const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
-  (
-    {
-      className,
-      lucideIcon: Icon,
-      icon: externalIcon,
-      variant,
-      onClose,
-      children,
-      ...props
-    },
-    ref
-  ) => {
+  ({ className, lucideIcon: Icon, icon: externalIcon, variant, onClose, children, ...props }, ref) => {
     const icon = Icon ? <Icon className='w-4 h-4' /> : externalIcon;
     return (
-      <div
-        ref={ref}
-        className={cn(
-          badgeVariants({ variant, clickable: !!props.onClick }),
-          className
-        )}
-        {...props}
-      >
+      <div ref={ref} className={cn(badgeVariants({ variant, clickable: !!props.onClick }), className)} {...props}>
         {icon}
         {children}
         {onClose && (
-          <button
-            className='rounded-md w-4 h-4 flex items-center justify-center'
-            onClick={onClose}
-          >
+          <button className='rounded-md w-4 h-4 flex items-center justify-center' onClick={onClose}>
             <HiX className='w-3 h-3' />
             <span className='sr-only'>Remove</span>
           </button>

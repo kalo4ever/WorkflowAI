@@ -30,11 +30,7 @@ export function generate(ast: AST, options = DEFAULT_OPTIONS): string {
   ); // trailing newline
 }
 
-function declareEnums(
-  ast: AST,
-  options: Options,
-  processed = new Set<AST>()
-): string {
+function declareEnums(ast: AST, options: Options, processed = new Set<AST>()): string {
   if (processed.has(ast)) {
     return '';
   }
@@ -49,35 +45,21 @@ function declareEnums(
       return declareEnums(ast.params, options, processed);
     case 'UNION':
     case 'INTERSECTION':
-      return ast.params.reduce(
-        (prev, ast) => prev + declareEnums(ast, options, processed),
-        ''
-      );
+      return ast.params.reduce((prev, ast) => prev + declareEnums(ast, options, processed), '');
     case 'TUPLE':
-      type = ast.params.reduce(
-        (prev, ast) => prev + declareEnums(ast, options, processed),
-        ''
-      );
+      type = ast.params.reduce((prev, ast) => prev + declareEnums(ast, options, processed), '');
       if (ast.spreadParam) {
         type += declareEnums(ast.spreadParam, options, processed);
       }
       return type;
     case 'INTERFACE':
-      return getSuperTypesAndParams(ast).reduce(
-        (prev, ast) => prev + declareEnums(ast, options, processed),
-        ''
-      );
+      return getSuperTypesAndParams(ast).reduce((prev, ast) => prev + declareEnums(ast, options, processed), '');
     default:
       return '';
   }
 }
 
-function declareNamedInterfaces(
-  ast: AST,
-  options: Options,
-  rootASTName: string,
-  processed = new Set<AST>()
-): string {
+function declareNamedInterfaces(ast: AST, options: Options, rootASTName: string, processed = new Set<AST>()): string {
   if (processed.has(ast)) {
     return '';
   }
@@ -87,23 +69,15 @@ function declareNamedInterfaces(
 
   switch (ast.type) {
     case 'ARRAY':
-      type = declareNamedInterfaces(
-        (ast as TArray).params,
-        options,
-        rootASTName,
-        processed
-      );
+      type = declareNamedInterfaces((ast as TArray).params, options, rootASTName, processed);
       break;
     case 'INTERFACE':
       type = [
         hasStandaloneName(ast) &&
-          (ast.standaloneName === rootASTName ||
-            options.declareExternallyReferenced) &&
+          (ast.standaloneName === rootASTName || options.declareExternallyReferenced) &&
           generateStandaloneInterface(ast, options),
         getSuperTypesAndParams(ast)
-          .map((ast) =>
-            declareNamedInterfaces(ast, options, rootASTName, processed)
-          )
+          .map((ast) => declareNamedInterfaces(ast, options, rootASTName, processed))
           .filter(Boolean)
           .join('\n'),
       ]
@@ -118,12 +92,7 @@ function declareNamedInterfaces(
         .filter(Boolean)
         .join('\n');
       if (ast.type === 'TUPLE' && ast.spreadParam) {
-        type += declareNamedInterfaces(
-          ast.spreadParam,
-          options,
-          rootASTName,
-          processed
-        );
+        type += declareNamedInterfaces(ast.spreadParam, options, rootASTName, processed);
       }
       break;
     default:
@@ -133,12 +102,7 @@ function declareNamedInterfaces(
   return type;
 }
 
-function declareNamedTypes(
-  ast: AST,
-  options: Options,
-  rootASTName: string,
-  processed = new Set<AST>()
-): string {
+function declareNamedTypes(ast: AST, options: Options, rootASTName: string, processed = new Set<AST>()): string {
   if (processed.has(ast)) {
     return '';
   }
@@ -149,9 +113,7 @@ function declareNamedTypes(
     case 'ARRAY':
       return [
         declareNamedTypes(ast.params, options, rootASTName, processed),
-        hasStandaloneName(ast)
-          ? generateStandaloneType(ast, options)
-          : undefined,
+        hasStandaloneName(ast) ? generateStandaloneType(ast, options) : undefined,
       ]
         .filter(Boolean)
         .join('\n');
@@ -161,8 +123,7 @@ function declareNamedTypes(
       return getSuperTypesAndParams(ast)
         .map(
           (ast) =>
-            (ast.standaloneName === rootASTName ||
-              options.declareExternallyReferenced) &&
+            (ast.standaloneName === rootASTName || options.declareExternallyReferenced) &&
             declareNamedTypes(ast, options, rootASTName, processed)
         )
         .filter(Boolean)
@@ -171,9 +132,7 @@ function declareNamedTypes(
     case 'TUPLE':
     case 'UNION':
       return [
-        hasStandaloneName(ast)
-          ? generateStandaloneType(ast, options)
-          : undefined,
+        hasStandaloneName(ast) ? generateStandaloneType(ast, options) : undefined,
         ast.params
           .map((ast) => declareNamedTypes(ast, options, rootASTName, processed))
           .filter(Boolean)
@@ -243,11 +202,7 @@ function generateRawType(ast: AST, options: Options): string {
 
         let spreadParam = ast.spreadParam;
         const astParams = [...ast.params];
-        if (
-          minItems > 0 &&
-          minItems > astParams.length &&
-          ast.spreadParam === undefined
-        ) {
+        if (minItems > 0 && minItems > astParams.length && ast.spreadParam === undefined) {
           // this is a valid state, and JSONSchema doesn't care about the item type
           if (maxItems < 0) {
             // no max items and no spread param, so just spread any
@@ -274,9 +229,7 @@ function generateRawType(ast: AST, options: Options): string {
           return '[' + params.join(', ') + ']';
         }
 
-        const paramsList = astParams.map((param) =>
-          generateType(param, options)
-        );
+        const paramsList = astParams.map((param) => generateType(param, options));
 
         if (paramsList.length > minItems) {
           /*
@@ -332,15 +285,10 @@ function generateRawType(ast: AST, options: Options): string {
 /**
  * Generate a Union or Intersection
  */
-function generateSetOperation(
-  ast: TIntersection | TUnion,
-  options: Options
-): string {
+function generateSetOperation(ast: TIntersection | TUnion, options: Options): string {
   const members = (ast as TUnion).params.map((_) => generateType(_, options));
   const separator = ast.type === 'UNION' ? '|' : '&';
-  return members.length === 1
-    ? members[0]
-    : '(' + members.join(' ' + separator + ' ') + ')';
+  return members.length === 1 ? members[0] : '(' + members.join(' ' + separator + ' ') + ')';
 }
 
 function generateInterface(ast: TInterface, options: Options): string {
@@ -351,18 +299,11 @@ function generateInterface(ast: TInterface, options: Options): string {
       .filter((_) => !_.isPatternProperty && !_.isUnreachableDefinition)
       .map(
         ({ isRequired, keyName, ast }) =>
-          [isRequired, keyName, ast, generateType(ast, options)] as [
-            boolean,
-            string,
-            AST,
-            string,
-          ]
+          [isRequired, keyName, ast, generateType(ast, options)] as [boolean, string, AST, string]
       )
       .map(
         ([isRequired, keyName, ast, type]) =>
-          (hasComment(ast) && !ast.standaloneName
-            ? generateComment(ast.comment, ast.deprecated) + '\n'
-            : '') +
+          (hasComment(ast) && !ast.standaloneName ? generateComment(ast.comment, ast.deprecated) + '\n' : '') +
           escapeKeyName(keyName) +
           (isRequired ? '' : '?') +
           ': ' +
@@ -388,29 +329,20 @@ function generateComment(comment?: string, deprecated?: boolean): string {
 
 function generateStandaloneEnum(ast: TEnum, options: Options): string {
   return (
-    (hasComment(ast)
-      ? generateComment(ast.comment, ast.deprecated) + '\n'
-      : '') +
+    (hasComment(ast) ? generateComment(ast.comment, ast.deprecated) + '\n' : '') +
     'export ' +
     (options.enableConstEnums ? 'const ' : '') +
     `enum ${toSafeString(ast.standaloneName)} {` +
     '\n' +
-    ast.params
-      .map(({ ast, keyName }) => keyName + ' = ' + generateType(ast, options))
-      .join(',\n') +
+    ast.params.map(({ ast, keyName }) => keyName + ' = ' + generateType(ast, options)).join(',\n') +
     '\n' +
     '}'
   );
 }
 
-function generateStandaloneInterface(
-  ast: TNamedInterface,
-  options: Options
-): string {
+function generateStandaloneInterface(ast: TNamedInterface, options: Options): string {
   return (
-    (hasComment(ast)
-      ? generateComment(ast.comment, ast.deprecated) + '\n'
-      : '') +
+    (hasComment(ast) ? generateComment(ast.comment, ast.deprecated) + '\n' : '') +
     `export interface ${toSafeString(ast.standaloneName)} ` +
     (ast.superTypes.length > 0
       ? `extends ${ast.superTypes.map((superType) => toSafeString(superType.standaloneName)).join(', ')} `
@@ -419,10 +351,7 @@ function generateStandaloneInterface(
   );
 }
 
-function generateStandaloneType(
-  ast: ASTWithStandaloneName,
-  options: Options
-): string {
+function generateStandaloneType(ast: ASTWithStandaloneName, options: Options): string {
   return (
     (hasComment(ast) ? generateComment(ast.comment) + '\n' : '') +
     `export type ${toSafeString(ast.standaloneName)} = ${generateType(
@@ -433,11 +362,7 @@ function generateStandaloneType(
 }
 
 function escapeKeyName(keyName: string): string {
-  if (
-    keyName.length &&
-    /[A-Za-z_$]/.test(keyName.charAt(0)) &&
-    /^[\w$]+$/.test(keyName)
-  ) {
+  if (keyName.length && /[A-Za-z_$]/.test(keyName.charAt(0)) && /^[\w$]+$/.test(keyName)) {
     return keyName;
   }
   if (keyName === '[k: string]') {

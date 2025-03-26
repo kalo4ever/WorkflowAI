@@ -1,9 +1,4 @@
-import {
-  Cloud16Regular,
-  Code16Regular,
-  ListBarTree16Regular,
-  PlayCircle16Regular,
-} from '@fluentui/react-icons';
+import { Cloud16Regular, Code16Regular, ListBarTree16Regular, PlayCircle16Regular } from '@fluentui/react-icons';
 import { useMemo } from 'react';
 import { TooltipButtonGroup } from '@/components/buttons/TooltipButtonGroup';
 
@@ -16,13 +11,7 @@ type TaskTooltipProps = {
 };
 
 export function TaskTooltip(props: TaskTooltipProps) {
-  const {
-    children,
-    onTryInPlayground,
-    onViewRuns,
-    onViewCode,
-    onViewDeployments,
-  } = props;
+  const { children, onTryInPlayground, onViewRuns, onViewCode, onViewDeployments } = props;
 
   const versionActions = useMemo(() => {
     return [
@@ -49,7 +38,5 @@ export function TaskTooltip(props: TaskTooltipProps) {
     ];
   }, [onTryInPlayground, onViewRuns, onViewCode, onViewDeployments]);
 
-  return (
-    <TooltipButtonGroup items={versionActions}>{children}</TooltipButtonGroup>
-  );
+  return <TooltipButtonGroup items={versionActions}>{children}</TooltipButtonGroup>;
 }

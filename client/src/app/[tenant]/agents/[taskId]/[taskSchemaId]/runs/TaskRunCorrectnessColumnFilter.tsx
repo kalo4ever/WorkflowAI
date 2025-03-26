@@ -4,17 +4,8 @@ import { ChevronDown, Eraser } from 'lucide-react';
 import { useCallback } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
-import {
-  Command,
-  CommandGroup,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/Command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/Popover';
+import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui/Command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover';
 import { useQuery } from '@/lib/hooks';
 import { taskRunQueryMapper } from '@/lib/hooks/useQuery/mappers';
 
@@ -26,24 +17,18 @@ function getScoreValue(score: string, autoEvaluatorName: string | undefined) {
   return `${autoEvaluatorName || 'user'}[=]${score}`;
 }
 
-export function TaskRunCorrectnessColumnFilter(
-  props: TaskRunCorrectnessColumnFilterProps
-) {
+export function TaskRunCorrectnessColumnFilter(props: TaskRunCorrectnessColumnFilterProps) {
   const { autoEvaluatorName } = props;
   const [query, setQuery] = useQuery(taskRunQueryMapper);
   const { score_filters = [], ...queryRest } = query;
 
-  const [manualFilters, autoFilters] = partition(score_filters, (value) =>
-    value.startsWith('user')
-  );
+  const [manualFilters, autoFilters] = partition(score_filters, (value) => value.startsWith('user'));
   const untouchedFilters = !!autoEvaluatorName ? manualFilters : autoFilters;
   const updatedFilters = !!autoEvaluatorName ? autoFilters : manualFilters;
 
   const handleSelectionChange = useCallback(
     (selectedValue: string) => {
-      const newUpdatedScoreFilters = updatedFilters.includes(selectedValue)
-        ? []
-        : [selectedValue];
+      const newUpdatedScoreFilters = updatedFilters.includes(selectedValue) ? [] : [selectedValue];
       setQuery({
         score_filters: [...newUpdatedScoreFilters, ...untouchedFilters],
         ...queryRest,
@@ -63,9 +48,7 @@ export function TaskRunCorrectnessColumnFilter(
           size={16}
           className={cx(
             'text-slate-500 cursor-pointer',
-            updatedFilters.length > 0
-              ? 'border border-slate-500 rounded-full'
-              : undefined
+            updatedFilters.length > 0 ? 'border border-slate-500 rounded-full' : undefined
           )}
         />
       </PopoverTrigger>
@@ -81,10 +64,7 @@ export function TaskRunCorrectnessColumnFilter(
                     value={formattedValue}
                     onSelect={() => handleSelectionChange(formattedValue)}
                   >
-                    <Checkbox
-                      className='mr-2'
-                      checked={score_filters.includes(formattedValue)}
-                    />
+                    <Checkbox className='mr-2' checked={score_filters.includes(formattedValue)} />
                     {value}
                   </CommandItem>
                 );

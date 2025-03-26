@@ -1,8 +1,10 @@
 import { enableMapSet, produce } from 'immer';
 import { isEmpty } from 'lodash';
+import { useEffect } from 'react';
 import { create } from 'zustand';
 import { client } from '@/lib/api';
 import { formatSemverVersion } from '@/lib/versionUtils';
+import { Page } from '@/types';
 import { TaskID, TaskSchemaID, TenantID } from '@/types/aliases';
 import {
   CreateVersionRequest,
@@ -13,20 +15,14 @@ import {
   Page_MajorVersion_,
   UpdateVersionNotesRequest,
   VersionEnvironment,
+  VersionStat,
   VersionV1,
 } from '@/types/workflowAI';
-import {
-  buildScopeKey,
-  buildVersionScopeKey,
-  taskSchemaSubPath,
-  taskSubPath,
-} from './utils';
+import { buildScopeKey, buildVersionScopeKey, taskSchemaSubPath, taskSubPath } from './utils';
 
 enableMapSet();
 
-export function mapMajorVersionsToVersions(
-  majorVersions: MajorVersion[]
-): VersionV1[] {
+export function mapMajorVersionsToVersions(majorVersions: MajorVersion[]): VersionV1[] {
   const result: VersionV1[] = [];
 
   majorVersions.forEach((majorVersion) => {
@@ -54,22 +50,13 @@ export function mapMajorVersionsToVersions(
   return result;
 }
 
-export function getDeploymentFromVersion(
-  version: VersionV1,
-  environment: VersionEnvironment
-) {
-  return version.deployments?.find(
-    (deployment) => deployment.environment === environment
-  );
+export function getDeploymentFromVersion(version: VersionV1, environment: VersionEnvironment) {
+  return version.deployments?.find((deployment) => deployment.environment === environment);
 }
 
-export type VersionsPerEnvironment = Partial<
-  Record<VersionEnvironment, VersionV1[]>
->;
+export type VersionsPerEnvironment = Partial<Record<VersionEnvironment, VersionV1[]>>;
 
-export function getVersionsPerEnvironment(
-  versions: VersionV1[]
-): VersionsPerEnvironment | undefined {
+export function getVersionsPerEnvironment(versions: VersionV1[]): VersionsPerEnvironment | undefined {
   const result: VersionsPerEnvironment = {};
 
   versions.forEach((version) => {
@@ -97,10 +84,7 @@ export function getVersionsPerEnvironment(
           return 0;
         }
 
-        return (
-          new Date(deploymentB.deployed_at).getTime() -
-          new Date(deploymentA.deployed_at).getTime()
-        );
+        return new Date(deploymentB.deployed_at).getTime() - new Date(deploymentA.deployed_at).getTime();
       });
     }
   });
@@ -126,11 +110,7 @@ interface VersionsState {
     body: CreateVersionRequest
   ) => Promise<CreateVersionResponse>;
 
-  saveVersion: (
-    tenant: TenantID | undefined,
-    taskId: TaskID,
-    versionId: string
-  ) => Promise<CreateVersionResponse>;
+  saveVersion: (tenant: TenantID | undefined, taskId: TaskID, versionId: string) => Promise<CreateVersionResponse>;
 
   fetchVersions: (
     tenant: TenantID | undefined,
@@ -138,30 +118,13 @@ interface VersionsState {
     taskSchemaId: TaskSchemaID | undefined
   ) => Promise<void>;
 
-  fetchVersion: (
-    tenant: TenantID | undefined,
-    taskId: TaskID,
-    versionId: string
-  ) => Promise<VersionV1 | undefined>;
+  fetchVersion: (tenant: TenantID | undefined, taskId: TaskID, versionId: string) => Promise<VersionV1 | undefined>;
 
-  favoriteVersion: (
-    tenant: TenantID | undefined,
-    taskId: TaskID,
-    versionId: string
-  ) => Promise<void>;
+  favoriteVersion: (tenant: TenantID | undefined, taskId: TaskID, versionId: string) => Promise<void>;
 
-  unfavoriteVersion: (
-    tenant: TenantID | undefined,
-    taskId: TaskID,
-    versionId: string
-  ) => Promise<void>;
+  unfavoriteVersion: (tenant: TenantID | undefined, taskId: TaskID, versionId: string) => Promise<void>;
 
-  updateNote: (
-    tenant: TenantID | undefined,
-    taskId: TaskID,
-    versionId: string,
-    note: string
-  ) => Promise<void>;
+  updateNote: (tenant: TenantID | undefined, taskId: TaskID, versionId: string, note: string) => Promise<void>;
 
   deployVersion: (
     tenant: TenantID | undefined,
@@ -190,10 +153,10 @@ export const useVersions = create<VersionsState>((set, get) => ({
     taskSchemaId: TaskSchemaID,
     body: CreateVersionRequest
   ) => {
-    const response = await client.post<
-      CreateVersionRequest,
-      CreateVersionResponse
-    >(taskSchemaSubPath(tenant, taskId, taskSchemaId, `/versions`, true), body);
+    const response = await client.post<CreateVersionRequest, CreateVersionResponse>(
+      taskSchemaSubPath(tenant, taskId, taskSchemaId, `/versions`, true),
+      body
+    );
     return response;
   },
 
@@ -204,10 +167,10 @@ export const useVersions = create<VersionsState>((set, get) => ({
       })
     );
 
-    const response = await client.post<
-      Record<string, never>,
-      CreateVersionResponse
-    >(taskSubPath(tenant, taskId, `/versions/${versionId}/save`, true), {});
+    const response = await client.post<Record<string, never>, CreateVersionResponse>(
+      taskSubPath(tenant, taskId, `/versions/${versionId}/save`, true),
+      {}
+    );
     if (!!response.id) {
       await get().fetchVersion(tenant, taskId, response.id);
       await get().fetchVersions(tenant, taskId, undefined);
@@ -235,12 +198,7 @@ export const useVersions = create<VersionsState>((set, get) => ({
       })
     );
 
-    const path = taskSubPath(
-      tenant,
-      taskId,
-      `/versions${taskSchemaId ? `?schema_id=${taskSchemaId}` : ''}`,
-      true
-    );
+    const path = taskSubPath(tenant, taskId, `/versions${taskSchemaId ? `?schema_id=${taskSchemaId}` : ''}`, true);
 
     try {
       const { items } = await client.get<Page_MajorVersion_>(path);
@@ -324,52 +282,31 @@ export const useVersions = create<VersionsState>((set, get) => ({
   },
 
   favoriteVersion: async (tenant, taskId, versionId) => {
-    await client.post(
-      taskSubPath(tenant, taskId, `/versions/${versionId}/favorite`, true),
-      {}
-    );
+    await client.post(taskSubPath(tenant, taskId, `/versions/${versionId}/favorite`, true), {});
 
     await get().fetchVersion(tenant, taskId, versionId);
     get().fetchVersions(tenant, taskId, undefined);
   },
 
   unfavoriteVersion: async (tenant, taskId, versionId) => {
-    await client.del(
-      taskSubPath(tenant, taskId, `/versions/${versionId}/favorite`, true),
-      {}
-    );
+    await client.del(taskSubPath(tenant, taskId, `/versions/${versionId}/favorite`, true), {});
 
     await get().fetchVersion(tenant, taskId, versionId);
     get().fetchVersions(tenant, taskId, undefined);
   },
 
   updateNote: async (tenant, taskId, versionId, notes) => {
-    await client.patch<UpdateVersionNotesRequest>(
-      taskSubPath(tenant, taskId, `/versions/${versionId}/notes`, true),
-      {
-        notes,
-      }
-    );
+    await client.patch<UpdateVersionNotesRequest>(taskSubPath(tenant, taskId, `/versions/${versionId}/notes`, true), {
+      notes,
+    });
 
     await get().fetchVersion(tenant, taskId, versionId);
     get().fetchVersions(tenant, taskId, undefined);
   },
 
-  deployVersion: async (
-    tenant,
-    taskId,
-    taskSchemaId,
-    versionId,
-    iteration,
-    request
-  ) => {
+  deployVersion: async (tenant, taskId, taskSchemaId, versionId, iteration, request) => {
     await client.post<DeployVersionRequest, DeployVersionResponse>(
-      taskSchemaSubPath(
-        tenant,
-        taskId,
-        taskSchemaId,
-        `/versions/${iteration}/deploy`
-      ),
+      taskSchemaSubPath(tenant, taskId, taskSchemaId, `/versions/${iteration}/deploy`),
       request
     );
 
@@ -379,3 +316,59 @@ export const useVersions = create<VersionsState>((set, get) => ({
     return version;
   },
 }));
+
+interface VersionsStatsState {
+  versionsStatsByScope: Map<string, Map<string, VersionStat>>;
+  isInitializedByScope: Map<string, boolean>;
+  isLoadingByScope: Map<string, boolean>;
+  fetchVersionsStats(tenant: TenantID, taskId: TaskID): Promise<void>;
+}
+
+const useVersionsStats = create<VersionsStatsState>((set, get) => ({
+  versionsStatsByScope: new Map(),
+  isInitializedByScope: new Map(),
+  isLoadingByScope: new Map(),
+  fetchVersionsStats: async (tenant, taskId) => {
+    const scopeKey = buildScopeKey({ tenant, taskId });
+    if (get().isLoadingByScope.get(scopeKey)) return;
+    set(
+      produce((state) => {
+        state.isLoadingByScope.set(scopeKey, true);
+      })
+    );
+    try {
+      const { items } = await client.get<Page<VersionStat>>(taskSubPath(tenant, taskId, `/versions/stats`, true));
+      set(
+        produce((state) => {
+          state.versionsStatsByScope.set(scopeKey, new Map(items.map((item) => [item.version_id, item])));
+          state.isInitializedByScope.set(scopeKey, true);
+          state.isLoadingByScope.set(scopeKey, false);
+        })
+      );
+    } catch (error) {
+      console.error('Failed to fetch versions stats', error);
+      set(
+        produce((state) => {
+          state.isLoadingByScope.set(scopeKey, false);
+        })
+      );
+    }
+  },
+}));
+
+export function useOrFetchVersionsStats(tenant: TenantID, taskId: TaskID) {
+  const scopeKey = buildScopeKey({ tenant, taskId });
+  const { versionsStatsByScope, isInitializedByScope, isLoadingByScope, fetchVersionsStats } = useVersionsStats();
+  const isInitialized = isInitializedByScope.get(scopeKey);
+  const isLoading = isLoadingByScope.get(scopeKey);
+
+  useEffect(() => {
+    fetchVersionsStats(tenant, taskId);
+  }, [fetchVersionsStats, taskId, tenant]);
+
+  return {
+    versionsStats: versionsStatsByScope.get(scopeKey),
+    isInitialized,
+    isLoading,
+  };
+}

@@ -1,17 +1,11 @@
 import { isEqual } from 'lodash';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  InputHistoryEntry,
-  usePlaygroundHistoryStore,
-} from '@/store/playgroundHistory';
+import { InputHistoryEntry, usePlaygroundHistoryStore } from '@/store/playgroundHistory';
 import { buildScopeKey } from '@/store/utils';
 import { GeneralizedTaskInput } from '@/types';
 import { TaskID, TaskSchemaID, TenantID } from '@/types/aliases';
 
-function isNewestInHistoryIdenticalToThisInput(
-  input: GeneralizedTaskInput | undefined,
-  history: InputHistoryEntry[]
-) {
+function isNewestInHistoryIdenticalToThisInput(input: GeneralizedTaskInput | undefined, history: InputHistoryEntry[]) {
   if (history.length === 0) {
     return false;
   }
@@ -28,8 +22,7 @@ export function usePlaygroundInputHistory(
   setGeneratedInput: (taskInput: GeneralizedTaskInput | undefined) => void,
   isOn: boolean = true
 ) {
-  const { inputHistoryByScope, addInputHistoryEntry: addHistoryEntry } =
-    usePlaygroundHistoryStore();
+  const { inputHistoryByScope, addInputHistoryEntry: addHistoryEntry } = usePlaygroundHistoryStore();
 
   const history = useMemo(() => {
     const scope = buildScopeKey({
@@ -40,9 +33,7 @@ export function usePlaygroundInputHistory(
     return inputHistoryByScope[scope] || [];
   }, [inputHistoryByScope, tenant, taskId, taskSchemaId]);
 
-  const [historyIndex, setHistoryIndex] = useState<number | undefined>(
-    undefined
-  );
+  const [historyIndex, setHistoryIndex] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     setHistoryIndex(undefined);
@@ -59,8 +50,7 @@ export function usePlaygroundInputHistory(
       }
 
       const inputToSave = input ?? generatedInput;
-      const isIdenticalToNewestInHistory =
-        isNewestInHistoryIdenticalToThisInput(inputToSave, history);
+      const isIdenticalToNewestInHistory = isNewestInHistoryIdenticalToThisInput(inputToSave, history);
 
       if (!inputToSave || isIdenticalToNewestInHistory) {
         return;
@@ -68,15 +58,7 @@ export function usePlaygroundInputHistory(
 
       addHistoryEntry(tenant, taskId, taskSchemaId, { input: inputToSave });
     },
-    [
-      generatedInput,
-      addHistoryEntry,
-      tenant,
-      taskId,
-      taskSchemaId,
-      history,
-      isOn,
-    ]
+    [generatedInput, addHistoryEntry, tenant, taskId, taskSchemaId, history, isOn]
   );
 
   const setInput = useCallback(
@@ -135,10 +117,7 @@ export function usePlaygroundInputHistory(
       return;
     }
 
-    if (
-      isNewestInHistoryIdenticalToInternal &&
-      historyIndex === history.length - 2
-    ) {
+    if (isNewestInHistoryIdenticalToInternal && historyIndex === history.length - 2) {
       setHistoryIndex(undefined);
       return;
     }

@@ -15,8 +15,7 @@ type ReviewInputOutputEntryProps = {
 };
 
 export function ReviewInputOutputEntry(props: ReviewInputOutputEntryProps) {
-  const { value, schema, index, isCorrect, onCorrectChange, isInDemoMode } =
-    props;
+  const { value, schema, index, isCorrect, onCorrectChange, isInDemoMode } = props;
   const [isHovering, setIsHovering] = useState(false);
 
   return (

@@ -50,13 +50,9 @@ export const usePlaygroundHistoryStore = create<PlaygroundHistoryStore>()(
             const scopeHistory = state.parametersHistoryByScope[scope] || [];
             const filteredScopeHistory = scopeHistory.filter(
               (historyEntry: ParametersHistoryEntry) =>
-                historyEntry.instructions !== entry.instructions ||
-                historyEntry.temperature !== entry.temperature
+                historyEntry.instructions !== entry.instructions || historyEntry.temperature !== entry.temperature
             );
-            state.parametersHistoryByScope[scope] = [
-              ...filteredScopeHistory,
-              entry,
-            ];
+            state.parametersHistoryByScope[scope] = [...filteredScopeHistory, entry];
           })
         );
       },
@@ -71,8 +67,7 @@ export const usePlaygroundHistoryStore = create<PlaygroundHistoryStore>()(
           produce((state) => {
             const scopeHistory = state.inputHistoryByScope[scope] || [];
             const filteredScopeHistory = scopeHistory.filter(
-              (historyEntry: InputHistoryEntry) =>
-                !isEqual(historyEntry.input, entry.input)
+              (historyEntry: InputHistoryEntry) => !isEqual(historyEntry.input, entry.input)
             );
             state.inputHistoryByScope[scope] = [...filteredScopeHistory, entry];
           })

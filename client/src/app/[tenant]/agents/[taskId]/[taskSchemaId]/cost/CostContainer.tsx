@@ -5,10 +5,7 @@ import { BarChart } from '@/components/ui/BarChart';
 import { Loader } from '@/components/ui/Loader';
 import { PageContainer } from '@/components/v2/PageContainer';
 import { useTaskSchemaParams } from '@/lib/hooks/useTaskParams';
-import {
-  useParsedSearchParams,
-  useRedirectWithParams,
-} from '@/lib/queryString';
+import { useParsedSearchParams, useRedirectWithParams } from '@/lib/queryString';
 import { useOrFetchTask, useOrFetchTaskStats } from '@/store/fetchers';
 import { CostChartHeader } from './CostChartHeader';
 import { CostPopover } from './CostPopover';
@@ -17,18 +14,14 @@ import { TimeFrame, getTimeFrameStartDate, processTaskStats } from './utils';
 export function CostContainer() {
   const { taskId, tenant } = useTaskSchemaParams();
 
-  const { task, isInitialized: isTaskInitialized } = useOrFetchTask(
-    tenant,
-    taskId
-  );
+  const { task, isInitialized: isTaskInitialized } = useOrFetchTask(tenant, taskId);
 
   const storedTimeFrame = useMemo(() => {
     return localStorage.getItem('timeFrame') as TimeFrame | undefined;
   }, []);
 
   const { timeFrame: timeFrameValue } = useParsedSearchParams('timeFrame');
-  const timeFrame =
-    (timeFrameValue as TimeFrame) ?? storedTimeFrame ?? TimeFrame.LAST_MONTH;
+  const timeFrame = (timeFrameValue as TimeFrame) ?? storedTimeFrame ?? TimeFrame.LAST_MONTH;
 
   const redirectWithParams = useRedirectWithParams();
   const onTimeFrameChange = useCallback(
@@ -45,8 +38,7 @@ export function CostContainer() {
     return getTimeFrameStartDate(timeFrame);
   }, [timeFrame]);
 
-  const { taskStats, isInitialized: isTaskStatsInitialized } =
-    useOrFetchTaskStats(tenant, taskId, startDate);
+  const { taskStats, isInitialized: isTaskStatsInitialized } = useOrFetchTaskStats(tenant, taskId, startDate);
 
   const { data: costData, total: costTotal } = useMemo(() => {
     return processTaskStats(taskStats ?? [], 'cost', timeFrame);
@@ -57,9 +49,7 @@ export function CostContainer() {
   }, [taskStats, timeFrame]);
 
   const isLargeChunkOfTime =
-    timeFrame === TimeFrame.LAST_MONTH ||
-    timeFrame === TimeFrame.LAST_YEAR ||
-    timeFrame === TimeFrame.ALL_TIME;
+    timeFrame === TimeFrame.LAST_MONTH || timeFrame === TimeFrame.LAST_YEAR || timeFrame === TimeFrame.ALL_TIME;
 
   const showValueAboveBar = !isLargeChunkOfTime;
   const showTooltips = isLargeChunkOfTime;
@@ -75,10 +65,7 @@ export function CostContainer() {
     >
       <div className='flex flex-col h-full w-full'>
         <div className='flex flex-row w-full pb-3 pl-4 border-b border-dashed border-gray-200'>
-          <CostPopover
-            timeFrame={timeFrame}
-            onTimeFrameChange={onTimeFrameChange}
-          />
+          <CostPopover timeFrame={timeFrame} onTimeFrameChange={onTimeFrameChange} />
         </div>
 
         {!isTaskStatsInitialized ? (

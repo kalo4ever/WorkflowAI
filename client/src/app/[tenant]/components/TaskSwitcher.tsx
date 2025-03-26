@@ -15,11 +15,7 @@ import {
   CommandList,
   CustomCommandInput,
 } from '@/components/ui/Command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/Popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover';
 import { NEW_TASK_MODAL_OPEN, useQueryParamModal } from '@/lib/globalModal';
 import { useAutoScrollRef } from '@/lib/hooks/useAutoScrollRef';
 import { useDefaultRedirectRoute } from '@/lib/hooks/useTaskParams';
@@ -42,8 +38,7 @@ type TaskNameCommandListProps = {
 };
 
 export function TaskNameCommandList(props: TaskNameCommandListProps) {
-  const { taskOptions, onTaskChange, setOpen, currentTaskId, dropdownOpen } =
-    props;
+  const { taskOptions, onTaskChange, setOpen, currentTaskId, dropdownOpen } = props;
 
   const selectedRef = useAutoScrollRef({
     isSelected: !!currentTaskId,
@@ -131,8 +126,7 @@ export function TaskSwitcher(props: TaskSwitcherProps) {
   const currentTaskId = currentTask?.id as TaskID | undefined;
   const currentTaskName = currentTask?.name;
 
-  const { openModal: openNewTaskModal } =
-    useQueryParamModal(NEW_TASK_MODAL_OPEN);
+  const { openModal: openNewTaskModal } = useQueryParamModal(NEW_TASK_MODAL_OPEN);
 
   const onNewTaskClick = useCallback(() => {
     if (!checkIfSignedIn()) return;
@@ -153,35 +147,22 @@ export function TaskSwitcher(props: TaskSwitcherProps) {
 
   const [search, setSearch] = useState('');
   const filteredTaskOptions = useMemo(
-    () =>
-      taskOptions.filter((option) =>
-        option.key.toLowerCase().includes(search.toLowerCase())
-      ),
+    () => taskOptions.filter((option) => option.key.toLowerCase().includes(search.toLowerCase())),
     [taskOptions, search]
   );
 
   const filteredTaskSchemaIds = useMemo(() => {
-    if (
-      mode === TaskSwitcherMode.TASKS ||
-      mode === TaskSwitcherMode.TASKS_AND_SCHEMAS
-    ) {
+    if (mode === TaskSwitcherMode.TASKS || mode === TaskSwitcherMode.TASKS_AND_SCHEMAS) {
       return taskSchemaIds;
     }
-    return taskSchemaIds?.filter((id) =>
-      id.toString().includes(search.toLowerCase())
-    );
+    return taskSchemaIds?.filter((id) => id.toString().includes(search.toLowerCase()));
   }, [taskSchemaIds, search, mode]);
 
   const filteredHiddenSchemaIds = useMemo(() => {
-    if (
-      mode === TaskSwitcherMode.TASKS ||
-      mode === TaskSwitcherMode.TASKS_AND_SCHEMAS
-    ) {
+    if (mode === TaskSwitcherMode.TASKS || mode === TaskSwitcherMode.TASKS_AND_SCHEMAS) {
       return hiddenSchemaIds;
     }
-    return hiddenSchemaIds?.filter((id) =>
-      id.toString().includes(search.toLowerCase())
-    );
+    return hiddenSchemaIds?.filter((id) => id.toString().includes(search.toLowerCase()));
   }, [hiddenSchemaIds, search, mode]);
 
   return (
@@ -198,10 +179,7 @@ export function TaskSwitcher(props: TaskSwitcherProps) {
           >
             <div className='flex items-center gap-2 overflow-hidden w-full'>
               <div className='flex items-center gap-2.5 w-full'>
-                <div
-                  className='truncate text-gray-800 text-[13px]'
-                  title={label}
-                >
+                <div className='truncate text-gray-800 text-[13px]' title={label}>
                   {label}
                 </div>
               </div>
@@ -216,17 +194,10 @@ export function TaskSwitcher(props: TaskSwitcherProps) {
           </Button>
         )}
       </PopoverTrigger>
-      <PopoverContent
-        className='w-[auto] p-0 rounded-[2px] border-gray-300 font-lato'
-        align='start'
-      >
+      <PopoverContent className='w-[auto] p-0 rounded-[2px] border-gray-300 font-lato' align='start'>
         <Command>
           <CustomCommandInput
-            placeholder={
-              mode === TaskSwitcherMode.SCHEMAS
-                ? 'Search Schemas...'
-                : 'Search AI Agents...'
-            }
+            placeholder={mode === TaskSwitcherMode.SCHEMAS ? 'Search Schemas...' : 'Search AI Agents...'}
             search={search}
             onSearchChange={setSearch}
           />
@@ -257,15 +228,8 @@ export function TaskSwitcher(props: TaskSwitcherProps) {
                   </div>
                 </div>
                 <div className='w-auto flex items-center justify-between pl-3 pr-1 pt-2 font-lato'>
-                  <div className='text-indigo-600 text-xs font-medium uppercase'>
-                    {titleForFeatures ?? 'AI Agents'}
-                  </div>
-                  <Button
-                    variant='newDesign'
-                    className='h-7 px-2 text-xs'
-                    toRoute={defaultRoute}
-                    onClick={close}
-                  >
+                  <div className='text-indigo-600 text-xs font-medium uppercase'>{titleForFeatures ?? 'AI Agents'}</div>
+                  <Button variant='newDesign' className='h-7 px-2 text-xs' toRoute={defaultRoute} onClick={close}>
                     See all
                   </Button>
                 </div>

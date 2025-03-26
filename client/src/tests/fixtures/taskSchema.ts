@@ -13,14 +13,7 @@ export const taskSchemaFixture: {
   simpleSchema: {
     $defs: {
       CalendarEventCategory: {
-        enum: [
-          'UNSPECIFIED',
-          'IN_PERSON_MEETING',
-          'REMOTE_MEETING',
-          'FLIGHT',
-          'TO_DO',
-          'BIRTHDAY',
-        ],
+        enum: ['UNSPECIFIED', 'IN_PERSON_MEETING', 'REMOTE_MEETING', 'FLIGHT', 'TO_DO', 'BIRTHDAY'],
         title: 'CalendarEventCategory',
         type: 'string',
       },
@@ -142,8 +135,7 @@ export const taskSchemaFixture: {
                 },
                 published: {
                   type: 'number',
-                  description:
-                    'Unix timestamp of when the article was published',
+                  description: 'Unix timestamp of when the article was published',
                   examples: [1609459200, 1612137600],
                 },
                 summary: {
@@ -152,10 +144,7 @@ export const taskSchemaFixture: {
                     content: {
                       type: 'string',
                       description: 'Summary content of the article',
-                      examples: [
-                        'Summary of the article content',
-                        'Brief overview of the article',
-                      ],
+                      examples: ['Summary of the article content', 'Brief overview of the article'],
                     },
                   },
                   description: 'Summary of the article',
@@ -169,10 +158,7 @@ export const taskSchemaFixture: {
                   type: 'string',
                   format: 'uri',
                   description: 'Canonical URL of the article',
-                  examples: [
-                    'https://example.com/article1',
-                    'https://example.com/article2',
-                  ],
+                  examples: ['https://example.com/article1', 'https://example.com/article2'],
                 },
                 abstract: {
                   type: 'object',
@@ -191,10 +177,7 @@ export const taskSchemaFixture: {
                     content: {
                       type: 'string',
                       description: 'Main content of the article',
-                      examples: [
-                        'Full content of the article',
-                        'Detailed article content',
-                      ],
+                      examples: ['Full content of the article', 'Detailed article content'],
                     },
                   },
                   description: 'Content of the article',
@@ -202,10 +185,7 @@ export const taskSchemaFixture: {
                 fullContent: {
                   type: 'string',
                   description: 'Complete content of the article',
-                  examples: [
-                    'Complete article text',
-                    'Full text of the article',
-                  ],
+                  examples: ['Complete article text', 'Full text of the article'],
                 },
                 businessEvents: {
                   type: 'array',
@@ -277,10 +257,7 @@ export const taskSchemaFixture: {
                           text: {
                             type: 'string',
                             description: 'Text of the sentence',
-                            examples: [
-                              'Summary sentence one',
-                              'Summary sentence two',
-                            ],
+                            examples: ['Summary sentence one', 'Summary sentence two'],
                           },
                           score: {
                             type: 'number',
@@ -296,18 +273,12 @@ export const taskSchemaFixture: {
                 sanitizedContent: {
                   type: 'string',
                   description: 'Sanitized content of the article',
-                  examples: [
-                    'Sanitized text of the article',
-                    'Cleaned article content',
-                  ],
+                  examples: ['Sanitized text of the article', 'Cleaned article content'],
                 },
                 openAiSummary: {
                   type: 'string',
                   description: 'OpenAI-generated summary of the article',
-                  examples: [
-                    'OpenAI summary text',
-                    'Generated summary content',
-                  ],
+                  examples: ['OpenAI summary text', 'Generated summary content'],
                 },
                 sentiment: {
                   type: 'string',
@@ -334,10 +305,7 @@ export const taskSchemaFixture: {
                         type: 'string',
                         format: 'uri',
                         description: 'URL of the company logo',
-                        examples: [
-                          'https://example.com/logo1.png',
-                          'https://example.com/logo2.png',
-                        ],
+                        examples: ['https://example.com/logo1.png', 'https://example.com/logo2.png'],
                       },
                     },
                   },
@@ -361,8 +329,7 @@ export const taskSchemaFixture: {
         required: ['articles'],
         $defs: {
           DatetimeLocal: {
-            description:
-              'This class represents a local datetime, with a datetime and a timezone.',
+            description: 'This class represents a local datetime, with a datetime and a timezone.',
             properties: {
               date: {
                 description: 'The date of the local datetime.',
@@ -372,8 +339,7 @@ export const taskSchemaFixture: {
                 type: 'string',
               },
               local_time: {
-                description:
-                  'The time of the local datetime without timezone info.',
+                description: 'The time of the local datetime without timezone info.',
                 examples: ['12:00:00', '22:00:00'],
                 format: 'time',
                 title: 'Local Time',
@@ -415,10 +381,7 @@ export const taskSchemaFixture: {
               type: 'string',
               format: 'uri',
               description: 'URL of the company logo',
-              examples: [
-                'https://example.com/logo1.png',
-                'https://example.com/logo2.png',
-              ],
+              examples: ['https://example.com/logo1.png', 'https://example.com/logo2.png'],
             },
             articleCollections: {
               type: 'array',
@@ -432,12 +395,8 @@ export const taskSchemaFixture: {
                   },
                   summary: {
                     type: 'string',
-                    description:
-                      'Summary encompassing the general theme of the articles',
-                    examples: [
-                      'Summary of tech advancements',
-                      'Overview of health sector trends',
-                    ],
+                    description: 'Summary encompassing the general theme of the articles',
+                    examples: ['Summary of tech advancements', 'Overview of health sector trends'],
                   },
                   articles: {
                     type: 'array',
@@ -447,19 +406,13 @@ export const taskSchemaFixture: {
                         title: {
                           type: 'string',
                           description: 'Title of the article',
-                          examples: [
-                            'Breaking News in Tech',
-                            'Latest Health Updates',
-                          ],
+                          examples: ['Breaking News in Tech', 'Latest Health Updates'],
                         },
                         url: {
                           type: 'string',
                           format: 'uri',
                           description: 'URL of the article',
-                          examples: [
-                            'https://example.com/article1',
-                            'https://example.com/article2',
-                          ],
+                          examples: ['https://example.com/article1', 'https://example.com/article2'],
                         },
                         author: {
                           type: 'string',
@@ -473,8 +426,7 @@ export const taskSchemaFixture: {
                         },
                         published: {
                           type: 'number',
-                          description:
-                            'Unix timestamp of when the article was published',
+                          description: 'Unix timestamp of when the article was published',
                           examples: [1609459200, 1612137600],
                         },
                         sentiment: {
@@ -490,23 +442,17 @@ export const taskSchemaFixture: {
                             properties: {
                               label: {
                                 type: 'string',
-                                description:
-                                  'Label describing the business event',
-                                examples: [
-                                  'Product Launch',
-                                  'Merger Announcement',
-                                ],
+                                description: 'Label describing the business event',
+                                examples: ['Product Launch', 'Merger Announcement'],
                               },
                               salienceLevel: {
                                 type: 'string',
-                                description:
-                                  'Importance level of the business event',
+                                description: 'Importance level of the business event',
                                 examples: ['High', 'Medium'],
                               },
                             },
                           },
-                          description:
-                            'Business events mentioned in the article',
+                          description: 'Business events mentioned in the article',
                         },
                       },
                       required: ['title', 'url', 'published', 'businessEvents'],
@@ -521,8 +467,7 @@ export const taskSchemaFixture: {
         },
         $defs: {
           DatetimeLocal: {
-            description:
-              'This class represents a local datetime, with a datetime and a timezone.',
+            description: 'This class represents a local datetime, with a datetime and a timezone.',
             properties: {
               date: {
                 description: 'The date of the local datetime.',
@@ -532,8 +477,7 @@ export const taskSchemaFixture: {
                 type: 'string',
               },
               local_time: {
-                description:
-                  'The time of the local datetime without timezone info.',
+                description: 'The time of the local datetime without timezone info.',
                 examples: ['12:00:00', '22:00:00'],
                 format: 'time',
                 title: 'Local Time',
@@ -671,11 +615,7 @@ export const taskSchemaFixture: {
         runner_version: '2d3865b4c9a6b5801f519769c1a6f3d1',
         variant_id: 'cfecb7657a68aaee88b903f0debc0ab2',
       },
-      tags: [
-        'model=gpt-4-turbo-2024-04-09',
-        'name=WorkflowAI',
-        'provider=openai',
-      ],
+      tags: ['model=gpt-4-turbo-2024-04-09', 'name=WorkflowAI', 'provider=openai'],
     },
     start_time: '2024-04-25T09:59:29.952000Z',
     end_time: '2024-04-25T09:59:45.083000Z',

@@ -15,10 +15,7 @@ export function ListItemSideline(props: ListItemSidelineProps) {
   }
   return (
     <div className='flex items-center'>
-      <Separator
-        orientation='vertical'
-        className={cx('self-start', isLast ? 'h-[50%]' : 'h-full')}
-      />
+      <Separator orientation='vertical' className={cx('self-start', isLast ? 'h-[50%]' : 'h-full')} />
       <Separator className='w-3' />
       <div
         className={cx('pl-4 text-gray-500 font-medium text-sm min-w-[25px]', {

@@ -33,12 +33,7 @@ export function Paging(props: PagingProps) {
 
   const frontPages: number[] = useMemo(() => {
     const result: number[] = [];
-    for (
-      let index = 0;
-      result.length < MAXIMAL_NUMBER_OF_PAGES_ON_LEFT_SIDE &&
-      index < numberOfPages;
-      index++
-    ) {
+    for (let index = 0; result.length < MAXIMAL_NUMBER_OF_PAGES_ON_LEFT_SIDE && index < numberOfPages; index++) {
       result.push(index);
     }
     return result;
@@ -110,10 +105,8 @@ export function Paging(props: PagingProps) {
 
   const getItemClassName = (isActive: boolean, isDisabled?: boolean) =>
     cx('rounded-[2px]', {
-      'bg-gray-200 border border-gray-300 shadow-inner hover:bg-gray-200 cursor-pointer':
-        isActive && !isDisabled,
-      'bg-white shadow-sm border border-gray-200 hover:bg-gray-100 cursor-pointer':
-        !isActive && !isDisabled,
+      'bg-gray-200 border border-gray-300 shadow-inner hover:bg-gray-200 cursor-pointer': isActive && !isDisabled,
+      'bg-white shadow-sm border border-gray-200 hover:bg-gray-100 cursor-pointer': !isActive && !isDisabled,
       'bg-gray-100/60 text-gray-300': isDisabled,
     });
 
@@ -123,10 +116,7 @@ export function Paging(props: PagingProps) {
         <PaginationContent>
           {shouldShowPreviouse && (
             <PaginationItem>
-              <PaginationPrevious
-                onClick={onPreviousePage}
-                className={getItemClassName(false, currentPage === 0)}
-              />
+              <PaginationPrevious onClick={onPreviousePage} className={getItemClassName(false, currentPage === 0)} />
             </PaginationItem>
           )}
 
@@ -188,10 +178,7 @@ export function Paging(props: PagingProps) {
             <PaginationItem>
               <PaginationNext
                 onClick={onNextPage}
-                className={getItemClassName(
-                  false,
-                  currentPage === numberOfPages - 1
-                )}
+                className={getItemClassName(false, currentPage === numberOfPages - 1)}
               />
             </PaginationItem>
           )}

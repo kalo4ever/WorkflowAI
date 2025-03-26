@@ -6,10 +6,7 @@ import { ObjectViewer, ObjectViewerProps } from './ObjectViewer';
 
 const OBJECT_VIEWER_BLACKLISTED_KEYS = new Set(['internal_reasoning_steps']);
 
-type TaskOutputViewerProps = Omit<
-  ObjectViewerProps,
-  'blacklistedKeys' | 'value'
-> & {
+type TaskOutputViewerProps = Omit<ObjectViewerProps, 'blacklistedKeys' | 'value'> & {
   value: TaskOutput | null | undefined;
   streamLoading?: boolean;
   toolCalls?: Array<ToolCallPreview>;
@@ -23,8 +20,7 @@ function ObjectViewerPrefixSlot(props: {
   streamLoading: boolean | undefined;
   defaultOpenForSteps?: boolean;
 }) {
-  const { streamLoading, toolCalls, reasoningSteps, defaultOpenForSteps } =
-    props;
+  const { streamLoading, toolCalls, reasoningSteps, defaultOpenForSteps } = props;
 
   if (isEmpty(reasoningSteps) && isEmpty(toolCalls)) {
     return null;
@@ -41,14 +37,7 @@ function ObjectViewerPrefixSlot(props: {
 }
 
 export function TaskOutputViewer(props: TaskOutputViewerProps) {
-  const {
-    streamLoading,
-    value,
-    toolCalls: toolCallsPreview,
-    reasoningSteps,
-    defaultOpenForSteps,
-    ...rest
-  } = props;
+  const { streamLoading, value, toolCalls: toolCallsPreview, reasoningSteps, defaultOpenForSteps, ...rest } = props;
 
   return (
     <ObjectViewer

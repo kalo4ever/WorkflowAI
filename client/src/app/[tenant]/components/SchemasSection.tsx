@@ -25,9 +25,7 @@ export function SchemaSection(props: SchemaSectionProps) {
         <TaskSchemaBadgeContainer schemaId={taskSchemaId} isActive={isActive} />
         <ChevronUpDownFilled className='ml-2 h-4 w-4 shrink-0 text-gray-500' />
       </div>
-      {showSlash && (
-        <div className='ml-3 text-[14px] font-semibold text-gray-400'>/</div>
-      )}
+      {showSlash && <div className='ml-3 text-[14px] font-semibold text-gray-400'>/</div>}
     </div>
   );
 }

@@ -12,10 +12,7 @@ type TasksSectionProps = {
   tasks: SerializableTask[];
   recentTasksEntries: RecentTasksEntry[];
   isInitialized: boolean;
-  onTryInPlayground: (
-    task: SerializableTask,
-    taskSchemaId?: TaskSchemaID
-  ) => void;
+  onTryInPlayground: (task: SerializableTask, taskSchemaId?: TaskSchemaID) => void;
 };
 
 export function TasksSection(props: TasksSectionProps) {
@@ -23,12 +20,9 @@ export function TasksSection(props: TasksSectionProps) {
 
   const [searchText, setSearchText] = useState('');
 
-  const handleSearchTextChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setSearchText(e.target.value);
-    },
-    []
-  );
+  const handleSearchTextChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchText(e.target.value);
+  }, []);
 
   return (
     <>

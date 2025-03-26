@@ -11,17 +11,9 @@ import { Loader } from '@/components/ui/Loader';
 import { useCompatibleAIModels } from '@/lib/hooks/useCompatibleAIModels';
 import { useDemoMode } from '@/lib/hooks/useDemoMode';
 import { useRedirectWithParams } from '@/lib/queryString';
-import {
-  TaskSchemaParams,
-  taskApiRoute,
-  taskSchemaRoute,
-} from '@/lib/routeFormatter';
+import { TaskSchemaParams, taskApiRoute, taskSchemaRoute } from '@/lib/routeFormatter';
 import { cn } from '@/lib/utils';
-import {
-  sortEnvironmentsInOrderOfImportance,
-  sortVersions,
-  sortVersionsByEnvironment,
-} from '@/lib/versionUtils';
+import { sortEnvironmentsInOrderOfImportance, sortVersions, sortVersionsByEnvironment } from '@/lib/versionUtils';
 import { environmentsForVersion } from '@/lib/versionUtils';
 import { useOrFetchClerkUsers } from '@/store';
 import { getVersionsPerEnvironment, useVersions } from '@/store/versions';
@@ -65,10 +57,7 @@ export function TaskVersionsContainer(props: TaskVersionsContainerProps) {
 
   const [newGroupModalOpen, setNewGroupModalOpen] = useState(false);
 
-  const versionsPerEnvironment = useMemo(
-    () => getVersionsPerEnvironment(versions),
-    [versions]
-  );
+  const versionsPerEnvironment = useMemo(() => getVersionsPerEnvironment(versions), [versions]);
 
   const userIds = useMemo(() => {
     const result = new Set<string>();
@@ -99,22 +88,20 @@ export function TaskVersionsContainer(props: TaskVersionsContainerProps) {
 
     const dict: Record<string, VersionEnvironment[]> = {};
 
-    Object.entries(versionsPerEnvironment).forEach(
-      ([environment, versions]) => {
-        if (!versions) {
+    Object.entries(versionsPerEnvironment).forEach(([environment, versions]) => {
+      if (!versions) {
+        return;
+      }
+      versions.forEach((version) => {
+        if (!version.id) {
           return;
         }
-        versions.forEach((version) => {
-          if (!version.id) {
-            return;
-          }
-          if (!dict[version.id]) {
-            dict[version.id] = [];
-          }
-          dict[version.id].push(environment as VersionEnvironment);
-        });
-      }
-    );
+        if (!dict[version.id]) {
+          dict[version.id] = [];
+        }
+        dict[version.id].push(environment as VersionEnvironment);
+      });
+    });
 
     Object.keys(dict).forEach((key) => {
       dict[key] = sortEnvironmentsInOrderOfImportance(dict[key]);
@@ -182,10 +169,9 @@ export function TaskVersionsContainer(props: TaskVersionsContainerProps) {
     [redirectWithParams, tenant, taskId, taskSchemaId]
   );
 
-  const [editableProperties, setEditableProperties] =
-    useState<TaskVersionEditableProperties>(
-      DEFAULT_TASK_VERSION_EDITABLE_PROPERTIES
-    );
+  const [editableProperties, setEditableProperties] = useState<TaskVersionEditableProperties>(
+    DEFAULT_TASK_VERSION_EDITABLE_PROPERTIES
+  );
 
   const { compatibleModels: models } = useCompatibleAIModels({
     tenant,
@@ -224,8 +210,7 @@ export function TaskVersionsContainer(props: TaskVersionsContainerProps) {
       {sortedVersions.length === 0 && (
         <div className='h-[148px] w-full flex flex-col items-center justify-center px-4 py-3 bg-slate-100 rounded-[20px] text-slate-400 text-[16px]'>
           <div>
-            Click <span className='font-semibold'>Add New Version</span> to
-            create a new version.
+            Click <span className='font-semibold'>Add New Version</span> to create a new version.
           </div>
         </div>
       )}
@@ -238,19 +223,12 @@ export function TaskVersionsContainer(props: TaskVersionsContainerProps) {
             avatarType={avatarType}
             usersByID={usersByID}
             onClone={() => handleCloneVersion(version)}
-            onTryInPlayground={() =>
-              onTryInPlayground(
-                version.id,
-                version.properties.task_variant_id ?? undefined
-              )
-            }
+            onTryInPlayground={() => onTryInPlayground(version.id, version.properties.task_variant_id ?? undefined)}
             onViewCode={() => onViewCode(version)}
             onDeploy={() => onDeployToClick(version.id)}
             showGroupActions={showGroupActions}
             isSelected={`${version.iteration}` === selectedIteration}
-            onSelect={
-              selectedIteration !== undefined ? onIterationChange : undefined
-            }
+            onSelect={selectedIteration !== undefined ? onIterationChange : undefined}
             smallMode={smallMode}
             isInDemoMode={isInDemoMode}
           />

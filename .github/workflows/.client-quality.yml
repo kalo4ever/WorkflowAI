@@ -1,9 +1,17 @@
 name: Client Quality
 on:
   workflow_call:
+    inputs:
+      # Skipping needs to happen at the job level, otherwise
+      # Github will keep waiting for status checks
+      skip:
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   client-quality:
+    if: inputs.skip != true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
@@ -13,5 +21,5 @@ jobs:
           cache: 'yarn'
       - run: yarn install
       - run: yarn prettier-check
-      - run: NODE_OPTIONS="--max-old-space-size=4096" yarn build
-      - run: yarn test
+      - run: NODE_OPTIONS="--max-old-space-size=4096" yarn workspace workflowai build
+      - run: yarn workspace workflowai test

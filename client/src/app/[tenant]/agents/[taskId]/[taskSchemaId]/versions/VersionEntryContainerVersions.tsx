@@ -13,9 +13,7 @@ type VersionEntryContainerVersionsProps = {
   taskSchemaId: TaskSchemaID;
 };
 
-export function VersionEntryContainerVersions(
-  props: VersionEntryContainerVersionsProps
-) {
+export function VersionEntryContainerVersions(props: VersionEntryContainerVersionsProps) {
   const { entry, tenant, taskId, taskSchemaId } = props;
 
   return (

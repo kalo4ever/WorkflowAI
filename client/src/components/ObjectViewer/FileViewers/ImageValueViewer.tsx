@@ -12,20 +12,10 @@ import { FileValueType, extractFileSrc } from './utils';
 
 const ZOOM_FACTOR = 4;
 const MIME_TYPES = IMAGE_MIME_TYPES.join(',');
-const ALLOWED_EXTENSIONS = new Set(
-  IMAGE_MIME_TYPES.map((type) => type.split('/')[1])
-);
+const ALLOWED_EXTENSIONS = new Set(IMAGE_MIME_TYPES.map((type) => type.split('/')[1]));
 
 export function ImageValueViewer(props: ValueViewerProps<unknown>) {
-  const {
-    value,
-    showTypes,
-    showTypesForFiles,
-    className,
-    editable,
-    onEdit,
-    keyPath,
-  } = props;
+  const { value, showTypes, showTypesForFiles, className, editable, onEdit, keyPath } = props;
   const castedValue = value as FileValueType | undefined;
 
   const [zoomPosition, setZoomPosition] = useState<{
@@ -34,24 +24,19 @@ export function ImageValueViewer(props: ValueViewerProps<unknown>) {
   } | null>(null);
   const imgRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseMove = useCallback(
-    (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      if (!imgRef.current) return;
-      const { left, top, width, height } =
-        imgRef.current.getBoundingClientRect();
-      const x = ((event.pageX - left) / width) * 100;
-      const y = ((event.pageY - top) / height) * 100;
-      setZoomPosition({ x, y });
-    },
-    []
-  );
+  const handleMouseMove = useCallback((event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    if (!imgRef.current) return;
+    const { left, top, width, height } = imgRef.current.getBoundingClientRect();
+    const x = ((event.pageX - left) / width) * 100;
+    const y = ((event.pageY - top) / height) * 100;
+    setZoomPosition({ x, y });
+  }, []);
 
   const handleMouseLeave = useCallback(() => {
     setZoomPosition(null);
   }, []);
 
-  const isRealImage =
-    castedValue && castedValue?.content_type?.startsWith('image');
+  const isRealImage = castedValue && castedValue?.content_type?.startsWith('image');
 
   const onChange = useCallback(
     async (file: File) => {
@@ -95,14 +80,7 @@ export function ImageValueViewer(props: ValueViewerProps<unknown>) {
   );
 
   if (!editable && (showTypes || showTypesForFiles)) {
-    return (
-      <ReadonlyValue
-        {...props}
-        value='image'
-        referenceValue={undefined}
-        icon={<ImagePlaceholderIcon />}
-      />
-    );
+    return <ReadonlyValue {...props} value='image' referenceValue={undefined} icon={<ImagePlaceholderIcon />} />;
   }
 
   const src = extractFileSrc(castedValue);
@@ -115,12 +93,7 @@ export function ImageValueViewer(props: ValueViewerProps<unknown>) {
   if (!src) {
     return (
       <div className='w-full flex flex-col gap-3'>
-        <FileUploader
-          className={className}
-          onChange={onChange}
-          accept={MIME_TYPES}
-          text='Any PNG, JPEG or WEBP'
-        />
+        <FileUploader className={className} onChange={onChange} accept={MIME_TYPES} text='Any PNG, JPEG or WEBP' />
         <URLFileUploader onLoad={onUrlLoad} />
       </div>
     );
@@ -136,11 +109,7 @@ export function ImageValueViewer(props: ValueViewerProps<unknown>) {
         dialogContent={
           <div className='flex items-center justify-center overflow-hidden p-1'>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={src}
-              alt={castedValue?.name}
-              className='h-full rounded-md shadow'
-            />
+            <img src={src} alt={castedValue?.name} className='h-full rounded-md shadow' />
           </div>
         }
       >
@@ -151,11 +120,7 @@ export function ImageValueViewer(props: ValueViewerProps<unknown>) {
           onMouseLeave={handleMouseLeave}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={src}
-            alt={alt}
-            className='w-auto max-w-[250px] rounded-md shadow cursor-zoom-in'
-          />
+          <img src={src} alt={alt} className='w-auto max-w-[250px] rounded-md shadow cursor-zoom-in' />
         </div>
       </DocumentPreviewControls>
       {isRealImage && zoomPosition && !!imgRef.current && (

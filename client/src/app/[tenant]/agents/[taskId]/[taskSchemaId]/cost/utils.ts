@@ -41,24 +41,13 @@ type CostData = {
   total: number;
 };
 
-export function processTaskStats(
-  taskStats: TaskStats[],
-  mode: 'cost' | 'runs',
-  timeFrame: TimeFrame
-): CostData {
-  const statsMap = new Map(
-    taskStats.map((stats) => [
-      new Date(stats.date).toISOString().split('T')[0],
-      stats,
-    ])
-  );
+export function processTaskStats(taskStats: TaskStats[], mode: 'cost' | 'runs', timeFrame: TimeFrame): CostData {
+  const statsMap = new Map(taskStats.map((stats) => [new Date(stats.date).toISOString().split('T')[0], stats]));
 
   let startDate: Date;
 
   if (timeFrame === TimeFrame.ALL_TIME && taskStats.length > 0) {
-    startDate = new Date(
-      Math.min(...taskStats.map((stats) => new Date(stats.date).getTime()))
-    );
+    startDate = new Date(Math.min(...taskStats.map((stats) => new Date(stats.date).getTime())));
   } else {
     startDate = getTimeFrameStartDate(timeFrame);
   }
@@ -67,11 +56,7 @@ export function processTaskStats(
   const endDate = new Date();
   let total = 0;
 
-  for (
-    let date = new Date(startDate);
-    date <= endDate;
-    date.setDate(date.getDate() + 1)
-  ) {
+  for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
     const formattedDate = `${date.getMonth() + 1}/${date.getDate()}`;
     const dateKey = date.toISOString().split('T')[0];
     const stats = statsMap.get(dateKey);

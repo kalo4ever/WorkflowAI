@@ -5,8 +5,6 @@ export function getTaskDescription(task: SerializableTask | undefined) {
   if (!versions || versions.length === 0) {
     return undefined;
   }
-  const description = versions.find(
-    (version) => !!version.description
-  )?.description;
+  const description = versions.find((version) => !!version.description)?.description;
   return !!description ? description : undefined;
 }

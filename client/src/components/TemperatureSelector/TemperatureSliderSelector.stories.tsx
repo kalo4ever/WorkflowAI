@@ -5,9 +5,7 @@ import { TemperatureSliderSelector } from './TemperatureSliderSelector';
 function Wrapper() {
   const [value, setValue] = useState<number>(1);
   const onChange = useCallback((value: number) => setValue(value), []);
-  return (
-    <TemperatureSliderSelector temperature={value} setTemperature={onChange} />
-  );
+  return <TemperatureSliderSelector temperature={value} setTemperature={onChange} />;
 }
 
 const meta = {

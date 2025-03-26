@@ -54,8 +54,7 @@ export const taskRunFixtures: {
       task_id: 'taskinputoutputclassgeneration',
       task_schema_id: 1,
       task_input: {
-        task_description:
-          'Create a class that handles input and output operations.',
+        task_description: 'Create a class that handles input and output operations.',
       },
       task_input_hash: '376305826d58a42181d5c2377ad7db7f',
       task_output: {
@@ -97,11 +96,7 @@ export const taskRunFixtures: {
           runner_version: '193c996bb972aba3d50a62905b80ab14',
           variant_id: '0f71e53ad05cc09c44a018f163ada523',
         },
-        tags: [
-          'model=gpt-3.5-turbo-1106',
-          'name=WorkflowAI',
-          'provider=openai',
-        ],
+        tags: ['model=gpt-3.5-turbo-1106', 'name=WorkflowAI', 'provider=openai'],
       },
       start_time: '2024-04-24T14:10:39.883000Z',
       end_time: '2024-04-24T14:10:43.125000Z',
@@ -160,12 +155,7 @@ export const taskRunFixtures: {
           runner_version: 'abd8fc3062851e549447b9805362d229',
           variant_id: '0f71e53ad05cc09c44a018f163ada523',
         },
-        tags: [
-          'model=gpt-4-turbo-2024-04-09',
-          'name=WorkflowAI',
-          'provider=openai',
-          'temperature=0.00',
-        ],
+        tags: ['model=gpt-4-turbo-2024-04-09', 'name=WorkflowAI', 'provider=openai', 'temperature=0.00'],
       },
       start_time: '2024-04-24T14:19:13.165000Z',
       end_time: '2024-04-24T14:19:24.402000Z',
@@ -200,8 +190,7 @@ export const taskRunFixtures: {
           properties: {
             response: {
               type: 'string',
-              description:
-                'The response message echoing the input with acknowledgment',
+              description: 'The response message echoing the input with acknowledgment',
               example: 'Received your message: Hello, world!',
             },
           },
@@ -221,12 +210,7 @@ export const taskRunFixtures: {
           runner_version: 'abd8fc3062851e549447b9805362d229',
           variant_id: '0f71e53ad05cc09c44a018f163ada523',
         },
-        tags: [
-          'model=gpt-4-turbo-2024-04-09',
-          'name=WorkflowAI',
-          'provider=openai',
-          'temperature=0.00',
-        ],
+        tags: ['model=gpt-4-turbo-2024-04-09', 'name=WorkflowAI', 'provider=openai', 'temperature=0.00'],
       },
       start_time: '2024-04-24T14:21:18.848000Z',
       end_time: '2024-04-24T14:21:26.351000Z',
@@ -261,11 +245,7 @@ export const taskRunFixtures: {
             response: {
               type: 'string',
               description: 'A friendly response to the greeting',
-              examples: [
-                'Hello there!',
-                'Hi, how can I help you?',
-                'Coucou! How are you?',
-              ],
+              examples: ['Hello there!', 'Hi, how can I help you?', 'Coucou! How are you?'],
             },
           },
           required: ['response'],
@@ -285,12 +265,7 @@ export const taskRunFixtures: {
           runner_version: 'abd8fc3062851e549447b9805362d229',
           variant_id: '0f71e53ad05cc09c44a018f163ada523',
         },
-        tags: [
-          'model=gpt-4-turbo-2024-04-09',
-          'name=WorkflowAI',
-          'provider=openai',
-          'temperature=0.00',
-        ],
+        tags: ['model=gpt-4-turbo-2024-04-09', 'name=WorkflowAI', 'provider=openai', 'temperature=0.00'],
       },
       start_time: '2024-04-24T14:40:36.078000Z',
       end_time: '2024-04-24T14:40:47.910000Z',
@@ -345,12 +320,7 @@ export const taskRunFixtures: {
           runner_version: 'abd8fc3062851e549447b9805362d229',
           variant_id: '0f71e53ad05cc09c44a018f163ada523',
         },
-        tags: [
-          'model=gpt-4-turbo-2024-04-09',
-          'name=WorkflowAI',
-          'provider=openai',
-          'temperature=0.00',
-        ],
+        tags: ['model=gpt-4-turbo-2024-04-09', 'name=WorkflowAI', 'provider=openai', 'temperature=0.00'],
       },
       start_time: '2024-04-24T09:16:41.431000Z',
       end_time: '2024-04-24T09:16:51.347000Z',
@@ -405,12 +375,7 @@ export const taskRunFixtures: {
           runner_version: 'abd8fc3062851e549447b9805362d229',
           variant_id: '0f71e53ad05cc09c44a018f163ada523',
         },
-        tags: [
-          'model=gpt-4-turbo-2024-04-09',
-          'name=WorkflowAI',
-          'provider=openai',
-          'temperature=0.00',
-        ],
+        tags: ['model=gpt-4-turbo-2024-04-09', 'name=WorkflowAI', 'provider=openai', 'temperature=0.00'],
       },
       start_time: '2024-04-24T09:18:46.116000Z',
       end_time: '2024-04-24T09:18:54.522000Z',

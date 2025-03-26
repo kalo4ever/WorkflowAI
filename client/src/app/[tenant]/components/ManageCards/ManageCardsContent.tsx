@@ -1,8 +1,5 @@
 import { TenantID } from '@/types/aliases';
-import {
-  OrganizationSettings,
-  PaymentMethodResponse,
-} from '@/types/workflowAI';
+import { PaymentMethodResponse, TenantData } from '@/types/workflowAI';
 import { AddPaymentMethodContent } from './AddPaymentMethodContent';
 import { AmountToAddSection } from './AmountToAddSection';
 import { AutomaticPaymentsSection } from './AutomaticPaymentsSection';
@@ -15,7 +12,7 @@ import { PaymentMethodSection } from './PaymentMethodSection';
 type ManageCardsContentProps = {
   tenant: TenantID | undefined;
   isPaymentMethodAvailable: boolean;
-  organizationSettings: OrganizationSettings;
+  organizationSettings: TenantData;
   paymentMethod: PaymentMethodResponse | undefined;
   balance: number | undefined;
   onAddCredits: () => void;
@@ -52,12 +49,7 @@ export function ManageCardsContent(props: ManageCardsContentProps) {
   } = props;
 
   if (showAddPaymentMethod) {
-    return (
-      <AddPaymentMethodContent
-        tenant={tenant}
-        setIsOpen={() => setShowAddPaymentMethod(false)}
-      />
-    );
+    return <AddPaymentMethodContent tenant={tenant} setIsOpen={() => setShowAddPaymentMethod(false)} />;
   }
 
   if (showEnableAutoRecharge) {
@@ -84,21 +76,14 @@ export function ManageCardsContent(props: ManageCardsContentProps) {
         addPaymentMethod={() => setShowAddPaymentMethod(true)}
         deletePaymentMethod={deletePaymentMethod}
       />
-      <AmountToAddSection
-        amountToAdd={amountToAdd}
-        setAmountToAdd={setAmountToAdd}
-      />
+      <AmountToAddSection amountToAdd={amountToAdd} setAmountToAdd={setAmountToAdd} />
       <AutomaticPaymentsSection
         automaticPaymentsFailed={automaticPaymentsFailed}
         organizationSettings={organizationSettings}
         onEnableAutoRecharge={() => setShowEnableAutoRecharge(true)}
       />
       <BottomButtonBar
-        tooltipText={
-          !isPaymentMethodAvailable
-            ? 'Add a Payment method before adding credits'
-            : undefined
-        }
+        tooltipText={!isPaymentMethodAvailable ? 'Add a Payment method before adding credits' : undefined}
         actionText='Add Credits'
         isActionDisabled={!isAddCreditsButtonActive}
         onCancel={() => setIsOpen(false)}

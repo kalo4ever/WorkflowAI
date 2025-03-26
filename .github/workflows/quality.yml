@@ -25,10 +25,12 @@ jobs:
               - 'client/**'
   api:
     needs: changes
-    if: ${{ needs.changes.outputs.api == 'true' }}
     uses: ./.github/workflows/.api-quality.yml
+    with:
+      skip: ${{ needs.changes.outputs.api == 'false' }}
 
   client:
     needs: changes
-    if: ${{ needs.changes.outputs.client == 'true' }}
     uses: ./.github/workflows/.client-quality.yml
+    with:
+      skip: ${{ needs.changes.outputs.client == 'false' }}

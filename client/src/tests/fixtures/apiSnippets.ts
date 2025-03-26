@@ -1,8 +1,4 @@
-import {
-  CodeLanguage,
-  InstallInstruction,
-  InstallationSnippet,
-} from '@/types/snippets';
+import { CodeLanguage, InstallInstruction, InstallationSnippet } from '@/types/snippets';
 
 export const apiSnippetsFixture: InstallationSnippet = {
   [InstallInstruction.SDK]: {

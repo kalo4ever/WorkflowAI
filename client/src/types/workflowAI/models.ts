@@ -55,8 +55,14 @@ export type AmazonBedrockConfig = {
   provider?: 'amazon_bedrock';
   aws_bedrock_access_key: string;
   aws_bedrock_secret_key: string;
+  resource_id_x_model_map: Record<string, string>;
   available_model_x_region_map: Record<string, string>;
   default_region?: string;
+};
+
+export type AnnotateFeedbackRequest = {
+  annotation: 'resolved' | 'incorrect' | 'correct';
+  comment?: string | null;
 };
 
 export type AnthropicConfig = {
@@ -87,6 +93,21 @@ export type AzureOpenAIConfig = {
   default_region?: string;
 };
 
+export type BaseFeature = {
+  /**
+   * The name of the feature, displayed in the UI
+   */
+  name: string;
+  /**
+   * A description of the feature, displayed in the UI
+   */
+  description: string;
+  /**
+   * The specifications of the feature, used to generate the feature input and output schema, for internal use only, NOT displayed in the UI. To be provided for 'static' feature suggestions only, null otherwise
+   */
+  specifications: string | null;
+};
+
 export type Body_upload_file__tenant__upload__task_id__post = {
   file: Blob | File;
 };
@@ -112,12 +133,7 @@ export type BuildAgentRequest = {
   stream?: boolean;
 };
 
-export type CacheUsage =
-  | 'auto'
-  | 'always'
-  | 'never'
-  | 'when_available'
-  | 'only';
+export type CacheUsage = 'auto' | 'always' | 'never' | 'when_available' | 'only';
 
 export type ChatMessage = {
   /**
@@ -153,7 +169,7 @@ export type CreateAgentRequest = {
   /**
    * The agent id, must be unique per tenant and URL safe
    */
-  id: string;
+  id?: string;
   /**
    * The input schema for the agent
    */
@@ -165,19 +181,70 @@ export type CreateAgentRequest = {
   /**
    * The name of the agent, if not provided, a TitleCase version of the id is used
    */
-  name?: string | null;
+  name?: string;
   /**
    * the chat messages that originated the creation of the task, if created from the chat UI
    */
   chat_messages?: Array<ChatMessage> | null;
+  /**
+   * By default, the schemas are sanitized to make sure that slight changes in schema do not result
+   * in a new agent schema id being generated. The schema that we store is then a schema compatible with the
+   * original one for validation purposes.
+   * The sanitation includes:
+   * - splatting $refs that are not specific to WorkflowAI
+   * - replacing nullable optional fields with simply optional fields
+   * - ordering the `required` field
+   * - removing anyOf, oneOf and allOf when possible
+   * - adding missing type keys
+   *
+   */
+  sanitize_schemas?: boolean;
 };
 
 export type CreateAgentResponse = {
+  /**
+   * A human readable, url safe id for the agent
+   */
   id: string;
+  /**
+   * A unique integer identifier for the agent
+   */
   uid: number;
+  /**
+   * The name of the agent
+   */
   name: string;
+  /**
+   * The id of the created schema
+   */
   schema_id: number;
+  /**
+   * The id of the created variant
+   */
   variant_id: string;
+};
+
+export type CreateFeedbackRequest = {
+  /**
+   * The feedback token, as returned in the run payload
+   */
+  feedback_token: string;
+  outcome: 'positive' | 'negative';
+  /**
+   * An optional comment for the feedback
+   */
+  comment?: string | null;
+  /**
+   * An ID for the user that is posting the feedback. Only a single feedback per user (including anonymous) per feedback_token is allowed. Posting a new feedback will overwrite the existing one.
+   */
+  user_id?: string | null;
+};
+
+export type CreateFeedbackResponse = {
+  id: string;
+  outcome: 'positive' | 'negative';
+  comment: string | null;
+  user_id: string | null;
 };
 
 export type CreatePaymentIntentRequest = {
@@ -207,31 +274,6 @@ export type CreateTaskGroupRequest = {
    * Note that it means that the group will not be usable as is by internal runners.
    */
   use_external_runner?: boolean;
-};
-
-export type CreateTaskRequest = {
-  input_schema: Record<string, unknown>;
-  output_schema: Record<string, unknown>;
-  /**
-   * the chat messages that originated the creation of the task, if created from the chat UI
-   */
-  chat_messages?: Array<ChatMessage> | null;
-  /**
-   * Wether or not to create a first iteration for the task, that uses the default model and LLM generated instructions
-   */
-  create_first_iteration?: boolean;
-  /**
-   * Wether or not to skip the generation of the task instructions and image
-   */
-  skip_generation?: boolean;
-  /**
-   * the task display name
-   */
-  name: string;
-  /**
-   * the task id, stable accross all variants. If not provided, an id based on the name is generated.
-   */
-  task_id?: string | null;
 };
 
 export type CreateTaskRunRequest = {
@@ -275,24 +317,6 @@ export type CreateTaskRunRequest = {
    * The cost of the task run in USD
    */
   cost_usd?: number | null;
-};
-
-export type CreateTaskSchemaRequest = {
-  input_schema: Record<string, unknown>;
-  output_schema: Record<string, unknown>;
-  /**
-   * the chat messages that originated the creation of the task, if created from the chat UI
-   */
-  chat_messages?: Array<ChatMessage> | null;
-  /**
-   * Wether or not to create a first iteration for the task, that uses the default model and LLM generated instructions
-   */
-  create_first_iteration?: boolean;
-  /**
-   * the task display name
-   */
-  name: string;
-  skip_generation?: boolean;
 };
 
 export type CreateVersionRequest = {
@@ -462,6 +486,57 @@ export type DocumentURLDict = {
   url: string;
 };
 
+export type EditSchemaToolCall = {
+  tool_name?: string;
+  status?: 'assistant_proposed' | 'user_ignored' | 'completed' | 'failed';
+  /**
+   * Whether the tool call should be automatically executed by on the frontend (true), or if the user should be prompted to run the tool call (false).
+   */
+  auto_run?: boolean | null;
+  tool_call_id?: string;
+  /**
+   * The message to edit the agent schema with.
+   */
+  edition_request_message?: string | null;
+};
+
+export type FeaturePreviewRequest = {
+  feature: BaseFeature;
+  /**
+   * To provide for company-specific feature suggestions, null otherwise
+   */
+  company_context: string | null;
+};
+
+export type FeatureSchemas = {
+  input_schema?: Record<string, unknown> | null;
+  output_schema?: Record<string, unknown> | null;
+};
+
+export type FeatureSectionPreview = {
+  name: string;
+  tags: Array<TagPreview>;
+};
+
+export type FeatureSectionResponse = {
+  sections?: Array<FeatureSectionPreview> | null;
+};
+
+export type Feedback = {
+  outcome: 'positive' | 'negative';
+  annotation: 'resolved' | 'incorrect' | 'correct' | null;
+};
+
+export type FeedbackItem = {
+  id: string;
+  outcome: 'positive' | 'negative';
+  user_id?: string | null;
+  comment?: string | null;
+  created_at: string;
+  annotation: 'resolved' | 'incorrect' | 'correct' | null;
+  run_id: string;
+};
+
 export type FewShotConfiguration = {
   /**
    * The number of few-shot examples to use for the task
@@ -486,17 +561,7 @@ export type FieldQuery = {
   field_name: string;
   operator: SearchOperator;
   values: Array<unknown>;
-  type?:
-    | 'string'
-    | 'number'
-    | 'integer'
-    | 'boolean'
-    | 'object'
-    | 'array'
-    | 'null'
-    | 'array_length'
-    | 'date'
-    | null;
+  type?: 'string' | 'number' | 'integer' | 'boolean' | 'object' | 'array' | 'null' | 'array_length' | 'date' | null;
 };
 
 export type File = {
@@ -568,6 +633,20 @@ export type FullVersionProperties = {
   [key: string]: unknown;
 };
 
+export type GenerateAgentInputToolCall = {
+  tool_name?: string;
+  status?: 'assistant_proposed' | 'user_ignored' | 'completed' | 'failed';
+  /**
+   * Whether the tool call should be automatically executed by on the frontend (true), or if the user should be prompted to run the tool call (false).
+   */
+  auto_run?: boolean | null;
+  tool_call_id?: string;
+  /**
+   * The instructions on how to generate the agent input, this message will be passed to the input generation agent.
+   */
+  instructions?: string | null;
+};
+
 export type GenerateCodeBlockRequest = {
   group_iteration: number;
   group_environment: string;
@@ -610,16 +689,15 @@ export type GenerateTaskPreviewRequest = {
   current_preview?: TaskPreview | null;
 };
 
+export type GetFeedbackResponse = {
+  outcome: 'positive' | 'negative' | null;
+};
+
 export type GoogleGeminiAPIProviderConfig = {
   provider?: 'google_gemini';
   api_key: string;
   url: string;
-  default_block_threshold?:
-    | 'BLOCK_LOW_AND_ABOVE'
-    | 'BLOCK_MEDIUM_AND_ABOVE'
-    | 'BLOCK_ONLY_HIGH'
-    | 'BLOCK_NONE'
-    | null;
+  default_block_threshold?: 'BLOCK_LOW_AND_ABOVE' | 'BLOCK_MEDIUM_AND_ABOVE' | 'BLOCK_ONLY_HIGH' | 'BLOCK_NONE' | null;
 };
 
 export type GoogleProviderConfig = {
@@ -627,12 +705,7 @@ export type GoogleProviderConfig = {
   vertex_project: string;
   vertex_credentials: string;
   vertex_location: Array<string>;
-  default_block_threshold?:
-    | 'BLOCK_LOW_AND_ABOVE'
-    | 'BLOCK_MEDIUM_AND_ABOVE'
-    | 'BLOCK_ONLY_HIGH'
-    | 'BLOCK_NONE'
-    | null;
+  default_block_threshold?: 'BLOCK_LOW_AND_ABOVE' | 'BLOCK_MEDIUM_AND_ABOVE' | 'BLOCK_ONLY_HIGH' | 'BLOCK_NONE' | null;
 };
 
 export type GroqConfig = {
@@ -665,8 +738,31 @@ export type ImportInputsRequest = {
   stream?: boolean;
 };
 
+export type ImprovePromptToolCall = {
+  tool_name?: string;
+  status?: 'assistant_proposed' | 'user_ignored' | 'completed' | 'failed';
+  /**
+   * Whether the tool call should be automatically executed by on the frontend (true), or if the user should be prompted to run the tool call (false).
+   */
+  auto_run?: boolean | null;
+  tool_call_id?: string;
+  /**
+   * The id of the run to improve
+   */
+  run_id?: string | null;
+  /**
+   * The feedback on the run (what is wrong with the output of the run, what is the expected output, etc.).
+   */
+  run_feedback_message: string;
+};
+
 export type ImproveVersionRequest = {
-  run_id: string;
+  run_id?: string | null;
+  variant_id?: string | null;
+  instructions?: string | null;
+  /**
+   * A comment on why the task run was not optimal
+   */
   user_evaluation: string;
   stream?: boolean;
 };
@@ -730,16 +826,7 @@ export type Item = {
   /**
    * The type of the field
    */
-  type:
-    | 'string'
-    | 'number'
-    | 'integer'
-    | 'boolean'
-    | 'object'
-    | 'array'
-    | 'null'
-    | 'array_length'
-    | 'date';
+  type: 'string' | 'number' | 'integer' | 'boolean' | 'object' | 'array' | 'null' | 'array_length' | 'date';
 };
 
 export type LLMCompletion = {
@@ -813,6 +900,40 @@ export type MajorVersionProperties = {
   task_variant_id: string | null;
 };
 
+export type MetaAgentChatMessage = {
+  /**
+   * The role of the message sender, 'USER' is the actual human user browsing the playground, 'PLAYGROUND' are automated messages sent by the playground to the agent, and 'ASSISTANT' being the assistant generated by the agent
+   */
+  role: 'USER' | 'PLAYGROUND' | 'ASSISTANT';
+  /**
+   * The content of the message
+   */
+  content: string;
+  /**
+   * The tool call to run in the frontend to help the user improve its agent instructions.
+   */
+  tool_call?:
+    | ImprovePromptToolCall
+    | EditSchemaToolCall
+    | RunCurrentAgentOnModelsToolCall
+    | GenerateAgentInputToolCall
+    | null;
+
+  feedback_token?: string | null;
+};
+
+export type MetaAgentChatRequest = {
+  schema_id: number;
+  /**
+   * The state of the playground
+   */
+  playground_state: PlaygroundState;
+  /**
+   * The list of messages in the conversation, the last message being the most recent one
+   */
+  messages: Array<MetaAgentChatMessage>;
+};
+
 export type MinorVersion = {
   /**
    * The id of the full version
@@ -876,6 +997,7 @@ export type Model =
   | 'gpt-3.5-turbo-0125'
   | 'gpt-3.5-turbo-1106'
   | 'gemini-2.0-flash-001'
+  | 'gemini-2.0-flash-lite-001'
   | 'gemini-2.0-flash-lite-preview-02-05'
   | 'gemini-2.0-pro-exp-02-05'
   | 'gemini-2.0-flash-exp'
@@ -1006,27 +1128,13 @@ export type OpenAIConfig = {
   api_key: string;
 };
 
-export type OrganizationSettings = {
-  uid?: number;
-  tenant?: string;
-  slug?: string;
-  name?: string | null;
-  org_id?: string | null;
-  anonymous_user_id?: string | null;
-  anonymous?: boolean | null;
-  stripe_customer_id?: string | null;
-  providers?: Array<ProviderSettings>;
-  added_credits_usd?: number;
-  current_credits_usd?: number;
-  locked_for_payment?: boolean | null;
-  last_payment_failed_at?: string | null;
-  automatic_payment_enabled?: boolean;
-  automatic_payment_threshold?: number | null;
-  automatic_payment_balance_to_maintain?: number | null;
-};
-
 export type Page_DeployedVersionsResponse_ = {
   items: Array<DeployedVersionsResponse>;
+  count?: number | null;
+};
+
+export type Page_FeedbackItem_ = {
+  items: Array<FeedbackItem>;
   count?: number | null;
 };
 
@@ -1113,6 +1221,29 @@ export type PaymentMethodResponse = {
   exp_year: number;
 };
 
+export type PlaygroundState = {
+  /**
+   * The input for the agent
+   */
+  agent_input?: Record<string, unknown> | null;
+  /**
+   * The instructions for the agent
+   */
+  agent_instructions?: string | null;
+  /**
+   * The temperature for the agent
+   */
+  agent_temperature?: number | null;
+  /**
+   * The models currently selected in the playground
+   */
+  selected_models: SelectedModels;
+  /**
+   * The ids of the runs currently displayed in the playground
+   */
+  agent_run_ids: Array<string>;
+};
+
 export type PreviousVersion = {
   major: number;
   changelog: Array<string>;
@@ -1168,6 +1299,31 @@ export type ReviewBenchmark = {
   is_building_ai_reviewer?: boolean;
 };
 
+export type RunConfig = {
+  /**
+   * The column to run the agent on the agent will be run on all columns
+   */
+  run_on_column?: 'column_1' | 'column_2' | 'column_3' | null;
+  /**
+   * The model to run the agent on the agent will be run on all models
+   */
+  model?: string | null;
+};
+
+export type RunCurrentAgentOnModelsToolCall = {
+  tool_name?: string;
+  status?: 'assistant_proposed' | 'user_ignored' | 'completed' | 'failed';
+  /**
+   * Whether the tool call should be automatically executed by on the frontend (true), or if the user should be prompted to run the tool call (false).
+   */
+  auto_run?: boolean | null;
+  tool_call_id?: string;
+  /**
+   * The list of configurations to run the current agent on.
+   */
+  run_configs?: Array<RunConfig> | null;
+};
+
 export type RunItemV1 = {
   /**
    * the id of the task run
@@ -1191,6 +1347,11 @@ export type RunItemV1 = {
   created_at: string;
   user_review: 'positive' | 'negative' | null;
   ai_review: 'positive' | 'negative' | 'unsure' | 'in_progress' | null;
+  feedback?: Array<Feedback> | null;
+  /**
+   * A signed token that can be used to post feedback from a client side application
+   */
+  feedback_token: string;
   /**
    * A preview of the input data
    */
@@ -1206,13 +1367,7 @@ export type RunReplyRequest = {
   /**
    * The version of the task to reply to. If not provided the latest version is used.
    */
-  version?:
-    | number
-    | VersionEnvironment
-    | TaskGroupProperties_Input
-    | string
-    | MajorMinor
-    | null;
+  version?: number | VersionEnvironment | TaskGroupProperties_Input | string | MajorMinor | null;
   user_message?: string | null;
   tool_results?: Array<ToolCallResult> | null;
   metadata?: Record<string, unknown> | null;
@@ -1221,12 +1376,7 @@ export type RunReplyRequest = {
 
 export type RunRequest = {
   task_input: Record<string, unknown>;
-  version:
-    | number
-    | VersionEnvironment
-    | TaskGroupProperties_Input
-    | string
-    | MajorMinor;
+  version: number | VersionEnvironment | TaskGroupProperties_Input | string | MajorMinor;
   /**
    * An optional id, must be a valid uuid7. If not provided a uuid7 will be generated
    */
@@ -1278,6 +1428,11 @@ export type RunV1 = {
   created_at: string;
   user_review: 'positive' | 'negative' | null;
   ai_review: 'positive' | 'negative' | 'unsure' | 'in_progress' | null;
+  feedback?: Array<Feedback> | null;
+  /**
+   * A signed token that can be used to post feedback from a client side application
+   */
+  feedback_token: string;
   task_input: TaskInputDict;
   task_output: TaskOutputDict;
   reasoning_steps: Array<ReasoningStep> | null;
@@ -1320,6 +1475,21 @@ export type SearchTaskRunsRequest = {
   offset?: number;
 };
 
+export type SelectedModels = {
+  /**
+   * The id of the model selected in the first column of the playground, if empty, no model is selected in the first column
+   */
+  column_1: string | null;
+  /**
+   * The id of the model selected in the second column of the playground, if empty, no model is selected in the second column
+   */
+  column_2: string | null;
+  /**
+   * The id of the model selected in the third column of the playground, if empty, no model is selected in the third column
+   */
+  column_3: string | null;
+};
+
 export type SerializableTask = {
   id: string;
   name: string;
@@ -1329,6 +1499,7 @@ export type SerializableTask = {
   average_cost_usd?: number | null;
   run_count?: number | null;
   versions: Array<PartialTaskVersion>;
+  uid: number;
 };
 
 export type SerializableTaskIO = {
@@ -1441,37 +1612,6 @@ export type SerializableTaskRun = {
   is_external?: boolean | null;
 };
 
-export type SerializableTaskVariant = {
-  /**
-   * the task version id, computed based on the other parameters. Read only.
-   */
-  id: string;
-  /**
-   * the task id, stable accross all versions
-   */
-  task_id?: string;
-  task_uid?: number;
-  /**
-   * The task schema idx. The schema index only changes when the types
-   * of the input / ouput objects change so all task versions with the same schema idx
-   * have compatible input / output objects. Read only
-   */
-  task_schema_id?: number;
-  /**
-   * the task display name
-   */
-  name: string;
-  /**
-   * a concise task description
-   */
-  description?: string | null;
-  input_schema: SerializableTaskIO;
-  output_schema: SerializableTaskIO;
-  created_at?: string;
-  is_public?: boolean | null;
-  creation_chat_messages?: Array<ChatMessage> | null;
-};
-
 export type ShortVersionProperties = {
   /**
    * The LLM model used for the run
@@ -1514,6 +1654,11 @@ export type StandardMessage = {
       >;
 };
 
+export type TagPreview = {
+  name: string;
+  kind: 'static' | 'company_specific';
+};
+
 export type TaskEvaluationPatchRequest = {
   evaluation_instructions: string;
 };
@@ -1523,16 +1668,6 @@ export type TaskEvaluationResponse = {
    * The task level instructions for the AI reviewer. The instructions are passed with every evaluation.
    */
   evaluation_instructions: string;
-};
-
-export type TaskGenerateRequest = {
-  description: string;
-};
-
-export type TaskGenerateResponse = {
-  name: string;
-  input_schema: Record<string, unknown>;
-  output_schema: Record<string, unknown>;
 };
 
 export type TaskGroup = {
@@ -1652,7 +1787,7 @@ export type TaskGroupProperties_Input = {
    * Whether to use chain of thought prompting for the task
    */
   is_chain_of_thought_enabled?: boolean | null;
-  enabled_tools?: Array<ToolKind | core__domain__tasks__tool__Tool> | null;
+  enabled_tools?: Array<ToolKind | core__domain__tool__Tool> | null;
   /**
    * Whether to use structured generation for the task
    */
@@ -1856,6 +1991,26 @@ export type TaskStatsResponse = {
   data: Array<TaskStats>;
 };
 
+export type TenantData = {
+  uid?: number;
+  tenant?: string;
+  slug?: string;
+  name?: string | null;
+  org_id?: string | null;
+  owner_id?: string | null;
+  anonymous_user_id?: string | null;
+  anonymous?: boolean | null;
+  stripe_customer_id?: string | null;
+  providers?: Array<ProviderSettings>;
+  added_credits_usd?: number;
+  current_credits_usd?: number;
+  locked_for_payment?: boolean | null;
+  last_payment_failed_at?: string | null;
+  automatic_payment_enabled?: boolean;
+  automatic_payment_threshold?: number | null;
+  automatic_payment_balance_to_maintain?: number | null;
+};
+
 export type TextContentDict = {
   type: 'text';
   text: string;
@@ -2017,6 +2172,7 @@ export type ValidationError = {
 };
 
 export type Version = {
+  id: string;
   properties: TaskGroupProperties;
 };
 
@@ -2088,11 +2244,11 @@ export type VersionV1 = {
   /**
    * The full input schema used for this version. Includes descriptions and examples
    */
-  input_schema?: Record<string, unknown>;
+  input_schema: Record<string, unknown>;
   /**
    * The full output schema used for this version. Includes descriptions and examples
    */
-  output_schema?: Record<string, unknown>;
+  output_schema: Record<string, unknown>;
 };
 
 export type VersionsResponse = {
@@ -2168,33 +2324,31 @@ export type VersionsResponse = {
   recent_runs_count?: number;
 };
 
-export type api__routers__agents__new_tool_agent__ToolInputExampleRequest__Tool =
-  {
-    /**
-     * The name of the tool to generate an example input for
-     */
-    name: string;
-    /**
-     * The description of the tool to generate an example input for
-     */
-    description: string;
-    /**
-     * The parameters of the tool in JSON Schema format
-     */
-    parameters: Record<string, unknown>;
-  };
+export type api__routers__agents__new_tool_agent__ToolInputExampleRequest__Tool = {
+  /**
+   * The name of the tool to generate an example input for
+   */
+  name: string;
+  /**
+   * The description of the tool to generate an example input for
+   */
+  description: string;
+  /**
+   * The parameters of the tool in JSON Schema format
+   */
+  parameters: Record<string, unknown>;
+};
 
-export type api__routers__agents__new_tool_agent__ToolOutputExampleRequest__Tool =
-  {
-    /**
-     * The name of the tool to generate an example output for
-     */
-    name: string;
-    /**
-     * The description of the tool to generate an example output for
-     */
-    description: string;
-  };
+export type api__routers__agents__new_tool_agent__ToolOutputExampleRequest__Tool = {
+  /**
+   * The name of the tool to generate an example output for
+   */
+  name: string;
+  /**
+   * The description of the tool to generate an example output for
+   */
+  description: string;
+};
 
 export type api__routers__runs_by_id__TranscriptionResponse = {
   transcriptions_by_keypath: Record<string, string>;
@@ -2357,23 +2511,22 @@ export type core__domain__error_response__ErrorResponse__Error = {
     | string;
 };
 
-export type core__domain__fields__custom_tool_creation_chat_message__CustomToolCreationChatMessage__Tool =
-  {
-    /**
-     * The name of the tool
-     */
-    name?: string | null;
-    /**
-     * The description of the tool
-     */
-    description?: string | null;
-    /**
-     * The parameters of the tool in JSON Schema format
-     */
-    parameters?: Record<string, unknown> | null;
-  };
+export type core__domain__fields__custom_tool_creation_chat_message__CustomToolCreationChatMessage__Tool = {
+  /**
+   * The name of the tool
+   */
+  name?: string | null;
+  /**
+   * The description of the tool
+   */
+  description?: string | null;
+  /**
+   * The parameters of the tool in JSON Schema format
+   */
+  parameters?: Record<string, unknown> | null;
+};
 
-export type core__domain__tasks__tool__Tool = {
+export type core__domain__tool__Tool = {
   /**
    * The name of the tool
    */
@@ -2488,6 +2641,10 @@ export type RunResponse = {
    * A list of tools that were executed during the run.
    */
   tool_calls: Array<api__routers__run__RunResponse__ToolCall> | null;
+  /**
+   * A signed token that can be used to post feedback from a client side application
+   */
+  feedback_token: string;
 };
 
 /**
@@ -2589,4 +2746,51 @@ export type SuggestedAgent = {
    * A description of what the agent output is
    */
   output_specifications?: string | null;
+};
+
+export type DirectToAgentBuilderFeature = {
+  /**
+   * The name of the feature, displayed in the UI
+   */
+  name: string;
+  /**
+   * A description of the feature, displayed in the UI
+   */
+  description: string;
+  /**
+   * The specifications of the feature, used to generate the feature input and output schema, for internal use only, NOT displayed in the UI. To be provided for 'static' feature suggestions only, null otherwise
+   */
+  specifications: string | null;
+  image_url: string;
+  /**
+   * The message to open the agent builder with, if the feature is selected
+   */
+  open_agent_builder_with_message?: string | null;
+};
+
+export type FeatureWithImage = {
+  /**
+   * The name of the feature, displayed in the UI
+   */
+  name: string;
+  /**
+   * A description of the feature, displayed in the UI
+   */
+  description: string;
+  /**
+   * The specifications of the feature, used to generate the feature input and output schema, for internal use only, NOT displayed in the UI. To be provided for 'static' feature suggestions only, null otherwise
+   */
+  specifications: string | null;
+  image_url: string;
+};
+
+export type VersionStat = {
+  version_id: string;
+  run_count: number;
+};
+
+export type AgentStat = {
+  agent_uid: number;
+  run_count: number;
+  total_cost_usd: number;
 };

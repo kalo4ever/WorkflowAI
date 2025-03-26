@@ -16,23 +16,14 @@ function CreateKeyContent(props: CreateKeyContentProps) {
   const { name, handleNameChange, handleSubmit, onClose } = props;
   return (
     <>
-      <div className='border-b border-dashed px-4 py-3 font-semibold text-gray-900'>
-        Create New Secret Key
-      </div>
+      <div className='border-b border-dashed px-4 py-3 font-semibold text-gray-900'>Create New Secret Key</div>
       <div className='p-4 flex flex-col gap-2'>
         <div className='text-sm font-normal text-gray-700'>
-          This API key is tied to your user and can make requests against the
-          selected project. If you are removed from the organization or project,
-          this key will be disabled.
+          This API key is tied to your user and can make requests against the selected project. If you are removed from
+          the organization or project, this key will be disabled.
         </div>
-        <div className='text-xsm font-medium text-gray-700'>
-          Name (Optional)
-        </div>
-        <Input
-          placeholder='My Secret Key'
-          value={name}
-          onChange={handleNameChange}
-        />
+        <div className='text-xsm font-medium text-gray-700'>Name (Optional)</div>
+        <Input placeholder='My Secret Key' value={name} onChange={handleNameChange} />
       </div>
       <div className='flex items-center justify-between px-4 py-3'>
         <Button variant='ghost' onClick={onClose}>
@@ -56,9 +47,7 @@ function SaveKeyContent(props: SaveKeyContentProps) {
 
   return (
     <>
-      <div className='border-b border-dashed px-4 py-3 font-semibold text-gray-900'>
-        Save Your Key
-      </div>
+      <div className='border-b border-dashed px-4 py-3 font-semibold text-gray-900'>Save Your Key</div>
       <div className='p-4 flex flex-col gap-2'>
         <div className='text-xs font-normal text-gray-700 whitespace-pre-line'>
           <span>
@@ -96,12 +85,9 @@ export function NewApiKeyModal(props: NewApiKeyModalProps) {
   const [name, setName] = useState('');
   const [newKey, setNewKey] = useState<string | undefined>();
 
-  const handleNameChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setName(e.target.value);
-    },
-    []
-  );
+  const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value);
+  }, []);
 
   const handleSubmit = useCallback(async () => {
     // If no name is provided, use the default name 'Secret Key'

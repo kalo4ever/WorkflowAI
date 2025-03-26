@@ -6,35 +6,22 @@ import { AddProviderKeyModal } from '@/components/ProviderKeysModal/AddProviderK
 import { useFindProviderConfigID } from '@/components/ProviderKeysModal/useFindProviderConfigID';
 import { Button } from '@/components/ui/Button';
 import { PageContainer } from '@/components/v2/PageContainer';
-import {
-  PROVIDER_KEYS_MODAL_OPEN,
-  useQueryParamModal,
-} from '@/lib/globalModal';
+import { PROVIDER_KEYS_MODAL_OPEN, useQueryParamModal } from '@/lib/globalModal';
 import { useDemoMode } from '@/lib/hooks/useDemoMode';
 import { useTaskSchemaParams } from '@/lib/hooks/useTaskParams';
 import { formatSemverVersion } from '@/lib/versionUtils';
-import {
-  useOrFetchOrganizationSettings,
-  useOrFetchTask,
-  useOrFetchVersions,
-} from '@/store';
+import { useOrFetchOrganizationSettings, useOrFetchTask, useOrFetchVersions } from '@/store';
 import { useOrganizationSettings } from '@/store/organization_settings';
 import { useVersions } from '@/store/versions';
 import { TaskSchemaID } from '@/types/aliases';
 import { Model, VersionV1 } from '@/types/workflowAI';
-import {
-  DeployVersionModal,
-  EditEnvSchemaIterationParams,
-} from './DeployVersionModal';
+import { DeployVersionModal, EditEnvSchemaIterationParams } from './DeployVersionModal';
 import { EnvironmentDeployment } from './EnvironmentDeployment';
 import { UpdateProviderModal } from './UpdateProviderModal';
 
 export function DeploymentsContainer() {
   const { tenant, taskId, taskSchemaId } = useTaskSchemaParams();
-  const { task, isInitialized: isTaskInitialized } = useOrFetchTask(
-    tenant,
-    taskId
-  );
+  const { task, isInitialized: isTaskInitialized } = useOrFetchTask(tenant, taskId);
 
   const {
     versions,
@@ -45,60 +32,37 @@ export function DeploymentsContainer() {
 
   const fetchVersions = useVersions((state) => state.fetchVersions);
 
-  const [envSchemaIteration, setEnvSchemaIteration] = useState<
-    EditEnvSchemaIterationParams | undefined
-  >();
+  const [envSchemaIteration, setEnvSchemaIteration] = useState<EditEnvSchemaIterationParams | undefined>();
 
-  const onCloseEnvSchemaIteration = useCallback(
-    () => setEnvSchemaIteration(undefined),
-    [setEnvSchemaIteration]
-  );
+  const onCloseEnvSchemaIteration = useCallback(() => setEnvSchemaIteration(undefined), [setEnvSchemaIteration]);
 
-  const [selectedVersion, setSelectedVersion] = useState<
-    VersionV1 | undefined
-  >();
+  const [selectedVersion, setSelectedVersion] = useState<VersionV1 | undefined>();
 
-  const onCloseUpdateProviderModal = useCallback(
-    () => setSelectedVersion(undefined),
-    [setSelectedVersion]
-  );
+  const onCloseUpdateProviderModal = useCallback(() => setSelectedVersion(undefined), [setSelectedVersion]);
 
   const [addProviderKeyModalOpen, setAddProviderKeyModalOpen] = useState(false);
-  const onCloseAddProviderKeyModal = useCallback(
-    () => setAddProviderKeyModalOpen(false),
-    [setAddProviderKeyModalOpen]
-  );
+  const onCloseAddProviderKeyModal = useCallback(() => setAddProviderKeyModalOpen(false), [setAddProviderKeyModalOpen]);
 
-  const {
-    organizationSettings,
-    isInitialized: isOrganizationSettingsInitialized,
-  } = useOrFetchOrganizationSettings();
+  const { organizationSettings, isInitialized: isOrganizationSettingsInitialized } = useOrFetchOrganizationSettings();
 
-  const addProviderConfig = useOrganizationSettings(
-    (state) => state.addProviderConfig
-  );
+  const addProviderConfig = useOrganizationSettings((state) => state.addProviderConfig);
 
   const model: Model | string | undefined = selectedVersion?.model;
 
-  const { providerConfigID: settingsProviderConfigID } =
-    useFindProviderConfigID({
-      tenant,
-      taskId,
-      taskSchemaId,
-      providerSettings: organizationSettings?.providers,
-      model: model,
-    });
+  const { providerConfigID: settingsProviderConfigID } = useFindProviderConfigID({
+    tenant,
+    taskId,
+    taskSchemaId,
+    providerSettings: organizationSettings?.providers,
+    model: model,
+  });
 
   const deployVersion = useVersions((state) => state.deployVersion);
   const environment = selectedVersion?.deployments?.[0]?.environment;
 
   const onToggleProviderKey = useCallback(
     async (useWorkflowAIKey: boolean) => {
-      if (
-        !selectedVersion?.schema_id ||
-        !selectedVersion.iteration ||
-        !environment
-      ) {
+      if (!selectedVersion?.schema_id || !selectedVersion.iteration || !environment) {
         return;
       }
 
@@ -109,9 +73,7 @@ export function DeploymentsContainer() {
 
       const payload = {
         environment,
-        provider_config_id: useWorkflowAIKey
-          ? undefined
-          : settingsProviderConfigID,
+        provider_config_id: useWorkflowAIKey ? undefined : settingsProviderConfigID,
       };
 
       const newSelectedVersion = await deployVersion(
@@ -125,14 +87,7 @@ export function DeploymentsContainer() {
 
       setSelectedVersion(newSelectedVersion);
     },
-    [
-      deployVersion,
-      tenant,
-      taskId,
-      settingsProviderConfigID,
-      environment,
-      selectedVersion,
-    ]
+    [deployVersion, tenant, taskId, settingsProviderConfigID, environment, selectedVersion]
   );
 
   const [shouldToggleProviderKey, setShouldToggleProviderKey] = useState(false);
@@ -152,10 +107,7 @@ export function DeploymentsContainer() {
     }
   }, [shouldToggleProviderKey, onToggleProviderKey, settingsProviderConfigID]);
 
-  const favoriteVersions = useMemo(
-    () => versions.filter((version) => version.is_favorite),
-    [versions]
-  );
+  const favoriteVersions = useMemo(() => versions.filter((version) => version.is_favorite), [versions]);
 
   const deployVersionToEnv = useEnvDeploy(
     tenant,
@@ -168,9 +120,7 @@ export function DeploymentsContainer() {
       return;
     }
 
-    const version = versions.find(
-      (version) => version.iteration.toString() === envSchemaIteration.iteration
-    );
+    const version = versions.find((version) => version.iteration.toString() === envSchemaIteration.iteration);
 
     const versionId = version?.id;
     const versionText = formatSemverVersion(version);
@@ -180,11 +130,8 @@ export function DeploymentsContainer() {
     }
 
     const providerConfigId = !!envSchemaIteration.currentIteration
-      ? deployedVersions.find(
-          (version) =>
-            version?.iteration?.toString() ===
-            envSchemaIteration.iteration?.toString()
-        )?.deployments?.[0]?.provider_config_id
+      ? deployedVersions.find((version) => version?.iteration?.toString() === envSchemaIteration.iteration?.toString())
+          ?.deployments?.[0]?.provider_config_id
       : undefined;
 
     await deployVersionToEnv(
@@ -218,9 +165,7 @@ export function DeploymentsContainer() {
     [setEnvSchemaIteration, envSchemaIteration]
   );
 
-  const { openModal: openProviderKeysModal } = useQueryParamModal(
-    PROVIDER_KEYS_MODAL_OPEN
-  );
+  const { openModal: openProviderKeysModal } = useQueryParamModal(PROVIDER_KEYS_MODAL_OPEN);
 
   const handleOpenProviderKeysModal = useCallback(() => {
     openProviderKeysModal();
@@ -243,19 +188,10 @@ export function DeploymentsContainer() {
       name='Deployments'
       task={task}
       showSchema={false}
-      isInitialized={
-        isTaskInitialized &&
-        isVersionsInitialized &&
-        isOrganizationSettingsInitialized
-      }
+      isInitialized={isTaskInitialized && isVersionsInitialized && isOrganizationSettingsInitialized}
       rightBarChildren={
         <div className='flex flex-row items-center gap-2 font-lato'>
-          <Button
-            variant='newDesign'
-            onClick={handleOpenProviderKeysModal}
-            className='min-h-8'
-            disabled={isInDemoMode}
-          >
+          <Button variant='newDesign' onClick={handleOpenProviderKeysModal} className='min-h-8' disabled={isInDemoMode}>
             Manage Provider Keys
           </Button>
         </div>
@@ -267,16 +203,8 @@ export function DeploymentsContainer() {
           versions={versionsPerEnvironment?.production}
           {...commonProps}
         />
-        <EnvironmentDeployment
-          environment={'staging'}
-          versions={versionsPerEnvironment?.staging}
-          {...commonProps}
-        />
-        <EnvironmentDeployment
-          environment={'dev'}
-          versions={versionsPerEnvironment?.dev}
-          {...commonProps}
-        />
+        <EnvironmentDeployment environment={'staging'} versions={versionsPerEnvironment?.staging} {...commonProps} />
+        <EnvironmentDeployment environment={'dev'} versions={versionsPerEnvironment?.dev} {...commonProps} />
       </div>
       <DeployVersionModal
         envSchemaIteration={envSchemaIteration}

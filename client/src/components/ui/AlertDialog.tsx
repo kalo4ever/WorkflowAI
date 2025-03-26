@@ -48,14 +48,8 @@ export function AlertDialog(props: AlertDialogProps) {
               </div>
 
               <div className='flex flex-col mt-[16px]'>
-                {subTitle && (
-                  <div className='px-4 text-gray-800 font-medium text-[13px] mb-[14px]'>
-                    {subTitle}
-                  </div>
-                )}
-                <div className='px-4 text-gray-400 font-normal text-[13px]'>
-                  {text}
-                </div>
+                {subTitle && <div className='px-4 text-gray-800 font-medium text-[13px] mb-[14px]'>{subTitle}</div>}
+                <div className='px-4 text-gray-400 font-normal text-[13px]'>{text}</div>
               </div>
             </div>
           </div>
@@ -68,10 +62,7 @@ export function AlertDialog(props: AlertDialogProps) {
             ) : (
               <div className='w-0 flex-0 invisible' />
             )}
-            <Button
-              variant={destructive ? 'destructive' : 'newDesign'}
-              onClick={onConfirm}
-            >
+            <Button variant={destructive ? 'destructive' : 'newDesign'} onClick={onConfirm}>
               {confrimationText}
             </Button>
           </div>

@@ -23,9 +23,7 @@ export default function PaymentCancelPage() {
       <div className='flex flex-col items-center gap-2 text-center'>
         <XCircle className='h-12 w-12 text-red-500' />
         <h1 className='text-2xl font-semibold'>Payment Cancelled</h1>
-        <p className='text-muted-foreground'>
-          Your payment was cancelled. No charges were made.
-        </p>
+        <p className='text-muted-foreground'>Your payment was cancelled. No charges were made.</p>
       </div>
       <Button onClick={() => router.push('/')}>Return to Dashboard</Button>
     </div>

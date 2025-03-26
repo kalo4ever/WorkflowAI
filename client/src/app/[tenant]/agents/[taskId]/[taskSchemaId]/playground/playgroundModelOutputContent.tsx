@@ -1,11 +1,6 @@
 'use client';
 
-import {
-  ArrowCircleUp16Regular,
-  ArrowExpand16Regular,
-  Code16Regular,
-  Link16Regular,
-} from '@fluentui/react-icons';
+import { ArrowCircleUp16Regular, ArrowExpand16Regular, Code16Regular, Link16Regular } from '@fluentui/react-icons';
 import { useRouter } from 'next/navigation';
 import { useCallback, useMemo, useState } from 'react';
 import { useDeployVersionModal } from '@/components/DeployIterationModal/DeployVersionModal';
@@ -106,15 +101,7 @@ export function PlaygroundModelOutputContent(props: ModelOutputContentProps) {
     );
 
     setIsOpeningCode(false);
-  }, [
-    router,
-    tenant,
-    taskId,
-    taskSchemaId,
-    version,
-    saveVersion,
-    checkIfSignedIn,
-  ]);
+  }, [router, tenant, taskId, taskSchemaId, version, saveVersion, checkIfSignedIn]);
 
   const { onDeployToClick: onDeploy } = useDeployVersionModal();
   const [isHovering, setIsHovering] = useState(false);
@@ -138,8 +125,7 @@ export function PlaygroundModelOutputContent(props: ModelOutputContentProps) {
 
   const emptyMode = !taskOutput || hasInputChanged;
 
-  const outputSchema =
-    (version?.output_schema as JsonSchema) ?? outputSchemaFromProps;
+  const outputSchema = (version?.output_schema as JsonSchema) ?? outputSchemaFromProps;
 
   return (
     <div
@@ -160,9 +146,7 @@ export function PlaygroundModelOutputContent(props: ModelOutputContentProps) {
           )}
           showTypes={emptyMode}
           showExamplesHints
-          onShowEditDescriptionModal={
-            isInDemoMode ? undefined : onShowEditDescriptionModal
-          }
+          onShowEditDescriptionModal={isInDemoMode ? undefined : onShowEditDescriptionModal}
           streamLoading={streamLoading}
           toolCalls={toolCallsPreview}
           reasoningSteps={reasoningSteps}
@@ -172,12 +156,7 @@ export function PlaygroundModelOutputContent(props: ModelOutputContentProps) {
           <div className='flex flex-col w-full overflow-hidden max-h-[400px]'>
             <ImprovePrompt onImprovePrompt={onImprovePrompt} />
 
-            <AIEvaluationReview
-              tenant={tenant}
-              taskId={taskId}
-              taskRun={taskRun}
-              onImprovePrompt={onImprovePrompt}
-            />
+            <AIEvaluationReview tenant={tenant} taskId={taskId} taskRun={taskRun} onImprovePrompt={onImprovePrompt} />
           </div>
         )}
         <TaskRunOutputRows
@@ -192,12 +171,7 @@ export function PlaygroundModelOutputContent(props: ModelOutputContentProps) {
           showTaskIterationDetails={true}
         />
       </div>
-      <div
-        className={cn(
-          'flex items-center justify-between',
-          isHovering ? 'opacity-100' : 'opacity-0'
-        )}
-      >
+      <div className={cn('flex items-center justify-between', isHovering ? 'opacity-100' : 'opacity-0')}>
         <div className='flex items-center gap-2'>
           <SimpleTooltip content='Copy Link to Run'>
             <Button
@@ -235,9 +209,7 @@ export function PlaygroundModelOutputContent(props: ModelOutputContentProps) {
               variant='newDesign'
               size='none'
               onClick={onDeployToClick}
-              icon={
-                <ArrowCircleUp16Regular className='h-4 w-4 text-gray-500' />
-              }
+              icon={<ArrowCircleUp16Regular className='h-4 w-4 text-gray-500' />}
               className='h-7 w-7 border-none shadow-sm shadow-gray-400/30'
               disabled={!taskRun || isInDemoMode}
               loading={isOpeningDeploy}

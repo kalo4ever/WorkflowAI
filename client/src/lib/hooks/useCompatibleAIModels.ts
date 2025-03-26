@@ -6,13 +6,8 @@ import { TaskSchemaResponseWithSchema } from '@/types';
 import { TaskID, TaskSchemaID, TenantID } from '@/types/aliases';
 import { ModelResponse } from '@/types/workflowAI';
 
-export function useTaskSchemaMode(
-  taskSchema: TaskSchemaResponseWithSchema | undefined
-) {
-  return useMemo(
-    () => first(extractFormats(taskSchema?.input_schema.json_schema)),
-    [taskSchema]
-  );
+export function useTaskSchemaMode(taskSchema: TaskSchemaResponseWithSchema | undefined) {
+  return useMemo(() => first(extractFormats(taskSchema?.input_schema.json_schema)), [taskSchema]);
 }
 
 type TModeAiModelsProps = {
@@ -33,10 +28,7 @@ export function useCompatibleAIModels(props: TModeAiModelsProps) {
     taskSchemaId,
   });
 
-  const compatibleModels = useMemo(
-    () => filterSupportedModels(models),
-    [models]
-  );
+  const compatibleModels = useMemo(() => filterSupportedModels(models), [models]);
 
   return {
     compatibleModels,

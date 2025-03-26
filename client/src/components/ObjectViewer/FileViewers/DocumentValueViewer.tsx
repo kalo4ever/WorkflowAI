@@ -23,14 +23,7 @@ function TextDocumentViewer(props: TextDocumentViewerProps) {
       {isCSV ? (
         <CSVDocumentViewer decodedText={text} className={className} />
       ) : (
-        <div
-          className={cx(
-            'rounded-md border p-1 whitespace-pre-line text-sm overflow-y-auto',
-            className
-          )}
-        >
-          {text}
-        </div>
+        <div className={cx('rounded-md border p-1 whitespace-pre-line text-sm overflow-y-auto', className)}>{text}</div>
       )}
     </>
   );
@@ -80,13 +73,7 @@ function TextDocumentBase64Viewer(props: TextDocumentBase64ViewerProps) {
 
   if (!decodedText) return null;
 
-  return (
-    <TextDocumentViewer
-      text={decodedText}
-      className={className}
-      isCSV={isCSV}
-    />
-  );
+  return <TextDocumentViewer text={decodedText} className={className} isCSV={isCSV} />;
 }
 
 type TextDocumentViewerWrapperProps = {
@@ -100,28 +87,14 @@ function TextDocumentViewerWrapper(props: TextDocumentViewerWrapperProps) {
   const isCSV = content_type?.includes('csv') ?? false;
 
   return storage_url ? (
-    <TextDocumentStorageViewer
-      storageUrl={storage_url}
-      className={className}
-      isCSV={isCSV}
-    />
+    <TextDocumentStorageViewer storageUrl={storage_url} className={className} isCSV={isCSV} />
   ) : (
     <TextDocumentBase64Viewer data={data} className={className} isCSV={isCSV} />
   );
 }
 
-export function DocumentValueViewer(
-  props: ValueViewerProps<FileValueType | undefined>
-) {
-  const {
-    value,
-    className,
-    editable,
-    onEdit,
-    keyPath,
-    showTypes,
-    showTypesForFiles,
-  } = props;
+export function DocumentValueViewer(props: ValueViewerProps<FileValueType | undefined>) {
+  const { value, className, editable, onEdit, keyPath, showTypes, showTypesForFiles } = props;
   const castedValue = value as FileValueType | undefined;
 
   const onChange = useCallback(
@@ -149,12 +122,7 @@ export function DocumentValueViewer(
 
   if (!editable && (showTypes || showTypesForFiles)) {
     return (
-      <ReadonlyValue
-        {...props}
-        value='document'
-        referenceValue={undefined}
-        icon={<DocumentBulletList16Regular />}
-      />
+      <ReadonlyValue {...props} value='document' referenceValue={undefined} icon={<DocumentBulletList16Regular />} />
     );
   }
 
@@ -194,17 +162,9 @@ export function DocumentValueViewer(
     <DocumentPreviewControls
       onEdit={onValueEdit}
       className={className}
-      dialogContent={
-        <TextDocumentViewerWrapper
-          value={castedValue}
-          className='overflow-auto'
-        />
-      }
+      dialogContent={<TextDocumentViewerWrapper value={castedValue} className='overflow-auto' />}
     >
-      <TextDocumentViewerWrapper
-        value={castedValue}
-        className='max-h-[250px] max-w-[500px] overflow-hidden'
-      />
+      <TextDocumentViewerWrapper value={castedValue} className='max-h-[250px] max-w-[500px] overflow-hidden' />
     </DocumentPreviewControls>
   );
 }

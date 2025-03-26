@@ -20,11 +20,5 @@ export function BoolValueViewer(props: ValueViewerProps<boolean | null>) {
     return <ReadonlyValue {...props} value={value} />;
   }
 
-  return (
-    <BooleanRadioButton
-      value={!!value}
-      onChange={onChange}
-      className={className}
-    />
-  );
+  return <BooleanRadioButton value={!!value} onChange={onChange} className={className} />;
 }

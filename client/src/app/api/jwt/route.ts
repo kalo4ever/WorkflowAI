@@ -14,10 +14,7 @@ export const GET = async (request: NextRequest) => {
     }
   }
 
-  const jwt = await build_api_jwt_for_tenant(
-    tokenData,
-    !tokenData.unknownUserId ? '3650d' : '15m'
-  );
+  const jwt = await build_api_jwt_for_tenant(tokenData, !tokenData.unknownUserId ? '3650d' : '15m');
 
   return new NextResponse(JSON.stringify({ token: jwt }), {
     headers: {

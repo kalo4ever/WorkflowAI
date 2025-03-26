@@ -13,9 +13,7 @@ import { DeploymentWithGroupsTable } from './DeploymentWithGroupsTable';
 type EnvironmentDeploymentProps = {
   environment: VersionEnvironment;
   versions: VersionV1[] | undefined;
-  setEnvSchemaIteration: (
-    envSchemaIteration: EditEnvSchemaIterationParams
-  ) => void;
+  setEnvSchemaIteration: (envSchemaIteration: EditEnvSchemaIterationParams) => void;
   setSelectedVersion: (version: VersionV1 | undefined) => void;
   tenant: TenantID;
   taskId: TaskID;
@@ -50,9 +48,7 @@ export function EnvironmentDeployment(props: EnvironmentDeploymentProps) {
         return false;
       }
 
-      const deployment = version.deployments.find(
-        (deployment) => deployment.environment === environment
-      );
+      const deployment = version.deployments.find((deployment) => deployment.environment === environment);
 
       return deployment;
     });
@@ -70,12 +66,8 @@ export function EnvironmentDeployment(props: EnvironmentDeploymentProps) {
       <div className='flex flex-row items-center justify-between px-4 py-2.5 border-b border-dashed'>
         <div className='flex items-center gap-2 text-gray-500'>
           <EnvironmentIcon environment={environment} className='w-5 h-5' />
-          <div className='text-gray-700 font-semibold capitalize'>
-            {environment}
-          </div>
-          {deploymentsCount > 1 && (
-            <div>{`Deployments across ${deploymentsCount} schemas`}</div>
-          )}
+          <div className='text-gray-700 font-semibold capitalize'>{environment}</div>
+          {deploymentsCount > 1 && <div>{`Deployments across ${deploymentsCount} schemas`}</div>}
         </div>
 
         {deploymentsCount > 0 && (
@@ -91,11 +83,7 @@ export function EnvironmentDeployment(props: EnvironmentDeploymentProps) {
         )}
       </div>
       {deploymentsCount === 0 ? (
-        <DeploymentNoGroupContent
-          environment={environment}
-          onDeploy={onDeploy}
-          isInDemoMode={isInDemoMode}
-        />
+        <DeploymentNoGroupContent environment={environment} onDeploy={onDeploy} isInDemoMode={isInDemoMode} />
       ) : (
         <DeploymentWithGroupsTable
           environment={environment}

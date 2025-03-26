@@ -3,13 +3,7 @@
 /* eslint-disable no-use-before-define */
 import { deburr, isPlainObject, trim, upperFirst } from 'lodash';
 import { basename, dirname, extname, normalize, posix, sep } from 'path';
-import {
-  Intersection,
-  JSONSchema,
-  LinkedJSONSchema,
-  NormalizedJSONSchema,
-  Parent,
-} from './types/JSONSchema';
+import { Intersection, JSONSchema, LinkedJSONSchema, NormalizedJSONSchema, Parent } from './types/JSONSchema';
 
 // TODO: pull out into a separate package
 export function Try<T>(fn: () => T, err: (e: Error) => any): T {
@@ -127,10 +121,7 @@ export function traverse(
   if (schema.patternProperties) {
     traverseObjectKeys(schema.patternProperties, callback, processed);
   }
-  if (
-    schema.additionalProperties &&
-    typeof schema.additionalProperties === 'object'
-  ) {
+  if (schema.additionalProperties && typeof schema.additionalProperties === 'object') {
     traverse(schema.additionalProperties, callback, processed);
   }
   if (schema.items) {
@@ -148,11 +139,7 @@ export function traverse(
     if (Array.isArray(schema.dependencies)) {
       traverseArray(schema.dependencies, callback, processed);
     } else {
-      traverseObjectKeys(
-        schema.dependencies as LinkedJSONSchema,
-        callback,
-        processed
-      );
+      traverseObjectKeys(schema.dependencies as LinkedJSONSchema, callback, processed);
     }
   }
   if (schema.definitions) {
@@ -208,9 +195,7 @@ export function toSafeString(string: string) {
       // uppercase leading underscores followed by lowercase
       .replace(/^_[a-z]/g, (match) => match.toUpperCase())
       // remove non-leading underscores followed by lowercase (convert snake_case)
-      .replace(/_[a-z]/g, (match) =>
-        match.substr(1, match.length).toUpperCase()
-      )
+      .replace(/_[a-z]/g, (match) => match.substr(1, match.length).toUpperCase())
       // uppercase letters after digits, dollars
       .replace(/([\d$]+[a-zA-Z])/g, (match) => match.toUpperCase())
       // uppercase first letter after whitespace
@@ -267,11 +252,7 @@ And the user wants the outputs to be in MultiSchema/Out, then this code will be 
   MultiSchema/Out/bar/fuzz/c.json
   MultiSchema/Out/bar/d.json
 */
-export function pathTransform(
-  outputPath: string,
-  inputPath: string,
-  filePath: string
-): string {
+export function pathTransform(outputPath: string, inputPath: string, filePath: string): string {
   const inPathList = normalize(inputPath).split(sep);
   const filePathList = dirname(normalize(filePath)).split(sep);
   const filePathRel = filePathList.filter((f, i) => f !== inPathList[i]);
@@ -327,10 +308,7 @@ export function maybeStripDefault(schema: LinkedJSONSchema): LinkedJSONSchema {
   return schema;
 }
 
-export function appendToDescription(
-  existingDescription: string | undefined,
-  ...values: string[]
-): string {
+export function appendToDescription(existingDescription: string | undefined, ...values: string[]): string {
   if (existingDescription) {
     return `${existingDescription}\n\n${values.join('\n')}`;
   }

@@ -1,20 +1,8 @@
 import { isDeepStrictEqual } from 'util';
 import { applySchemaTyping } from './applySchemaTyping';
 import { DereferencedPaths } from './resolver';
-import {
-  JSONSchemaTypeName,
-  LinkedJSONSchema,
-  NormalizedJSONSchema,
-  Parent,
-} from './types/JSONSchema';
-import {
-  appendToDescription,
-  escapeBlockComment,
-  isSchemaLike,
-  justName,
-  toSafeString,
-  traverse,
-} from './utils';
+import { JSONSchemaTypeName, LinkedJSONSchema, NormalizedJSONSchema, Parent } from './types/JSONSchema';
+import { appendToDescription, escapeBlockComment, isSchemaLike, justName, toSafeString, traverse } from './utils';
 import { Options } from '.';
 
 type Rule = (
@@ -27,31 +15,16 @@ type Rule = (
 const rules = new Map<string, Rule>();
 
 function hasType(schema: LinkedJSONSchema, type: JSONSchemaTypeName) {
-  return (
-    schema.type === type ||
-    (Array.isArray(schema.type) && schema.type?.includes(type))
-  );
+  return schema.type === type || (Array.isArray(schema.type) && schema.type?.includes(type));
 }
 function isObjectType(schema: LinkedJSONSchema) {
-  return (
-    schema.properties !== undefined ||
-    hasType(schema, 'object') ||
-    hasType(schema, 'any')
-  );
+  return schema.properties !== undefined || hasType(schema, 'object') || hasType(schema, 'any');
 }
 function isArrayType(schema: LinkedJSONSchema) {
-  return (
-    schema.items !== undefined ||
-    hasType(schema, 'array') ||
-    hasType(schema, 'any')
-  );
+  return schema.items !== undefined || hasType(schema, 'array') || hasType(schema, 'any');
 }
 function isEnumTypeWithoutTsEnumNames(schema: LinkedJSONSchema) {
-  return (
-    schema.type === 'string' &&
-    schema.enum !== undefined &&
-    schema.tsEnumNames === undefined
-  );
+  return schema.type === 'string' && schema.enum !== undefined && schema.tsEnumNames === undefined;
 }
 
 rules.set('Remove `type=["null"]` if `enum=[null]`', (schema) => {
@@ -84,11 +57,7 @@ rules.set('Transform `required`=false to `required`=[]', (schema) => {
 });
 
 rules.set('Default additionalProperties', (schema, _, options) => {
-  if (
-    isObjectType(schema) &&
-    !('additionalProperties' in schema) &&
-    schema.patternProperties === undefined
-  ) {
+  if (isObjectType(schema) && !('additionalProperties' in schema) && schema.patternProperties === undefined) {
     schema.additionalProperties = options.additionalProperties;
   }
 });
@@ -108,36 +77,33 @@ rules.set('Transform id to $id', (schema, fileName) => {
   }
 });
 
-rules.set(
-  'Add an $id to anything that needs it',
-  (schema, fileName, _options, _key, dereferencedPaths) => {
-    if (!isSchemaLike(schema)) {
-      return;
-    }
-
-    // Top-level schema
-    if (!schema.$id && !schema[Parent]) {
-      schema.$id = toSafeString(justName(fileName));
-      return;
-    }
-
-    // Sub-schemas with references
-    if (!isArrayType(schema) && !isObjectType(schema)) {
-      return;
-    }
-
-    // We'll infer from $id and title downstream
-    // TODO: Normalize upstream
-    const dereferencedName = dereferencedPaths.get(schema);
-    if (!schema.$id && !schema.title && dereferencedName) {
-      schema.$id = toSafeString(justName(dereferencedName));
-    }
-
-    if (dereferencedName) {
-      dereferencedPaths.delete(schema);
-    }
+rules.set('Add an $id to anything that needs it', (schema, fileName, _options, _key, dereferencedPaths) => {
+  if (!isSchemaLike(schema)) {
+    return;
   }
-);
+
+  // Top-level schema
+  if (!schema.$id && !schema[Parent]) {
+    schema.$id = toSafeString(justName(fileName));
+    return;
+  }
+
+  // Sub-schemas with references
+  if (!isArrayType(schema) && !isObjectType(schema)) {
+    return;
+  }
+
+  // We'll infer from $id and title downstream
+  // TODO: Normalize upstream
+  const dereferencedName = dereferencedPaths.get(schema);
+  if (!schema.$id && !schema.title && dereferencedName) {
+    schema.$id = toSafeString(justName(dereferencedName));
+  }
+
+  if (dereferencedName) {
+    dereferencedPaths.delete(schema);
+  }
+});
 
 rules.set('Escape closing JSDoc comment', (schema) => {
   escapeBlockComment(schema);
@@ -152,30 +118,21 @@ rules.set('Add JSDoc comments for minItems and maxItems', (schema) => {
     'maxItems' in schema ? `@maxItems ${schema.maxItems}` : '',
   ].filter(Boolean);
   if (commentsToAppend.length) {
-    schema.description = appendToDescription(
-      schema.description,
-      ...commentsToAppend
-    );
+    schema.description = appendToDescription(schema.description, ...commentsToAppend);
   }
 });
 
-rules.set(
-  'Optionally remove maxItems and minItems',
-  (schema, _fileName, options) => {
-    if (!isArrayType(schema)) {
-      return;
-    }
-    if ('minItems' in schema && options.ignoreMinAndMaxItems) {
-      delete schema.minItems;
-    }
-    if (
-      'maxItems' in schema &&
-      (options.ignoreMinAndMaxItems || options.maxItems === -1)
-    ) {
-      delete schema.maxItems;
-    }
+rules.set('Optionally remove maxItems and minItems', (schema, _fileName, options) => {
+  if (!isArrayType(schema)) {
+    return;
   }
-);
+  if ('minItems' in schema && options.ignoreMinAndMaxItems) {
+    delete schema.minItems;
+  }
+  if ('maxItems' in schema && (options.ignoreMinAndMaxItems || options.maxItems === -1)) {
+    delete schema.maxItems;
+  }
+});
 
 rules.set('Normalize schema.minItems', (schema, _fileName, options) => {
   if (options.ignoreMinAndMaxItems) {
@@ -190,25 +147,19 @@ rules.set('Normalize schema.minItems', (schema, _fileName, options) => {
   // cannot normalize maxItems because maxItems = 0 has an actual meaning
 });
 
-rules.set(
-  'Remove maxItems if it is big enough to likely cause OOMs',
-  (schema, _fileName, options) => {
-    if (options.ignoreMinAndMaxItems || options.maxItems === -1) {
-      return;
-    }
-    if (!isArrayType(schema)) {
-      return;
-    }
-    const { maxItems, minItems } = schema;
-    // minItems is guaranteed to be a number after the previous rule runs
-    if (
-      maxItems !== undefined &&
-      maxItems - (minItems as number) > options.maxItems
-    ) {
-      delete schema.maxItems;
-    }
+rules.set('Remove maxItems if it is big enough to likely cause OOMs', (schema, _fileName, options) => {
+  if (options.ignoreMinAndMaxItems || options.maxItems === -1) {
+    return;
   }
-);
+  if (!isArrayType(schema)) {
+    return;
+  }
+  const { maxItems, minItems } = schema;
+  // minItems is guaranteed to be a number after the previous rule runs
+  if (maxItems !== undefined && maxItems - (minItems as number) > options.maxItems) {
+    delete schema.maxItems;
+  }
+});
 
 rules.set('Normalize schema.items', (schema, _fileName, options) => {
   if (options.ignoreMinAndMaxItems) {
@@ -218,11 +169,7 @@ rules.set('Normalize schema.items', (schema, _fileName, options) => {
   const hasMaxItems = typeof maxItems === 'number' && maxItems >= 0;
   const hasMinItems = typeof minItems === 'number' && minItems > 0;
 
-  if (
-    schema.items &&
-    !Array.isArray(schema.items) &&
-    (hasMaxItems || hasMinItems)
-  ) {
+  if (schema.items && !Array.isArray(schema.items) && (hasMaxItems || hasMinItems)) {
     const items = schema.items;
     // create a tuple of length N
     const newItems = Array(maxItems || minItems || 0).fill(items);
@@ -233,11 +180,7 @@ rules.set('Normalize schema.items', (schema, _fileName, options) => {
     schema.items = newItems;
   }
 
-  if (
-    Array.isArray(schema.items) &&
-    hasMaxItems &&
-    maxItems! < schema.items.length
-  ) {
+  if (Array.isArray(schema.items) && hasMaxItems && maxItems! < schema.items.length) {
     // it's perfectly valid to provide 5 item defs but require maxItems 1
     // obviously we shouldn't emit a type for items that aren't expected
     schema.items = schema.items.slice(0, maxItems);
@@ -270,11 +213,7 @@ rules.set('Make extends always an array, if it is defined', (schema) => {
 });
 
 rules.set('Transform definitions to $defs', (schema, fileName) => {
-  if (
-    schema.definitions &&
-    schema.$defs &&
-    !isDeepStrictEqual(schema.definitions, schema.$defs)
-  ) {
+  if (schema.definitions && schema.$defs && !isDeepStrictEqual(schema.definitions, schema.$defs)) {
     throw ReferenceError(
       `Schema must define either definitions or $defs, not both. Given id=${schema.id} in ${fileName}`
     );
@@ -293,10 +232,7 @@ rules.set('Transform const to singleton enum', (schema) => {
 });
 
 rules.set('Add tsEnumNames to enum types', (schema, _, options) => {
-  if (
-    isEnumTypeWithoutTsEnumNames(schema) &&
-    options.inferStringEnumKeysFromValues
-  ) {
+  if (isEnumTypeWithoutTsEnumNames(schema) && options.inferStringEnumKeysFromValues) {
     schema.tsEnumNames = schema.enum?.map(String);
   }
 });
@@ -324,9 +260,7 @@ export function normalize(
   options: Options
 ): NormalizedJSONSchema {
   rules.forEach((rule) =>
-    traverse(rootSchema, (schema, key) =>
-      rule(schema, filename, options, key, dereferencedPaths)
-    )
+    traverse(rootSchema, (schema, key) => rule(schema, filename, options, key, dereferencedPaths))
   );
   return rootSchema as NormalizedJSONSchema;
 }

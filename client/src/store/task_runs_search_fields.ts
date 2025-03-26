@@ -19,52 +19,44 @@ interface TaskRunsSearchFieldsState {
   }): Promise<undefined>;
 }
 
-export const useTaskRunsSearchFields = create<TaskRunsSearchFieldsState>(
-  (set, get) => ({
-    searchFieldsByScope: new Map<string, SearchFields>(),
-    isInitializedByScope: new Map<string, boolean>(),
-    isLoadingByScope: new Map<string, boolean>(),
+export const useTaskRunsSearchFields = create<TaskRunsSearchFieldsState>((set, get) => ({
+  searchFieldsByScope: new Map<string, SearchFields>(),
+  isInitializedByScope: new Map<string, boolean>(),
+  isLoadingByScope: new Map<string, boolean>(),
 
-    fetchSearchFields: async ({ tenant, taskId, taskSchemaId }) => {
-      const scope = buildScopeKey({
-        tenant,
-        taskId,
-        taskSchemaId,
-      });
-      if (get().isLoadingByScope.get(scope)) {
-        return;
-      }
-      set(
-        produce((state: TaskRunsSearchFieldsState) => {
-          state.isLoadingByScope.set(scope, true);
-        })
+  fetchSearchFields: async ({ tenant, taskId, taskSchemaId }) => {
+    const scope = buildScopeKey({
+      tenant,
+      taskId,
+      taskSchemaId,
+    });
+    if (get().isLoadingByScope.get(scope)) {
+      return;
+    }
+    set(
+      produce((state: TaskRunsSearchFieldsState) => {
+        state.isLoadingByScope.set(scope, true);
+      })
+    );
+
+    try {
+      const searchFields = await client.get<SearchFields>(
+        taskSchemaSubPath(tenant, taskId, taskSchemaId, `/runs/search/fields`, true)
       );
 
-      try {
-        const searchFields = await client.get<SearchFields>(
-          taskSchemaSubPath(
-            tenant,
-            taskId,
-            taskSchemaId,
-            `/runs/search/fields`,
-            true
-          )
-        );
-
-        set(
-          produce((state) => {
-            state.searchFieldsByScope.set(scope, searchFields);
-          })
-        );
-      } catch (error) {
-        console.error('Failed to fetch AI agents runs search fields', error);
-      }
       set(
-        produce((state: TaskRunsSearchFieldsState) => {
-          state.isInitializedByScope.set(scope, true);
-          state.isLoadingByScope.set(scope, false);
+        produce((state) => {
+          state.searchFieldsByScope.set(scope, searchFields);
         })
       );
-    },
-  })
-);
+    } catch (error) {
+      console.error('Failed to fetch AI agents runs search fields', error);
+    }
+    set(
+      produce((state: TaskRunsSearchFieldsState) => {
+        state.isInitializedByScope.set(scope, true);
+        state.isLoadingByScope.set(scope, false);
+      })
+    );
+  },
+}));

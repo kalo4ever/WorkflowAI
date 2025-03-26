@@ -2,11 +2,7 @@ import * as React from 'react';
 import { useCallback, useEffect, useImperativeHandle } from 'react';
 import { cn } from '@/lib/utils/cn';
 
-function useAutoResizeTextarea(
-  ref: React.ForwardedRef<HTMLTextAreaElement>,
-  autoResize: boolean,
-  value: unknown
-) {
+function useAutoResizeTextarea(ref: React.ForwardedRef<HTMLTextAreaElement>, autoResize: boolean, value: unknown) {
   const textAreaRef = React.useRef<HTMLTextAreaElement>(null);
 
   useImperativeHandle(ref, () => textAreaRef.current!);
@@ -77,29 +73,26 @@ function useAutoResizeTextarea(
   return textAreaRef;
 }
 
-export interface TextareaProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   autoResize?: boolean;
 }
 
-const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  (props, ref) => {
-    const { autoResize = true, value, className, ...rest } = props;
-    const textAreaRef = useAutoResizeTextarea(ref, autoResize, value);
+const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>((props, ref) => {
+  const { autoResize = true, value, className, ...rest } = props;
+  const textAreaRef = useAutoResizeTextarea(ref, autoResize, value);
 
-    return (
-      <textarea
-        className={cn(
-          'flex w-full rounded-[2px] border border-gray-300 border-input bg-white px-3 py-2.5 font-lato text-gray-900 text-sm font-normal ring-offset-background placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-900 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 resize-none',
-          className
-        )}
-        ref={textAreaRef}
-        value={value}
-        {...rest}
-      />
-    );
-  }
-);
+  return (
+    <textarea
+      className={cn(
+        'flex w-full rounded-[2px] border border-gray-300 border-input bg-white px-3 py-2.5 font-lato text-gray-900 text-sm font-normal ring-offset-background placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-900 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 resize-none',
+        className
+      )}
+      ref={textAreaRef}
+      value={value}
+      {...rest}
+    />
+  );
+});
 
 Textarea.displayName = 'Textarea';
 export { Textarea };

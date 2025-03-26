@@ -1,8 +1,4 @@
-import {
-  Checkmark20Regular,
-  Play20Regular,
-  Stop20Regular,
-} from '@fluentui/react-icons';
+import { Checkmark20Regular, Play20Regular, Stop20Regular } from '@fluentui/react-icons';
 import { useCallback, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { SimpleTooltip } from '@/components/ui/Tooltip';
@@ -11,8 +7,9 @@ import { TaskRunner } from '../hooks/useTaskRunners';
 type Props = {
   taskRunner: TaskRunner;
   disabled: boolean;
+  containsError: boolean;
 };
-export function CreateTaskRunButton({ taskRunner, disabled }: Props) {
+export function CreateTaskRunButton({ taskRunner, disabled, containsError }: Props) {
   const onClick = useCallback(() => {
     if (taskRunner.loading) {
       return;
@@ -28,6 +25,9 @@ export function CreateTaskRunButton({ taskRunner, disabled }: Props) {
   }, [taskRunner]);
 
   const renderIcon = () => {
+    if (containsError) {
+      return <Play20Regular className='h-5 w-5' />;
+    }
     if (!taskRunner.loading) {
       switch (taskRunner.inputStatus) {
         case 'processed':
@@ -75,13 +75,8 @@ export function CreateTaskRunButton({ taskRunner, disabled }: Props) {
   );
 
   return (
-    <div
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => setIsHovering(false)}
-    >
-      {isHovering && taskRunner.loading
-        ? stopButtonContent
-        : normalButtonContent}
+    <div onMouseEnter={() => setIsHovering(true)} onMouseLeave={() => setIsHovering(false)}>
+      {isHovering && taskRunner.loading ? stopButtonContent : normalButtonContent}
     </div>
   );
 }

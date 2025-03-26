@@ -19,11 +19,7 @@ export function TaskRunTableContent(props: TaskRunTableProps) {
           <TaskRunTableRow
             key={runItem.id}
             runItem={runItem}
-            version={
-              !!runItem.version.id
-                ? versionsDictionary[runItem.version.id]
-                : undefined
-            }
+            version={!!runItem.version.id ? versionsDictionary[runItem.version.id] : undefined}
             redirectWithParams={redirectWithParams}
           />
         );

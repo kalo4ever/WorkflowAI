@@ -20,18 +20,14 @@ type TaskRunSearchFieldParametersBadgesProps = {
   onClear: (index: number) => void;
 };
 
-export function TaskRunSearchFieldParametersBadges(
-  props: TaskRunSearchFieldParametersBadgesProps
-) {
+export function TaskRunSearchFieldParametersBadges(props: TaskRunSearchFieldParametersBadgesProps) {
   const { index, parameters, searchFields, setParam, onClear } = props;
 
   const fieldName = useMemo(() => {
     return parameters.find(([key]) => key === SearchFieldParam.FieldNames)?.[1];
   }, [parameters]);
 
-  const [keyForPopoverToShow, setKeyForPopoverToShow] = useState<
-    string | undefined
-  >(undefined);
+  const [keyForPopoverToShow, setKeyForPopoverToShow] = useState<string | undefined>(undefined);
 
   const handleClosePopover = useCallback(() => {
     setKeyForPopoverToShow(undefined);
@@ -43,20 +39,13 @@ export function TaskRunSearchFieldParametersBadges(
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (
-        event.key === 'Backspace' &&
-        keyForPopoverToShow &&
-        keyForPopoverToShow !== SearchFieldParam.Operators
-      ) {
+      if (event.key === 'Backspace' && keyForPopoverToShow && keyForPopoverToShow !== SearchFieldParam.Operators) {
         setParam(keyForPopoverToShow, undefined, index);
         setKeyForPopoverToShow(undefined);
         return;
       }
 
-      if (
-        event.key === 'Enter' &&
-        keyForPopoverToShow === SearchFieldParam.Values
-      ) {
+      if (event.key === 'Enter' && keyForPopoverToShow === SearchFieldParam.Values) {
         setParam(keyForPopoverToShow, undefined, index);
         setKeyForPopoverToShow(undefined);
         return;
@@ -77,11 +66,7 @@ export function TaskRunSearchFieldParametersBadges(
   }, [keyForPopoverToShow, setParam, index]);
 
   const hintsDictionary: Record<string, string[]> = useMemo(() => {
-    const parameters = [
-      SearchFieldParam.FieldNames,
-      SearchFieldParam.Operators,
-      SearchFieldParam.Values,
-    ];
+    const parameters = [SearchFieldParam.FieldNames, SearchFieldParam.Operators, SearchFieldParam.Values];
     const result: Record<string, string[]> = {};
     parameters.forEach((param) => {
       result[param] = findHints(param, fieldName, searchFields) ?? [];
@@ -96,9 +81,7 @@ export function TaskRunSearchFieldParametersBadges(
       className={cx(
         'flex flex-row w-max text-gray-900 font-medium text-[13px] h-6 items-center border-gray-200',
         parameters.length === 0 && 'hidden',
-        allParametersWereEntered
-          ? 'border rounded-[2px] mr-1'
-          : 'border-l border-t border-b rounded-l-[2px] pr-1'
+        allParametersWereEntered ? 'border rounded-[2px] mr-1' : 'border-l border-t border-b rounded-l-[2px] pr-1'
       )}
     >
       {parameters.map(([key, value]) => (

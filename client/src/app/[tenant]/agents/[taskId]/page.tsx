@@ -21,19 +21,13 @@ function TaskPage(props: TaskPageProps) {
 
   useEffect(() => {
     if (newestTaskSchemaId) {
-      router.push(
-        taskSchemaRoute(tenant, taskId, `${newestTaskSchemaId}` as TaskSchemaID)
-      );
+      router.push(taskSchemaRoute(tenant, taskId, `${newestTaskSchemaId}` as TaskSchemaID));
     }
   }, [newestTaskSchemaId, router, tenant, taskId]);
 
   return <Loader centered />;
 }
 
-export default function TaskNamePage({
-  params: { taskId, tenant },
-}: {
-  params: { taskId: TaskID; tenant: TenantID };
-}) {
+export default function TaskNamePage({ params: { taskId, tenant } }: { params: { taskId: TaskID; tenant: TenantID } }) {
   return <TaskPage taskId={taskId} tenant={tenant} />;
 }

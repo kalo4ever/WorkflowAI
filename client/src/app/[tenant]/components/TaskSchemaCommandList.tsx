@@ -18,28 +18,13 @@ type TaskSchemaCommandListProps = {
 };
 
 export function TaskSchemaCommandList(props: TaskSchemaCommandListProps) {
-  const {
-    title,
-    taskSchemaIds,
-    currentTaskSchemaId,
-    activeSchemaIds,
-    onTaskSchemaChange,
-    setOpen,
-    className,
-  } = props;
+  const { title, taskSchemaIds, currentTaskSchemaId, activeSchemaIds, onTaskSchemaChange, setOpen, className } = props;
 
   if (!taskSchemaIds || taskSchemaIds.length === 0) return null;
 
   return (
     <>
-      <div
-        className={cn(
-          'text-indigo-600 text-xs font-medium font-lato px-3 pt-2.5',
-          className
-        )}
-      >
-        {title}
-      </div>
+      <div className={cn('text-indigo-600 text-xs font-medium font-lato px-3 pt-2.5', className)}>{title}</div>
       <div className='flex flex-col pb-1'>
         <CommandList className='max-h-max'>
           <CommandGroup>
@@ -58,15 +43,10 @@ export function TaskSchemaCommandList(props: TaskSchemaCommandListProps) {
                   size={16}
                   className={cn(
                     'text-indigo-600 shrink-0',
-                    currentTaskSchemaId === schemaId
-                      ? 'opacity-100'
-                      : 'opacity-0'
+                    currentTaskSchemaId === schemaId ? 'opacity-100' : 'opacity-0'
                   )}
                 />
-                <TaskSchemaBadgeContainer
-                  schemaId={schemaId}
-                  isActive={activeSchemaIds?.includes(schemaId)}
-                />
+                <TaskSchemaBadgeContainer schemaId={schemaId} isActive={activeSchemaIds?.includes(schemaId)} />
               </CommandItem>
             ))}
           </CommandGroup>
@@ -86,20 +66,9 @@ type TaskSchemaCommandListsProps = {
 };
 
 export function TaskSchemaCommandLists(props: TaskSchemaCommandListsProps) {
-  const {
-    taskSchemaIds,
-    hiddenSchemaIds,
-    activeSchemaIds,
-    currentTaskSchemaId,
-    onTaskSchemaChange,
-    setOpen,
-  } = props;
+  const { taskSchemaIds, hiddenSchemaIds, activeSchemaIds, currentTaskSchemaId, onTaskSchemaChange, setOpen } = props;
 
-  if (
-    (!taskSchemaIds || taskSchemaIds.length === 0) &&
-    (!hiddenSchemaIds || hiddenSchemaIds.length === 0)
-  )
-    return null;
+  if ((!taskSchemaIds || taskSchemaIds.length === 0) && (!hiddenSchemaIds || hiddenSchemaIds.length === 0)) return null;
 
   return (
     <>
@@ -121,11 +90,7 @@ export function TaskSchemaCommandLists(props: TaskSchemaCommandListsProps) {
           activeSchemaIds={activeSchemaIds}
           onTaskSchemaChange={onTaskSchemaChange}
           setOpen={setOpen}
-          className={
-            taskSchemaIds && taskSchemaIds.length > 0
-              ? 'border-t border-gray-200 border-dashed'
-              : undefined
-          }
+          className={taskSchemaIds && taskSchemaIds.length > 0 ? 'border-t border-gray-200 border-dashed' : undefined}
         />
       )}
       <Separator />

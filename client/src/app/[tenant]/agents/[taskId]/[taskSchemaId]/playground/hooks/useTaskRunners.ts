@@ -1,11 +1,6 @@
 import { isEmpty, isEqual } from 'lodash';
 import { useCallback, useMemo } from 'react';
-import {
-  GeneralizedTaskInput,
-  StreamedChunk,
-  TaskRun,
-  mapReasoningSteps,
-} from '@/types';
+import { GeneralizedTaskInput, StreamedChunk, TaskRun, mapReasoningSteps } from '@/types';
 import { ToolCallPreview } from '@/types';
 import { toolCallsFromRun } from '@/types/utils';
 import { ReasoningStep } from '@/types/workflowAI';
@@ -47,10 +42,7 @@ function useInputMatchStatus(
   }, [taskRunInput, formInput]);
 }
 
-function extractToolCalls(
-  streamedChunk: StreamedChunk | undefined,
-  final: TaskRun | undefined
-) {
+function extractToolCalls(streamedChunk: StreamedChunk | undefined, final: TaskRun | undefined) {
   const taskRunToolCalls = toolCallsFromRun(final);
   if (!!taskRunToolCalls && taskRunToolCalls.length > 0) {
     return taskRunToolCalls;
@@ -58,10 +50,7 @@ function extractToolCalls(
   return streamedChunk?.toolCalls;
 }
 
-function extractReasoningSteps(
-  streamedChunk: StreamedChunk | undefined,
-  final: TaskRun | undefined
-) {
+function extractReasoningSteps(streamedChunk: StreamedChunk | undefined, final: TaskRun | undefined) {
   const taskRunReasoningSteps = final?.reasoning_steps;
   if (!isEmpty(taskRunReasoningSteps)) {
     return mapReasoningSteps(taskRunReasoningSteps);
@@ -70,19 +59,9 @@ function extractReasoningSteps(
 }
 
 function useTaskRunner(index: 0 | 1 | 2, props: Props) {
-  const {
-    taskRuns,
-    playgroundOutputsLoading,
-    streamedChunks,
-    handleRunTask,
-    cancelRunTask,
-    generatedInput,
-  } = props;
+  const { taskRuns, playgroundOutputsLoading, streamedChunks, handleRunTask, cancelRunTask, generatedInput } = props;
 
-  const inputStatus = useInputMatchStatus(
-    taskRuns[index]?.task_input,
-    generatedInput
-  );
+  const inputStatus = useInputMatchStatus(taskRuns[index]?.task_input, generatedInput);
 
   const execute = useCallback(async () => {
     await handleRunTask(index);

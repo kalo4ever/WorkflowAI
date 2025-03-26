@@ -3,15 +3,9 @@
 import React from 'react';
 import { Input } from '@/components/ui/Input';
 import { cn } from '@/lib/utils';
-import {
-  TimePickerType,
-  getArrowByType,
-  getDateByType,
-  setDateByType,
-} from './utils';
+import { TimePickerType, getArrowByType, getDateByType, setDateByType } from './utils';
 
-export interface TimePickerInputProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface TimePickerInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   picker: TimePickerType;
   date: Date | undefined;
   setDate: (date: Date | undefined) => void;
@@ -19,10 +13,7 @@ export interface TimePickerInputProps
   onLeftFocus?: () => void;
 }
 
-const TimePickerInput = React.forwardRef<
-  HTMLInputElement,
-  TimePickerInputProps
->(
+const TimePickerInput = React.forwardRef<HTMLInputElement, TimePickerInputProps>(
   (
     {
       className,
@@ -57,10 +48,7 @@ const TimePickerInput = React.forwardRef<
       }
     }, [flag]);
 
-    const calculatedValue = React.useMemo(
-      () => getDateByType(date, picker),
-      [date, picker]
-    );
+    const calculatedValue = React.useMemo(() => getDateByType(date, picker), [date, picker]);
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === 'Tab') return;
@@ -75,9 +63,7 @@ const TimePickerInput = React.forwardRef<
         setDate(setDateByType(tempDate, newValue, picker));
       }
       if (e.key >= '0' && e.key <= '9') {
-        const newValue = !flag
-          ? '0' + e.key
-          : calculatedValue.slice(1, 2) + e.key;
+        const newValue = !flag ? '0' + e.key : calculatedValue.slice(1, 2) + e.key;
         if (flag) onRightFocus?.();
         setFlag((prev) => !prev);
         const tempDate = new Date(date);

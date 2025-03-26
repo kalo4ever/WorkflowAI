@@ -41,12 +41,7 @@ export function TaskRunTableRow(props: TaskRunTableRowProps) {
       </div>
       <div className='flex flex-row gap-[6px] items-center justify-start w-[140px]'>
         {!!version ? (
-          <TaskVersionBadgeContainer
-            version={version}
-            side='left'
-            showActiveIndicator={true}
-            height={26}
-          />
+          <TaskVersionBadgeContainer version={version} side='left' showActiveIndicator={true} height={26} />
         ) : (
           <SimpleTooltip
             content={
@@ -59,13 +54,9 @@ export function TaskRunTableRow(props: TaskRunTableRowProps) {
             </div>
           </SimpleTooltip>
         )}
-        {!!environments && environments.length > 0 && (
-          <TaskRunEnvironments environments={environments} />
-        )}
+        {!!environments && environments.length > 0 && <TaskRunEnvironments environments={environments} />}
       </div>
-      <div className='w-[64px] text-gray-500 text-[13px] font-normal'>
-        {formatRelativeTime(runItem.created_at)}
-      </div>
+      <div className='w-[64px] text-gray-500 text-[13px] font-normal'>{formatRelativeTime(runItem.created_at)}</div>
       <div className='w-[60px]'>
         <TaskRunReview taskRun={runItem} />
       </div>

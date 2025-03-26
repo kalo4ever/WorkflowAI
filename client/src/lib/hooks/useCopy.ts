@@ -29,11 +29,7 @@ export function useCopyCurrentUrl() {
   }, [copy]);
 }
 
-export function useCopyRunURL(
-  tenant: TenantID | undefined,
-  taskId: string | undefined,
-  taskRunId: string | undefined
-) {
+export function useCopyRunURL(tenant: TenantID | undefined, taskId: string | undefined, taskRunId: string | undefined) {
   const copy = useCopy();
   return useCallback(() => {
     if (!taskId || !taskRunId) {

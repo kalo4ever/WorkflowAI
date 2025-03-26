@@ -6,9 +6,7 @@ type TaskVersionsListSectionHeaderProps = {
   title: string;
 };
 
-export function TaskVersionsListSectionHeader(
-  props: TaskVersionsListSectionHeaderProps
-) {
+export function TaskVersionsListSectionHeader(props: TaskVersionsListSectionHeaderProps) {
   const { icon: Icon, title } = props;
   return (
     <div

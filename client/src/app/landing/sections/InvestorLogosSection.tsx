@@ -1,19 +1,42 @@
 import Image from 'next/image';
-import InvestorLogo1Src from '@/components/Images/InvestorLogo1.png';
-import InvestorLogo2Src from '@/components/Images/InvestorLogo2.png';
-import InvestorLogo3Src from '@/components/Images/InvestorLogo3.png';
-import InvestorLogo4Src from '@/components/Images/InvestorLogo4.png';
-import InvestorLogo5Src from '@/components/Images/InvestorLogo5.png';
-import InvestorLogo6Src from '@/components/Images/InvestorLogo6.png';
 import { cn } from '@/lib/utils';
 
 const investorLogos = [
-  InvestorLogo1Src,
-  InvestorLogo2Src,
-  InvestorLogo3Src,
-  InvestorLogo4Src,
-  InvestorLogo5Src,
-  InvestorLogo6Src,
+  {
+    src: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/InvestorLogo1.png',
+    width: 100,
+    height: 100,
+  },
+  {
+    src: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/InvestorLogo2.png',
+    width: 100,
+    height: 100,
+  },
+  {
+    src: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/InvestorLogo3.png',
+    width: 100,
+    height: 100,
+  },
+  {
+    src: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/InvestorLogo4.png',
+    width: 100,
+    height: 100,
+  },
+  {
+    src: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/InvestorLogo5.png',
+    width: 100,
+    height: 100,
+  },
+  {
+    src: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/InvestorLogo6.png',
+    width: 100,
+    height: 100,
+  },
+  {
+    src: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/InvestorLogo7.png',
+    width: 100,
+    height: 100,
+  },
 ];
 
 type InvestorLogosSectionProps = {
@@ -24,18 +47,19 @@ export function InvestorLogosSection(props: InvestorLogosSectionProps) {
   const { className } = props;
 
   return (
-    <div className={cn('flex flex-col gap-2 items-center px-4', className)}>
-      <div className='text-[16px] font-normal text-gray-500 text-center'>
-        Backed by investors from leading brands and companies from across the
-        globe
+    <div className={cn('flex flex-col gap-6 items-center px-4', className)}>
+      <div className='text-[16px] font-normal text-gray-700 text-center'>
+        Backed by investors from leading brands and companies from across the globe.
       </div>
-      <div className='flex flex-wrap max-w-[1132px] gap-x-4 gap-y-7 pt-8 items-start justify-center'>
+      <div className='flex flex-wrap max-w-[1132px] gap-x-10 gap-y-7 items-start justify-center'>
         {investorLogos.map((logo) => (
           <Image
-            src={logo}
+            src={logo.src}
             alt='Investor Logo'
             key={logo.src}
-            className='w-[240px] h-[48px]'
+            className='w-fit h-8'
+            width={logo.width}
+            height={logo.height}
           />
         ))}
       </div>

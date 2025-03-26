@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-var-requires */
 
-const fs = require('fs');
+/* eslint-disable @typescript-eslint/no-var-requires */
+import fs from 'fs';
 
 // Define types for better TypeScript support
 type Schema = {
@@ -12,7 +12,7 @@ type Schema = {
 };
 
 // URL of the remote OpenAPI schema
-const schemaUrl = 'https://api.workflowai.dev/openapi.json';
+const schemaUrl = 'https://api.workflowai.com/openapi.json';
 const outputPath = './backend-types/openapi_fixed.json';
 
 // Function to recursively find and replace $defs with $ref
@@ -28,11 +28,7 @@ function replaceDefsWithRefs(obj: Schema, rootSchema: Schema = obj) {
         }
         // Delete $defs after moving
         delete obj[key];
-      } else if (
-        key === '$ref' &&
-        typeof obj[key] === 'string' &&
-        obj[key].startsWith('#/$defs/')
-      ) {
+      } else if (key === '$ref' && typeof obj[key] === 'string' && obj[key].startsWith('#/$defs/')) {
         // Update $ref to point to components/schemas
         obj[key] = obj[key].replace('#/$defs/', '#/components/schemas/');
       } else {
@@ -64,17 +60,12 @@ async function fetchAndProcessSchema() {
     replaceDefsWithRefs(schema);
 
     // Write the updated schema to a new file
-    fs.writeFile(
-      outputPath,
-      JSON.stringify(schema, null, 2),
-      'utf8',
-      (err: any) => {
-        if (err) {
-          console.error('Error writing the fixed file:', err);
-          return;
-        }
+    fs.writeFile(outputPath, JSON.stringify(schema, null, 2), 'utf8', (err: any) => {
+      if (err) {
+        console.error('Error writing the fixed file:', err);
+        return;
       }
-    );
+    });
   } catch (error) {
     console.error('Error fetching or processing the schema:', error);
   }

@@ -18,23 +18,11 @@ type Props = {
 export function useVersionsForTaskRunners(props: Props) {
   const { tenant, taskId, taskRunners, instructions, temperature } = props;
 
-  const { version: versionRunOne } = useOrFetchVersion(
-    tenant,
-    taskId,
-    taskRunners[0].data?.group.id
-  );
+  const { version: versionRunOne } = useOrFetchVersion(tenant, taskId, taskRunners[0].data?.group.id);
 
-  const { version: versionRunTwo } = useOrFetchVersion(
-    tenant,
-    taskId,
-    taskRunners[1].data?.group.id
-  );
+  const { version: versionRunTwo } = useOrFetchVersion(tenant, taskId, taskRunners[1].data?.group.id);
 
-  const { version: versionRunThree } = useOrFetchVersion(
-    tenant,
-    taskId,
-    taskRunners[2].data?.group.id
-  );
+  const { version: versionRunThree } = useOrFetchVersion(tenant, taskId, taskRunners[2].data?.group.id);
 
   const versionsForRuns = useMemo(() => {
     const result: Record<string, VersionV1> = {};
@@ -54,9 +42,7 @@ export function useVersionsForTaskRunners(props: Props) {
     if (!versionsForRuns) {
       return true;
     }
-    return Object.values(versionsForRuns).every((version) =>
-      isVersionSaved(version)
-    );
+    return Object.values(versionsForRuns).every((version) => isVersionSaved(version));
   }, [versionsForRuns]);
 
   const showSaveAllVersions = useMemo(() => {
@@ -65,23 +51,15 @@ export function useVersionsForTaskRunners(props: Props) {
     }
 
     const versionsToSave = Object.values(versionsForRuns);
-    const isThereVersionNotMatchingParameters = versionsToSave.some(
-      (version) => {
-        return (
-          version.properties.instructions?.trim().toLowerCase() !==
-            instructions.trim().toLowerCase() ||
-          version.properties.temperature !== temperature
-        );
-      }
-    );
+    const isThereVersionNotMatchingParameters = versionsToSave.some((version) => {
+      return (
+        version.properties.instructions?.trim().toLowerCase() !== instructions.trim().toLowerCase() ||
+        version.properties.temperature !== temperature
+      );
+    });
 
     return !isThereVersionNotMatchingParameters;
-  }, [
-    areAllVersionsForTaskRunsSaved,
-    instructions,
-    temperature,
-    versionsForRuns,
-  ]);
+  }, [areAllVersionsForTaskRunsSaved, instructions, temperature, versionsForRuns]);
 
   const saveVersion = useVersions((state) => state.saveVersion);
 
@@ -93,9 +71,7 @@ export function useVersionsForTaskRunners(props: Props) {
       }
     });
 
-    await Promise.all(
-      versionsToSave.map((version) => saveVersion(tenant, taskId, version.id))
-    );
+    await Promise.all(versionsToSave.map((version) => saveVersion(tenant, taskId, version.id)));
   }, [versionsForRuns, saveVersion, tenant, taskId]);
 
   return { versionsForRuns, showSaveAllVersions, onSaveAllVersions };

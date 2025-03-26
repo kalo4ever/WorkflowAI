@@ -14,68 +14,15 @@ export function GradientBackground(props: GradientBackgroundProps) {
       xmlns='http://www.w3.org/2000/svg'
       className={className}
     >
-      <rect
-        width={size}
-        height={size}
-        rx={size / 2}
-        fill='url(#paint0_radial_15304_98471)'
-      />
-      <rect
-        width={size}
-        height={size}
-        rx={size / 2}
-        fill='url(#paint1_angular_15304_98471)'
-        fillOpacity='0.5'
-      />
-      <rect
-        width={size}
-        height={size}
-        rx={size / 2}
-        fill='url(#paint2_radial_15304_98471)'
-        fillOpacity='0.4'
-      />
-      <rect
-        width={size}
-        height={size}
-        rx={size / 2}
-        fill='url(#paint3_radial_15304_98471)'
-        fillOpacity='0.6'
-      />
-      <rect
-        width={size}
-        height={size}
-        rx={size / 2}
-        fill='url(#paint4_radial_15304_98471)'
-        fillOpacity='0.3'
-      />
-      <rect
-        width={size}
-        height={size}
-        rx={size / 2}
-        fill='url(#paint5_radial_15304_98471)'
-        fillOpacity='0.1'
-      />
-      <rect
-        width={size}
-        height={size}
-        rx={size / 2}
-        fill='url(#paint6_radial_15304_98471)'
-        fillOpacity='0.3'
-      />
-      <rect
-        width={size}
-        height={size}
-        rx={size / 2}
-        fill='url(#paint7_radial_15304_98471)'
-        fillOpacity='0.3'
-      />
-      <rect
-        width={size}
-        height={size}
-        rx={size / 2}
-        fill='url(#paint8_radial_15304_98471)'
-        fillOpacity='0.2'
-      />
+      <rect width={size} height={size} rx={size / 2} fill='url(#paint0_radial_15304_98471)' />
+      <rect width={size} height={size} rx={size / 2} fill='url(#paint1_angular_15304_98471)' fillOpacity='0.5' />
+      <rect width={size} height={size} rx={size / 2} fill='url(#paint2_radial_15304_98471)' fillOpacity='0.4' />
+      <rect width={size} height={size} rx={size / 2} fill='url(#paint3_radial_15304_98471)' fillOpacity='0.6' />
+      <rect width={size} height={size} rx={size / 2} fill='url(#paint4_radial_15304_98471)' fillOpacity='0.3' />
+      <rect width={size} height={size} rx={size / 2} fill='url(#paint5_radial_15304_98471)' fillOpacity='0.1' />
+      <rect width={size} height={size} rx={size / 2} fill='url(#paint6_radial_15304_98471)' fillOpacity='0.3' />
+      <rect width={size} height={size} rx={size / 2} fill='url(#paint7_radial_15304_98471)' fillOpacity='0.3' />
+      <rect width={size} height={size} rx={size / 2} fill='url(#paint8_radial_15304_98471)' fillOpacity='0.2' />
       <rect
         width={size}
         height={size}

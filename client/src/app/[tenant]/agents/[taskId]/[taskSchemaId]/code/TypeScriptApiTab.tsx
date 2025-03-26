@@ -21,12 +21,12 @@ type TypeScriptApiTabProps = {
 };
 
 export function TypeScriptApiTab(props: TypeScriptApiTabProps) {
-  const { taskSchema, taskRun, version, environment, apiUrl, secondaryInput } =
-    props;
+  const { taskSchema, taskRun, version, environment, apiUrl, secondaryInput } = props;
 
-  const [streamRunsForGroupId, setStreamRunsForGroupId] = useLocalStorage<
-    Record<number, boolean>
-  >('streamRunsForGroupId', {});
+  const [streamRunsForGroupId, setStreamRunsForGroupId] = useLocalStorage<Record<number, boolean>>(
+    'streamRunsForGroupId',
+    {}
+  );
 
   const streamRuns = useMemo(() => {
     const id = version?.iteration;
@@ -50,8 +50,7 @@ export function TypeScriptApiTab(props: TypeScriptApiTabProps) {
     [streamRunsForGroupId, setStreamRunsForGroupId, version]
   );
 
-  const [snippets, setSnippets] =
-    useState<Awaited<ReturnType<typeof getPlaygroundSnippets>>>();
+  const [snippets, setSnippets] = useState<Awaited<ReturnType<typeof getPlaygroundSnippets>>>();
 
   useEffect(() => {
     // The only required data is the task schema
@@ -112,31 +111,19 @@ export function TypeScriptApiTab(props: TypeScriptApiTabProps) {
   }, [snippets, streamRuns]);
 
   if (!snippets) {
-    return (
-      <div className='flex-1 flex items-center justify-center'>
-        Failed to load AI agent snippet
-      </div>
-    );
+    return <div className='flex-1 flex items-center justify-center'>Failed to load AI agent snippet</div>;
   }
 
   return (
     <div className='flex flex-col w-full h-full overflow-y-auto'>
       <div className='flex flex-col gap-2 py-4 px-4 text-sm'>
         <div className='flex items-center gap-3'>
-          <Switch
-            checked={streamRuns}
-            onCheckedChange={setStreamRuns}
-            className='data-[state=checked]:bg-indigo-700'
-          />
+          <Switch checked={streamRuns} onCheckedChange={setStreamRuns} className='data-[state=checked]:bg-indigo-700' />
           Stream partial results
         </div>
       </div>
 
-      <CodeBlock
-        language={snippets.installSdk.language}
-        snippet={snippets.installSdk.code}
-        showTopBorder={true}
-      />
+      <CodeBlock language={snippets.installSdk.language} snippet={snippets.installSdk.code} showTopBorder={true} />
       <CodeBlock
         title={'TypeScript'}
         language={snippets.initializeClient.language}

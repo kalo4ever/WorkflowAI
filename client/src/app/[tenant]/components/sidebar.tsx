@@ -13,23 +13,13 @@ import { ScrollArea } from '@/components/ui/ScrollArea';
 import { SimpleTooltip } from '@/components/ui/Tooltip';
 import { ExtendedBordersContainer } from '@/components/v2/ExtendedBordersContainer';
 import { useAuth, useAuthUI } from '@/lib/AuthContext';
-import {
-  NEW_TASK_MODAL_OPEN,
-  SUGGESTED_AGENTS_MODAL_OPEN,
-  useQueryParamModal,
-} from '@/lib/globalModal';
+import { NEW_TASK_MODAL_OPEN, useQueryParamModal } from '@/lib/globalModal';
 import { useDemoMode } from '@/lib/hooks/useDemoMode';
 import { useRecentTasksHistory } from '@/lib/hooks/useRecentTasksHistory';
 import { useLoggedInTenantID, useTaskParams } from '@/lib/hooks/useTaskParams';
 import { detectPageIsUsingNewDesign } from '@/lib/pageDetection';
 import { useParsedSearchParams } from '@/lib/queryString';
-import {
-  landingRoute,
-  signUpRoute,
-  taskRoute,
-  taskSchemaRoute,
-  tasksRoute,
-} from '@/lib/routeFormatter';
+import { landingRoute, signUpRoute, taskRoute, taskSchemaRoute, tasksRoute } from '@/lib/routeFormatter';
 import { getNewestSchemaId, isActiveTask } from '@/lib/taskUtils';
 import { cn } from '@/lib/utils';
 import { CURRENT_TENANT, useOrFetchTask, useOrFetchTasks } from '@/store';
@@ -43,11 +33,7 @@ import { UserMenu } from './userMenu';
 export function SidebarLinks() {
   return (
     <div className='flex flex-row justify-between px-2.5 pb-2.5 pt-2.5 border-t border-gray-100 w-full overflow-hidden flex-shrink-0'>
-      <SimpleTooltip
-        content='Contact us at team@workflowai.support'
-        tooltipDelay={100}
-        tooltipClassName='m-1'
-      >
+      <SimpleTooltip content='Contact us at team@workflowai.support' tooltipDelay={100} tooltipClassName='m-1'>
         <Button
           variant='newDesignText'
           toRoute='mailto:team@workflowai.support'
@@ -57,11 +43,7 @@ export function SidebarLinks() {
           className='text-gray-700 hover:text-gray-700 hover:opacity-80 flex-shrink-0 w-7 h-7'
         />
       </SimpleTooltip>
-      <SimpleTooltip
-        content='Join our Community on GitHub'
-        tooltipDelay={100}
-        tooltipClassName='m-1'
-      >
+      <SimpleTooltip content='Join our Community on GitHub' tooltipDelay={100} tooltipClassName='m-1'>
         <Button
           variant='newDesignText'
           toRoute='https://github.com/WorkflowAI/WorkflowAI/discussions'
@@ -98,12 +80,7 @@ export function SidebarLinks() {
 }
 
 export function Sidebar() {
-  const { openModal: openNewTaskModal } =
-    useQueryParamModal(NEW_TASK_MODAL_OPEN);
-
-  const { openModal: openSuggestedAgentsModal } = useQueryParamModal(
-    SUGGESTED_AGENTS_MODAL_OPEN
-  );
+  const { openModal: openNewTaskModal } = useQueryParamModal(NEW_TASK_MODAL_OPEN);
 
   const { tenant, taskId, taskSchemaId } = useTaskParams();
 
@@ -111,15 +88,12 @@ export function Sidebar() {
 
   const loggedInTenant = useLoggedInTenantID() ?? tenant;
 
-  const { tasks, isInitialized } = useOrFetchTasks(
-    loggedInTenant ?? CURRENT_TENANT
-  );
+  const { tasks, isInitialized } = useOrFetchTasks(loggedInTenant ?? CURRENT_TENANT);
   const { task: currentTask } = useOrFetchTask(tenant, taskId);
 
   const router = useRouter();
 
-  const { recentTasks: recentTasksEntries, addRecentTask } =
-    useRecentTasksHistory(tenant);
+  const { recentTasks: recentTasksEntries, addRecentTask } = useRecentTasksHistory(tenant);
 
   useEffect(() => {
     if (!!taskId && !!taskSchemaId) {
@@ -140,21 +114,17 @@ export function Sidebar() {
 
   const pathname = usePathname();
 
-  const { isSignedIn, user, hasOrganization } = useAuth();
+  const { isSignedIn, user, orgState } = useAuth();
 
   const { isInDemoMode, isLoggedOut } = useDemoMode();
 
   const onNewTask = useCallback(() => {
-    if (isLoggedOut && !!companyURL) {
-      openSuggestedAgentsModal();
-    } else {
-      amplitude.track('user.clicked.new_task');
-      openNewTaskModal({
-        mode: 'new',
-        redirectToPlaygrounds: 'true',
-      });
-    }
-  }, [openNewTaskModal, openSuggestedAgentsModal, companyURL, isLoggedOut]);
+    amplitude.track('user.clicked.new_task');
+    openNewTaskModal({
+      mode: 'new',
+      redirectToPlaygrounds: 'true',
+    });
+  }, [openNewTaskModal]);
 
   const { openUserProfile, openOrganizationProfile, signOut } = useAuthUI();
 
@@ -208,17 +178,8 @@ export function Sidebar() {
   }, [tenant, isLoggedOut, companyURL]);
 
   return (
-    <div
-      className={cn(
-        'h-full font-lato flex',
-        useNewDesign ? 'pl-6 pt-6 pb-6' : 'p-6'
-      )}
-    >
-      <ExtendedBordersContainer
-        className='flex-1 flex flex-col w-[172px]'
-        borderColor='gray-100'
-        margin={24}
-      >
+    <div className={cn('h-full font-lato flex', useNewDesign ? 'pl-6 pt-6 pb-6' : 'p-6')}>
+      <ExtendedBordersContainer className='flex-1 flex flex-col w-[172px]' borderColor='gray-100' margin={24}>
         {!!taskId ? (
           <>
             <Button variant='text' size='none' toRoute={routeForLogo}>
@@ -268,11 +229,7 @@ export function Sidebar() {
               </Button>
             </div>
             <div className='pb-6 px-2.5'>
-              <Button
-                className='w-full mt-3'
-                variant='newDesignIndigo'
-                toRoute={routeForSignUp}
-              >
+              <Button className='w-full mt-3' variant='newDesignIndigo' toRoute={routeForSignUp}>
                 Create Account
               </Button>
             </div>
@@ -294,7 +251,7 @@ export function Sidebar() {
               <div className='flex flex-col items-center w-full border rounded-[2px] border-gray-300 shadow-sm'>
                 <UserMenu
                   user={user}
-                  hasOrganization={hasOrganization}
+                  orgState={orgState}
                   openUserProfile={openUserProfile}
                   openOrganizationProfile={openOrganizationProfile}
                   signOut={signOut}

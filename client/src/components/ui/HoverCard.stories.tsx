@@ -1,9 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from '@/components/ui/HoverCard';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/HoverCard';
 
 /**
  * For sighted users to preview content available behind a link.
@@ -17,9 +13,7 @@ const meta = {
   render: (args) => (
     <HoverCard {...args}>
       <HoverCardTrigger>Hover</HoverCardTrigger>
-      <HoverCardContent>
-        The React Framework - created and maintained by @vercel.
-      </HoverCardContent>
+      <HoverCardContent>The React Framework - created and maintained by @vercel.</HoverCardContent>
     </HoverCard>
   ),
   parameters: {

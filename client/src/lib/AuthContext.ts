@@ -10,7 +10,7 @@ interface AuthContext {
   readonly tenantSlug: TenantID | undefined;
   readonly tenantId: string | undefined;
   readonly user: Readonly<User> | undefined;
-  readonly hasOrganization: boolean;
+  readonly orgState: 'selected' | 'available' | 'unavailable' | undefined;
 }
 
 export const AuthContext = createContext<AuthContext>({
@@ -19,7 +19,7 @@ export const AuthContext = createContext<AuthContext>({
   tenantSlug: undefined,
   user: undefined,
   tenantId: undefined,
-  hasOrganization: false,
+  orgState: undefined,
 });
 
 export function useAuth() {

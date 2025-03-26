@@ -22,9 +22,7 @@ describe('useCopy', () => {
       clipboardText = await navigator.clipboard.readText();
     });
     expect(clipboardText).toEqual('test text');
-    expect(toaster.displaySuccessToaster).toHaveBeenCalledWith(
-      'Copied to clipboard'
-    );
+    expect(toaster.displaySuccessToaster).toHaveBeenCalledWith('Copied to clipboard');
   });
 
   it('overrides the toaster message', async () => {
@@ -37,9 +35,7 @@ describe('useCopy', () => {
       clipboardText = await navigator.clipboard.readText();
     });
     expect(clipboardText).toEqual('test text');
-    expect(toaster.displaySuccessToaster).toHaveBeenCalledWith(
-      'Custom message'
-    );
+    expect(toaster.displaySuccessToaster).toHaveBeenCalledWith('Custom message');
   });
 });
 
@@ -63,8 +59,6 @@ describe('useCopyCurrentUrl', () => {
     // I am worried that this expectation is brittle since we don't explicitly
     // set the location.href in the test.
     expect(clipboardText).toEqual('http://localhost/');
-    expect(toaster.displaySuccessToaster).toHaveBeenCalledWith(
-      'Page link copied to clipboard'
-    );
+    expect(toaster.displaySuccessToaster).toHaveBeenCalledWith('Page link copied to clipboard');
   });
 });

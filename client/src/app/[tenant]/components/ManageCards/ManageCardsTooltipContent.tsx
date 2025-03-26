@@ -4,9 +4,7 @@ type ManageCardsTooltipContentProps = {
   onDismiss: (event: React.MouseEvent) => void;
 };
 
-export function ManageCardsTooltipContent(
-  props: ManageCardsTooltipContentProps
-) {
+export function ManageCardsTooltipContent(props: ManageCardsTooltipContentProps) {
   const { text, showDismiss, onDismiss } = props;
 
   if (!text) {

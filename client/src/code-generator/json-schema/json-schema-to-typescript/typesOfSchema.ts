@@ -67,10 +67,7 @@ const matchers: Record<SchemaType, (schema: JSONSchema) => boolean> = {
   },
   NAMED_SCHEMA(schema) {
     // 8.2.1. The presence of "$id" in a subschema indicates that the subschema constitutes a distinct schema resource within a single schema document.
-    return (
-      '$id' in schema &&
-      ('patternProperties' in schema || 'properties' in schema)
-    );
+    return '$id' in schema && ('patternProperties' in schema || 'properties' in schema);
   },
   NEVER(schema: JSONSchema | boolean) {
     return schema === false;

@@ -11,12 +11,7 @@ import { VersionsPerEnvironment } from '@/store/versions';
 import { CodeLanguage } from '@/types/snippets';
 import { TaskSchemaResponseWithSchema } from '@/types/task';
 import { TaskRun } from '@/types/task_run';
-import {
-  APIKeyResponse,
-  SerializableTask,
-  VersionEnvironment,
-  VersionV1,
-} from '@/types/workflowAI';
+import { APIKeyResponse, SerializableTask, VersionEnvironment, VersionV1 } from '@/types/workflowAI';
 import { APILanguageSelection } from './APILanguageSelection';
 import { ApiContentSectionItem } from './ApiContentSectionItem';
 import { ApiTabsContent } from './ApiTabsContent';
@@ -40,10 +35,7 @@ type ApiContentProps = TaskSchemaParams & {
   selectedVersionForAPI: VersionV1 | undefined;
   selectedVersionToDeployId: string | undefined;
   selectedLanguage: CodeLanguage | undefined;
-  setSelectedEnvironment: (
-    environment: VersionEnvironment | undefined,
-    versionId: string | undefined
-  ) => void;
+  setSelectedEnvironment: (environment: VersionEnvironment | undefined, versionId: string | undefined) => void;
   setSelectedVersionToDeploy: (newVersionId: string | undefined) => void;
   setSelectedLanguage: (language: CodeLanguage) => void;
   task: SerializableTask;
@@ -90,9 +82,7 @@ export function ApiContent(props: ApiContentProps) {
       if (membersButton instanceof HTMLElement) {
         membersButton.click();
         setTimeout(() => {
-          const inviteButton = document.querySelector(
-            '.cl-membersPageInviteButton'
-          );
+          const inviteButton = document.querySelector('.cl-membersPageInviteButton');
           if (inviteButton instanceof HTMLElement) {
             inviteButton.click();
           }
@@ -104,21 +94,13 @@ export function ApiContent(props: ApiContentProps) {
   const { isInDemoMode } = useDemoMode();
 
   const inviteTeamButton = (
-    <Button
-      variant='newDesign'
-      onClick={openOrganizationProfile}
-      disabled={isInDemoMode}
-    >
+    <Button variant='newDesign' onClick={openOrganizationProfile} disabled={isInDemoMode}>
       Invite Team
     </Button>
   );
 
   const manageKeysButton = (
-    <ManageApiKeysButton
-      apiKeys={apiKeys}
-      openApiKeysModal={openApiKeysModal}
-      disabled={isInDemoMode}
-    />
+    <ManageApiKeysButton apiKeys={apiKeys} openApiKeysModal={openApiKeysModal} disabled={isInDemoMode} />
   );
 
   return (
@@ -151,9 +133,7 @@ export function ApiContent(props: ApiContentProps) {
                 setSelectedEnvironment={setSelectedEnvironment}
               />
             </ApiContentSectionItem>
-            <ApiContentSectionItem title='Secret Keys'>
-              {manageKeysButton}
-            </ApiContentSectionItem>
+            <ApiContentSectionItem title='Secret Keys'>{manageKeysButton}</ApiContentSectionItem>
           </div>
         </div>
 

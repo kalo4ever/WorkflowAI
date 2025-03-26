@@ -4,10 +4,7 @@ import Image from 'next/image';
 import { useCallback, useMemo } from 'react';
 import { TaskVersionBadgeContainer } from '@/components/TaskIterationBadge/TaskVersionBadgeContainer';
 import { TaskVersionTooltip } from '@/components/v2/TaskVersions/TaskVersionTooltip';
-import {
-  environmentsForVersion,
-  formatSemverVersion,
-} from '@/lib/versionUtils';
+import { environmentsForVersion, formatSemverVersion } from '@/lib/versionUtils';
 import { VersionResult, VersionV1 } from '@/types/workflowAI';
 import { BenchmarkReviewsEntry } from './BenchmarkReviewsEntry';
 import { BenchmarkVersionEnvironments } from './BenchmarkVersionEnvironments';
@@ -27,9 +24,7 @@ function ReviewsView(props: ReviewsViewProps) {
         state='positive'
         onClick={() => onClick('positive')}
         userCount={review.positive_user_review_count}
-        aiCount={
-          review.positive_review_count - review.positive_user_review_count
-        }
+        aiCount={review.positive_review_count - review.positive_user_review_count}
         alwaysShowCount={true}
       />
       <BenchmarkReviewsEntry
@@ -37,19 +32,11 @@ function ReviewsView(props: ReviewsViewProps) {
         state='negative'
         onClick={() => onClick('negative')}
         userCount={review.negative_user_review_count}
-        aiCount={
-          review.negative_review_count - review.negative_user_review_count
-        }
+        aiCount={review.negative_review_count - review.negative_user_review_count}
         alwaysShowCount={true}
       />
-      <BenchmarkReviewsEntry
-        count={review.unsure_review_count}
-        state='unsure'
-        onClick={() => onClick('unsure')}
-      />
-      {review.in_progress_review_count > 0 && (
-        <Loader2 className='h-4 w-4 animate-spin text-gray-400' />
-      )}
+      <BenchmarkReviewsEntry count={review.unsure_review_count} state='unsure' onClick={() => onClick('unsure')} />
+      {review.in_progress_review_count > 0 && <Loader2 className='h-4 w-4 animate-spin text-gray-400' />}
     </div>
   );
 }
@@ -88,10 +75,7 @@ type BenchmarkRowProps = {
   onTryInPlayground: (versionId: string) => void;
   onViewCode: (version: VersionV1) => void;
   onDeploy: (versionId: string | undefined) => void;
-  onOpenTaskRuns: (
-    version: string,
-    state: 'positive' | 'negative' | 'unsure'
-  ) => void;
+  onOpenTaskRuns: (version: string, state: 'positive' | 'negative' | 'unsure') => void;
   isInDemoMode: boolean;
 };
 
@@ -110,10 +94,7 @@ export function BenchmarkRow(props: BenchmarkRowProps) {
     onOpenTaskRuns,
     isInDemoMode,
   } = props;
-  const environments = useMemo(
-    () => environmentsForVersion(version),
-    [version]
-  );
+  const environments = useMemo(() => environmentsForVersion(version), [version]);
 
   const onOpenTaskRunsTapped = useCallback(
     (state: 'positive' | 'negative' | 'unsure') => {
@@ -157,30 +138,15 @@ export function BenchmarkRow(props: BenchmarkRowProps) {
         </div>
         <div className='flex flex-row gap-2 items-center justify-start w-[300px] shrink-0 h-full'>
           <div className='flex flex-row gap-2 items-center mr-2'>
-            {!!environments && environments.length > 0 && (
-              <BenchmarkVersionEnvironments environments={environments} />
-            )}
+            {!!environments && environments.length > 0 && <BenchmarkVersionEnvironments environments={environments} />}
             {!!iconURL && (
-              <Image
-                src={iconURL}
-                alt=''
-                width={14}
-                height={14}
-                className='w-[14px] h-[14px] flex-shrink-0'
-              />
+              <Image src={iconURL} alt='' width={14} height={14} className='w-[14px] h-[14px] flex-shrink-0' />
             )}
-            {!!version.model && (
-              <div className='truncate text-gray-700 text-[13px] font-normal'>
-                {version.model}
-              </div>
-            )}
+            {!!version.model && <div className='truncate text-gray-700 text-[13px] font-normal'>{version.model}</div>}
           </div>
         </div>
         <div className='flex-1 min-w-[110px]'>
-          <ReviewsView
-            review={benchmarkResult}
-            onClick={(state) => onOpenTaskRunsTapped(state)}
-          />
+          <ReviewsView review={benchmarkResult} onClick={(state) => onOpenTaskRunsTapped(state)} />
         </div>
         <div className='flex-1 min-w-[110px]'>
           <ValueView

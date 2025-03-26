@@ -61,8 +61,7 @@ describe('ObjectViewer', () => {
         }}
         defs={{
           DatetimeLocal: {
-            description:
-              'This class represents a local datetime, with a datetime and a timezone.',
+            description: 'This class represents a local datetime, with a datetime and a timezone.',
             properties: {
               date: {
                 examples: ['2023-03-01'],

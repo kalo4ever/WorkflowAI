@@ -13,16 +13,9 @@ import { useDefaultModels } from './useDefaultModels';
 import { GeneratePlaygroundInputParams } from './usePlaygroundPersistedState';
 import { PlaygroundModels } from './utils';
 
-type PersistedTaskRunsWithSameModel = [
-  TaskRun | null,
-  TaskRun | null,
-  TaskRun | null,
-];
+type PersistedTaskRunsWithSameModel = [TaskRun | null, TaskRun | null, TaskRun | null];
 
-function isTaskRunOnSameModel(
-  taskRun: TaskRun | undefined,
-  taskModel: ModelOptional
-) {
+function isTaskRunOnSameModel(taskRun: TaskRun | undefined, taskModel: ModelOptional) {
   if (!taskRun || !taskModel) return false;
   const modelID = taskModel;
   const taskRunGroupProperties = taskRun.group?.properties;
@@ -34,9 +27,7 @@ type Props = {
   currentVersion: VersionV1 | undefined;
   generatedInput: GeneralizedTaskInput | undefined;
   versionId: string | undefined;
-  handleGeneratePlaygroundInput: (
-    params?: GeneratePlaygroundInputParams
-  ) => void;
+  handleGeneratePlaygroundInput: (params?: GeneratePlaygroundInputParams) => void;
   handleGenerateInstructions: () => void;
   resetStreamedChunk: (index: number) => void;
   onTaskRunIdUpdate: (index: number, runId: string | undefined) => void;
@@ -104,29 +95,27 @@ export function usePlaygroundEffects(props: Props) {
     isInitialized: taskRun3Initialized,
     isLoading: taskRun3Loading,
   } = useOrFetchTaskRun(tenant, taskId, taskRunId3);
-  const {
-    taskRun: persistedTaskRun1,
-    isInitialized: persistedTaskRun1Initialized,
-  } = useOrFetchTaskRun(tenant, taskId, persistedTaskRunIds[0]);
-  const {
-    taskRun: persistedTaskRun2,
-    isInitialized: persistedTaskRun2Initialized,
-  } = useOrFetchTaskRun(tenant, taskId, persistedTaskRunIds[1]);
-  const {
-    taskRun: persistedTaskRun3,
-    isInitialized: persistedTaskRun3Initialized,
-  } = useOrFetchTaskRun(tenant, taskId, persistedTaskRunIds[2]);
+  const { taskRun: persistedTaskRun1, isInitialized: persistedTaskRun1Initialized } = useOrFetchTaskRun(
+    tenant,
+    taskId,
+    persistedTaskRunIds[0]
+  );
+  const { taskRun: persistedTaskRun2, isInitialized: persistedTaskRun2Initialized } = useOrFetchTaskRun(
+    tenant,
+    taskId,
+    persistedTaskRunIds[1]
+  );
+  const { taskRun: persistedTaskRun3, isInitialized: persistedTaskRun3Initialized } = useOrFetchTaskRun(
+    tenant,
+    taskId,
+    persistedTaskRunIds[2]
+  );
   const persistedTaskRunsInitialized = useMemo(() => {
     if (!!persistedTaskRunIds[0] && !persistedTaskRun1Initialized) return false;
     if (!!persistedTaskRunIds[1] && !persistedTaskRun2Initialized) return false;
     if (!!persistedTaskRunIds[2] && !persistedTaskRun3Initialized) return false;
     return true;
-  }, [
-    persistedTaskRun1Initialized,
-    persistedTaskRun2Initialized,
-    persistedTaskRun3Initialized,
-    persistedTaskRunIds,
-  ]);
+  }, [persistedTaskRun1Initialized, persistedTaskRun2Initialized, persistedTaskRun3Initialized, persistedTaskRunIds]);
   const persistedTaskRuns = useMemo(() => {
     return [persistedTaskRun1, persistedTaskRun2, persistedTaskRun3];
   }, [persistedTaskRun1, persistedTaskRun2, persistedTaskRun3]);
@@ -134,10 +123,7 @@ export function usePlaygroundEffects(props: Props) {
   const redirectWithParams = useRedirectWithParams();
   const hasVersions = versions.length > 0;
 
-  const hasModelsBeenSet = useMemo(
-    () => schemaModels.some((model) => !!model),
-    [schemaModels]
-  );
+  const hasModelsBeenSet = useMemo(() => schemaModels.some((model) => !!model), [schemaModels]);
 
   const persistedTaskRunsWithSameModel = useMemo(() => {
     const result: PersistedTaskRunsWithSameModel = [null, null, null];
@@ -297,13 +283,7 @@ export function usePlaygroundEffects(props: Props) {
     if (isForcedVersion.current) {
       setSchemaModels(0, currentVersionModel);
     }
-  }, [
-    currentVersion,
-    setInstructions,
-    setTemperature,
-    setSchemaModels,
-    taskRunId1,
-  ]);
+  }, [currentVersion, setInstructions, setTemperature, setSchemaModels, taskRunId1]);
 
   const handleSetRunModel = useCallback(
     (index: number, taskRun: TaskRun | undefined) => {
@@ -382,13 +362,7 @@ export function usePlaygroundEffects(props: Props) {
         setSchemaModels(index, defaultModels[index]);
       }
     },
-    [
-      setSchemaModels,
-      shouldSetDefaultModel,
-      defaultModels,
-      taskModels,
-      schemaModels,
-    ]
+    [setSchemaModels, shouldSetDefaultModel, defaultModels, taskModels, schemaModels]
   );
 
   // If we have no task runs, set the models to the first and last AI models
@@ -402,14 +376,7 @@ export function usePlaygroundEffects(props: Props) {
     computeAndSetModel(taskRunId1, 0);
     computeAndSetModel(taskRunId2, 1);
     computeAndSetModel(taskRunId3, 2);
-  }, [
-    aiModels,
-    taskRunId1,
-    taskRunId2,
-    taskRunId3,
-    defaultModelsInitialized,
-    computeAndSetModel,
-  ]);
+  }, [aiModels, taskRunId1, taskRunId2, taskRunId3, defaultModelsInitialized, computeAndSetModel]);
 
   useEffect(() => {
     if (!!taskRunId1 && !!taskRun1) {
@@ -421,15 +388,7 @@ export function usePlaygroundEffects(props: Props) {
     if (!!taskRunId3 && !!taskRun3) {
       resetStreamedChunk(2);
     }
-  }, [
-    taskRunId1,
-    taskRunId2,
-    taskRunId3,
-    taskRun1,
-    taskRun2,
-    taskRun3,
-    resetStreamedChunk,
-  ]);
+  }, [taskRunId1, taskRunId2, taskRunId3, taskRun1, taskRun2, taskRun3, resetStreamedChunk]);
 
   return {
     taskRun1,

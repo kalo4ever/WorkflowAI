@@ -20,42 +20,20 @@ type ReviewEntryProps = {
 };
 
 export function ReviewEntry(props: ReviewEntryProps) {
-  const {
-    data,
-    schemaInput,
-    schemaOutput,
-    tenant,
-    taskId,
-    taskSchemaId,
-    isInDemoMode,
-  } = props;
+  const { data, schemaInput, schemaOutput, tenant, taskId, taskSchemaId, isInDemoMode } = props;
 
-  const updateEvaluationInputs = useTaskEvaluation(
-    (state) => state.updateEvaluationInputs
-  );
+  const updateEvaluationInputs = useTaskEvaluation((state) => state.updateEvaluationInputs);
 
   const handleUpdateEvaluationInputs = useCallback(
     (value: Record<string, unknown>, isCorrect: boolean) => {
       if (isCorrect) {
-        return updateEvaluationInputs(
-          tenant,
-          taskId,
-          taskSchemaId,
-          data.task_input_hash,
-          {
-            add_correct_output: value,
-          }
-        );
+        return updateEvaluationInputs(tenant, taskId, taskSchemaId, data.task_input_hash, {
+          add_correct_output: value,
+        });
       } else {
-        return updateEvaluationInputs(
-          tenant,
-          taskId,
-          taskSchemaId,
-          data.task_input_hash,
-          {
-            add_incorrect_output: value,
-          }
-        );
+        return updateEvaluationInputs(tenant, taskId, taskSchemaId, data.task_input_hash, {
+          add_incorrect_output: value,
+        });
       }
     },
     [tenant, taskId, taskSchemaId, data.task_input_hash, updateEvaluationInputs]
@@ -63,15 +41,9 @@ export function ReviewEntry(props: ReviewEntryProps) {
 
   const updateInstructions = useCallback(
     (instructions: string) => {
-      return updateEvaluationInputs(
-        tenant,
-        taskId,
-        taskSchemaId,
-        data.task_input_hash,
-        {
-          update_input_evaluation_instructions: instructions,
-        }
-      );
+      return updateEvaluationInputs(tenant, taskId, taskSchemaId, data.task_input_hash, {
+        update_input_evaluation_instructions: instructions,
+      });
     },
     [tenant, taskId, taskSchemaId, data.task_input_hash, updateEvaluationInputs]
   );

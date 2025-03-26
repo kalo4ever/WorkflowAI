@@ -26,13 +26,7 @@ interface AIEvaluationReviewProps {
 }
 
 export function AIEvaluationReview(props: AIEvaluationReviewProps) {
-  const {
-    taskRun,
-    tenant,
-    taskId,
-    showFullBorder = false,
-    onImprovePrompt,
-  } = props;
+  const { taskRun, tenant, taskId, showFullBorder = false, onImprovePrompt } = props;
 
   const { reviews } = useOrFetchTaskRunReviews(tenant, taskId, taskRun.id);
   const { createReview } = useTaskRunReviews();
@@ -41,9 +35,7 @@ export function AIEvaluationReview(props: AIEvaluationReviewProps) {
     if (!reviews?.length) return { ai: undefined, user: undefined };
     return {
       ai: reviews.find((review) => review.created_by.reviewer_type === 'ai'),
-      user: reviews.find(
-        (review) => review.created_by.reviewer_type === 'user'
-      ),
+      user: reviews.find((review) => review.created_by.reviewer_type === 'user'),
     };
   }, [reviews]);
 
@@ -51,14 +43,9 @@ export function AIEvaluationReview(props: AIEvaluationReviewProps) {
 
   const reviewScores = useMemo(
     () => ({
-      ai:
-        !latestAIReview || latestAIReview.outcome === null
-          ? undefined
-          : latestAIReview.outcome,
+      ai: !latestAIReview || latestAIReview.outcome === null ? undefined : latestAIReview.outcome,
       user:
-        !latestUserReview || latestUserReview.outcome === null
-          ? undefined
-          : latestUserReview.outcome === 'positive',
+        !latestUserReview || latestUserReview.outcome === null ? undefined : latestUserReview.outcome === 'positive',
     }),
     [latestAIReview, latestUserReview]
   );
@@ -93,12 +80,7 @@ export function AIEvaluationReview(props: AIEvaluationReviewProps) {
 
   const handleReview = useCallback(
     async (isPositive: boolean) => {
-      await createReview(
-        tenant,
-        taskId,
-        taskRun.id,
-        isPositive ? 'positive' : 'negative'
-      );
+      await createReview(tenant, taskId, taskRun.id, isPositive ? 'positive' : 'negative');
 
       const value = isPositive ? 'positive' : 'negative';
 
@@ -106,14 +88,7 @@ export function AIEvaluationReview(props: AIEvaluationReviewProps) {
         setDisagreeBoxReviewId(latestAIReview?.id);
       }
     },
-    [
-      reviewScores.ai,
-      createReview,
-      tenant,
-      taskId,
-      taskRun.id,
-      latestAIReview?.id,
-    ]
+    [reviewScores.ai, createReview, tenant, taskId, taskRun.id, latestAIReview?.id]
   );
 
   const showAIEvaluation = {
@@ -165,9 +140,7 @@ export function AIEvaluationReview(props: AIEvaluationReviewProps) {
     >
       <div className='flex flex-row justify-between items-center py-2'>
         <div className='flex flex-row items-center'>
-          <div className='text-[13px] font-normal text-gray-500'>
-            Review Output
-          </div>
+          <div className='text-[13px] font-normal text-gray-500'>Review Output</div>
           <SimpleTooltip
             content={`Give a thumbs up to set an example of a Good response,
               and the Review Assistant will help review future outputs.`}
@@ -203,9 +176,7 @@ export function AIEvaluationReview(props: AIEvaluationReviewProps) {
           summary={latestAIReview?.summary ?? undefined}
           positiveAspects={latestAIReview?.positive_aspects ?? undefined}
           negativeAspects={latestAIReview?.negative_aspects ?? undefined}
-          onImprovePrompt={
-            !!onImprovePrompt ? onImprovePromptWithCombinedReview : undefined
-          }
+          onImprovePrompt={!!onImprovePrompt ? onImprovePromptWithCombinedReview : undefined}
         />
       )}
       {!!disagreeBoxReviewId && (

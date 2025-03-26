@@ -9,9 +9,7 @@ export function FieldViewerError(props: FieldViewerErrorProps) {
   }
   return (
     <div className='p-1 w-fit'>
-      <div className='px-3 py-2 rounded-lg bg-red-100 text-red-600 text-sm font-normal'>
-        {error}
-      </div>
+      <div className='px-3 py-2 rounded-lg bg-red-100 text-red-600 text-sm font-normal'>{error}</div>
     </div>
   );
 }

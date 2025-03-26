@@ -13,14 +13,7 @@ type NewTaskModalCTAProps = {
 };
 
 export function NewTaskModalCTA(props: NewTaskModalCTAProps) {
-  const {
-    isSaveButtonHidden,
-    mode,
-    onClose,
-    onSave,
-    onSendIteration,
-    isRedirecting,
-  } = props;
+  const { isSaveButtonHidden, mode, onClose, onSave, onSendIteration, isRedirecting } = props;
 
   const onClick = useMemo(() => {
     if (onSendIteration) {
@@ -78,14 +71,7 @@ type NewTaskModalHeaderProps = {
 };
 
 export function NewTaskModalHeader(props: NewTaskModalHeaderProps) {
-  const {
-    isSaveButtonHidden,
-    mode,
-    onClose,
-    onSave,
-    onSendIteration,
-    isRedirecting,
-  } = props;
+  const { isSaveButtonHidden, mode, onClose, onSave, onSendIteration, isRedirecting } = props;
 
   const title = useMemo(() => {
     switch (mode) {

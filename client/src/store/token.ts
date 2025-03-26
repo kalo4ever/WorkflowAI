@@ -41,10 +41,7 @@ export const useToken = create<TokenState>((set, get) => ({
     );
     const queryParams = tokenScopeQueryParams(scope);
     try {
-      const response = await client.get<{ token: string }>(
-        '/api/jwt',
-        queryParams
-      );
+      const response = await client.get<{ token: string }>('/api/jwt', queryParams);
       set(
         produce((state) => {
           state.tokenByScope.set(scopeKey, response.token);

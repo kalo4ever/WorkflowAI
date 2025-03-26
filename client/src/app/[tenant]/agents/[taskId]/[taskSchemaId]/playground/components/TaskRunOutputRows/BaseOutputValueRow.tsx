@@ -16,9 +16,7 @@ const valueVariant = cva('text-xs rounded-[2px] font-semibold font-lato', {
   },
 });
 
-export type TBaseOutputValueRowVariant = VariantProps<
-  typeof valueVariant
->['variant'];
+export type TBaseOutputValueRowVariant = VariantProps<typeof valueVariant>['variant'];
 
 type BaseOutputValueRowProps = VariantProps<typeof valueVariant> & {
   label: string;
@@ -52,10 +50,7 @@ export function BaseOutputValueRow(props: BaseOutputValueRowProps) {
 
   return (
     <div className='flex flex-row justify-between px-4 h-full w-full items-center'>
-      <div
-        data-testid='label'
-        className='text-gray-500 text-[13px] font-normal'
-      >
+      <div data-testid='label' className='text-gray-500 text-[13px] font-normal'>
         {label}
       </div>
       <div className='flex flex-row items-center'>

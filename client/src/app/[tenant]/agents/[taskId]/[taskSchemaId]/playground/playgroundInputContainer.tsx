@@ -36,9 +36,7 @@ type PlaygroundInputContainerProps = {
   isInputGenerationSupported: boolean;
   onShowEditDescriptionModal: () => void;
   onShowEditSchemaModal: () => void;
-  fetchAudioTranscription: (
-    payload: FileInputRequest
-  ) => Promise<string | undefined>;
+  fetchAudioTranscription: (payload: FileInputRequest) => Promise<string | undefined>;
   handleUploadFile: (
     formData: FormData,
     hash: string,
@@ -46,9 +44,7 @@ type PlaygroundInputContainerProps = {
   ) => Promise<string | undefined>;
   matchedMajorVersion: MajorVersion | undefined;
   majorVersions: MajorVersion[];
-  useInstructionsAndTemperatureFromMajorVersion: (
-    version: MajorVersion
-  ) => void;
+  useInstructionsAndTemperatureFromMajorVersion: (version: MajorVersion) => void;
   onToolsChange: (tools: ToolKind[]) => Promise<void>;
   onStopGeneratingInput: () => void;
   isInDemoMode: boolean;
@@ -98,10 +94,7 @@ export function PlaygroundInputContainer(props: PlaygroundInputContainerProps) {
   } = props;
 
   return (
-    <div
-      className='flex flex-col sm:flex-row sm:flex-1 border-b border-gray-200 border-dashed'
-      style={{ maxHeight }}
-    >
+    <div className='flex flex-col sm:flex-row sm:flex-1 border-b border-gray-200 border-dashed' style={{ maxHeight }}>
       <div className='flex sm:flex-1 sm:w-1/2 border-r border-gray-200 border-dashed'>
         <PlaygroundInput
           inputSchema={inputSchema}
@@ -145,9 +138,7 @@ export function PlaygroundInputContainer(props: PlaygroundInputContainerProps) {
           moveToNext={moveToNextForParameters}
           matchedMajorVersion={matchedMajorVersion}
           majorVersions={majorVersions}
-          useInstructionsAndTemperatureFromMajorVersion={
-            useInstructionsAndTemperatureFromMajorVersion
-          }
+          useInstructionsAndTemperatureFromMajorVersion={useInstructionsAndTemperatureFromMajorVersion}
           onToolsChange={onToolsChange}
         />
       </div>

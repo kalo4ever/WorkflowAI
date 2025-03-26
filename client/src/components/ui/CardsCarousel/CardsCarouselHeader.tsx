@@ -33,15 +33,11 @@ function CardsCarouselHeaderEntry(props: CardsCarouselHeaderEntryProps) {
   const progress = Math.max(Math.min(page - index, 1), 0) * 100;
 
   return (
-    <div
-      className={cx('flex flex-row items-center', showConnection && 'w-full')}
-    >
+    <div className={cx('flex flex-row items-center', showConnection && 'w-full')}>
       <div
         className={cx(
           'rounded-full px-2 py-1 font-medium text-xs',
-          isSelected
-            ? 'bg-slate-900 text-white'
-            : 'border border-slate-200 text-slate-400'
+          isSelected ? 'bg-slate-900 text-white' : 'border border-slate-200 text-slate-400'
         )}
       >
         {card.name.toUpperCase()}

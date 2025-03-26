@@ -9,39 +9,29 @@ import { useAuth } from '@/lib/AuthContext';
 import { useTaskParams, useTenantID } from '@/lib/hooks/useTaskParams';
 import { TENANT_PLACEHOLDER } from '@/lib/routeFormatter';
 import { useOrFetchTask } from '@/store';
-import { SuggestedAgentsModal } from '../landing/sections/SuggestedAgentsSection/SuggestedAgentsModal';
-import {
-  LoggedOutBanner,
-  LoggedOutBannerForDemoTask,
-} from './components/LoggedOutBanner';
+import { LoggedOutBanner, LoggedOutBannerForDemoTask } from './components/LoggedOutBanner';
 import { RedirectForTenant } from './components/RedirectForTenant';
 import { Sidebar } from './components/sidebar';
 
-export default function Layout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export default function Layout({ children }: Readonly<{ children: React.ReactNode }>) {
   const tenant = useTenantID();
 
   const { taskId } = useTaskParams();
   const { isSignedIn } = useAuth();
   const { task } = useOrFetchTask(tenant, taskId);
 
-  const showTaskBanner =
-    !isSignedIn && tenant === TENANT_PLACEHOLDER && !!taskId;
+  const showTaskBanner = !isSignedIn && tenant === TENANT_PLACEHOLDER && !!taskId;
 
   const showBanner = !showTaskBanner && !isSignedIn;
 
   return (
     <RedirectForTenant>
       <StripeWrapper>
-        <SuggestedAgentsModal />
         <ApiKeysModal />
         <ManageProviderKeysModal />
         <div className='flex flex-col h-full max-h-screen overflow-hidden bg-custom-gradient-1'>
           {showBanner && <LoggedOutBanner />}
-          {showTaskBanner && (
-            <LoggedOutBannerForDemoTask name={task?.name ?? taskId} />
-          )}
+          {showTaskBanner && <LoggedOutBannerForDemoTask name={task?.name ?? taskId} />}
           <div className='flex-1 flex overflow-hidden'>
             <Sidebar />
             <CommandK tenant={tenant} />

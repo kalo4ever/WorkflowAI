@@ -28,11 +28,7 @@ interface TaskRunReviewsState {
     outcome: 'positive' | 'negative'
   ): Promise<void>;
 
-  fetchTaskRunReviews(
-    tenant: TenantID | undefined,
-    taskId: TaskID,
-    taskRunId: string
-  ): Promise<void>;
+  fetchTaskRunReviews(tenant: TenantID | undefined, taskId: TaskID, taskRunId: string): Promise<void>;
 }
 
 export const useTaskRunReviews = create<TaskRunReviewsState>((set, get) => ({
@@ -42,16 +38,9 @@ export const useTaskRunReviews = create<TaskRunReviewsState>((set, get) => ({
   pollingIntervalsById: new Map<string, NodeJS.Timeout>(),
 
   respondToReview: async (tenant, taskId, taskRunId, reviewId, comment) => {
-    await client.post(
-      taskSubPath(
-        tenant,
-        taskId,
-        `/runs/${taskRunId}/reviews/${reviewId}/respond`
-      ),
-      {
-        comment,
-      }
-    );
+    await client.post(taskSubPath(tenant, taskId, `/runs/${taskRunId}/reviews/${reviewId}/respond`), {
+      comment,
+    });
   },
 
   createReview: async (tenant, taskId, runId, outcome) => {
@@ -70,11 +59,7 @@ export const useTaskRunReviews = create<TaskRunReviewsState>((set, get) => ({
     );
   },
 
-  fetchTaskRunReviews: async (
-    tenant: TenantID | undefined,
-    taskId: TaskID,
-    taskRunId: string
-  ) => {
+  fetchTaskRunReviews: async (tenant: TenantID | undefined, taskId: TaskID, taskRunId: string) => {
     if (get().isLoadingById.get(taskRunId)) {
       return;
     }
@@ -86,9 +71,7 @@ export const useTaskRunReviews = create<TaskRunReviewsState>((set, get) => ({
     );
 
     try {
-      const response = await client.get<Page_Review_>(
-        taskSubPath(tenant, taskId, `/runs/${taskRunId}/reviews`)
-      );
+      const response = await client.get<Page_Review_>(taskSubPath(tenant, taskId, `/runs/${taskRunId}/reviews`));
 
       const reviews = response.items;
 

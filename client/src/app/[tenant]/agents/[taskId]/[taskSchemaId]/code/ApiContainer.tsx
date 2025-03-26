@@ -6,10 +6,7 @@ import { useApiKeysModal } from '@/components/ApiKeysModal/ApiKeysModal';
 import { Loader } from '@/components/ui/Loader';
 import { API_URL, RUN_URL } from '@/lib/constants';
 import { useTaskSchemaParams } from '@/lib/hooks/useTaskParams';
-import {
-  useParsedSearchParams,
-  useRedirectWithParams,
-} from '@/lib/queryString';
+import { useParsedSearchParams, useRedirectWithParams } from '@/lib/queryString';
 import {
   useOrFetchApiKeys,
   useOrFetchCurrentTaskSchema,
@@ -23,18 +20,15 @@ import { VersionEnvironment, VersionV1 } from '@/types/workflowAI';
 import { ApiContent } from './ApiContent';
 import { useTaskRunWithSecondaryInput } from './utils';
 
-const languages: CodeLanguage[] = [
-  CodeLanguage.TYPESCRIPT,
-  CodeLanguage.PYTHON,
-  CodeLanguage.REST,
-];
+const languages: CodeLanguage[] = [CodeLanguage.TYPESCRIPT, CodeLanguage.PYTHON, CodeLanguage.REST];
 
 export function ApiContainer() {
   const { tenant, taskId } = useTaskSchemaParams();
 
-  const [languagesForTaskIds, setLanguagesForTaskIds] = useLocalStorage<
-    Record<TaskID, CodeLanguage>
-  >('languagesForTaskIds', {});
+  const [languagesForTaskIds, setLanguagesForTaskIds] = useLocalStorage<Record<TaskID, CodeLanguage>>(
+    'languagesForTaskIds',
+    {}
+  );
 
   const redirectWithParams = useRedirectWithParams();
 
@@ -42,14 +36,9 @@ export function ApiContainer() {
     selectedVersionId: selectedVersionIdValue,
     selectedEnvironment: selectedEnvironmentValue,
     selectedLanguage: selectedLanguageValue,
-  } = useParsedSearchParams(
-    'selectedVersionId',
-    'selectedEnvironment',
-    'selectedLanguage'
-  );
+  } = useParsedSearchParams('selectedVersionId', 'selectedEnvironment', 'selectedLanguage');
 
-  const preselectedLanguage =
-    languagesForTaskIds[taskId] ?? CodeLanguage.TYPESCRIPT;
+  const preselectedLanguage = languagesForTaskIds[taskId] ?? CodeLanguage.TYPESCRIPT;
 
   const setSelectedVersionId = useCallback(
     (newVersionId: string | undefined) => {
@@ -65,14 +54,9 @@ export function ApiContainer() {
     [redirectWithParams]
   );
 
-  const {
-    versions,
-    versionsPerEnvironment,
-    isInitialized: isVersionsInitialized,
-  } = useOrFetchVersions(tenant, taskId);
+  const { versions, versionsPerEnvironment, isInitialized: isVersionsInitialized } = useOrFetchVersions(tenant, taskId);
 
-  const { apiKeys, isInitialized: isApiKeysInitialized } =
-    useOrFetchApiKeys(tenant);
+  const { apiKeys, isInitialized: isApiKeysInitialized } = useOrFetchApiKeys(tenant);
   const { openModal: openApiKeysModal } = useApiKeysModal();
 
   const preselectedEnvironment = useMemo(() => {
@@ -110,10 +94,7 @@ export function ApiContainer() {
   }, [versions, selectedVersionId]);
 
   const setSelectedEnvironment = useCallback(
-    (
-      newSelectedEnvironment: VersionEnvironment | undefined,
-      newSelectedVersionId: string | undefined
-    ) => {
+    (newSelectedEnvironment: VersionEnvironment | undefined, newSelectedVersionId: string | undefined) => {
       redirectWithParams({
         params: {
           selectedEnvironment: newSelectedEnvironment,
@@ -127,8 +108,11 @@ export function ApiContainer() {
 
   const taskSchemaId = selectedVersion?.schema_id as TaskSchemaID | undefined;
 
-  const { taskSchema, isInitialized: isTaskSchemaInitialized } =
-    useOrFetchCurrentTaskSchema(tenant, taskId, taskSchemaId);
+  const { taskSchema, isInitialized: isTaskSchemaInitialized } = useOrFetchCurrentTaskSchema(
+    tenant,
+    taskId,
+    taskSchemaId
+  );
 
   const { taskRuns, isInitialized: isTaskRunsInitialized } = useOrFetchTaskRuns(
     tenant,
@@ -137,15 +121,9 @@ export function ApiContainer() {
     'limit=1&sort_by=recent'
   );
 
-  const [taskRun, secondaryInput] = useTaskRunWithSecondaryInput(
-    taskRuns,
-    taskSchema
-  );
+  const [taskRun, secondaryInput] = useTaskRunWithSecondaryInput(taskRuns, taskSchema);
 
-  const { task, isInitialized: isTaskInitialized } = useOrFetchTask(
-    tenant,
-    taskId
-  );
+  const { task, isInitialized: isTaskInitialized } = useOrFetchTask(tenant, taskId);
 
   const selectedLanguage = !selectedLanguageValue
     ? preselectedLanguage
@@ -176,8 +154,7 @@ export function ApiContainer() {
   if (!versions || versions.length === 0) {
     return (
       <div className='flex-1 h-full flex items-center justify-center'>
-        No saved versions found - Save a version from either the playground or
-        the run modal
+        No saved versions found - Save a version from either the playground or the run modal
       </div>
     );
   }
@@ -185,27 +162,17 @@ export function ApiContainer() {
   if (!taskSchemaId) {
     return (
       <div className='flex-1 h-full flex items-center justify-center'>
-        No AI agent schema id - Got to the playground and run the AI agent at
-        least once
+        No AI agent schema id - Got to the playground and run the AI agent at least once
       </div>
     );
   }
 
-  if (
-    !isTaskSchemaInitialized ||
-    !isTaskRunsInitialized ||
-    !isTaskInitialized ||
-    !isApiKeysInitialized
-  ) {
+  if (!isTaskSchemaInitialized || !isTaskRunsInitialized || !isTaskInitialized || !isApiKeysInitialized) {
     return <Loader centered />;
   }
 
   if (!task) {
-    return (
-      <div className='flex-1 h-full flex items-center justify-center'>
-        No task found
-      </div>
-    );
+    return <div className='flex-1 h-full flex items-center justify-center'>No task found</div>;
   }
   return (
     <ApiContent

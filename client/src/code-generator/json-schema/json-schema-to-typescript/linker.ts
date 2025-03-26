@@ -6,10 +6,7 @@ import { JSONSchema, LinkedJSONSchema, Parent } from './types/JSONSchema';
  * Traverses over the schema, giving each node a reference to its
  * parent node. We need this for downstream operations.
  */
-export function link(
-  schema: JSONSchema4Type | JSONSchema,
-  parent: JSONSchema4Type | null = null
-): LinkedJSONSchema {
+export function link(schema: JSONSchema4Type | JSONSchema, parent: JSONSchema4Type | null = null): LinkedJSONSchema {
   if (!Array.isArray(schema) && !isPlainObject(schema)) {
     return schema as LinkedJSONSchema;
   }

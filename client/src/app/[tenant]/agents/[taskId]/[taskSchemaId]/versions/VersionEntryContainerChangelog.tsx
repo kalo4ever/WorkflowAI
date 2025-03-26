@@ -5,9 +5,7 @@ type VersionEntryContainerChangelogProps = {
   entry: VersionEntry;
 };
 
-export function VersionEntryContainerChangelog(
-  props: VersionEntryContainerChangelogProps
-) {
+export function VersionEntryContainerChangelog(props: VersionEntryContainerChangelogProps) {
   const { entry } = props;
   const changelogs = entry.majorVersion?.previous_version?.changelog;
 
@@ -23,14 +21,9 @@ export function VersionEntryContainerChangelog(
       </div>
       <div className='flex flex-col gap-1.5'>
         {changelogs.map((changelog, index) => (
-          <div
-            key={`${index}`}
-            className='flex flex-row gap-2 items-baseline pl-2'
-          >
+          <div key={`${index}`} className='flex flex-row gap-2 items-baseline pl-2'>
             <div className='w-[5px] h-[5px] rounded-full bg-gray-600 flex-shrink-0 relative -top-[2px]' />
-            <div className='text-[13px] text-gray-600 whitespace-pre-line'>
-              {changelog}
-            </div>
+            <div className='text-[13px] text-gray-600 whitespace-pre-line'>{changelog}</div>
           </div>
         ))}
       </div>

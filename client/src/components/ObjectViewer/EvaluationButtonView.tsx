@@ -10,9 +10,7 @@ type EvaluationButtonViewProps = {
   flatFieldBasedConfigDict?: Record<string, ObjectKeyType>;
   flatFieldBasedConfigMode?: 'editable' | 'readonly' | 'evaluation';
   isHovering: boolean;
-  onEdit:
-    | ((keyPath: string, newVal: unknown, triggerSave?: boolean) => void)
-    | undefined;
+  onEdit: ((keyPath: string, newVal: unknown, triggerSave?: boolean) => void) | undefined;
   updateEditMode: (value: boolean) => void;
   isEditModeOn: boolean;
 };
@@ -63,8 +61,7 @@ export function EvaluationButtonView(props: EvaluationButtonViewProps) {
     return result;
   }, [fieldKeyPath, flatFieldBasedConfigDict]);
 
-  const [isHoveringOverEditButton, setIsHoveringOverEditButton] =
-    useState(false);
+  const [isHoveringOverEditButton, setIsHoveringOverEditButton] = useState(false);
 
   const shouldShowEditButton = useMemo(() => {
     if (isEditModeOn) {
@@ -76,12 +73,7 @@ export function EvaluationButtonView(props: EvaluationButtonViewProps) {
     }
 
     return isHovering || isHoveringOverEditButton;
-  }, [
-    flatFieldBasedConfigMode,
-    isHovering,
-    isHoveringOverEditButton,
-    isEditModeOn,
-  ]);
+  }, [flatFieldBasedConfigMode, isHovering, isHoveringOverEditButton, isEditModeOn]);
 
   const shouldShowResetButton = useMemo(() => {
     if (isEditModeOn) {
@@ -93,10 +85,8 @@ export function EvaluationButtonView(props: EvaluationButtonViewProps) {
     }
 
     if (
-      rootFlatFieldBasedConfigEntry?.value ===
-        FieldEvaluationOptions.SEMANTICALLY_EQUAL ||
-      flatFieldBasedConfigEntry?.value ===
-        FieldEvaluationOptions.SEMANTICALLY_EQUAL
+      rootFlatFieldBasedConfigEntry?.value === FieldEvaluationOptions.SEMANTICALLY_EQUAL ||
+      flatFieldBasedConfigEntry?.value === FieldEvaluationOptions.SEMANTICALLY_EQUAL
     ) {
       return true;
     }

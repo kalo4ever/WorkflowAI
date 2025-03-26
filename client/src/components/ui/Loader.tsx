@@ -25,9 +25,7 @@ export function Loader(props: LoaderProps) {
   return (
     <div className={containerClasses}>
       {star ? (
-        <LoaderIcon
-          className={`animate-spin ${sizeClasses[size]} ${className}`}
-        />
+        <LoaderIcon className={`animate-spin ${sizeClasses[size]} ${className}`} />
       ) : (
         <div className={spinnerClass} />
       )}

@@ -43,10 +43,7 @@ const originalSchema: JsonSchema = {
               content: {
                 type: 'string',
                 description: 'Summary content of the article',
-                examples: [
-                  'Summary of the article content',
-                  'Brief overview of the article',
-                ],
+                examples: ['Summary of the article content', 'Brief overview of the article'],
               },
             },
             description: 'Summary of the article',
@@ -59,10 +56,7 @@ const originalSchema: JsonSchema = {
           canonicalUrl: {
             type: 'string',
             description: 'Canonical URL of the article',
-            examples: [
-              'https://example.com/article1',
-              'https://example.com/article2',
-            ],
+            examples: ['https://example.com/article1', 'https://example.com/article2'],
           },
           abstract: {
             type: 'object',
@@ -81,10 +75,7 @@ const originalSchema: JsonSchema = {
               content: {
                 type: 'string',
                 description: 'Main content of the article',
-                examples: [
-                  'Full content of the article',
-                  'Detailed article content',
-                ],
+                examples: ['Full content of the article', 'Detailed article content'],
               },
             },
             description: 'Content of the article',
@@ -164,10 +155,7 @@ const originalSchema: JsonSchema = {
                     text: {
                       type: 'string',
                       description: 'Text of the sentence',
-                      examples: [
-                        'Summary sentence one',
-                        'Summary sentence two',
-                      ],
+                      examples: ['Summary sentence one', 'Summary sentence two'],
                     },
                     score: {
                       type: 'number',
@@ -183,10 +171,7 @@ const originalSchema: JsonSchema = {
           sanitizedContent: {
             type: 'string',
             description: 'Sanitized content of the article',
-            examples: [
-              'Sanitized text of the article',
-              'Cleaned article content',
-            ],
+            examples: ['Sanitized text of the article', 'Cleaned article content'],
           },
           openAiSummary: {
             type: 'string',
@@ -217,10 +202,7 @@ const originalSchema: JsonSchema = {
                 logoUrl: {
                   type: 'string',
                   description: 'URL of the company logo',
-                  examples: [
-                    'https://example.com/logo1.png',
-                    'https://example.com/logo2.png',
-                  ],
+                  examples: ['https://example.com/logo1.png', 'https://example.com/logo2.png'],
                 },
               },
             },
@@ -283,10 +265,7 @@ const splattedEditorFields: SchemaEditorField = {
               keyName: 'content',
               type: 'string',
               description: 'Summary content of the article',
-              examples: [
-                'Summary of the article content',
-                'Brief overview of the article',
-              ],
+              examples: ['Summary of the article content', 'Brief overview of the article'],
             },
           ],
           description: 'Summary of the article',
@@ -301,10 +280,7 @@ const splattedEditorFields: SchemaEditorField = {
           keyName: 'canonicalUrl',
           type: 'string',
           description: 'Canonical URL of the article',
-          examples: [
-            'https://example.com/article1',
-            'https://example.com/article2',
-          ],
+          examples: ['https://example.com/article1', 'https://example.com/article2'],
         },
         {
           keyName: 'abstract',
@@ -327,10 +303,7 @@ const splattedEditorFields: SchemaEditorField = {
               keyName: 'content',
               type: 'string',
               description: 'Main content of the article',
-              examples: [
-                'Full content of the article',
-                'Detailed article content',
-              ],
+              examples: ['Full content of the article', 'Detailed article content'],
             },
           ],
           description: 'Content of the article',
@@ -436,10 +409,7 @@ const splattedEditorFields: SchemaEditorField = {
           keyName: 'sanitizedContent',
           type: 'string',
           description: 'Sanitized content of the article',
-          examples: [
-            'Sanitized text of the article',
-            'Cleaned article content',
-          ],
+          examples: ['Sanitized text of the article', 'Cleaned article content'],
         },
         {
           keyName: 'openAiSummary',
@@ -475,10 +445,7 @@ const splattedEditorFields: SchemaEditorField = {
               keyName: 'logoUrl',
               type: 'string',
               description: 'URL of the company logo',
-              examples: [
-                'https://example.com/logo1.png',
-                'https://example.com/logo2.png',
-              ],
+              examples: ['https://example.com/logo1.png', 'https://example.com/logo2.png'],
             },
           ],
           description: 'Companies mentioned in the article',

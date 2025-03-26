@@ -1,10 +1,7 @@
 import { useEffect } from 'react';
 import { useRef } from 'react';
 
-export function useAutoScrollRef(props: {
-  isSelected: boolean;
-  dropdownOpen: boolean | undefined;
-}) {
+export function useAutoScrollRef(props: { isSelected: boolean; dropdownOpen: boolean | undefined }) {
   const { isSelected, dropdownOpen } = props;
 
   const selectedRef = useRef<HTMLDivElement>(null);

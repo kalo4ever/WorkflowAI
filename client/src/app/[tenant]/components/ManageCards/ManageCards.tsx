@@ -7,7 +7,7 @@ import { STRIPE_PUBLISHABLE_KEY } from '@/lib/constants';
 import { useOrFetchPayments } from '@/store/fetchers';
 import { usePayments } from '@/store/payments';
 import { TenantID } from '@/types/aliases';
-import { OrganizationSettings } from '@/types/workflowAI';
+import { TenantData } from '@/types/workflowAI';
 import { ManageCardsContent } from './ManageCardsContent';
 import { ManageCardsTooltipContent } from './ManageCardsTooltipContent';
 import { useStripePayments } from './hooks/useStripePayments';
@@ -15,7 +15,7 @@ import { useStripePayments } from './hooks/useStripePayments';
 type ManageCardsProps = {
   tenant: TenantID | undefined;
   children: React.ReactNode;
-  organizationSettings: OrganizationSettings | undefined;
+  organizationSettings: TenantData | undefined;
 };
 
 function ManageCardsInner(props: ManageCardsProps) {
@@ -27,44 +27,35 @@ function ManageCardsInner(props: ManageCardsProps) {
   const balance = organizationSettings?.current_credits_usd;
   const isPaymentMethodAvailable = !!paymentMethod?.payment_method_id;
 
-  const automaticPaymentsAreSet =
-    organizationSettings?.automatic_payment_enabled;
+  const automaticPaymentsAreSet = organizationSettings?.automatic_payment_enabled;
 
-  const automaticPaymentsFailed =
-    !!organizationSettings?.last_payment_failed_at;
+  const automaticPaymentsFailed = !!organizationSettings?.last_payment_failed_at;
 
   const { user } = useAuth();
   const userId = user?.id;
 
-  const [
-    dismissForcedTooltipNoPaymentMethod,
-    setDismissForcedTooltipNoPaymentMethod,
-  ] = useSessionStorage(`dismissForcedTooltipNoPaymentMethod-${userId}`, false);
+  const [dismissForcedTooltipNoPaymentMethod, setDismissForcedTooltipNoPaymentMethod] = useSessionStorage(
+    `dismissForcedTooltipNoPaymentMethod-${userId}`,
+    false
+  );
 
-  const [
-    dismissForcedTooltipPaymentsFailed,
-    setDismissForcedTooltipPaymentsFailed,
-  ] = useSessionStorage(`dismissForcedTooltipPaymentsFailed-${userId}`, false);
+  const [dismissForcedTooltipPaymentsFailed, setDismissForcedTooltipPaymentsFailed] = useSessionStorage(
+    `dismissForcedTooltipPaymentsFailed-${userId}`,
+    false
+  );
 
   const shouldForceTooltipBecauseNoPaymentMethod =
-    !isPaymentMethodAvailable &&
-    isInitialized &&
-    !dismissForcedTooltipNoPaymentMethod;
+    !isPaymentMethodAvailable && isInitialized && !dismissForcedTooltipNoPaymentMethod;
 
   const shouldForceTooltipBecausePaymentsFailed =
-    automaticPaymentsFailed &&
-    isInitialized &&
-    !dismissForcedTooltipPaymentsFailed;
+    automaticPaymentsFailed && isInitialized && !dismissForcedTooltipPaymentsFailed;
 
   const [showAddPaymentMethod, setShowAddPaymentMethod] = useState(false);
   const [showEnableAutoRecharge, setShowEnableAutoRecharge] = useState(false);
   const [amountToAdd, setAmountToAdd] = useState<number | undefined>(undefined);
 
   const isAddCreditsButtonActive =
-    !!amountToAdd &&
-    !!paymentMethod?.payment_method_id &&
-    amountToAdd >= 5 &&
-    amountToAdd <= 4902;
+    !!amountToAdd && !!paymentMethod?.payment_method_id && amountToAdd >= 5 && amountToAdd <= 4902;
 
   const reset = useCallback(() => {
     setShowAddPaymentMethod(false);
@@ -78,9 +69,7 @@ function ManageCardsInner(props: ManageCardsProps) {
     }
   }, [isOpen, reset]);
 
-  const shouldForceTooltip =
-    shouldForceTooltipBecauseNoPaymentMethod ||
-    shouldForceTooltipBecausePaymentsFailed;
+  const shouldForceTooltip = shouldForceTooltipBecauseNoPaymentMethod || shouldForceTooltipBecausePaymentsFailed;
 
   const tooltipText = useMemo(() => {
     if (!isPaymentMethodAvailable) {
@@ -96,11 +85,7 @@ function ManageCardsInner(props: ManageCardsProps) {
     }
 
     return 'Auto recharge is OFF.\n\nTap to view and manage billing details';
-  }, [
-    isPaymentMethodAvailable,
-    automaticPaymentsFailed,
-    automaticPaymentsAreSet,
-  ]);
+  }, [isPaymentMethodAvailable, automaticPaymentsFailed, automaticPaymentsAreSet]);
 
   const { addCredits } = useStripePayments();
   const deletePaymentMethod = usePayments((state) => state.deletePaymentMethod);

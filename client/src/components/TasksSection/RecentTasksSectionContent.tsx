@@ -8,27 +8,18 @@ import { TaskRow } from './TaskRow';
 type RecentTasksSectionContentProps = {
   tasks: SerializableTask[];
   recentTasksEntries: RecentTasksEntry[];
-  onTryInPlayground: (
-    task: SerializableTask,
-    taskSchemaId?: TaskSchemaID
-  ) => void;
+  onTryInPlayground: (task: SerializableTask, taskSchemaId?: TaskSchemaID) => void;
 };
 
-export function RecentTasksSectionContent(
-  props: RecentTasksSectionContentProps
-) {
+export function RecentTasksSectionContent(props: RecentTasksSectionContentProps) {
   const { tasks, recentTasksEntries, onTryInPlayground } = props;
 
   const onTryInPlaygroundWithoutSchemaId = useCallback(
     (task: SerializableTask) => {
-      const entry = recentTasksEntries.find(
-        (entry) => entry.taskId === task.id
-      );
+      const entry = recentTasksEntries.find((entry) => entry.taskId === task.id);
 
       const visibleSchemaIds = getVisibleSchemaIds(task);
-      const isVisible = visibleSchemaIds.some(
-        (schemaId) => schemaId === entry?.taskSchemaId
-      );
+      const isVisible = visibleSchemaIds.some((schemaId) => schemaId === entry?.taskSchemaId);
 
       if (isVisible) {
         onTryInPlayground(task, entry?.taskSchemaId);
@@ -60,11 +51,7 @@ export function RecentTasksSectionContent(
       </div>
       <div className='flex flex-col h-full w-full overflow-y-auto'>
         {recentTasks.map((task) => (
-          <TaskRow
-            key={task.id}
-            task={task}
-            onTryInPlayground={onTryInPlaygroundWithoutSchemaId}
-          />
+          <TaskRow key={task.id} task={task} onTryInPlayground={onTryInPlaygroundWithoutSchemaId} />
         ))}
       </div>
     </>

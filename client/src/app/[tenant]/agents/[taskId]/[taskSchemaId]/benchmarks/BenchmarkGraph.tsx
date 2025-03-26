@@ -1,18 +1,10 @@
 'use client';
 
-import {
-  ResponsiveScatterPlot,
-  ScatterPlotCustomSvgLayer,
-  ScatterPlotLayerProps,
-} from '@nivo/scatterplot';
+import { ResponsiveScatterPlot, ScatterPlotCustomSvgLayer, ScatterPlotLayerProps } from '@nivo/scatterplot';
 import { Dictionary } from 'lodash';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
-import {
-  environmentsForVersion,
-  formatSemverVersion,
-  getEnvironmentShorthandName,
-} from '@/lib/versionUtils';
+import { environmentsForVersion, formatSemverVersion, getEnvironmentShorthandName } from '@/lib/versionUtils';
 import { VersionResult, VersionV1 } from '@/types/workflowAI';
 import { DynamicTextBadge } from './DynamicTextBadge';
 import { BenchmarkBestPicks, findScore } from './utils';
@@ -34,12 +26,7 @@ type CustomPointsLayerProps = CustomScatterPlotLayerProps & {
   setActiveNode: React.Dispatch<React.SetStateAction<Node | undefined>>;
 };
 
-const CustomPointsLayer: React.FC<CustomPointsLayerProps> = ({
-  nodes,
-  xScale,
-  yScale,
-  setActiveNode,
-}) => {
+const CustomPointsLayer: React.FC<CustomPointsLayerProps> = ({ nodes, xScale, yScale, setActiveNode }) => {
   const updateAllActiveNodesOnEnter = useCallback(
     (point: Node) => {
       setActiveNode(point);
@@ -94,9 +81,12 @@ type CustomActivePointLinesLayerProps = CustomScatterPlotLayerProps & {
   revertedYLine?: boolean;
 };
 
-const CustomActivePointLinesLayer: React.FC<
-  CustomActivePointLinesLayerProps
-> = ({ xScale, yScale, activeNode, revertedYLine = false }) => {
+const CustomActivePointLinesLayer: React.FC<CustomActivePointLinesLayerProps> = ({
+  xScale,
+  yScale,
+  activeNode,
+  revertedYLine = false,
+}) => {
   return (
     <g>
       {activeNode && (
@@ -146,11 +136,7 @@ type BenchmarkGraphProps = {
   versionByIteration: Dictionary<VersionV1>;
 };
 
-function getYParams(
-  nodes: Node[],
-  kind: BenchmarkGraphProps['kind'],
-  showTitle: boolean = true
-) {
+function getYParams(nodes: Node[], kind: BenchmarkGraphProps['kind'], showTitle: boolean = true) {
   let maxY = 0;
   let yTitle: string | undefined = '';
   let yFormat = (value: string) => value;
@@ -174,13 +160,7 @@ function getYParams(
 }
 
 export function BenchmarkGraph(props: BenchmarkGraphProps) {
-  const {
-    kind,
-    bestOnes,
-    benchmarkResultsDictionary,
-    selectedIterations,
-    versionByIteration,
-  } = props;
+  const { kind, bestOnes, benchmarkResultsDictionary, selectedIterations, versionByIteration } = props;
 
   const data = useMemo(() => {
     const data: Node[] = [];
@@ -206,11 +186,7 @@ export function BenchmarkGraph(props: BenchmarkGraphProps) {
         return;
       }
 
-      if (
-        !!selectedIterations &&
-        !!benchmarkResult.iteration &&
-        !selectedIterations.has(benchmarkResult.iteration)
-      ) {
+      if (!!selectedIterations && !!benchmarkResult.iteration && !selectedIterations.has(benchmarkResult.iteration)) {
         return;
       }
 
@@ -264,13 +240,7 @@ export function BenchmarkGraph(props: BenchmarkGraphProps) {
         ...getYParams(data, kind),
       },
     ];
-  }, [
-    bestOnes,
-    kind,
-    benchmarkResultsDictionary,
-    selectedIterations,
-    versionByIteration,
-  ]);
+  }, [bestOnes, kind, benchmarkResultsDictionary, selectedIterations, versionByIteration]);
 
   const [activeNode, setActiveNode] = useState<Node | undefined>(undefined);
 
@@ -287,11 +257,7 @@ export function BenchmarkGraph(props: BenchmarkGraphProps) {
   const customActivePointLinesLayer = useMemo(() => {
     function CustomLayerGen(props: CustomActivePointLinesLayerProps) {
       const result = (
-        <CustomActivePointLinesLayer
-          {...props}
-          activeNode={activeNode}
-          revertedYLine={kind !== 'latency'}
-        />
+        <CustomActivePointLinesLayer {...props} activeNode={activeNode} revertedYLine={kind !== 'latency'} />
       );
 
       return result;
@@ -301,9 +267,7 @@ export function BenchmarkGraph(props: BenchmarkGraphProps) {
 
   const customPointsLayer = useMemo(() => {
     function CustomLayerGen(props: CustomPointsLayerProps) {
-      const result = (
-        <CustomPointsLayer {...props} setActiveNode={setActiveNode} />
-      );
+      const result = <CustomPointsLayer {...props} setActiveNode={setActiveNode} />;
 
       return result;
     }

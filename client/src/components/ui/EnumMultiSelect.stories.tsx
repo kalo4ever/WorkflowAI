@@ -8,9 +8,7 @@ type WrapperProps = {
 
 function Wrapper({ enumValues }: WrapperProps) {
   const [selectedValues, setSelectedValues] = useState<string[]>(enumValues);
-  return (
-    <EnumMultiSelect enumValues={selectedValues} onChange={setSelectedValues} />
-  );
+  return <EnumMultiSelect enumValues={selectedValues} onChange={setSelectedValues} />;
 }
 
 const meta = {

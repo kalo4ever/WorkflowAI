@@ -22,15 +22,9 @@ interface PaymentsState {
   paymentMethod: PaymentMethodResponse | undefined;
 
   createCustomer: (tenant: TenantID | undefined) => Promise<void>;
-  addPaymentMethod: (
-    tenant: TenantID | undefined,
-    paymentMethodId: string
-  ) => Promise<void>;
+  addPaymentMethod: (tenant: TenantID | undefined, paymentMethodId: string) => Promise<void>;
   getPaymentMethod: (tenant: TenantID | undefined) => Promise<void>;
-  createPaymentIntent: (
-    tenant: TenantID | undefined,
-    amount: number
-  ) => Promise<PaymentIntentCreatedResponse>;
+  createPaymentIntent: (tenant: TenantID | undefined, amount: number) => Promise<PaymentIntentCreatedResponse>;
   updateAutomaticPayment: (
     tenant: TenantID | undefined,
     optIn: boolean,
@@ -99,10 +93,7 @@ export const usePayments = create<PaymentsState>((set) => ({
     }
   },
 
-  addPaymentMethod: async (
-    tenant: TenantID | undefined,
-    paymentMethodId: string
-  ) => {
+  addPaymentMethod: async (tenant: TenantID | undefined, paymentMethodId: string) => {
     set(
       produce((state: PaymentsState) => {
         state.isLoading = true;
@@ -130,12 +121,12 @@ export const usePayments = create<PaymentsState>((set) => ({
   },
 
   createPaymentIntent: async (tenant: TenantID | undefined, amount: number) => {
-    const response = await client.post<
-      CreatePaymentIntentRequest,
-      PaymentIntentCreatedResponse
-    >(`${rootTenantPath(tenant)}/organization/payments/payment-intents`, {
-      amount,
-    });
+    const response = await client.post<CreatePaymentIntentRequest, PaymentIntentCreatedResponse>(
+      `${rootTenantPath(tenant)}/organization/payments/payment-intents`,
+      {
+        amount,
+      }
+    );
 
     return response;
   },
@@ -147,14 +138,11 @@ export const usePayments = create<PaymentsState>((set) => ({
     balanceToMaintain: number | null
   ) => {
     try {
-      await client.put<AutomaticPaymentRequest>(
-        `${rootTenantPath(tenant)}/organization/payments/automatic-payments`,
-        {
-          opt_in: optIn,
-          threshold,
-          balance_to_maintain: balanceToMaintain,
-        }
-      );
+      await client.put<AutomaticPaymentRequest>(`${rootTenantPath(tenant)}/organization/payments/automatic-payments`, {
+        opt_in: optIn,
+        threshold,
+        balance_to_maintain: balanceToMaintain,
+      });
       await useOrganizationSettings.getState().fetchOrganizationSettings();
     } catch (error) {
       console.error(error);
@@ -163,9 +151,7 @@ export const usePayments = create<PaymentsState>((set) => ({
 
   deletePaymentMethod: async (tenant: TenantID | undefined) => {
     try {
-      await client.del<void>(
-        `${rootTenantPath(tenant)}/organization/payments/payment-methods`
-      );
+      await client.del<void>(`${rootTenantPath(tenant)}/organization/payments/payment-methods`);
       await useOrganizationSettings.getState().fetchOrganizationSettings();
       await usePayments.getState().getPaymentMethod(tenant);
     } catch (error) {

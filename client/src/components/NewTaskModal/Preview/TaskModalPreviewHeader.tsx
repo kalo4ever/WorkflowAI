@@ -10,12 +10,7 @@ type TaskModalPreviewHeaderProps = {
 };
 
 export function TaskModalPreviewHeader(props: TaskModalPreviewHeaderProps) {
-  const {
-    isPreviewOn,
-    setIsPreviewOn,
-    forceShowingTooltip,
-    isLoadingPreviews,
-  } = props;
+  const { isPreviewOn, setIsPreviewOn, forceShowingTooltip, isLoadingPreviews } = props;
 
   const tooltipContent = isPreviewOn ? 'Hide Preview' : 'Tap to Show Preview';
 
@@ -44,9 +39,7 @@ export function TaskModalPreviewHeader(props: TaskModalPreviewHeaderProps) {
         </div>
       </SimpleTooltip>
 
-      {isLoadingPreviews && (
-        <Loader2 className='w-4 h-4 animate-spin text-gray-700' />
-      )}
+      {isLoadingPreviews && <Loader2 className='w-4 h-4 animate-spin text-gray-700' />}
     </div>
   );
 }

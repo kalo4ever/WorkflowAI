@@ -1,9 +1,4 @@
-import {
-  Cloud16Regular,
-  FluentIcon,
-  Star16Regular,
-  TimelineRegular,
-} from '@fluentui/react-icons';
+import { Cloud16Regular, FluentIcon, Star16Regular, TimelineRegular } from '@fluentui/react-icons';
 import { isEmpty } from 'lodash';
 import { useCallback, useMemo } from 'react';
 import { TaskVersionBadgeContainer } from '@/components/TaskIterationBadge/TaskVersionBadgeContainer';
@@ -20,9 +15,7 @@ type BenchmarkVersionSelectionItemProps = {
   showEnvironments: boolean;
 };
 
-function BenchmarkVersionSelectionItem(
-  props: BenchmarkVersionSelectionItemProps
-) {
+function BenchmarkVersionSelectionItem(props: BenchmarkVersionSelectionItemProps) {
   const { version, isSelected, onToggleIteration, showEnvironments } = props;
 
   const environments = useMemo(() => {
@@ -30,18 +23,10 @@ function BenchmarkVersionSelectionItem(
   }, [version]);
 
   return (
-    <div
-      key={version.id}
-      className='pl-2.5 py-1 flex gap-2 items-center hover:bg-gray-100 rounded-[2px]'
-    >
-      <SquareCheckbox
-        checked={isSelected}
-        onClick={() => onToggleIteration(version.iteration)}
-      />
+    <div key={version.id} className='pl-2.5 py-1 flex gap-2 items-center hover:bg-gray-100 rounded-[2px]'>
+      <SquareCheckbox checked={isSelected} onClick={() => onToggleIteration(version.iteration)} />
       <TaskVersionBadgeContainer version={version} side='right' />
-      {!!showEnvironments && (
-        <BenchmarkVersionEnvironments environments={environments} />
-      )}
+      {!!showEnvironments && <BenchmarkVersionEnvironments environments={environments} />}
     </div>
   );
 }
@@ -55,9 +40,7 @@ type BenchmarkVersionSelectionSectionProps = {
   showEnvironments?: boolean;
 };
 
-function BenchmarkVersionSelectionSection(
-  props: BenchmarkVersionSelectionSectionProps
-) {
+function BenchmarkVersionSelectionSection(props: BenchmarkVersionSelectionSectionProps) {
   const {
     versions,
     benchmarkIterations,
@@ -72,9 +55,11 @@ function BenchmarkVersionSelectionSection(
       if (!iteration) return;
 
       const newSet = new Set(benchmarkIterations);
-      benchmarkIterations?.has(iteration)
-        ? newSet.delete(iteration)
-        : newSet.add(iteration);
+      if (benchmarkIterations?.has(iteration) === true) {
+        newSet.delete(iteration);
+      } else {
+        newSet.add(iteration);
+      }
 
       await updateBenchmarkIterations(newSet);
     },
@@ -94,16 +79,8 @@ function BenchmarkVersionSelectionSection(
   const noVersionsYet = versions.length === 0;
 
   return (
-    <div
-      className={
-        'flex flex-col w-full gap-2 py-2 border-b border-gray-200 border-dashed last:border-b-0'
-      }
-    >
-      {noVersionsYet && (
-        <div className='pl-3 font-semibold text-gray-500 text-[13px]'>
-          No Version Yet
-        </div>
-      )}
+    <div className={'flex flex-col w-full gap-2 py-2 border-b border-gray-200 border-dashed last:border-b-0'}>
+      {noVersionsYet && <div className='pl-3 font-semibold text-gray-500 text-[13px]'>No Version Yet</div>}
       {!noVersionsYet && (
         <div className='flex flex-col px-1'>
           <div className='flex flex-row gap-2 px-2 text-[13px] font-semibold text-gray-700 items-center pb-1'>
@@ -133,15 +110,8 @@ type BenchmarkVersionSelectionProps = {
   updateBenchmarkIterations: (iterations: Set<number>) => Promise<void>;
 };
 
-export function BenchmarkVersionSelection(
-  props: BenchmarkVersionSelectionProps
-) {
-  const {
-    versions,
-    versionsPerEnvironment,
-    benchmarkIterations,
-    updateBenchmarkIterations,
-  } = props;
+export function BenchmarkVersionSelection(props: BenchmarkVersionSelectionProps) {
+  const { versions, versionsPerEnvironment, benchmarkIterations, updateBenchmarkIterations } = props;
 
   const versionsWithEnvironments = useMemo(() => {
     if (isEmpty(versionsPerEnvironment)) {
@@ -159,18 +129,11 @@ export function BenchmarkVersionSelection(
     return Array.from(result);
   }, [versionsPerEnvironment]);
 
-  const favoriteVersions = useMemo(
-    () => versions.filter((version) => version.is_favorite),
-    [versions]
-  );
+  const favoriteVersions = useMemo(() => versions.filter((version) => version.is_favorite), [versions]);
 
   const restVersions = useMemo(
     () =>
-      versions.filter(
-        (version) =>
-          !favoriteVersions.includes(version) &&
-          !versionsWithEnvironments?.includes(version)
-      ),
+      versions.filter((version) => !favoriteVersions.includes(version) && !versionsWithEnvironments?.includes(version)),
     [versionsWithEnvironments, favoriteVersions, versions]
   );
 

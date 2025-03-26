@@ -3,11 +3,7 @@ import { create } from 'zustand';
 import { SSEClient } from '@/lib/api/client';
 import { Method } from '@/lib/api/client';
 import { TaskSchemaID, TenantID } from '@/types/aliases';
-import {
-  ChatMessage,
-  GenerateTaskPreviewRequest,
-  TaskPreview,
-} from '@/types/workflowAI';
+import { ChatMessage, GenerateTaskPreviewRequest, TaskPreview } from '@/types/workflowAI';
 import { buildTaskPreviewScopeKey, rootTaskPathNoProxy } from './utils';
 
 enableMapSet();
@@ -118,10 +114,7 @@ export const useTaskPreview = create<TaskPreviewState>((set, get) => ({
         current_preview: currentPreview,
       };
 
-      const result = await SSEClient<
-        GenerateTaskPreviewRequest,
-        { preview: TaskPreview }
-      >(
+      const result = await SSEClient<GenerateTaskPreviewRequest, { preview: TaskPreview }>(
         `${rootTaskPathNoProxy(tenant)}/schemas/preview`,
         Method.POST,
         token,
@@ -134,10 +127,7 @@ export const useTaskPreview = create<TaskPreviewState>((set, get) => ({
           state.generatedInputByScope.set(scopeKey, result.preview.input);
           state.generatedOutputByScope.set(scopeKey, result.preview.output);
           state.finalGeneratedInputByScope.set(scopeKey, result.preview.input);
-          state.finalGeneratedOutputByScope.set(
-            scopeKey,
-            result.preview.output
-          );
+          state.finalGeneratedOutputByScope.set(scopeKey, result.preview.output);
         })
       );
     } catch (error) {

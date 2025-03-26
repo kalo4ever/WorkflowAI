@@ -52,13 +52,7 @@ export function CommandK(props: { tenant: TenantID }) {
                   return;
                 }
                 const schemaId = getNewestSchemaId(task);
-                redirectTo(
-                  taskSchemaRoute(
-                    tenant,
-                    task.id as TaskID,
-                    `${schemaId}` as TaskSchemaID
-                  )
-                );
+                redirectTo(taskSchemaRoute(tenant, task.id as TaskID, `${schemaId}` as TaskSchemaID));
               }}
             >
               <LuBook className='mr-2 h-4 w-4' />

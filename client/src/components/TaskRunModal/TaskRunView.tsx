@@ -59,12 +59,9 @@ export function TaskRunView(props: TaskRunViewProps) {
 
   const toolCalls = toolCallsFromRun(taskRun);
 
-  const schemaInputSchema =
-    (version?.input_schema as JsonSchema) ?? schemaInputFromProps?.json_schema;
+  const schemaInputSchema = (version?.input_schema as JsonSchema) ?? schemaInputFromProps?.json_schema;
 
-  const schemaOutputSchema =
-    (version?.output_schema as JsonSchema) ??
-    schemaOutputFromProps?.json_schema;
+  const schemaOutputSchema = (version?.output_schema as JsonSchema) ?? schemaOutputFromProps?.json_schema;
 
   const error = useMemo(() => {
     if (!taskRun || !taskRun.error) {
@@ -80,17 +77,12 @@ export function TaskRunView(props: TaskRunViewProps) {
     }
 
     const output = taskRun.task_output;
-    const otherKeys = Object.keys(output).filter(
-      (key) => key !== 'internal_agent_run_result'
-    );
+    const otherKeys = Object.keys(output).filter((key) => key !== 'internal_agent_run_result');
 
     return otherKeys.length === 0;
   }, [taskRun]);
 
-  const mappedReasoningSteps = useMemo(
-    () => mapReasoningSteps(taskRun?.reasoning_steps),
-    [taskRun?.reasoning_steps]
-  );
+  const mappedReasoningSteps = useMemo(() => mapReasoningSteps(taskRun?.reasoning_steps), [taskRun?.reasoning_steps]);
 
   const copyTaskRunURL = useCopyRunURL(tenant, taskRun?.task_id, taskRun?.id);
 
@@ -99,11 +91,7 @@ export function TaskRunView(props: TaskRunViewProps) {
   }
 
   if (!taskRun) {
-    return (
-      <div className='flex-1 flex items-center justify-center'>
-        AI agent run not found
-      </div>
-    );
+    return <div className='flex-1 flex items-center justify-center'>AI agent run not found</div>;
   }
 
   return (
@@ -125,11 +113,7 @@ export function TaskRunView(props: TaskRunViewProps) {
         />
       </div>
 
-      <PersistantAllotment
-        name='taskRunView'
-        initialSize={[200, 100]}
-        className='flex-1 text-sm'
-      >
+      <PersistantAllotment name='taskRunView' initialSize={[200, 100]} className='flex-1 text-sm'>
         <div className='h-full flex flex-col'>
           <div className='flex-1 flex flex-col overflow-hidden'>
             <div className='flex items-center justify-between px-4 h-[48px] border-b border-gray-200 border-dashed text-gray-700 text-[16px] font-semibold shrink-0 gap-3'>
@@ -145,12 +129,7 @@ export function TaskRunView(props: TaskRunViewProps) {
                       </div>
                     }
                   >
-                    <Button
-                      toRoute={playgroundInputRoute}
-                      icon={<Open16Regular />}
-                      variant='newDesign'
-                      size='sm'
-                    >
+                    <Button toRoute={playgroundInputRoute} icon={<Open16Regular />} variant='newDesign' size='sm'>
                       Try Input in Playground
                     </Button>
                   </SimpleTooltip>

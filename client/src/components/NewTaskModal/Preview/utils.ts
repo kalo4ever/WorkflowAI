@@ -1,8 +1,6 @@
 import { JsonSchema } from '@/types/json_schema';
 
-export function collectUsedDefinitions(
-  schema: JsonSchema
-): Record<string, JsonSchema> {
+export function collectUsedDefinitions(schema: JsonSchema): Record<string, JsonSchema> {
   const usedDefs: Record<string, JsonSchema> = {};
 
   function traverse(node: JsonSchema) {

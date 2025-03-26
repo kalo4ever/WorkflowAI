@@ -14,10 +14,7 @@ export function CircleCheckbox(props: CheckboxProps) {
   const { checked, onClick, className, children } = props;
 
   return (
-    <div
-      className='flex flex-row items-center gap-2 cursor-pointer'
-      onClick={onClick}
-    >
+    <div className='flex flex-row items-center gap-2 cursor-pointer' onClick={onClick}>
       <div className={cn('flex items-center justify-center p-0.5', className)}>
         <div
           className={cn(
@@ -25,12 +22,7 @@ export function CircleCheckbox(props: CheckboxProps) {
             checked ? 'border-indigo-600' : 'border-gray-400'
           )}
         >
-          <div
-            className={cn(
-              'rounded-full w-full h-full',
-              checked ? 'bg-indigo-600' : 'bg-transparent'
-            )}
-          />
+          <div className={cn('rounded-full w-full h-full', checked ? 'bg-indigo-600' : 'bg-transparent')} />
         </div>
       </div>
       {children}
@@ -53,13 +45,7 @@ export function SquareCheckbox(props: CheckboxProps) {
   };
 
   return (
-    <div
-      className={cn(
-        'flex flex-row gap-2 cursor-pointer items-center',
-        className
-      )}
-      onClick={handleClick}
-    >
+    <div className={cn('flex flex-row gap-2 cursor-pointer items-center', className)} onClick={handleClick}>
       {isLoading ? (
         <Loader2 className='h-3 w-3 animate-spin text-indigo-600' />
       ) : (

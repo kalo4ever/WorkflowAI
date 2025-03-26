@@ -15,20 +15,12 @@ export function SchemaSplattedSection(props: SchemaSplattedSectionProps) {
     <div className={cx('flex flex-col', className)} style={style}>
       <div className='flex flex-row w-full h-[64px] px-4 items-center justify-between flex-shrink-0'>
         <div className='flex flex-col items-start'>
-          <div className=' text-gray-700 text-base font-semibold font-lato'>
-            {title}
-          </div>
-          {details && (
-            <div className=' text-gray-500 text-xs font-normal font-lato text-right'>
-              {details}
-            </div>
-          )}
+          <div className=' text-gray-700 text-base font-semibold font-lato'>{title}</div>
+          {details && <div className=' text-gray-500 text-xs font-normal font-lato text-right'>{details}</div>}
         </div>
         {!!rightContent && rightContent}
       </div>
-      <div className='flex w-full border-t border-gray-200 border-dashed'>
-        {children}
-      </div>
+      <div className='flex w-full border-t border-gray-200 border-dashed'>{children}</div>
     </div>
   );
 }

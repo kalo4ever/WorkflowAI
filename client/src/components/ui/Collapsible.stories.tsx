@@ -1,10 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { Info } from 'lucide-react';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/Collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
 
 /**
  * An interactive component which expands/collapses a panel.
@@ -25,8 +21,7 @@ const meta = {
         <Info className='size-6' />
       </CollapsibleTrigger>
       <CollapsibleContent>
-        Yes. Free to use for personal and commercial projects. No attribution
-        required.
+        Yes. Free to use for personal and commercial projects. No attribution required.
       </CollapsibleContent>
     </Collapsible>
   ),

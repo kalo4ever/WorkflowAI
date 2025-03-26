@@ -20,6 +20,7 @@ type ReadonlyValueProps = Pick<
   | 'previewMode'
   | 'showDescriptionExamples'
   | 'hideCopyValue'
+  | 'truncateText'
 > & {
   icon?: React.ReactNode;
 };
@@ -35,6 +36,7 @@ export function ReadonlyValue(props: ReadonlyValueProps) {
     previewMode,
     showDescriptionExamples,
     hideCopyValue,
+    truncateText,
   } = props;
   const text = stringifyNil(value);
 
@@ -42,18 +44,14 @@ export function ReadonlyValue(props: ReadonlyValueProps) {
     if (!referenceValue || typeof referenceValue !== 'string') {
       return false;
     }
-    return (
-      shouldDiffLineForString(referenceValue) || shouldDiffLineForString(text)
-    );
+    return shouldDiffLineForString(referenceValue) || shouldDiffLineForString(text);
   }, [referenceValue, text]);
 
   const diff = useMemo(() => {
     if (!referenceValue || typeof referenceValue !== 'string') {
       return null;
     }
-    return shouldDiffLine
-      ? diffLines(referenceValue, text)
-      : diffWords(referenceValue, text);
+    return shouldDiffLine ? diffLines(referenceValue, text) : diffWords(referenceValue, text);
   }, [text, referenceValue, shouldDiffLine]);
 
   if (diff) {
@@ -84,7 +82,7 @@ export function ReadonlyValue(props: ReadonlyValueProps) {
       data-testid='viewer-readonly-value'
       className={cx(
         className,
-        'relative min-h-6 flex flex-row gap-1 items-center font-medium text-[13px] px-1.5 py-0.5 border border-gray-200 rounded-[2px] whitespace-pre-line',
+        'relative min-h-6 font-medium text-[13px] px-1.5 py-0.5 border border-gray-200 rounded-[2px] flex items-center',
         previewMode ? 'bg-gray-50' : 'bg-white',
         {
           'text-gray-400': !isError && previewMode,
@@ -92,14 +90,20 @@ export function ReadonlyValue(props: ReadonlyValueProps) {
           'text-red-600 border-red-200': isError,
         }
       )}
-      // We are using here style becasue tailwindcc does not support combining: break-word and break-all
-      style={{
-        wordBreak: 'break-word',
-        overflowWrap: 'anywhere',
-      }}
     >
-      {text}
-      {!!icon && icon}
+      <div
+        className={cx('flex-1', !!truncateText && 'overflow-hidden')}
+        style={{
+          display: !!truncateText ? '-webkit-box' : 'block',
+          WebkitLineClamp: !!truncateText ? truncateText : undefined,
+          WebkitBoxOrient: !!truncateText ? 'vertical' : undefined,
+          wordBreak: 'break-word',
+          overflowWrap: 'anywhere',
+        }}
+      >
+        {text}
+      </div>
+      {!!icon && <div className='flex-shrink-0 ml-1'>{icon}</div>}
     </div>
   );
 
@@ -107,11 +111,7 @@ export function ReadonlyValue(props: ReadonlyValueProps) {
     return content;
   }
 
-  if (
-    !showTypes &&
-    !!showDescriptionExamples &&
-    (value === null || value === 'null')
-  ) {
+  if (!showTypes && !!showDescriptionExamples && (value === null || value === 'null')) {
     return null;
   }
 

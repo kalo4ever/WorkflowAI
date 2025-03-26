@@ -5,20 +5,17 @@ import { TaskID, TaskSchemaID, TenantID } from '@/types/aliases';
 import { TaskSchemaParams, tasksRoute } from '../routeFormatter';
 
 export function useTaskParams() {
-  const { tenant, taskId, taskSchemaId, taskRunId, exampleId, mode } =
-    useParams<{
-      tenant?: TenantID;
-      taskId?: TaskID;
-      taskSchemaId?: TaskSchemaID;
-      taskRunId?: string;
-      exampleId?: string;
-      mode?: string;
-    }>();
+  const { tenant, taskId, taskSchemaId, taskRunId, exampleId, mode } = useParams<{
+    tenant?: TenantID;
+    taskId?: TaskID;
+    taskSchemaId?: TaskSchemaID;
+    taskRunId?: string;
+    exampleId?: string;
+    mode?: string;
+  }>();
   // Forcing a default tenant value of '_' to avoid undefined tenant values
   // tenant should always be defined here
-  const decodedTenant = (
-    tenant === undefined ? '_' : decodeURIComponent(tenant)
-  ) as TenantID;
+  const decodedTenant = (tenant === undefined ? '_' : decodeURIComponent(tenant)) as TenantID;
   return {
     tenant: decodedTenant,
     taskId,

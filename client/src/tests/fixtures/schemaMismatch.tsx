@@ -21,15 +21,7 @@ export const schemaMismatch: {
       properties: {
         status: {
           description: 'a simple status',
-          enum: [
-            'BILLED',
-            'BILLABLE',
-            'PLANNED',
-            'NOT_BILLABLE',
-            'ABORTED',
-            'ENTERED_IN_ERROR',
-            'UNKNOWN',
-          ],
+          enum: ['BILLED', 'BILLABLE', 'PLANNED', 'NOT_BILLABLE', 'ABORTED', 'ENTERED_IN_ERROR', 'UNKNOWN'],
           title: 'LineItemStatus',
           type: 'string',
         },

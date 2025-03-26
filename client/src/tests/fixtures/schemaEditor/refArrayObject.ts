@@ -36,8 +36,7 @@ const originalSchema: JsonObjectSchema = {
       items: {
         $ref: '#/$defs/Image',
       },
-      description:
-        'A list of input images from which to extract city and country information',
+      description: 'A list of input images from which to extract city and country information',
     },
   },
 };
@@ -51,8 +50,7 @@ const splattedEditorFields: SchemaEditorField = {
       type: 'array',
       arrayType: 'image',
       fields: undefined,
-      description:
-        'A list of input images from which to extract city and country information',
+      description: 'A list of input images from which to extract city and country information',
     },
   ],
 };

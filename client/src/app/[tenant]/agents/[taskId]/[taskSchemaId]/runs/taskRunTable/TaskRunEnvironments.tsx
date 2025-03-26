@@ -20,10 +20,7 @@ export function TaskRunEnvironments(props: TaskRunEnvironmentsProps) {
       <div className='flex flex-row gap-1 px-1.5 py-1 rounded-[2px] bg-gray-700 text-white items-center'>
         {!!environments &&
           environments.map((environment) => (
-            <div
-              className='flex items-start justify-center text-white'
-              key={environment}
-            >
+            <div className='flex items-start justify-center text-white' key={environment}>
               <EnvironmentIcon environment={environment} className='w-4 h-4' />
             </div>
           ))}

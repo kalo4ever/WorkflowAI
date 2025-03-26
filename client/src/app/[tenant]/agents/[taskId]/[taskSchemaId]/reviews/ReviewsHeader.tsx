@@ -4,9 +4,7 @@ export function ReviewsHeader() {
       <div className='flex items-center w-[25%]'>Input</div>
       <div className='flex items-center w-[25%]'>Accurate Outputs</div>
       <div className='flex items-center w-[25%]'>Inaccurate Outputs</div>
-      <div className='flex items-center w-[25%]'>
-        Input Specific Instructions
-      </div>
+      <div className='flex items-center w-[25%]'>Input Specific Instructions</div>
     </div>
   );
 }

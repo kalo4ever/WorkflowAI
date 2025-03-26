@@ -1,8 +1,4 @@
-import {
-  ArrowSync16Regular,
-  Code16Regular,
-  Key16Regular,
-} from '@fluentui/react-icons';
+import { ArrowSync16Regular, Code16Regular, Key16Regular } from '@fluentui/react-icons';
 import { action } from '@storybook/addon-actions';
 import type { Meta, StoryObj } from '@storybook/react';
 import { TooltipButtonGroup, TooltipButtonProps } from './TooltipButtonGroup';

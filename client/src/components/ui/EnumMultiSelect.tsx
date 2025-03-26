@@ -11,17 +11,9 @@ type EnumMultiSelectProps = {
 };
 
 export function EnumMultiSelect(props: EnumMultiSelectProps) {
-  const {
-    enumValues,
-    onChange,
-    className,
-    placeholder = 'Enter examples (optional)',
-  } = props;
+  const { enumValues, onChange, className, placeholder = 'Enter examples (optional)' } = props;
 
-  const formattedValue = useMemo(
-    () => enumValues.map((v) => ({ value: v, label: v })),
-    [enumValues]
-  );
+  const formattedValue = useMemo(() => enumValues.map((v) => ({ value: v, label: v })), [enumValues]);
 
   const handleChange = useCallback(
     (newValues: { value: string; label: string }[]) => {
@@ -78,14 +70,9 @@ export function EnumMultiSelect(props: EnumMultiSelectProps) {
         DropdownIndicator: null,
         ClearIndicator: undefined,
         NoOptionsMessage: () => (
-          <div className='w-full text-sm text-center text-gray-500 py-2'>
-            Start typing to add a value
-          </div>
+          <div className='w-full text-sm text-center text-gray-500 py-2'>Start typing to add a value</div>
         ),
-        MultiValue: (props: {
-          children: ReactNode;
-          data: { value: string; label: string };
-        }) => {
+        MultiValue: (props: { children: ReactNode; data: { value: string; label: string } }) => {
           const { children, data } = props;
           return (
             <Badge

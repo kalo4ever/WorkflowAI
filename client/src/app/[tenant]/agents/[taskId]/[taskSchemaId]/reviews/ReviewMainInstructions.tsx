@@ -19,9 +19,7 @@ export function ReviewMainInstructions(props: ReviewMainInstructionsProps) {
 
   return (
     <div className='flex flex-col gap-1'>
-      <div className='text-[13px] font-medium text-gray-900'>
-        Evaluation Instructions
-      </div>
+      <div className='text-[13px] font-medium text-gray-900'>Evaluation Instructions</div>
       <div className='flex flex-col justify-center gap-2'>
         <Textarea
           value={comment}

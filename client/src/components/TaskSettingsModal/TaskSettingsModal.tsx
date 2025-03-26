@@ -3,10 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { AlertDialog } from '@/components/ui/AlertDialog';
 import { Dialog, DialogContent } from '@/components/ui/Dialog';
 import { displaySuccessToaster } from '@/components/ui/Sonner';
-import {
-  TASK_SETTINGS_MODAL_OPEN,
-  useQueryParamModal,
-} from '@/lib/globalModal';
+import { TASK_SETTINGS_MODAL_OPEN, useQueryParamModal } from '@/lib/globalModal';
 import { useTaskSchemaParams } from '@/lib/hooks/useTaskParams';
 import { tasksRoute } from '@/lib/routeFormatter';
 import { useOrFetchTask, useTasks } from '@/store';
@@ -19,13 +16,10 @@ export function TaskSettingsModal() {
   const { task } = useOrFetchTask(tenant, taskId);
 
   const [deleteConfirmModalOpen, setDeleteConfirmModal] = useState(false);
-  const [visibilityConfirmModalOpen, setVisibilityConfirmModal] =
-    useState(false);
+  const [visibilityConfirmModalOpen, setVisibilityConfirmModal] = useState(false);
   const [currentTaskName, setCurrentTaskName] = useState<string>('');
 
-  const { open, closeModal: onClose } = useQueryParamModal(
-    TASK_SETTINGS_MODAL_OPEN
-  );
+  const { open, closeModal: onClose } = useQueryParamModal(TASK_SETTINGS_MODAL_OPEN);
 
   const { push } = useRouter();
   const updateTask = useTasks((state) => state.updateTask);
@@ -53,12 +47,9 @@ export function TaskSettingsModal() {
     setCurrentTaskName(task?.name);
   }, [task?.name, open]);
 
-  const onTaskNameChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setCurrentTaskName(e.target.value);
-    },
-    []
-  );
+  const onTaskNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setCurrentTaskName(e.target.value);
+  }, []);
 
   const onRenameTask = useCallback(async () => {
     await handleRenameTask(currentTaskName);
@@ -74,8 +65,7 @@ export function TaskSettingsModal() {
     setVisibilityConfirmModal(false);
   }, [task, taskId, tenant, updateTask, setVisibilityConfirmModal]);
 
-  const { open: manageApiKeysOpen, openModal: openManageApiKeysModal } =
-    useApiKeysModal();
+  const { open: manageApiKeysOpen, openModal: openManageApiKeysModal } = useApiKeysModal();
   const onOpenManageApiKeys = useCallback(() => {
     openManageApiKeysModal();
   }, [openManageApiKeysModal]);

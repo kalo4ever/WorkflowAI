@@ -1,12 +1,7 @@
 import { cx } from 'class-variance-authority';
 import { Expand } from 'lucide-react';
 import { ChangeEvent, useCallback, useRef, useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTrigger,
-} from '@/components/ui/Dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTrigger } from '@/components/ui/Dialog';
 import { Textarea } from '../ui/Textarea';
 import { ReadonlyValue } from './ReadOnlyValue';
 import { ValueViewerProps } from './utils';
@@ -26,8 +21,7 @@ function PreviewIframe(props: PreviewIframeProps) {
 
   const resizeIframe = useCallback(() => {
     if (!dynamicHeight) return;
-    const scrollHeight =
-      iframeRef.current?.contentWindow?.document?.body?.scrollHeight;
+    const scrollHeight = iframeRef.current?.contentWindow?.document?.body?.scrollHeight;
     // Sometimes, the body has no scrollHeight, so we need to set a default height
     // to avoid the iframe to be too small - we just triple the default height in that case
     if (!scrollHeight) {
@@ -90,13 +84,7 @@ export function HTMLValueViewer(props: ValueViewerProps<string>) {
           <PreviewIframe value={value} className='max-h-[50vh]' dynamicHeight />
         </div>
       )}
-      {editable && (
-        <Textarea
-          value={value}
-          onChange={onChange}
-          className={cx(className, 'w-full max-h-[150px]')}
-        />
-      )}
+      {editable && <Textarea value={value} onChange={onChange} className={cx(className, 'w-full max-h-[150px]')} />}
     </div>
   );
 }

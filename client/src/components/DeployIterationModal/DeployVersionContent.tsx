@@ -18,13 +18,7 @@ type DeployCardProps = {
 };
 
 function DeployCard(props: DeployCardProps) {
-  const {
-    environment,
-    isSelected,
-    isAlreadyDeployed,
-    originalBadgeText,
-    onDeployToggle,
-  } = props;
+  const { environment, isSelected, isAlreadyDeployed, originalBadgeText, onDeployToggle } = props;
 
   const onClick = useCallback(() => {
     onDeployToggle(environment);
@@ -38,17 +32,10 @@ function DeployCard(props: DeployCardProps) {
       )}
     >
       <div className='w-10 h-10 rounded-full bg-custom-gradient-solid flex items-center justify-center'>
-        <EnvironmentIcon
-          environment={environment}
-          filled={true}
-          className='w-5 h-5 text-white'
-        />
+        <EnvironmentIcon environment={environment} filled={true} className='w-5 h-5 text-white' />
       </div>
       <div className='flex items-center text-[13px] mt-4 text-white capitalize bg-gray-900 font-medium px-[8px] py-[3px] gap-[6px] rounded-[2px]'>
-        <EnvironmentIcon
-          environment={environment}
-          className='w-[14px] h-[14px] text-white'
-        />
+        <EnvironmentIcon environment={environment} className='w-[14px] h-[14px] text-white' />
         {environment}
       </div>
 
@@ -61,9 +48,7 @@ function DeployCard(props: DeployCardProps) {
           is currently deployed.
         </div>
       ) : (
-        <div className='text-gray-500 text-[13px] font-normal mt-2'>
-          No version deployed yet.
-        </div>
+        <div className='text-gray-500 text-[13px] font-normal mt-2'>No version deployed yet.</div>
       )}
       <Button
         variant={isSelected ? 'newDesignGray' : 'newDesign'}
@@ -129,12 +114,7 @@ type DeployCardsProps = {
 };
 
 function DeployCards(props: DeployCardsProps) {
-  const {
-    onDeployToggle,
-    version,
-    versionsPerEnvironment,
-    originalVersionsPerEnvironment,
-  } = props;
+  const { onDeployToggle, version, versionsPerEnvironment, originalVersionsPerEnvironment } = props;
 
   const environments: VersionEnvironment[] = ['dev', 'staging', 'production'];
 
@@ -145,16 +125,8 @@ function DeployCards(props: DeployCardsProps) {
           key={environment}
           environment={environment}
           isSelected={isSelected(environment, version, versionsPerEnvironment)}
-          isAlreadyDeployed={isAlreadyDeployed(
-            environment,
-            version,
-            originalVersionsPerEnvironment
-          )}
-          originalBadgeText={getOriginalBadgeText(
-            environment,
-            version,
-            originalVersionsPerEnvironment
-          )}
+          isAlreadyDeployed={isAlreadyDeployed(environment, version, originalVersionsPerEnvironment)}
+          originalBadgeText={getOriginalBadgeText(environment, version, originalVersionsPerEnvironment)}
           onDeployToggle={onDeployToggle}
         />
       ))}
@@ -172,14 +144,7 @@ type DeployVersionContentProps = {
 };
 
 export function DeployVersionContent(props: DeployVersionContentProps) {
-  const {
-    version,
-    isInitialized,
-    versionsPerEnvironment,
-    originalVersionsPerEnvironment,
-    onClose,
-    onDeploy,
-  } = props;
+  const { version, isInitialized, versionsPerEnvironment, originalVersionsPerEnvironment, onClose, onDeploy } = props;
 
   if (!isInitialized) {
     return <Loader centered />;
@@ -196,9 +161,7 @@ export function DeployVersionContent(props: DeployVersionContentProps) {
             className='w-7 h-7 shrink-0'
             size='none'
           />
-          <div className='text-gray-900 text-[16px] font-semibold'>
-            Deploy Version {formatSemverVersion(version)}
-          </div>
+          <div className='text-gray-900 text-[16px] font-semibold'>Deploy Version {formatSemverVersion(version)}</div>
         </div>
         <div className='text-gray-900 text-[13px] font-medium px-4 py-[18px]'>
           Select the environment you’d like to deploy version{' '}

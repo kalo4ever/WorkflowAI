@@ -12,12 +12,5 @@ export function TaskSchemaBadgeContainer(props: TaskSchemaBadgeContainerProps) {
 
   const { tenant, taskId } = useTaskSchemaParams();
 
-  return (
-    <TaskSchemaBadge
-      tenant={tenant}
-      taskId={taskId}
-      schemaId={schemaId}
-      isActive={isActive}
-    />
-  );
+  return <TaskSchemaBadge tenant={tenant} taskId={taskId} schemaId={schemaId} isActive={isActive} />;
 }

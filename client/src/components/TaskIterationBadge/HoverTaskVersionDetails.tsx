@@ -8,9 +8,7 @@ type HoverTaskVersionDetailsProps = {
   side?: HoverCardContentProps['side'];
   align?: HoverCardContentProps['align'];
   version: VersionV1;
-  handleUpdateNotes?: DebouncedState<
-    (versionId: string, notes: string) => Promise<void>
-  >;
+  handleUpdateNotes?: DebouncedState<(versionId: string, notes: string) => Promise<void>>;
 };
 
 export function HoverTaskVersionDetails(props: HoverTaskVersionDetailsProps) {
@@ -26,11 +24,7 @@ export function HoverTaskVersionDetails(props: HoverTaskVersionDetailsProps) {
         <div className='text-gray-700 text-[16px] font-semibold px-4 py-3 border-b border-gray-200 border-dashed'>
           Version Details
         </div>
-        <TaskVersionDetails
-          version={version}
-          handleUpdateNotes={handleUpdateNotes}
-          className='max-w-[360px]'
-        />
+        <TaskVersionDetails version={version} handleUpdateNotes={handleUpdateNotes} className='max-w-[360px]' />
       </div>
     </HoverCardContent>
   );

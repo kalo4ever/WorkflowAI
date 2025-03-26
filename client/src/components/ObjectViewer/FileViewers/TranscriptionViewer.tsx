@@ -14,8 +14,7 @@ export function TranscriptionViewer(props: TranscriptionViewerProps) {
   const { transcription, transcriptionLoading } = props;
   const [showMore, toggleShowMore] = useToggle(false);
   const [isClamped, setIsClamped] = useState(false);
-  const [transcriptionRef, setTranscriptionRef] =
-    useState<HTMLSpanElement | null>(null);
+  const [transcriptionRef, setTranscriptionRef] = useState<HTMLSpanElement | null>(null);
 
   const handleResize = useCallback(() => {
     if (!transcriptionRef) return;
@@ -47,9 +46,7 @@ export function TranscriptionViewer(props: TranscriptionViewerProps) {
     return (
       <div className='flex items-center gap-2'>
         <Loader2 size={16} className='animate-spin' />
-        <span className='text-[13px] text-gray-900 font-normal'>
-          Transcribing...
-        </span>
+        <span className='text-[13px] text-gray-900 font-normal'>Transcribing...</span>
       </div>
     );
   }
@@ -62,19 +59,13 @@ export function TranscriptionViewer(props: TranscriptionViewerProps) {
         ref={setRef}
         className={cx(
           'font-normal text-gray-900 text-[13px] break-words',
-          showMore
-            ? 'line-clamp-none max-h-[100px] overflow-y-auto'
-            : 'line-clamp-2'
+          showMore ? 'line-clamp-none max-h-[100px] overflow-y-auto' : 'line-clamp-2'
         )}
       >
         {transcription}
       </span>
       {isClamped && (
-        <Button
-          variant='text'
-          onClick={toggleShowMore}
-          className='p-0 h-fit text-[13px] text-gray-900 font-medium'
-        >
+        <Button variant='text' onClick={toggleShowMore} className='p-0 h-fit text-[13px] text-gray-900 font-medium'>
           {showMore ? 'Show less' : 'Show more'}
         </Button>
       )}

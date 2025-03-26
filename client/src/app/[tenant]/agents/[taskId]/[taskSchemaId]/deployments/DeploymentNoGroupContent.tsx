@@ -15,9 +15,7 @@ export function DeploymentNoGroupContent(props: DeploymentNoGroupContentProps) {
 
   return (
     <div className='w-full flex flex-col items-center justify-center py-6 gap-2'>
-      <div className='text-slate-500 font-medium'>
-        {`You haven't deployed a version to ${environment} yet`}
-      </div>
+      <div className='text-slate-500 font-medium'>{`You haven't deployed a version to ${environment} yet`}</div>
       <div className='flex items-center gap-2'>
         <Button
           icon={<ContractUpRight16Regular />}
@@ -30,12 +28,7 @@ export function DeploymentNoGroupContent(props: DeploymentNoGroupContentProps) {
         </Button>
         <SimpleTooltip content='Deploy a version first'>
           <div>
-            <Button
-              variant='newDesign'
-              disabled
-              size='sm'
-              fluentIcon={CodeRegular}
-            >
+            <Button variant='newDesign' disabled size='sm' fluentIcon={CodeRegular}>
               View Code
             </Button>
           </div>

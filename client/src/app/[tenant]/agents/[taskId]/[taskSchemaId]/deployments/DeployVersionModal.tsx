@@ -74,9 +74,7 @@ export type EditEnvSchemaIterationParams = {
 type DeployVersionModalProps = {
   allVersions: VersionV1[];
   envSchemaIteration: EditEnvSchemaIterationParams | undefined;
-  setEnvSchemaIteration: (
-    envSchemaIteration: EditEnvSchemaIterationParams
-  ) => void;
+  setEnvSchemaIteration: (envSchemaIteration: EditEnvSchemaIterationParams) => void;
   favoriteVersions: VersionV1[];
   isInitialized: boolean;
   onClose: () => void;
@@ -113,15 +111,11 @@ export function DeployVersionModal(props: DeployVersionModalProps) {
   const environmentToUse = envSchemaIteration?.environment;
 
   const filteredFavoriteVersions = useMemo(() => {
-    return favoriteVersions.filter(
-      (version) => `${version.schema_id}` === schemaIdToUse
-    );
+    return favoriteVersions.filter((version) => `${version.schema_id}` === schemaIdToUse);
   }, [favoriteVersions, schemaIdToUse]);
 
   const filteredAllVersions = useMemo(() => {
-    return allVersions.filter(
-      (version) => `${version.schema_id}` === schemaIdToUse
-    );
+    return allVersions.filter((version) => `${version.schema_id}` === schemaIdToUse);
   }, [allVersions, schemaIdToUse]);
 
   const handleSchemaIdChange = useCallback(
@@ -139,9 +133,7 @@ export function DeployVersionModal(props: DeployVersionModalProps) {
           return false;
         }
 
-        const deployment = version.deployments.find(
-          (deployment) => deployment.environment === environmentToUse
-        );
+        const deployment = version.deployments.find((deployment) => deployment.environment === environmentToUse);
 
         return deployment;
       });
@@ -166,11 +158,7 @@ export function DeployVersionModal(props: DeployVersionModalProps) {
           <Button
             variant='newDesign'
             onClick={onDeploy}
-            disabled={
-              !envSchemaIteration ||
-              envSchemaIteration?.iteration ===
-                envSchemaIteration?.currentIteration
-            }
+            disabled={!envSchemaIteration || envSchemaIteration?.iteration === envSchemaIteration?.currentIteration}
           >
             Deploy
           </Button>

@@ -15,11 +15,7 @@ type InputOutputSchemasProps = {
 export function InputOutputSchemas(props: InputOutputSchemasProps) {
   const { tenant, taskId, versionId } = props;
 
-  const { version, isInitialized } = useOrFetchVersion(
-    tenant,
-    taskId,
-    versionId
-  );
+  const { version, isInitialized } = useOrFetchVersion(tenant, taskId, versionId);
 
   if (!isInitialized || !version) {
     return <Loader centered />;

@@ -14,18 +14,13 @@ import TaskRunModal from '@/components/TaskRunModal/TaskRunModal';
 import { Button } from '@/components/ui/Button';
 import { PageContainer } from '@/components/v2/PageContainer';
 import { RequestError } from '@/lib/api/client';
+import { TASK_RUN_ID_PARAM } from '@/lib/constants';
 import { useCopyCurrentUrl } from '@/lib/hooks/useCopy';
 import { useDemoMode } from '@/lib/hooks/useDemoMode';
 import { useIsAllowed } from '@/lib/hooks/useIsAllowed';
-import {
-  useParsedSearchParams,
-  useRedirectWithParams,
-} from '@/lib/queryString';
+import { useParsedSearchParams, useRedirectWithParams } from '@/lib/queryString';
 import { FileFormat } from '@/lib/schemaFileUtils';
-import {
-  InitInputFromSchemaMode,
-  initInputFromSchema,
-} from '@/lib/schemaUtils';
+import { InitInputFromSchemaMode, initInputFromSchema } from '@/lib/schemaUtils';
 import { mergeTaskInputAndVoid } from '@/lib/schemaVoidUtils';
 import { scrollTo } from '@/lib/scrollUtils';
 import {
@@ -38,27 +33,33 @@ import {
   useOrFetchToken,
   useOrFetchVersion,
   useOrFetchVersions,
+  useScheduledMetaAgentMessages,
   useTaskRuns,
   useTasks,
 } from '@/store';
 import { useAudioTranscriptions } from '@/store/audio_transcriptions';
 import { useOrganizationSettings } from '@/store/organization_settings';
+import { ToolCallName, usePlaygroundChatStore } from '@/store/playgroundChatStore';
 import { useTaskPreview } from '@/store/task_preview';
 import { useUpload } from '@/store/upload';
 import { buildScopeKey } from '@/store/utils';
 import { useVersions } from '@/store/versions';
 import { StreamedChunk, TaskRun, TaskSchemaResponseWithSchema } from '@/types';
 import { ModelOptional, TaskID, TaskSchemaID, TenantID } from '@/types/aliases';
+import { StreamError } from '@/types/errors';
 import {
   MajorVersion,
   ModelResponse,
+  PlaygroundState,
   RunRequest,
   RunResponseStreamChunk,
+  SelectedModels,
   VersionV1,
 } from '@/types/workflowAI';
+import { PlaygroundChat } from './components/Chat/PlaygroundChat';
 import { RunAgentsButton } from './components/RunAgentsButton';
 import { useFetchTaskRunUntilCreated } from './hooks/useFetchTaskRunUntilCreated';
-import { useImproveTaskRunVersions } from './hooks/useImproveTaskRunVersion';
+import { useImproveInstructions } from './hooks/useImproveInstructions';
 import { useInputGenerator } from './hooks/useInputGenerator';
 import { useMatchVersion } from './hooks/useMatchVersion';
 import { usePlaygroundEffects } from './hooks/usePlaygroundEffects';
@@ -158,6 +159,8 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
 
   const isInputGenerationSupported = fileFormat === undefined;
 
+  const [scheduledPlaygroundStateMessage, setScheduledPlaygroundStateMessage] = useState<string | undefined>(undefined);
+
   const redirectWithParams = useRedirectWithParams();
   const {
     taskRunId,
@@ -169,8 +172,9 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
     show2ColumnLayout: show2ColumnLayoutParam,
     inputTaskRunId,
     preselectedVariantId,
+    runAgents,
   } = useParsedSearchParams(
-    'taskRunId',
+    TASK_RUN_ID_PARAM,
     'taskRunId1',
     'taskRunId2',
     'taskRunId3',
@@ -178,14 +182,13 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
     'showDiffMode',
     'show2ColumnLayout',
     'inputTaskRunId',
-    'preselectedVariantId'
+    'preselectedVariantId',
+    'runAgents'
   );
 
   const fetchTaskRunUntilCreated = useFetchTaskRunUntilCreated();
 
-  const [streamedChunks, setStreamedChunks] = useState<
-    (StreamedChunk | undefined)[]
-  >(() => []);
+  const [streamedChunks, setStreamedChunks] = useState<(StreamedChunk | undefined)[]>(() => []);
 
   const {
     schemaModels,
@@ -211,11 +214,7 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
     show2ColumnLayoutParam,
   });
 
-  const { version: currentVersion } = useOrFetchVersion(
-    tenant,
-    taskId,
-    versionId ?? persistedVersionId
-  );
+  const { version: currentVersion } = useOrFetchVersion(tenant, taskId, versionId ?? persistedVersionId);
 
   const allVersions = useMemo(() => {
     if (!currentVersion) {
@@ -224,13 +223,12 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
     return [...versions, currentVersion];
   }, [versions, currentVersion]);
 
-  const { variantId, setVariantId, inputSchema, outputSchema } =
-    usePlaygroundVariants({
-      tenant,
-      taskId,
-      versions: allVersions,
-      taskSchema: currentTaskSchema,
-    });
+  const { variantId, setVariantId, inputSchema, outputSchema } = usePlaygroundVariants({
+    tenant,
+    taskId,
+    versions: allVersions,
+    taskSchema: currentTaskSchema,
+  });
 
   useEffect(() => {
     if (preselectedVariantId) {
@@ -265,17 +263,10 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
     isLoading: inputTaskRunLoading,
   } = useOrFetchTaskRun(tenant, taskId, inputTaskRunId);
 
-  const [taskIndexesLoading, setTaskIndexLoading] = useState<boolean[]>([
-    false,
-    false,
-    false,
-  ]);
+  const [taskIndexesLoading, setTaskIndexLoading] = useState<boolean[]>([false, false, false]);
   const { token } = useOrFetchToken();
 
-  const { task, isInitialized: isTaskInitialized } = useOrFetchTask(
-    tenant,
-    taskId
-  );
+  const { task, isInitialized: isTaskInitialized } = useOrFetchTask(tenant, taskId);
 
   const { majorVersions } = useOrFetchVersions(tenant, taskId, taskSchemaId);
 
@@ -289,24 +280,21 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
       }),
     []
   );
-  const handleStreamedChunk = useCallback(
-    (index: number, message: RunResponseStreamChunk | undefined) => {
-      setStreamedChunks((prev) => {
-        const chunks = [...prev];
-        if (message) {
-          chunks[index] = {
-            output: message?.task_output,
-            toolCalls: message?.tool_calls ?? undefined,
-            reasoningSteps: message?.reasoning_steps ?? undefined,
-          };
-        } else {
-          chunks[index] = undefined;
-        }
-        return chunks;
-      });
-    },
-    []
-  );
+  const handleStreamedChunk = useCallback((index: number, message: RunResponseStreamChunk | undefined) => {
+    setStreamedChunks((prev) => {
+      const chunks = [...prev];
+      if (message) {
+        chunks[index] = {
+          output: message?.task_output,
+          toolCalls: message?.tool_calls ?? undefined,
+          reasoningSteps: message?.reasoning_steps ?? undefined,
+        };
+      } else {
+        chunks[index] = undefined;
+      }
+      return chunks;
+    });
+  }, []);
 
   const {
     instructions,
@@ -320,9 +308,7 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
     moveToNext: moveToNextForParameters,
   } = usePlaygroundParametersHistory(tenant, taskId, taskSchemaId);
 
-  const [userSelectedMajor, setUserSelectedMajor] = useState<
-    number | undefined
-  >(undefined);
+  const [userSelectedMajor, setUserSelectedMajor] = useState<number | undefined>(undefined);
 
   const { matchedVersion: matchedMajorVersion } = useMatchVersion({
     majorVersions,
@@ -334,24 +320,22 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
 
   const fetchModels = useAIModels((state) => state.fetchModels);
 
-  const [errorForModels, { set: setModelError, remove: removeModelError }] =
-    useMap<string, Error>(new Map<string, Error>());
+  const [errorForModels, { set: setModelError, remove: removeModelError }] = useMap<string, Error>(
+    new Map<string, Error>()
+  );
 
-  const { onTaskRunIdUpdate, onResetTaskRunIds } =
-    useSequentialTaskRunIdUpdates({
-      taskRunId1,
-      taskRunId2,
-      taskRunId3,
-      setPersistedTaskRunId,
-    });
+  const { onTaskRunIdUpdate, onResetTaskRunIds } = useSequentialTaskRunIdUpdates({
+    taskRunId1,
+    taskRunId2,
+    taskRunId3,
+    setPersistedTaskRunId,
+  });
 
   const createVersion = useVersions((state) => state.createVersion);
 
   const { noCreditsLeft } = useOrFetchOrganizationSettings();
 
-  const fetchOrganizationSettings = useOrganizationSettings(
-    (state) => state.fetchOrganizationSettings
-  );
+  const fetchOrganizationSettings = useOrganizationSettings((state) => state.fetchOrganizationSettings);
 
   const abortControllerRun0 = useRef<AbortController | null>(null);
   const abortControllerRun1 = useRef<AbortController | null>(null);
@@ -370,37 +354,32 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
     }
   }, []);
 
-  const setAbortController = useCallback(
-    (index: number, abortController: AbortController) => {
-      switch (index) {
-        case 0:
-          abortControllerRun0.current = abortController;
-          break;
-        case 1:
-          abortControllerRun1.current = abortController;
-          break;
-        case 2:
-          abortControllerRun2.current = abortController;
-          break;
-      }
-    },
-    []
-  );
+  const setAbortController = useCallback((index: number, abortController: AbortController) => {
+    switch (index) {
+      case 0:
+        abortControllerRun0.current = abortController;
+        break;
+      case 1:
+        abortControllerRun1.current = abortController;
+        break;
+      case 2:
+        abortControllerRun2.current = abortController;
+        break;
+    }
+  }, []);
 
   const handleRunTask = useCallback(
     async (index: number, runOptions: RunTaskOptions = {}) =>
       new Promise<void>(async (resolve, reject) => {
-        const {
-          finalGeneratedInput,
-          finalInstructions,
-          finalTemperature,
-          finalVariantId,
-        } = pickFinalRunProperties(runOptions, {
-          generatedInput,
-          instructions,
-          temperature,
-          variantId,
-        });
+        const { finalGeneratedInput, finalInstructions, finalTemperature, finalVariantId } = pickFinalRunProperties(
+          runOptions,
+          {
+            generatedInput,
+            instructions,
+            temperature,
+            variantId,
+          }
+        );
 
         if (!finalGeneratedInput) {
           reject('No input to run task with');
@@ -518,6 +497,15 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
             setModelError(model, error);
           }
 
+          if (
+            error instanceof StreamError &&
+            !!error.extra &&
+            'runId' in error.extra &&
+            typeof error.extra.runId === 'string'
+          ) {
+            onTaskRunIdUpdate(index, error.extra.runId);
+          }
+
           captureException(error);
           // We don't reject here to avoid rejecting the Promise.all in handleRunTasks
           // That way if one task fails, the other ones still finish
@@ -595,25 +583,52 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
     [setGeneratedInput, generatedInput, onResetTaskRunIds]
   );
 
+  const { getScheduledPlaygroundStateMessageToSendAfterRuns } = usePlaygroundChatStore();
+
   const handleRunTasks = useCallback(
-    async (options?: RunTaskOptions) => {
+    async (options?: RunTaskOptions, individualOptions?: Record<number, RunTaskOptions>) => {
       saveToHistoryForParameters(options?.externalInstructions);
       saveToHistoryForInput();
       onResetTaskRunIds();
 
       await Promise.all([
-        handleRunTask(0, options),
-        handleRunTask(1, options),
-        handleRunTask(2, options),
+        handleRunTask(0, individualOptions?.[0] ?? options),
+        handleRunTask(1, individualOptions?.[1] ?? options),
+        handleRunTask(2, individualOptions?.[2] ?? options),
       ]);
+
+      const message = getScheduledPlaygroundStateMessageToSendAfterRuns();
+      if (message) {
+        setScheduledPlaygroundStateMessage(message);
+      }
     },
     [
       handleRunTask,
       onResetTaskRunIds,
       saveToHistoryForInput,
       saveToHistoryForParameters,
+      getScheduledPlaygroundStateMessageToSendAfterRuns,
+      setScheduledPlaygroundStateMessage,
     ]
   );
+
+  // Special hack that should be not required when we finnaly remove the usePlaygroundEffects, the runAgents is set when exiting the Edit Schema Modal. Make to make the chat agent work.
+  const didRequestAlreadyRunAgentsFromQueryParams = useRef(false);
+  useEffect(() => {
+    if (
+      runAgents === 'true' &&
+      !!instructions &&
+      !!generatedInput &&
+      !didRequestAlreadyRunAgentsFromQueryParams.current
+    ) {
+      didRequestAlreadyRunAgentsFromQueryParams.current = true;
+      redirectWithParams({
+        params: { runAgents: undefined },
+        scroll: false,
+      });
+      handleRunTasks();
+    }
+  }, [runAgents, handleRunTasks, instructions, generatedInput, redirectWithParams]);
 
   const onUserRunTasks = useCallback(
     (options?: RunTaskOptions) => {
@@ -635,21 +650,12 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
       saveToHistoryForInput();
       handleRunTask(index, options);
     },
-    [
-      handleRunTask,
-      setSchemaModels,
-      saveToHistoryForParameters,
-      saveToHistoryForInput,
-    ]
+    [handleRunTask, setSchemaModels, saveToHistoryForParameters, saveToHistoryForInput]
   );
 
   const voidInput = useMemo(() => {
     if (!inputSchema) return undefined;
-    return initInputFromSchema(
-      inputSchema,
-      inputSchema.$defs,
-      InitInputFromSchemaMode.VOID
-    );
+    return initInputFromSchema(inputSchema, inputSchema.$defs, InitInputFromSchemaMode.VOID);
   }, [inputSchema]);
 
   const resetStreamedChunks = useCallback(() => setStreamedChunks([]), []);
@@ -663,26 +669,23 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
     []
   );
 
-  const { handleGeneratePlaygroundInput, inputLoading, onStopGeneratingInput } =
-    useInputGenerator({
-      handleRunTasks,
-      isInputGenerationSupported,
-      preGeneratedInput,
-      onResetTaskRunIds,
-      saveToHistoryForInput,
-      setGeneratedInput,
-      setPreGeneratedInput,
-      resetStreamedChunks,
-      taskId,
-      taskSchemaId,
-      tenant,
-      token,
-      voidInput,
-    });
+  const { handleGeneratePlaygroundInput, inputLoading, onStopGeneratingInput } = useInputGenerator({
+    handleRunTasks,
+    isInputGenerationSupported,
+    preGeneratedInput,
+    onResetTaskRunIds,
+    saveToHistoryForInput,
+    setGeneratedInput,
+    setPreGeneratedInput,
+    resetStreamedChunks,
+    taskId,
+    taskSchemaId,
+    tenant,
+    token,
+    voidInput,
+  });
 
-  const generateSuggestedInstructions = useTasks(
-    (state) => state.generateSuggestedInstructions
-  );
+  const generateSuggestedInstructions = useTasks((state) => state.generateSuggestedInstructions);
 
   const [areInstructionsLoading, setAreInstructionsLoading] = useState(false);
   const fetchTaskRuns = useTaskRuns((state) => state.fetchTaskRuns);
@@ -691,57 +694,42 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
     // This is triggered when a new task schema is created to migrate instructions
     // from the previous task schema
 
-    const previousTaskSchemaIdNumber =
-      triggerFetchOfLatestTaskRunOfPreviousTaskSchema(
-        tenant,
-        taskId,
-        taskSchemaId,
-        fetchTaskRuns
-      );
+    const previousTaskSchemaIdNumber = triggerFetchOfLatestTaskRunOfPreviousTaskSchema(
+      tenant,
+      taskId,
+      taskSchemaId,
+      fetchTaskRuns
+    );
 
     setAreInstructionsLoading(true);
-    toast.promise(
-      () =>
-        generateSuggestedInstructions(
+    toast.promise(() => generateSuggestedInstructions(tenant, taskId, taskSchemaId, token, setInstructions), {
+      loading: 'Generating instructions...',
+      success: (data) => {
+        setAreInstructionsLoading(false);
+        setInstructions(data);
+        // We fetch the task run from the store without reactivity to avoid
+        // triggering a re-render of the component
+        const latestTaskRunOfPreviousTaskSchema = getLatestTaskRunFromStoreNotReactive(
           tenant,
           taskId,
-          taskSchemaId,
-          token,
-          setInstructions
-        ),
-      {
-        loading: 'Generating instructions...',
-        success: (data) => {
-          setAreInstructionsLoading(false);
-          setInstructions(data);
-          // We fetch the task run from the store without reactivity to avoid
-          // triggering a re-render of the component
-          const latestTaskRunOfPreviousTaskSchema =
-            getLatestTaskRunFromStoreNotReactive(
-              tenant,
-              taskId,
-              previousTaskSchemaIdNumber
-            );
-          if (
-            isInputGenerationSupported ||
-            !!latestTaskRunOfPreviousTaskSchema
-          ) {
-            // TODO: pass latest input if available
-            handleGeneratePlaygroundInput({
-              externalInstructions: data,
-              launchRuns: true,
-              baseInput: latestTaskRunOfPreviousTaskSchema?.task_input,
-            });
-          }
-          return 'Instructions generated successfully';
-        },
-        error: (error) => {
-          captureException(error);
-          setAreInstructionsLoading(false);
-          return 'Failed to generate instructions';
-        },
-      }
-    );
+          previousTaskSchemaIdNumber
+        );
+        if (isInputGenerationSupported || !!latestTaskRunOfPreviousTaskSchema) {
+          // TODO: pass latest input if available
+          handleGeneratePlaygroundInput({
+            externalInstructions: data,
+            launchRuns: true,
+            baseInput: latestTaskRunOfPreviousTaskSchema?.task_input,
+          });
+        }
+        return 'Instructions generated successfully';
+      },
+      error: (error) => {
+        captureException(error);
+        setAreInstructionsLoading(false);
+        return 'Failed to generate instructions';
+      },
+    });
   }, [
     generateSuggestedInstructions,
     tenant,
@@ -756,11 +744,7 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
 
   const { getUploadURL } = useUpload();
   const handleUploadFile = useCallback(
-    async (
-      formData: FormData,
-      hash: string,
-      onProgress?: (progress: number) => void
-    ) => {
+    async (formData: FormData, hash: string, onProgress?: (progress: number) => void) => {
       if (!tenant || !taskId || !token) return undefined;
       return getUploadURL({
         tenant,
@@ -794,20 +778,10 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
     [handleGeneratePlaygroundInput, toggleSettingsModal]
   );
 
-  const singleTaskLoading = useMemo(
-    () => taskIndexesLoading.some((l) => l),
-    [taskIndexesLoading]
-  );
+  const singleTaskLoading = useMemo(() => taskIndexesLoading.some((l) => l), [taskIndexesLoading]);
 
   // Load the initial task run or trigger the generation of the input and runs
-  const {
-    taskRun1,
-    taskRun2,
-    taskRun3,
-    taskRun1Loading,
-    taskRun2Loading,
-    taskRun3Loading,
-  } = usePlaygroundEffects({
+  const { taskRun1, taskRun2, taskRun3, taskRun1Loading, taskRun2Loading, taskRun3Loading } = usePlaygroundEffects({
     // We don't pass allAIModels here because we don't want the default model
     // to be a model that is not supported by the task schema mode.
     aiModels,
@@ -837,10 +811,7 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
     persistedVersionId,
   });
 
-  const taskRuns = useMemo(
-    () => [taskRun1, taskRun2, taskRun3],
-    [taskRun1, taskRun2, taskRun3]
-  );
+  const taskRuns = useMemo(() => [taskRun1, taskRun2, taskRun3], [taskRun1, taskRun2, taskRun3]);
   const filteredTaskRunIds = useMemo(() => {
     const runs = taskRuns.filter((taskRun) => !!taskRun) as TaskRun[];
     return runs.map((taskRun) => taskRun?.id ?? '');
@@ -852,13 +823,7 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
       taskIndexesLoading[1] || !!taskRun2Loading || !!streamedChunks[1],
       taskIndexesLoading[2] || !!taskRun3Loading || !!streamedChunks[2],
     ],
-    [
-      taskIndexesLoading,
-      taskRun1Loading,
-      taskRun2Loading,
-      taskRun3Loading,
-      streamedChunks,
-    ]
+    [taskIndexesLoading, taskRun1Loading, taskRun2Loading, taskRun3Loading, streamedChunks]
   );
 
   const onImportInput = useCallback(
@@ -871,9 +836,7 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
     [handleGeneratePlaygroundInput]
   );
 
-  const [improveVersionChangelog, setImproveVersionChangelog] = useState<
-    string[] | undefined
-  >(undefined);
+  const [improveVersionChangelog, setImproveVersionChangelog] = useState<string[] | undefined>(undefined);
 
   const handleRunTaskAndSaveInputAndParameters = useCallback(
     async (index: number) => {
@@ -893,36 +856,33 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
     generatedInput,
   });
 
-  const { versionsForRuns, showSaveAllVersions, onSaveAllVersions } =
-    useVersionsForTaskRunners({
-      tenant,
-      taskId,
-      taskRunners,
-      instructions,
-      temperature,
-    });
+  const { versionsForRuns, showSaveAllVersions, onSaveAllVersions } = useVersionsForTaskRunners({
+    tenant,
+    taskId,
+    taskRunners,
+    instructions,
+    temperature,
+  });
 
   const {
-    improveTaskRunVersion,
     updateTaskInstructions,
+    improveInstructions,
     oldInstructions,
     resetOldInstructions,
     isImproveVersionLoading,
-  } = useImproveTaskRunVersions({
+    cancelImproveInstructions,
+  } = useImproveInstructions({
     tenant,
     taskId,
     taskSchemaId,
-    taskRunners,
-    versionsForRuns,
     instructions,
     setInstructions,
     handleRunTasks,
     setImproveVersionChangelog,
+    variantId,
   });
 
-  const fetchAudioTranscription = useAudioTranscriptions(
-    (state) => state.fetchAudioTranscription
-  );
+  const fetchAudioTranscription = useAudioTranscriptions((state) => state.fetchAudioTranscription);
 
   const copyUrl = useCopyCurrentUrl();
 
@@ -935,6 +895,11 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
     if (!playgroundOutputRef) return;
     scrollTo(scrollRef, playgroundOutputRef);
   }, [playgroundOutputRef, scrollRef]);
+
+  const scrollToTop = useCallback(() => {
+    if (!scrollRef.current) return;
+    scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [scrollRef]);
 
   const onTryPromptClick = useCallback(async () => {
     if (isDisabled) return;
@@ -955,15 +920,9 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
   const onSaveTaskPreview = useCallback(async () => {
     if (!generatedInput) return;
 
-    const generatedInputWithVoid = mergeTaskInputAndVoid(
-      generatedInput,
-      voidInput
-    );
+    const generatedInputWithVoid = mergeTaskInputAndVoid(generatedInput, voidInput);
 
-    if (
-      typeof generatedInputWithVoid !== 'object' ||
-      generatedInputWithVoid === null
-    ) {
+    if (typeof generatedInputWithVoid !== 'object' || generatedInputWithVoid === null) {
       return;
     }
 
@@ -987,35 +946,29 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
     });
   }, [openEditTaskModal, checkIfAllowed, onSaveTaskPreview, variantId]);
 
-  const onShowEditSchemaModal = useCallback(async () => {
-    if (!checkIfAllowed()) return;
-    await onSaveTaskPreview();
-    openEditTaskModal({
-      mode: 'editSchema',
-      redirectToPlaygrounds: 'false',
-      variantId: variantId,
-    });
-  }, [openEditTaskModal, checkIfAllowed, onSaveTaskPreview, variantId]);
+  const onShowEditSchemaModal = useCallback(
+    async (message?: string) => {
+      if (!checkIfAllowed()) return;
+      await onSaveTaskPreview();
+      openEditTaskModal({
+        mode: 'editSchema',
+        redirectToPlaygrounds: 'false',
+        variantId: variantId,
+        prefilledMessage: message,
+      });
+    },
+    [openEditTaskModal, checkIfAllowed, onSaveTaskPreview, variantId]
+  );
 
   const useInstructionsAndTemperatureFromMajorVersion = useCallback(
     (version: MajorVersion) => {
       onResetTaskRunIds();
       setInstructions(version.properties.instructions);
       setTemperature(version.properties.temperature);
-      setVariantId(
-        !!version.properties.task_variant_id
-          ? version.properties.task_variant_id
-          : undefined
-      );
+      setVariantId(!!version.properties.task_variant_id ? version.properties.task_variant_id : undefined);
       setUserSelectedMajor(version.major);
     },
-    [
-      setInstructions,
-      setTemperature,
-      setUserSelectedMajor,
-      onResetTaskRunIds,
-      setVariantId,
-    ]
+    [setInstructions, setTemperature, setUserSelectedMajor, onResetTaskRunIds, setVariantId]
   );
 
   const onSetInstructions = useCallback(
@@ -1031,13 +984,7 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
     setInstructions(oldInstructions ?? '');
     resetOldInstructions();
     onResetTaskRunIds();
-  }, [
-    setImproveVersionChangelog,
-    resetOldInstructions,
-    oldInstructions,
-    setInstructions,
-    onResetTaskRunIds,
-  ]);
+  }, [setImproveVersionChangelog, resetOldInstructions, oldInstructions, setInstructions, onResetTaskRunIds]);
 
   const approveImprovedInstructions = useCallback(() => {
     setImproveVersionChangelog(undefined);
@@ -1046,132 +993,233 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
 
   const { isInDemoMode } = useDemoMode();
 
+  const playgroundState: PlaygroundState = useMemo(() => {
+    const models: SelectedModels = {
+      column_1: schemaModels[0] ?? null,
+      column_2: schemaModels[1] ?? null,
+      column_3: schemaModels[2] ?? null,
+    };
+
+    const result = {
+      agent_input: generatedInput as Record<string, unknown>,
+      agent_instructions: instructions,
+      agent_temperature: temperature,
+      agent_run_ids: filteredTaskRunIds,
+      selected_models: models,
+    };
+    return result;
+  }, [generatedInput, instructions, temperature, filteredTaskRunIds, schemaModels]);
+
+  const markToolCallAsDone = usePlaygroundChatStore((state) => state.markToolCallAsDone);
+
+  const { cancelScheduledPlaygroundMessage } = useScheduledMetaAgentMessages(
+    tenant,
+    taskId,
+    taskSchemaId,
+    token,
+    playgroundState,
+    scheduledPlaygroundStateMessage,
+    setScheduledPlaygroundStateMessage,
+    1000
+  );
+
+  const onToolCallChangeModels = useCallback(
+    (
+      columnsAndModels: {
+        column: number;
+        model: ModelOptional | undefined;
+      }[]
+    ) => {
+      const individualOptions: Record<number, RunTaskOptions> = {};
+      columnsAndModels.forEach((columnAndModel) => {
+        setSchemaModels(columnAndModel.column, columnAndModel.model);
+        if (columnAndModel.model) {
+          individualOptions[columnAndModel.column] = {
+            externalModel: columnAndModel.model,
+          };
+        }
+      });
+
+      saveToHistoryForParameters();
+      saveToHistoryForInput();
+
+      scrollToPlaygroundOutput();
+      markToolCallAsDone(taskId, ToolCallName.RUN_CURRENT_AGENT_ON_MODELS);
+      handleRunTasks(undefined, individualOptions);
+    },
+    [
+      handleRunTasks,
+      setSchemaModels,
+      saveToHistoryForParameters,
+      saveToHistoryForInput,
+      markToolCallAsDone,
+      scrollToPlaygroundOutput,
+      taskId,
+    ]
+  );
+
+  const onToolCallGenerateNewInput = useCallback(
+    async (instructions: string | undefined) => {
+      scrollToTop();
+      await handleGeneratePlaygroundInput({
+        launchRuns: true,
+        instructions,
+      });
+      scrollToPlaygroundOutput();
+    },
+    [handleGeneratePlaygroundInput, scrollToPlaygroundOutput, scrollToTop]
+  );
+
+  const onToolCallImproveInstructions = useCallback(
+    async (text: string, runId: string | undefined) => {
+      scrollToTop();
+      await improveInstructions(text, runId);
+    },
+    [improveInstructions, scrollToTop]
+  );
+
+  const onCancelChatToolCallOnPlayground = useCallback(() => {
+    cancelImproveInstructions();
+    onStopGeneratingInput();
+    cancelScheduledPlaygroundMessage();
+    onStopAllRuns();
+    setTimeout(() => {
+      onStopAllRuns();
+    }, 1000);
+  }, [cancelScheduledPlaygroundMessage, cancelImproveInstructions, onStopGeneratingInput, onStopAllRuns]);
+
   return (
-    <PageContainer
-      task={task}
-      isInitialized={isTaskInitialized}
-      name='Playground'
-      showCopyLink={false}
-      showBottomBorder={true}
-      rightBarChildren={
-        <div className='flex flex-row items-center gap-2 font-lato'>
-          <div className='text-gray-500 text-xs pr-1'>
-            Your data is not used for LLM training.
+    <div className='flex flex-row h-full w-full'>
+      <div className='flex h-full flex-1 overflow-hidden'>
+        <PageContainer
+          task={task}
+          isInitialized={isTaskInitialized}
+          name='Playground'
+          showCopyLink={false}
+          showBottomBorder={true}
+          rightBarChildren={
+            <div className='flex flex-row items-center gap-2 font-lato'>
+              <div className='text-gray-500 text-xs pr-1'>Your data is not used for LLM training.</div>
+              <Button variant='newDesign' icon={<Link16Regular />} onClick={copyUrl} className='w-9 h-9 px-0 py-0' />
+              <RunAgentsButton
+                showSaveAllVersions={showSaveAllVersions && !noCreditsLeft}
+                singleTaskLoading={singleTaskLoading}
+                inputLoading={inputLoading}
+                areInstructionsLoading={areInstructionsLoading}
+                onSaveAllVersions={onSaveAllVersions}
+                onTryPromptClick={onTryPromptClick}
+                onStopAllRuns={onStopAllRuns}
+              />
+            </div>
+          }
+        >
+          <div
+            className='flex flex-col w-full h-full overflow-y-auto'
+            ref={(element) => {
+              containerRef(element);
+              scrollRef.current = element;
+            }}
+          >
+            <div className='flex flex-col w-full'>
+              <PlaygroundInputContainer
+                inputSchema={inputSchema}
+                generatedInput={generatedInput}
+                handleGeneratePlaygroundInput={handleGeneratePlaygroundInput}
+                handleRunTasks={onUserRunTasks}
+                inputLoading={inputLoading}
+                areInstructionsLoading={areInstructionsLoading}
+                isImproveVersionLoading={isImproveVersionLoading || areInstructionsLoading}
+                oldInstructions={oldInstructions}
+                onEdit={onEdit}
+                onImportInput={onImportInput}
+                singleTaskLoading={singleTaskLoading}
+                toggleSettingsModal={toggleSettingsModal}
+                instructions={instructions}
+                setInstructions={onSetInstructions}
+                temperature={temperature}
+                setTemperature={setTemperature}
+                improveVersionChangelog={improveVersionChangelog}
+                resetImprovedInstructions={resetImprovedInstructions}
+                approveImprovedInstructions={approveImprovedInstructions}
+                isPreviousAvailableForParameters={isPreviousAvailableForParameters}
+                isNextAvailableForParameters={isNextAvailableForParameters}
+                moveToPreviousForParameters={moveToPreviousForParameters}
+                moveToNextForParameters={moveToNextForParameters}
+                isPreviousAvailableForInput={isPreviousAvailableForInput}
+                isNextAvailableForInput={isNextAvailableForInput}
+                moveToPreviousForInput={moveToPreviousForInput}
+                moveToNextForInput={moveToNextForInput}
+                isInputGenerationSupported={isInputGenerationSupported}
+                onShowEditDescriptionModal={onShowEditDescriptionModal}
+                onShowEditSchemaModal={onShowEditSchemaModal}
+                fetchAudioTranscription={fetchAudioTranscription}
+                handleUploadFile={handleUploadFile}
+                maxHeight={containerHeight - 50}
+                matchedMajorVersion={matchedMajorVersion}
+                majorVersions={majorVersions}
+                useInstructionsAndTemperatureFromMajorVersion={useInstructionsAndTemperatureFromMajorVersion}
+                onToolsChange={updateTaskInstructions}
+                onStopGeneratingInput={onStopGeneratingInput}
+                isInDemoMode={isInDemoMode}
+              />
+              <div ref={playgroundOutputRef} className='flex w-full'>
+                <PlaygroundOutput
+                  // We pass allAIModels here because we want to display all models
+                  // and disable the ones that are not supported by the task schema mode.
+                  aiModels={allAIModels}
+                  areInstructionsLoading={areInstructionsLoading}
+                  errorForModels={errorForModels}
+                  generatedInput={generatedInput}
+                  improveInstructions={improveInstructions}
+                  models={schemaModels}
+                  onModelsChange={setModelsAndRunTask}
+                  outputSchema={outputSchema}
+                  showDiffMode={showDiffMode}
+                  show2ColumnLayout={show2ColumnLayout}
+                  setShowDiffMode={setShowDiffMode}
+                  setShow2ColumnLayout={setShow2ColumnLayout}
+                  taskId={taskId}
+                  taskSchemaId={taskSchemaId}
+                  taskRunners={taskRunners}
+                  tenant={tenant}
+                  onShowEditDescriptionModal={onShowEditDescriptionModal}
+                  onShowEditSchemaModal={onShowEditSchemaModal}
+                  versionsForRuns={versionsForRuns}
+                  maxHeight={containerHeight}
+                  isInDemoMode={isInDemoMode}
+                />
+              </div>
+              <TaskRunModal
+                tenant={tenant}
+                onClose={onClose}
+                open={!!taskRunId}
+                taskId={taskId}
+                taskRunId={taskRunId ?? ''}
+                taskRunIds={!!taskRunId ? filteredTaskRunIds : []}
+                taskSchemaIdFromParams={taskSchemaId}
+              />
+              <PlaygroundInputSettingsModal
+                onModalGenerateInput={onModalGenerateInput}
+                toggleModal={toggleSettingsModal}
+                open={settingsModalVisible}
+              />
+            </div>
           </div>
-          <Button
-            variant='newDesign'
-            icon={<Link16Regular />}
-            onClick={copyUrl}
-            className='w-9 h-9 px-0 py-0'
-          />
-          <RunAgentsButton
-            showSaveAllVersions={showSaveAllVersions && !noCreditsLeft}
-            singleTaskLoading={singleTaskLoading}
-            inputLoading={inputLoading}
-            areInstructionsLoading={areInstructionsLoading}
-            onSaveAllVersions={onSaveAllVersions}
-            onTryPromptClick={onTryPromptClick}
-            onStopAllRuns={onStopAllRuns}
-          />
-        </div>
-      }
-    >
-      <div
-        className='flex flex-col w-full h-full overflow-y-auto'
-        ref={(element) => {
-          containerRef(element);
-          scrollRef.current = element;
-        }}
-      >
-        <div className='flex flex-col w-full'>
-          <PlaygroundInputContainer
-            inputSchema={inputSchema}
-            generatedInput={generatedInput}
-            handleGeneratePlaygroundInput={handleGeneratePlaygroundInput}
-            handleRunTasks={onUserRunTasks}
-            inputLoading={inputLoading}
-            areInstructionsLoading={areInstructionsLoading}
-            isImproveVersionLoading={
-              isImproveVersionLoading || areInstructionsLoading
-            }
-            oldInstructions={oldInstructions}
-            onEdit={onEdit}
-            onImportInput={onImportInput}
-            singleTaskLoading={singleTaskLoading}
-            toggleSettingsModal={toggleSettingsModal}
-            instructions={instructions}
-            setInstructions={onSetInstructions}
-            temperature={temperature}
-            setTemperature={setTemperature}
-            improveVersionChangelog={improveVersionChangelog}
-            resetImprovedInstructions={resetImprovedInstructions}
-            approveImprovedInstructions={approveImprovedInstructions}
-            isPreviousAvailableForParameters={isPreviousAvailableForParameters}
-            isNextAvailableForParameters={isNextAvailableForParameters}
-            moveToPreviousForParameters={moveToPreviousForParameters}
-            moveToNextForParameters={moveToNextForParameters}
-            isPreviousAvailableForInput={isPreviousAvailableForInput}
-            isNextAvailableForInput={isNextAvailableForInput}
-            moveToPreviousForInput={moveToPreviousForInput}
-            moveToNextForInput={moveToNextForInput}
-            isInputGenerationSupported={isInputGenerationSupported}
-            onShowEditDescriptionModal={onShowEditDescriptionModal}
-            onShowEditSchemaModal={onShowEditSchemaModal}
-            fetchAudioTranscription={fetchAudioTranscription}
-            handleUploadFile={handleUploadFile}
-            maxHeight={containerHeight - 50}
-            matchedMajorVersion={matchedMajorVersion}
-            majorVersions={majorVersions}
-            useInstructionsAndTemperatureFromMajorVersion={
-              useInstructionsAndTemperatureFromMajorVersion
-            }
-            onToolsChange={updateTaskInstructions}
-            onStopGeneratingInput={onStopGeneratingInput}
-            isInDemoMode={isInDemoMode}
-          />
-          <div ref={playgroundOutputRef} className='flex w-full'>
-            <PlaygroundOutput
-              // We pass allAIModels here because we want to display all models
-              // and disable the ones that are not supported by the task schema mode.
-              aiModels={allAIModels}
-              areInstructionsLoading={areInstructionsLoading}
-              errorForModels={errorForModels}
-              generatedInput={generatedInput}
-              improveTaskRunVersion={improveTaskRunVersion}
-              models={schemaModels}
-              onModelsChange={setModelsAndRunTask}
-              outputSchema={outputSchema}
-              showDiffMode={showDiffMode}
-              show2ColumnLayout={show2ColumnLayout}
-              setShowDiffMode={setShowDiffMode}
-              setShow2ColumnLayout={setShow2ColumnLayout}
-              taskId={taskId}
-              taskSchemaId={taskSchemaId}
-              taskRunners={taskRunners}
-              tenant={tenant}
-              onShowEditDescriptionModal={onShowEditDescriptionModal}
-              onShowEditSchemaModal={onShowEditSchemaModal}
-              versionsForRuns={versionsForRuns}
-              maxHeight={containerHeight}
-              isInDemoMode={isInDemoMode}
-            />
-          </div>
-          <TaskRunModal
-            tenant={tenant}
-            onClose={onClose}
-            open={!!taskRunId}
-            taskId={taskId}
-            taskRunId={taskRunId ?? ''}
-            taskRunIds={!!taskRunId ? filteredTaskRunIds : []}
-            taskSchemaIdFromParams={taskSchemaId}
-          />
-          <PlaygroundInputSettingsModal
-            onModalGenerateInput={onModalGenerateInput}
-            toggleModal={toggleSettingsModal}
-            open={settingsModalVisible}
-          />
-        </div>
+        </PageContainer>
       </div>
-    </PageContainer>
+      <PlaygroundChat
+        tenant={tenant}
+        taskId={taskId}
+        schemaId={taskSchemaId}
+        playgroundState={playgroundState}
+        onShowEditSchemaModal={onShowEditSchemaModal}
+        improveInstructions={onToolCallImproveInstructions}
+        changeModels={onToolCallChangeModels}
+        generateNewInput={onToolCallGenerateNewInput}
+        onCancelChatToolCallOnPlayground={onCancelChatToolCallOnPlayground}
+        scrollToInput={scrollToTop}
+        scrollToOutput={scrollToPlaygroundOutput}
+      />
+    </div>
   );
 }

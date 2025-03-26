@@ -79,19 +79,9 @@ const meta: Meta<typeof Button> = {
       </div>
       <div className='flex flex-col gap-2 items-start'>
         <div>F Icon Dis</div>
-        <Button
-          size='icon-lg'
-          fluentIcon={AddCircleFilled}
-          {...rest}
-          disabled
-        />
+        <Button size='icon-lg' fluentIcon={AddCircleFilled} {...rest} disabled />
         <Button size='icon' fluentIcon={AddCircleFilled} {...rest} disabled />
-        <Button
-          size='icon-sm'
-          fluentIcon={AddCircleFilled}
-          {...rest}
-          disabled
-        />
+        <Button size='icon-sm' fluentIcon={AddCircleFilled} {...rest} disabled />
       </div>
       <div className='flex flex-col gap-2 items-start'>
         <div>F Icon Load</div>
@@ -101,24 +91,9 @@ const meta: Meta<typeof Button> = {
       </div>
       <div className='flex flex-col gap-2 items-start'>
         <div>F Icon Circ</div>
-        <Button
-          shape='circle'
-          size='icon-lg'
-          fluentIcon={AddCircleFilled}
-          {...rest}
-        />
-        <Button
-          shape='circle'
-          size='icon'
-          fluentIcon={AddCircleFilled}
-          {...rest}
-        />
-        <Button
-          shape='circle'
-          size='icon-sm'
-          fluentIcon={AddCircleFilled}
-          {...rest}
-        />
+        <Button shape='circle' size='icon-lg' fluentIcon={AddCircleFilled} {...rest} />
+        <Button shape='circle' size='icon' fluentIcon={AddCircleFilled} {...rest} />
+        <Button shape='circle' size='icon-sm' fluentIcon={AddCircleFilled} {...rest} />
       </div>
       <div className='flex flex-col gap-2 items-start'>
         <div>L Icon</div>

@@ -18,13 +18,7 @@ type FieldDescriptionExamplesProps = {
 };
 
 export function FieldDescriptionExamples(props: FieldDescriptionExamplesProps) {
-  const {
-    schema,
-    fieldType,
-    className,
-    showExamples,
-    onShowEditDescriptionModal,
-  } = props;
+  const { schema, fieldType, className, showExamples, onShowEditDescriptionModal } = props;
   const description = schema?.description;
   const examples = schema?.examples;
 
@@ -64,13 +58,7 @@ export function FieldDescriptionExamples(props: FieldDescriptionExamplesProps) {
   const examplesContent = useMemo(() => {
     const isExamplesSupported = fieldType === 'string' || fieldType === 'html';
     const isEnum = !!schema && 'enum' in schema;
-    if (
-      !showExamples ||
-      !isExamplesSupported ||
-      isEnum ||
-      !examples ||
-      examples.length === 0
-    ) {
+    if (!showExamples || !isExamplesSupported || isEnum || !examples || examples.length === 0) {
       return null;
     }
     return (
@@ -95,21 +83,13 @@ export function FieldDescriptionExamples(props: FieldDescriptionExamplesProps) {
         {fieldType === 'string' ? (
           <div className={cx('flex-1 flex items-center gap-1')}>
             {examples.map((example, index) => (
-              <Badge
-                key={index}
-                variant='secondary'
-                className='font-medium text-[13px]'
-              >
+              <Badge key={index} variant='secondary' className='font-medium text-[13px]'>
                 {example as string}
               </Badge>
             ))}
           </div>
         ) : (
-          <HTMLValueViewer
-            value={examples[0] as string}
-            keyPath=''
-            defs={undefined}
-          />
+          <HTMLValueViewer value={examples[0] as string} keyPath='' defs={undefined} />
         )}
       </div>
     );

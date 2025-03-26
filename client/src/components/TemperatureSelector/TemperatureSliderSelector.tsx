@@ -9,20 +9,12 @@ type TemperatureSliderSelectorProps = {
   setTemperature: (value: number) => void;
 };
 
-export function TemperatureSliderSelector(
-  props: TemperatureSliderSelectorProps
-) {
+export function TemperatureSliderSelector(props: TemperatureSliderSelectorProps) {
   const { temperature, setTemperature } = props;
 
   return (
     <div className='w-full'>
-      <SliderWithInput
-        min={0}
-        max={MAX_TEMPERATURE}
-        step={0.1}
-        value={temperature}
-        onChange={setTemperature}
-      />
+      <SliderWithInput min={0} max={MAX_TEMPERATURE} step={0.1} value={temperature} onChange={setTemperature} />
     </div>
   );
 }

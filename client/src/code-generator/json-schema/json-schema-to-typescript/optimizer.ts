@@ -4,11 +4,7 @@ import { generateType } from './generator';
 import { AST, T_ANY, T_UNKNOWN } from './types/AST';
 import { Options } from '.';
 
-export function optimize(
-  ast: AST,
-  options: Options,
-  processed = new Set<AST>()
-): AST {
+export function optimize(ast: AST, options: Options, processed = new Set<AST>()): AST {
   if (processed.has(ast)) {
     return ast;
   }
@@ -22,9 +18,7 @@ export function optimize(
       });
     case 'INTERFACE':
       return Object.assign(ast, {
-        params: ast.params.map((_) =>
-          Object.assign(_, { ast: optimize(_.ast, options, processed) })
-        ),
+        params: ast.params.map((_) => Object.assign(_, { ast: optimize(_.ast, options, processed) })),
       });
     case 'INTERSECTION':
     case 'UNION':
@@ -47,23 +41,16 @@ export function optimize(
       if (
         optimizedAST.params.every((_) => {
           const a = generateType(omitStandaloneName(_), options);
-          const b = generateType(
-            omitStandaloneName(optimizedAST.params[0]),
-            options
-          );
+          const b = generateType(omitStandaloneName(optimizedAST.params[0]), options);
           return a === b;
         }) &&
         optimizedAST.params.some((_) => _.standaloneName !== undefined)
       ) {
-        optimizedAST.params = optimizedAST.params.filter(
-          (_) => _.standaloneName !== undefined
-        );
+        optimizedAST.params = optimizedAST.params.filter((_) => _.standaloneName !== undefined);
       }
 
       // [A, B, B] -> [A, B]
-      const params = uniqBy(optimizedAST.params, (_) =>
-        generateType(_, options)
-      );
+      const params = uniqBy(optimizedAST.params, (_) => generateType(_, options));
       if (params.length !== optimizedAST.params.length) {
         optimizedAST.params = params;
       }

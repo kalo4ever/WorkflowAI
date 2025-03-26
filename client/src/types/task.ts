@@ -1,9 +1,5 @@
 import { JsonSchema } from './json_schema';
-import { TaskGenerateResponse } from './workflowAI';
-import {
-  SerializableTaskVariant,
-  TaskSchemaResponse,
-} from './workflowAI/models';
+import { TaskSchemaResponse } from './workflowAI/models';
 
 /**
  * A Task represents a unit of work of the AI
@@ -17,11 +13,6 @@ export interface Task {
   output_class_id: string;
 }
 
-export type TaskGenerateResponseWithSchemas = TaskGenerateResponse & {
-  input_schema: JsonSchema;
-  output_schema: JsonSchema;
-};
-
 export type SerializableTaskIOWithSchema = {
   /**
    * the version of the schema definition. Titles and descriptions are ignored.
@@ -33,18 +24,7 @@ export type SerializableTaskIOWithSchema = {
   json_schema: JsonSchema;
 };
 
-export type SerializableTaskVariantWithSchema = Omit<
-  SerializableTaskVariant,
-  'input_schema' | 'output_schema'
-> & {
-  input_schema: SerializableTaskIOWithSchema;
-  output_schema: SerializableTaskIOWithSchema;
-};
-
-export type TaskSchemaResponseWithSchema = Omit<
-  TaskSchemaResponse,
-  'input_schema' | 'output_schema'
-> & {
+export type TaskSchemaResponseWithSchema = Omit<TaskSchemaResponse, 'input_schema' | 'output_schema'> & {
   input_schema: SerializableTaskIOWithSchema;
   output_schema: SerializableTaskIOWithSchema;
 };

@@ -43,8 +43,7 @@ export const AI_PROVIDERS_METADATA: Record<Provider, AIProviderMetadata> = {
   amazon_bedrock: {
     name: 'Amazon Bedrock',
     icon: <AmazonBedrockIcon />,
-    documentationUrl:
-      'https://docs.aws.amazon.com/bedrock/latest/userguide/getting-started-api.html',
+    documentationUrl: 'https://docs.aws.amazon.com/bedrock/latest/userguide/getting-started-api.html',
     providerSupported: false,
   },
   azure_openai: {
@@ -105,16 +104,11 @@ export function getModelPriceForSorting(model: ModelResponse) {
     return undefined;
   }
 
-  if (
-    metadata.price_per_input_token_usd === undefined ||
-    metadata.price_per_output_token_usd === undefined
-  ) {
+  if (metadata.price_per_input_token_usd === undefined || metadata.price_per_output_token_usd === undefined) {
     return undefined;
   }
 
-  return (
-    metadata.price_per_input_token_usd + metadata.price_per_output_token_usd
-  );
+  return metadata.price_per_input_token_usd + metadata.price_per_output_token_usd;
 }
 
 export function pricingBetweenModelsComparator(reversed: boolean) {
@@ -127,9 +121,7 @@ export function pricingBetweenModelsComparator(reversed: boolean) {
       if (bHasPricePerRun) {
         return (
           //@ts-expect-error we know that average_cost_per_run_usd is a number from the null checks above
-          (b.model.average_cost_per_run_usd -
-            a.model.average_cost_per_run_usd) *
-          factor
+          (b.model.average_cost_per_run_usd - a.model.average_cost_per_run_usd) * factor
         );
       }
 
@@ -144,10 +136,7 @@ export function pricingBetweenModelsComparator(reversed: boolean) {
     const aFallbackSortingPrice = getModelPriceForSorting(a.model);
     const bFallbackSortingPrice = getModelPriceForSorting(b.model);
 
-    if (
-      aFallbackSortingPrice === undefined ||
-      bFallbackSortingPrice === undefined
-    ) {
+    if (aFallbackSortingPrice === undefined || bFallbackSortingPrice === undefined) {
       return 0;
     }
 
@@ -169,11 +158,7 @@ export function intelligenceComparator(reversed: boolean) {
       return 1;
     }
 
-    return (
-      ((b.model.metadata?.quality_index ?? 0) -
-        (a.model.metadata?.quality_index ?? 0)) *
-      factor
-    );
+    return ((b.model.metadata?.quality_index ?? 0) - (a.model.metadata?.quality_index ?? 0)) * factor;
   };
 }
 
@@ -189,10 +174,7 @@ export function latestComparator(reversed: boolean) {
   };
 }
 
-export function modelComparator(
-  sort: 'intelligence' | 'price' | 'latest',
-  reversed: boolean
-) {
+export function modelComparator(sort: 'intelligence' | 'price' | 'latest', reversed: boolean) {
   switch (sort) {
     case 'intelligence':
       return intelligenceComparator(reversed);

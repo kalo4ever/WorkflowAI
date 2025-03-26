@@ -9,17 +9,13 @@ type VersionFilterPickerButtonProps = {
   onClick: () => void;
 };
 
-export function VersionFilterPickerButton(
-  props: VersionFilterPickerButtonProps
-) {
+export function VersionFilterPickerButton(props: VersionFilterPickerButtonProps) {
   const { title, isSelected, onClick } = props;
   return (
     <div
       className={cx(
         'py-1 rounded-[2px] text-[13px] text-gray-500 cursor-pointer px-2 font-lato border hover:text-gray-800',
-        isSelected && !!title
-          ? 'bg-white border-gray-300 text-gray-800 shadow-sm'
-          : 'border-transparent',
+        isSelected && !!title ? 'bg-white border-gray-300 text-gray-800 shadow-sm' : 'border-transparent',
         isSelected && !title && 'text-gray-800'
       )}
       onClick={onClick}
@@ -82,12 +78,7 @@ export function VersionFilterPicker(props: VersionFilterPickerProps) {
     }
 
     return options;
-  }, [
-    numberOfAllVersions,
-    numberOfDeployedVersions,
-    numberOfFavoriteVersions,
-    schema_id,
-  ]);
+  }, [numberOfAllVersions, numberOfDeployedVersions, numberOfFavoriteVersions, schema_id]);
 
   if (options.length === 0 || options.length === 1) {
     return null;
@@ -98,11 +89,7 @@ export function VersionFilterPicker(props: VersionFilterPickerProps) {
       {options.map((option) => (
         <SimpleTooltip
           key={option.title}
-          content={
-            <div className='whitespace-break-spaces text-center'>
-              {option.tooltipText}
-            </div>
-          }
+          content={<div className='whitespace-break-spaces text-center'>{option.tooltipText}</div>}
         >
           <div>
             <VersionFilterPickerButton

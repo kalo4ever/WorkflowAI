@@ -18,18 +18,8 @@ type ApiTabsContentProps = TaskSchemaParams & {
 };
 
 export function ApiTabsContent(props: ApiTabsContentProps) {
-  const {
-    tenant,
-    taskId,
-    taskSchemaId,
-    taskSchema,
-    taskRun,
-    version,
-    environment,
-    language,
-    apiUrl,
-    secondaryInput,
-  } = props;
+  const { tenant, taskId, taskSchemaId, taskSchema, taskRun, version, environment, language, apiUrl, secondaryInput } =
+    props;
 
   if (!taskSchema || !version || !language) {
     return <Loader centered />;

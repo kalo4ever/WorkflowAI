@@ -4,10 +4,7 @@ import { ArrowUpload16Regular } from '@fluentui/react-icons';
 import { useCallback, useMemo, useState } from 'react';
 import { ObjectViewer } from '@/components';
 import { Button } from '@/components/ui/Button';
-import {
-  InitInputFromSchemaMode,
-  initInputFromSchema,
-} from '@/lib/schemaUtils';
+import { InitInputFromSchemaMode, initInputFromSchema } from '@/lib/schemaUtils';
 import { mergeTaskInputAndVoid } from '@/lib/schemaVoidUtils';
 import { GeneralizedTaskInput, JsonSchema } from '@/types';
 import { FileInputRequest } from '@/types/workflowAI';
@@ -32,9 +29,7 @@ type PlaygroundInputProps = {
   isInputGenerationSupported: boolean;
   onShowEditDescriptionModal: () => void;
   onShowEditSchemaModal: () => void;
-  fetchAudioTranscription: (
-    payload: FileInputRequest
-  ) => Promise<string | undefined>;
+  fetchAudioTranscription: (payload: FileInputRequest) => Promise<string | undefined>;
   handleUploadFile: (
     formData: FormData,
     hash: string,
@@ -90,11 +85,7 @@ export function PlaygroundInput(props: PlaygroundInputProps) {
 
   const voidInput = useMemo(() => {
     if (!inputSchema) return undefined;
-    return initInputFromSchema(
-      inputSchema,
-      inputSchema.$defs,
-      InitInputFromSchemaMode.VOID
-    );
+    return initInputFromSchema(inputSchema, inputSchema.$defs, InitInputFromSchemaMode.VOID);
   }, [inputSchema]);
 
   const generatedInputWithVoid = useMemo(() => {
@@ -145,9 +136,7 @@ export function PlaygroundInput(props: PlaygroundInputProps) {
               variant='newDesign'
               icon={<ArrowUpload16Regular className='h-4 w-4' />}
               onClick={openImportModal}
-              disabled={
-                singleTaskLoading || areInstructionsLoading || inputLoading
-              }
+              disabled={singleTaskLoading || areInstructionsLoading || inputLoading}
               className='h-7 w-7 mr-2'
               size='none'
             />
@@ -161,11 +150,7 @@ export function PlaygroundInput(props: PlaygroundInputProps) {
               onStopGeneratingInput={onStopGeneratingInput}
             />
 
-            <PlaygroundImportModal
-              open={importModalOpen}
-              onClose={closeImportModal}
-              onImport={onImportInput}
-            />
+            <PlaygroundImportModal open={importModalOpen} onClose={closeImportModal} onImport={onImportInput} />
           </div>
         )}
       </div>

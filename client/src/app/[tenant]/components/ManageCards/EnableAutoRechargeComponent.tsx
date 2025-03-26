@@ -2,32 +2,28 @@ import { useCallback, useMemo, useState } from 'react';
 import { Switch } from '@/components/ui/Switch';
 import { usePayments } from '@/store/payments';
 import { TenantID } from '@/types/aliases';
-import { OrganizationSettings } from '@/types/workflowAI';
+import { TenantData } from '@/types/workflowAI';
 import { BottomButtonBar } from './BottomButtonBar';
 import { CurrencyInput } from './CurrencyInput';
 
 type EnableAutoRechargeContentProps = {
   tenant: TenantID | undefined;
-  organizationSettings: OrganizationSettings;
+  organizationSettings: TenantData;
   setIsOpen: (isOpen: boolean) => void;
 };
 
-export function EnableAutoRechargeContent(
-  props: EnableAutoRechargeContentProps
-) {
+export function EnableAutoRechargeContent(props: EnableAutoRechargeContentProps) {
   const { tenant, organizationSettings, setIsOpen } = props;
 
-  const [isOn, setIsOn] = useState<boolean>(
-    organizationSettings.automatic_payment_enabled ?? false
+  const [isOn, setIsOn] = useState<boolean>(organizationSettings.automatic_payment_enabled ?? false);
+
+  const [automaticPaymentThreshold, setAutomaticPaymentThreshold] = useState<number | undefined>(
+    organizationSettings.automatic_payment_threshold ?? 10
   );
 
-  const [automaticPaymentThreshold, setAutomaticPaymentThreshold] = useState<
-    number | undefined
-  >(organizationSettings.automatic_payment_threshold ?? 10);
-
-  const [balanceToMaintain, setBalanceToMaintain] = useState<
-    number | undefined
-  >(organizationSettings.automatic_payment_balance_to_maintain ?? 50);
+  const [balanceToMaintain, setBalanceToMaintain] = useState<number | undefined>(
+    organizationSettings.automatic_payment_balance_to_maintain ?? 50
+  );
 
   const isSaveActive = useMemo(() => {
     if (!isOn && !organizationSettings.automatic_payment_enabled) {
@@ -36,10 +32,8 @@ export function EnableAutoRechargeContent(
 
     if (
       isOn === organizationSettings.automatic_payment_enabled &&
-      balanceToMaintain ===
-        organizationSettings.automatic_payment_balance_to_maintain &&
-      automaticPaymentThreshold ===
-        organizationSettings.automatic_payment_threshold
+      balanceToMaintain === organizationSettings.automatic_payment_balance_to_maintain &&
+      automaticPaymentThreshold === organizationSettings.automatic_payment_threshold
     ) {
       return false;
     }
@@ -70,30 +64,16 @@ export function EnableAutoRechargeContent(
     organizationSettings.automatic_payment_threshold,
   ]);
 
-  const updateAutomaticPayment = usePayments(
-    (state) => state.updateAutomaticPayment
-  );
+  const updateAutomaticPayment = usePayments((state) => state.updateAutomaticPayment);
 
   const onSaveSettings = useCallback(async () => {
     const thresholdToSend = isOn ? automaticPaymentThreshold ?? null : null;
     const balanceToMaintainToSend = isOn ? balanceToMaintain ?? null : null;
 
-    await updateAutomaticPayment(
-      tenant,
-      isOn,
-      thresholdToSend,
-      balanceToMaintainToSend
-    );
+    await updateAutomaticPayment(tenant, isOn, thresholdToSend, balanceToMaintainToSend);
 
     setIsOpen(false);
-  }, [
-    tenant,
-    isOn,
-    automaticPaymentThreshold,
-    balanceToMaintain,
-    updateAutomaticPayment,
-    setIsOpen,
-  ]);
+  }, [tenant, isOn, automaticPaymentThreshold, balanceToMaintain, updateAutomaticPayment, setIsOpen]);
 
   return (
     <div className='flex flex-col h-full w-full overflow-hidden bg-custom-gradient-1 rounded-[2px]'>
@@ -102,14 +82,11 @@ export function EnableAutoRechargeContent(
       </div>
 
       <div className='flex flex-col px-4 py-2 gap-2'>
-        <div className='text-gray-900 font-medium text-[13px]'>
-          Automatic Recharge
-        </div>
+        <div className='text-gray-900 font-medium text-[13px]'>Automatic Recharge</div>
         <div className='flex flex-row gap-4 items-center'>
           <Switch checked={isOn} onCheckedChange={setIsOn} />
           <div className='text-gray-700 font-normal text-[13px]'>
-            Yes, automatically recharge my card when my credit balance falls
-            below a threshold
+            Yes, automatically recharge my card when my credit balance falls below a threshold
           </div>
         </div>
       </div>
@@ -117,29 +94,15 @@ export function EnableAutoRechargeContent(
       {isOn && (
         <div className='flex flex-col px-4 py-2 gap-2'>
           <div className='flex flex-col gap-1'>
-            <div className='text-gray-900 font-medium text-[13px]'>
-              When credit balance goes below
-            </div>
-            <CurrencyInput
-              amount={automaticPaymentThreshold}
-              setAmount={setAutomaticPaymentThreshold}
-            />
-            <div className='text-gray-500 font-normal text-[12px]'>
-              Enter an amount between $5 and $4902
-            </div>
+            <div className='text-gray-900 font-medium text-[13px]'>When credit balance goes below</div>
+            <CurrencyInput amount={automaticPaymentThreshold} setAmount={setAutomaticPaymentThreshold} />
+            <div className='text-gray-500 font-normal text-[12px]'>Enter an amount between $5 and $4902</div>
           </div>
 
           <div className='flex flex-col gap-1'>
-            <div className='text-gray-900 font-medium text-[13px]'>
-              Bring credit balance up to
-            </div>
-            <CurrencyInput
-              amount={balanceToMaintain}
-              setAmount={setBalanceToMaintain}
-            />
-            <div className='text-gray-500 font-normal text-[12px]'>
-              Enter an amount between $5.01 and $4902
-            </div>
+            <div className='text-gray-900 font-medium text-[13px]'>Bring credit balance up to</div>
+            <CurrencyInput amount={balanceToMaintain} setAmount={setBalanceToMaintain} />
+            <div className='text-gray-500 font-normal text-[12px]'>Enter an amount between $5.01 and $4902</div>
           </div>
         </div>
       )}

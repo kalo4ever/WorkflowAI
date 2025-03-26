@@ -1,9 +1,6 @@
 import { cn } from '@/lib/utils';
 
-function getColor(
-  intelligence: number,
-  allIntelligenceScores: number[] | undefined
-) {
+function getColor(intelligence: number, allIntelligenceScores: number[] | undefined) {
   if (!allIntelligenceScores?.length) return 'bg-gray-500';
 
   const sortedScores = [...allIntelligenceScores].sort((a, b) => b - a);
@@ -30,10 +27,7 @@ export function IntelliganceProgress(props: IntelliganceProgressProps) {
     <div className='flex flex-row h-full w-fit items-center'>
       <div className='flex flex-row flex-shrink-0 whitespace-nowrap items-center w-[40px] h-[8px]'>
         <div className='flex w-full h-2 bg-gray-200 rounded-[2px] overflow-clip'>
-          <div
-            className={cn('flex h-full', color)}
-            style={{ width: (40 * intelligence) / 100 }}
-          />
+          <div className={cn('flex h-full', color)} style={{ width: (40 * intelligence) / 100 }} />
         </div>
       </div>
     </div>

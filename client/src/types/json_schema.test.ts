@@ -6,38 +6,19 @@ const { simpleSchema } = taskSchemaFixture;
 describe('json_schema', () => {
   describe('getSubSchema', () => {
     it('correctly handlers refs', () => {
-      const value = getSubSchema(
-        simpleSchema,
-        simpleSchema.$defs,
-        'event_category'
-      );
+      const value = getSubSchema(simpleSchema, simpleSchema.$defs, 'event_category');
       expect(value.type).toEqual('string');
     });
 
     it('parses properties', () => {
-      const value = getSubSchema(
-        simpleSchema,
-        simpleSchema.$defs,
-        'event_participants_emails_addresses'
-      );
+      const value = getSubSchema(simpleSchema, simpleSchema.$defs, 'event_participants_emails_addresses');
       expect(value).toBeTruthy();
     });
 
     it('extracts enums', () => {
-      const value = getSubSchema(
-        simpleSchema,
-        simpleSchema.$defs,
-        'event_category'
-      );
+      const value = getSubSchema(simpleSchema, simpleSchema.$defs, 'event_category');
       expect(value).toEqual({
-        enum: [
-          'UNSPECIFIED',
-          'IN_PERSON_MEETING',
-          'REMOTE_MEETING',
-          'FLIGHT',
-          'TO_DO',
-          'BIRTHDAY',
-        ],
+        enum: ['UNSPECIFIED', 'IN_PERSON_MEETING', 'REMOTE_MEETING', 'FLIGHT', 'TO_DO', 'BIRTHDAY'],
         title: 'CalendarEventCategory',
         type: 'string',
         nullable: true,

@@ -4,37 +4,24 @@ import { traverse } from './utils';
 type Rule = (schema: JSONSchema) => boolean | void;
 const rules = new Map<string, Rule>();
 
-rules.set(
-  'Enum members and tsEnumNames must be of the same length',
-  (schema) => {
-    if (
-      schema.enum &&
-      schema.tsEnumNames &&
-      schema.enum.length !== schema.tsEnumNames.length
-    ) {
-      return false;
-    }
-  }
-);
-
-rules.set('tsEnumNames must be an array of strings', (schema) => {
-  if (
-    schema.tsEnumNames &&
-    schema.tsEnumNames.some((_) => typeof _ !== 'string')
-  ) {
+rules.set('Enum members and tsEnumNames must be of the same length', (schema) => {
+  if (schema.enum && schema.tsEnumNames && schema.enum.length !== schema.tsEnumNames.length) {
     return false;
   }
 });
 
-rules.set(
-  'When both maxItems and minItems are present, maxItems >= minItems',
-  (schema) => {
-    const { maxItems, minItems } = schema;
-    if (typeof maxItems === 'number' && typeof minItems === 'number') {
-      return maxItems >= minItems;
-    }
+rules.set('tsEnumNames must be an array of strings', (schema) => {
+  if (schema.tsEnumNames && schema.tsEnumNames.some((_) => typeof _ !== 'string')) {
+    return false;
   }
-);
+});
+
+rules.set('When both maxItems and minItems are present, maxItems >= minItems', (schema) => {
+  const { maxItems, minItems } = schema;
+  if (typeof maxItems === 'number' && typeof minItems === 'number') {
+    return maxItems >= minItems;
+  }
+});
 
 rules.set('When maxItems exists, maxItems >= 0', (schema) => {
   const { maxItems } = schema;

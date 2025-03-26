@@ -17,20 +17,13 @@ export function useVariants(props: UseVariantsProps) {
   const { tenant, taskId, versions, taskSchema, variantId } = props;
 
   const versionIdForVariantId = useMemo(() => {
-    return versions.find(
-      (version) => version.properties.task_variant_id === variantId
-    )?.id;
+    return versions.find((version) => version.properties.task_variant_id === variantId)?.id;
   }, [versions, variantId]);
 
   const { version } = useOrFetchVersion(tenant, taskId, versionIdForVariantId);
 
-  const inputSchema =
-    (version?.input_schema as JsonSchema) ??
-    (taskSchema?.input_schema.json_schema as JsonSchema);
-
-  const outputSchema =
-    (version?.output_schema as JsonSchema) ??
-    (taskSchema?.output_schema.json_schema as JsonSchema);
+  const inputSchema = (version?.input_schema as JsonSchema) ?? (taskSchema?.input_schema.json_schema as JsonSchema);
+  const outputSchema = (version?.output_schema as JsonSchema) ?? (taskSchema?.output_schema.json_schema as JsonSchema);
 
   return {
     inputSchema,
@@ -50,10 +43,7 @@ export function usePlaygroundVariants(props: UsePlaygroundVariantsProps) {
 
   const [variantId, setVariantId] = useState<string | undefined>(undefined);
 
-  const {
-    inputSchema: inputSchemaForVariantId,
-    outputSchema: outputSchemaForVariantId,
-  } = useVariants({
+  const { inputSchema: inputSchemaForVariantId, outputSchema: outputSchemaForVariantId } = useVariants({
     tenant,
     taskId,
     versions,

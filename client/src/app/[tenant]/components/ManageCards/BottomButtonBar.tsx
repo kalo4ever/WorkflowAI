@@ -11,14 +11,7 @@ type BottomButtonBarProps = {
 };
 
 export function BottomButtonBar(props: BottomButtonBarProps) {
-  const {
-    isActionDisabled,
-    onCancel,
-    onAction,
-    tooltipText,
-    actionText,
-    type,
-  } = props;
+  const { isActionDisabled, onCancel, onAction, tooltipText, actionText, type } = props;
   return (
     <div className='flex flex-row gap-2 items-center justify-between px-4 py-3'>
       <Button variant='newDesignGray' onClick={onCancel}>
@@ -26,12 +19,7 @@ export function BottomButtonBar(props: BottomButtonBarProps) {
       </Button>
       <SimpleTooltip content={tooltipText} side='top' tooltipDelay={100}>
         <div>
-          <Button
-            type={type}
-            variant='newDesignIndigo'
-            disabled={isActionDisabled}
-            onClick={onAction}
-          >
+          <Button type={type} variant='newDesignIndigo' disabled={isActionDisabled} onClick={onAction}>
             {actionText}
           </Button>
         </div>

@@ -50,12 +50,7 @@ export function GeneralSettingsContent(props: GeneralSettingsContentProps) {
     <div className='w-[530px] px-6 py-4 flex flex-col'>
       <div className='flex items-center justify-between w-full border-b pb-4'>
         <div className='text-slate-900 text-lg font-medium'>General</div>
-        <Button
-          lucideIcon={X}
-          variant='ghost'
-          onClick={onClose}
-          className='text-slate-500'
-        />
+        <Button lucideIcon={X} variant='ghost' onClick={onClose} className='text-slate-500' />
       </div>
       <div className='py-4 flex flex-col gap-4 text-slate-700 text-sm'>
         <div>AI Agent Name</div>

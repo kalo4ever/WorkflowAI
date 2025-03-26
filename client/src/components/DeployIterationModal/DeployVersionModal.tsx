@@ -1,14 +1,8 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/Dialog';
-import {
-  displayErrorToaster,
-  displaySuccessToaster,
-} from '@/components/ui/Sonner';
-import {
-  DEPLOY_ITERATION_MODAL_OPEN,
-  useQueryParamModal,
-} from '@/lib/globalModal';
+import { displayErrorToaster, displaySuccessToaster } from '@/components/ui/Sonner';
+import { DEPLOY_ITERATION_MODAL_OPEN, useQueryParamModal } from '@/lib/globalModal';
 import { useIsAllowed } from '@/lib/hooks/useIsAllowed';
 import { useTaskSchemaParams } from '@/lib/hooks/useTaskParams';
 import { useParsedSearchParams } from '@/lib/queryString';
@@ -23,11 +17,7 @@ import { useFindProviderConfigID } from '../ProviderKeysModal/useFindProviderCon
 import { DeployVersionConfirmModal } from './DeployVersionConfirmModal';
 import { DeployVersionContent } from './DeployVersionContent';
 
-export function useEnvDeploy(
-  tenant: TenantID,
-  taskId: TaskID,
-  taskSchemaId: TaskSchemaID | undefined
-) {
+export function useEnvDeploy(tenant: TenantID, taskId: TaskID, taskSchemaId: TaskSchemaID | undefined) {
   const deployVersion = useVersions((state) => state.deployVersion);
 
   const deployGroupToEnv = useCallback(
@@ -42,17 +32,10 @@ export function useEnvDeploy(
         return;
       }
       try {
-        await deployVersion(
-          tenant,
-          taskId,
-          taskSchemaId,
-          versionId,
-          iteration,
-          {
-            environment,
-            provider_config_id: providerConfigID,
-          }
-        );
+        await deployVersion(tenant, taskId, taskSchemaId, versionId, iteration, {
+          environment,
+          provider_config_id: providerConfigID,
+        });
         displaySuccessToaster(
           <span>
             {`Version ${versionText} successfully deployed to ${environment}`}
@@ -86,11 +69,10 @@ type NewTaskModalQueryParams = {
 const searchParams: (keyof NewTaskModalQueryParams)[] = ['deployVersionId'];
 
 export function useDeployVersionModal() {
-  const { open, openModal, closeModal } =
-    useQueryParamModal<NewTaskModalQueryParams>(
-      DEPLOY_ITERATION_MODAL_OPEN,
-      searchParams
-    );
+  const { open, openModal, closeModal } = useQueryParamModal<NewTaskModalQueryParams>(
+    DEPLOY_ITERATION_MODAL_OPEN,
+    searchParams
+  );
 
   const onDeployToClick = useCallback(
     (versionId: string | undefined) => {
@@ -111,8 +93,7 @@ export function DeployVersionModal() {
   const { tenant, taskId, taskSchemaId } = useTaskSchemaParams();
   const { open, closeModal: onClose } = useDeployVersionModal();
 
-  const { deployVersionId: currentVersionId } =
-    useParsedSearchParams('deployVersionId');
+  const { deployVersionId: currentVersionId } = useParsedSearchParams('deployVersionId');
 
   const {
     versions,
@@ -135,8 +116,7 @@ export function DeployVersionModal() {
 
   const currentIteration = currentVersion?.iteration;
 
-  const [versionsPerEnvironment, setVersionsPerEnvironment] =
-    useState<VersionsPerEnvironment>();
+  const [versionsPerEnvironment, setVersionsPerEnvironment] = useState<VersionsPerEnvironment>();
 
   useEffect(() => {
     setVersionsPerEnvironment((prev) => {
@@ -153,9 +133,7 @@ export function DeployVersionModal() {
       const newVersionsPerEnvironment = {
         ...versionsPerEnvironment,
         [environment]:
-          versionsPerEnvironment?.[environment]?.[0]?.id === currentVersion?.id
-            ? undefined
-            : [currentVersion],
+          versionsPerEnvironment?.[environment]?.[0]?.id === currentVersion?.id ? undefined : [currentVersion],
       };
       setVersionsPerEnvironment(newVersionsPerEnvironment);
       setShowConfirmModal(true);
@@ -176,14 +154,13 @@ export function DeployVersionModal() {
     }
   }, [open]);
 
-  const { providerConfigID: settingsProviderConfigID } =
-    useFindProviderConfigID({
-      tenant,
-      taskId,
-      taskSchemaId,
-      providerSettings: organizationSettings?.providers,
-      model: currentVersion?.model,
-    });
+  const { providerConfigID: settingsProviderConfigID } = useFindProviderConfigID({
+    tenant,
+    taskId,
+    taskSchemaId,
+    providerSettings: organizationSettings?.providers,
+    model: currentVersion?.model,
+  });
 
   const deployVersionToEnv = useEnvDeploy(tenant, taskId, taskSchemaId);
 
@@ -195,17 +172,11 @@ export function DeployVersionModal() {
     const providerConfigID = settingsProviderConfigID;
 
     const taskIterationsToAddToBenchmarks: Set<number> = new Set();
-    const environmentValues: VersionEnvironment[] = [
-      'dev',
-      'staging',
-      'production',
-    ];
+    const environmentValues: VersionEnvironment[] = ['dev', 'staging', 'production'];
 
     environmentValues.forEach((environment) => {
-      const currentTaskIteration =
-        versionsPerEnvironment?.[environment]?.[0]?.iteration;
-      const originalTaskIteration =
-        originalVersionsPerEnvironment?.[environment]?.[0]?.iteration;
+      const currentTaskIteration = versionsPerEnvironment?.[environment]?.[0]?.iteration;
+      const originalTaskIteration = originalVersionsPerEnvironment?.[environment]?.[0]?.iteration;
 
       if (
         !!currentIteration &&
@@ -214,13 +185,7 @@ export function DeployVersionModal() {
         currentTaskIteration !== originalTaskIteration
       ) {
         promises.push(
-          deployVersionToEnv(
-            environment,
-            currentVersionId,
-            versionText,
-            currentIteration,
-            providerConfigID
-          )
+          deployVersionToEnv(environment, currentVersionId, versionText, currentIteration, providerConfigID)
         );
         taskIterationsToAddToBenchmarks.add(currentIteration);
       }
@@ -229,13 +194,7 @@ export function DeployVersionModal() {
     await Promise.all(promises);
 
     if (taskIterationsToAddToBenchmarks.size > 0) {
-      await updateBenchmark(
-        tenant,
-        taskId,
-        taskSchemaId,
-        Array.from(taskIterationsToAddToBenchmarks),
-        []
-      );
+      await updateBenchmark(tenant, taskId, taskSchemaId, Array.from(taskIterationsToAddToBenchmarks), []);
     }
 
     onClose();

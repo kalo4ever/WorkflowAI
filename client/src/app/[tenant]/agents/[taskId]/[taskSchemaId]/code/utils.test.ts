@@ -1,9 +1,5 @@
 import { JsonSchema, JsonSchemaDefinitions } from '@/types';
-import {
-  JPG_SAMPLE_URL,
-  MP3_SAMPLE_URL,
-  generateInputsForCodeGeneration,
-} from './utils';
+import { JPG_SAMPLE_URL, MP3_SAMPLE_URL, generateInputsForCodeGeneration } from './utils';
 
 const $defs: JsonSchemaDefinitions = {
   Image: {

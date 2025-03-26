@@ -10,9 +10,7 @@ import { useOrFetchTask } from '@/store';
 import { SerializableTask } from '@/types/workflowAI';
 import { useAuth } from '../lib/AuthContext';
 
-function checkTaskVisibility(
-  task: SerializableTask | undefined
-): 'public' | 'private' | undefined {
+function checkTaskVisibility(task: SerializableTask | undefined): 'public' | 'private' | undefined {
   if (!task) {
     return undefined;
   }
@@ -60,14 +58,7 @@ export function PageViewTracker(props: PageViewTrackerProps) {
       user_device: userDevice,
       page_section: pageSection,
     });
-  }, [
-    tenant,
-    pathname,
-    isSignedIn,
-    taskOrganizationNameTaskName,
-    taskVisibility,
-    taskId,
-  ]);
+  }, [tenant, pathname, isSignedIn, taskOrganizationNameTaskName, taskVisibility, taskId]);
 
   return <>{children}</>;
 }

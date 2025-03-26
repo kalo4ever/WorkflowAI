@@ -4,10 +4,7 @@ import { PlusIcon } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { API_KEYS_MODAL_OPEN } from '@/lib/globalModal';
 import { useQueryParamModal } from '@/lib/globalModal';
-import {
-  useLoggedInTenantID,
-  useTaskSchemaParams,
-} from '@/lib/hooks/useTaskParams';
+import { useLoggedInTenantID, useTaskSchemaParams } from '@/lib/hooks/useTaskParams';
 import { TENANT_PLACEHOLDER } from '@/lib/routeFormatter';
 import { useOrFetchApiKeys, useOrFetchClerkUsers } from '@/store';
 import { useApiKeys } from '@/store/api_keys';
@@ -19,9 +16,7 @@ import { ApiKeysTable } from './ApiKeysTable';
 import { NewApiKeyModal } from './NewApiKeyModal';
 
 export function useApiKeysModal() {
-  return useQueryParamModal<{ apiKeysModalOpen: string | undefined }>(
-    API_KEYS_MODAL_OPEN
-  );
+  return useQueryParamModal<{ apiKeysModalOpen: string | undefined }>(API_KEYS_MODAL_OPEN);
 }
 
 type ApiKeysModalProps = {
@@ -31,11 +26,7 @@ type ApiKeysModalProps = {
 };
 
 export function ApiKeysModal(props: ApiKeysModalProps) {
-  const {
-    open: openFromProps,
-    closeModal: closeModalFromProps,
-    showClose = true,
-  } = props;
+  const { open: openFromProps, closeModal: closeModalFromProps, showClose = true } = props;
 
   const { user } = useAuth();
   const isLogged = !!user;
@@ -50,8 +41,7 @@ export function ApiKeysModal(props: ApiKeysModalProps) {
     return loggedInTenant ?? (TENANT_PLACEHOLDER as TenantID);
   }, [tenantFromParams, loggedInTenant]);
 
-  const { open: openFromHook, closeModal: closeModalFromHook } =
-    useApiKeysModal();
+  const { open: openFromHook, closeModal: closeModalFromHook } = useApiKeysModal();
 
   const open = openFromProps ?? openFromHook;
   const closeModal = closeModalFromProps ?? closeModalFromHook;
@@ -71,10 +61,7 @@ export function ApiKeysModal(props: ApiKeysModalProps) {
   const { usersByID } = useOrFetchClerkUsers(userIds);
 
   const [newApiKeyModalOpen, setNewApiKeyModalOpen] = useState(false);
-  const toggleNewApiKeyModal = useCallback(
-    () => setNewApiKeyModalOpen(!newApiKeyModalOpen),
-    [newApiKeyModalOpen]
-  );
+  const toggleNewApiKeyModal = useCallback(() => setNewApiKeyModalOpen(!newApiKeyModalOpen), [newApiKeyModalOpen]);
 
   const hasOpenedNewApiKeyModalIfNeeded = useRef(false);
   useEffect(() => {
@@ -83,25 +70,15 @@ export function ApiKeysModal(props: ApiKeysModalProps) {
       hasOpenedNewApiKeyModalIfNeeded.current = false;
       return;
     }
-    if (
-      apiKeys.length === 0 &&
-      !hasOpenedNewApiKeyModalIfNeeded.current &&
-      isLogged
-    ) {
+    if (apiKeys.length === 0 && !hasOpenedNewApiKeyModalIfNeeded.current && isLogged) {
       setNewApiKeyModalOpen(true);
     }
     hasOpenedNewApiKeyModalIfNeeded.current = true;
   }, [isInitialized, apiKeys.length, open, isLogged]);
 
-  const onCreate = useCallback(
-    (name: string) => createApiKey(tenant, name),
-    [createApiKey, tenant]
-  );
+  const onCreate = useCallback((name: string) => createApiKey(tenant, name), [createApiKey, tenant]);
 
-  const onDelete = useCallback(
-    (id: string) => deleteApiKey(tenant, id),
-    [deleteApiKey, tenant]
-  );
+  const onDelete = useCallback((id: string) => deleteApiKey(tenant, id), [deleteApiKey, tenant]);
 
   if (!isInitialized) {
     return null;
@@ -110,34 +87,17 @@ export function ApiKeysModal(props: ApiKeysModalProps) {
   return (
     <Dialog open={open} onOpenChange={closeModal}>
       <DialogContent className='p-0 flex flex-col gap-0 min-h-[50vh] w-fit max-h-[90vh] max-w-[90vw]'>
-        <DialogHeader
-          title='Secret Keys'
-          onClose={showClose ? closeModal : undefined}
-        >
-          <Button
-            variant='newDesign'
-            onClick={toggleNewApiKeyModal}
-            lucideIcon={PlusIcon}
-            disabled={!isLogged}
-          >
+        <DialogHeader title='Secret Keys' onClose={showClose ? closeModal : undefined}>
+          <Button variant='newDesign' onClick={toggleNewApiKeyModal} lucideIcon={PlusIcon} disabled={!isLogged}>
             New Secret Key
           </Button>
         </DialogHeader>
 
         <div className='flex-1 flex flex-col p-4 overflow-hidden'>
-          <ApiKeysTable
-            apiKeys={apiKeys}
-            usersByID={usersByID}
-            onDelete={onDelete}
-            isLogged={isLogged}
-          />
+          <ApiKeysTable apiKeys={apiKeys} usersByID={usersByID} onDelete={onDelete} isLogged={isLogged} />
         </div>
 
-        <NewApiKeyModal
-          open={newApiKeyModalOpen}
-          onClose={toggleNewApiKeyModal}
-          onCreate={onCreate}
-        />
+        <NewApiKeyModal open={newApiKeyModalOpen} onClose={toggleNewApiKeyModal} onCreate={onCreate} />
       </DialogContent>
     </Dialog>
   );

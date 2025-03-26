@@ -12,28 +12,15 @@ type TaskRunSearchFieldHintsProps = {
 };
 
 export function TaskRunSearchFieldHints(props: TaskRunSearchFieldHintsProps) {
-  const {
-    options,
-    onSelect,
-    isVisible,
-    onClose,
-    currentValue,
-    labelClassName,
-  } = props;
+  const { options, onSelect, isVisible, onClose, currentValue, labelClassName } = props;
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const [highlightedOptionIndex, setHighlightedOptionIndex] = useState<
-    number | undefined
-  >(undefined);
+  const [highlightedOptionIndex, setHighlightedOptionIndex] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node) &&
-        isVisible
-      ) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node) && isVisible) {
         onClose?.();
       }
     };
@@ -96,12 +83,7 @@ export function TaskRunSearchFieldHints(props: TaskRunSearchFieldHintsProps) {
   }, [options, currentValue]);
 
   return (
-    <div
-      className={cx(
-        'relative -ml-3',
-        (!isVisible || !options || options.length === 0) && 'hidden'
-      )}
-    >
+    <div className={cx('relative -ml-3', (!isVisible || !options || options.length === 0) && 'hidden')}>
       <div
         ref={containerRef}
         className='absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-[2px] shadow-md z-10 flex w-fit min-w-[180px]'

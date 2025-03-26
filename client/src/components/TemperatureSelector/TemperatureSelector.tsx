@@ -31,17 +31,13 @@ type TemperatureSelectorButtonProps = {
   onClick: () => void;
 };
 
-export function TemperatureSelectorButton(
-  props: TemperatureSelectorButtonProps
-) {
+export function TemperatureSelectorButton(props: TemperatureSelectorButtonProps) {
   const { title, activeIcon, inactiveIcon, isSelected, onClick } = props;
   return (
     <div
       className={cx(
         'py-1 rounded-[2px] text-[13px] text-gray-500 cursor-pointer px-2 font-lato border hover:text-gray-800',
-        isSelected && !!title
-          ? 'bg-white border-gray-300 text-gray-800 shadow-sm'
-          : 'border-transparent',
+        isSelected && !!title ? 'bg-white border-gray-300 text-gray-800 shadow-sm' : 'border-transparent',
         isSelected && !title && 'text-gray-800'
       )}
       onClick={onClick}
@@ -81,11 +77,7 @@ export function TemperatureSelector(props: TemperatureSelectorProps) {
         {TEMPERATURE_OPTIONS.map((option) => (
           <SimpleTooltip
             key={option.value}
-            content={
-              <div className='whitespace-break-spaces text-center'>
-                {option.tooltipText}
-              </div>
-            }
+            content={<div className='whitespace-break-spaces text-center'>{option.tooltipText}</div>}
           >
             <div>
               <TemperatureSelectorButton

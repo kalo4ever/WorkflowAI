@@ -13,9 +13,7 @@ type NotFoundForNotMatchingTenantProps = {
   tenant: TenantID;
 };
 
-export function NotFoundForNotMatchingTenant(
-  props: NotFoundForNotMatchingTenantProps
-) {
+export function NotFoundForNotMatchingTenant(props: NotFoundForNotMatchingTenantProps) {
   const { tenant } = props;
   const routeForSignUp = signUpRoute();
   const loggedInTenant = useLoggedInTenantID();
@@ -32,17 +30,13 @@ export function NotFoundForNotMatchingTenant(
             <div>
               This page belongs to {nameToShow} and is private.
               <br />
-              If you believe you should have access, please double-check that
-              you&apos;re logged into the correct account or contact a member of{' '}
-              {nameToShow}
+              If you believe you should have access, please double-check that you&apos;re logged into the correct
+              account or contact a member of {nameToShow}
             </div>
           ) : (
             <div>
               If you&apos;re part of {nameToShow}, please{' '}
-              <a
-                href={routeForSignUp}
-                className='underline hover:opacity-80 transition-opacity'
-              >
+              <a href={routeForSignUp} className='underline hover:opacity-80 transition-opacity'>
                 Log In
               </a>{' '}
               to view page.

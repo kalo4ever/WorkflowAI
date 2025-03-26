@@ -2,8 +2,7 @@ import { formatCurrency, formatFractionalCurrency } from './numberFormatters';
 
 describe('@/lib/formatters/numberFormatters', () => {
   describe('#formatFractionalCurrency', () => {
-    const usd = (num: number | null | undefined) =>
-      formatFractionalCurrency(num);
+    const usd = (num: number | null | undefined) => formatFractionalCurrency(num);
 
     it('is null when the value is not a number', () => {
       expect(usd(undefined)).toEqual(null);

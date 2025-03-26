@@ -2,11 +2,7 @@ import { enableMapSet, produce } from 'immer';
 import { create } from 'zustand';
 import { client } from '@/lib/api';
 import { TenantID } from '@/types/aliases';
-import {
-  APIKeyResponse,
-  APIKeyResponseCreated,
-  CreateAPIKeyRequest,
-} from '@/types/workflowAI';
+import { APIKeyResponse, APIKeyResponseCreated, CreateAPIKeyRequest } from '@/types/workflowAI';
 import { rootTenantPath } from './utils';
 
 enableMapSet();
@@ -16,10 +12,7 @@ interface ApiKeysState {
   isInitialized: boolean;
   isLoading: boolean;
   fetchApiKeys(tenant: TenantID): Promise<void>;
-  createApiKey(
-    tenant: TenantID | undefined,
-    name: string
-  ): Promise<APIKeyResponseCreated | undefined>;
+  createApiKey(tenant: TenantID | undefined, name: string): Promise<APIKeyResponseCreated | undefined>;
   deleteApiKey(tenant: TenantID, apiKeyId: string): Promise<void>;
 }
 
@@ -37,9 +30,7 @@ export const useApiKeys = create<ApiKeysState>((set, get) => ({
       })
     );
     try {
-      const apiKeys = await client.get<APIKeyResponse[]>(
-        `${rootTenantPath(tenant)}/api/keys`
-      );
+      const apiKeys = await client.get<APIKeyResponse[]>(`${rootTenantPath(tenant)}/api/keys`);
       set(
         produce((state: ApiKeysState) => {
           state.apiKeys = apiKeys;
@@ -61,12 +52,12 @@ export const useApiKeys = create<ApiKeysState>((set, get) => ({
     }
     let result: APIKeyResponseCreated | undefined = undefined;
     try {
-      const apiKey = await client.post<
-        CreateAPIKeyRequest,
-        APIKeyResponseCreated
-      >(`${rootTenantPath(tenant)}/api/keys`, {
-        name,
-      });
+      const apiKey = await client.post<CreateAPIKeyRequest, APIKeyResponseCreated>(
+        `${rootTenantPath(tenant)}/api/keys`,
+        {
+          name,
+        }
+      );
       set(
         produce((state: ApiKeysState) => {
           state.apiKeys.push(apiKey);

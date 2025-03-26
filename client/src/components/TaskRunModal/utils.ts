@@ -35,9 +35,7 @@ export function extractTextFromContent(content: unknown) {
   return { text, orginalText };
 }
 
-export function prepareMessageForDisplay(
-  message: Record<string, unknown>
-): MessagePreparedForDisplay {
+export function prepareMessageForDisplay(message: Record<string, unknown>): MessagePreparedForDisplay {
   let title: string;
   let text: string = '';
   let orginalText: string = '';
@@ -61,8 +59,7 @@ export function prepareMessageForDisplay(
   const content = message['content'] ?? message['text'];
 
   if (content) {
-    const { text: extractedText, orginalText: extractedOriginalText } =
-      extractTextFromContent(content);
+    const { text: extractedText, orginalText: extractedOriginalText } = extractTextFromContent(content);
     text = extractedText;
     orginalText = extractedOriginalText;
   } else {
@@ -71,8 +68,7 @@ export function prepareMessageForDisplay(
       parts.forEach((part: Record<string, unknown>) => {
         const content = part['text'] as string;
         if (content) {
-          const { text: extractedText, orginalText: extractedOriginalText } =
-            extractTextFromContent(content);
+          const { text: extractedText, orginalText: extractedOriginalText } = extractTextFromContent(content);
           text += extractedText;
           orginalText += extractedOriginalText;
         }

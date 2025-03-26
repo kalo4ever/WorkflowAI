@@ -5,9 +5,7 @@ type ProviderAndIterationBadgeProps = {
   iteration: number | undefined;
 };
 
-export function ProviderAndIterationBadge(
-  props: ProviderAndIterationBadgeProps
-) {
+export function ProviderAndIterationBadge(props: ProviderAndIterationBadgeProps) {
   const { providerId, iteration } = props;
 
   return (
@@ -17,9 +15,7 @@ export function ProviderAndIterationBadge(
       }
     >
       <div className='flex items-center gap-1'>
-        {providerId ? (
-          <AIProviderIcon providerId={providerId} fallbackOnMysteryIcon />
-        ) : null}
+        {providerId ? <AIProviderIcon providerId={providerId} fallbackOnMysteryIcon /> : null}
         <div className='text-[13px] font-medium text-gray-700 font-lato'>
           {iteration !== undefined && `${iteration}`}
         </div>

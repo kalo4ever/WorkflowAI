@@ -24,40 +24,16 @@ export const DynamicTextBadge: React.FC<{
       return largeMargin + imageSize + innerMargin + textWidth + largeMargin;
     }
 
-    return (
-      largeMargin +
-      imageSize +
-      innerMargin +
-      textWidth +
-      innerMargin * 2 +
-      environmentTextWidth +
-      innerMargin +
-      2
-    );
+    return largeMargin + imageSize + innerMargin + textWidth + innerMargin * 2 + environmentTextWidth + innerMargin + 2;
   }, [textWidth, environmentTextWidth, environment]);
 
   const environmentOriginX = useMemo(() => {
-    return (
-      -width / 2 +
-      largeMargin +
-      imageSize +
-      innerMargin +
-      textWidth +
-      innerMargin * 2
-    );
+    return -width / 2 + largeMargin + imageSize + innerMargin + textWidth + innerMargin * 2;
   }, [width, textWidth]);
 
   return (
     <g transform={`translate(${x}, ${y})`}>
-      <rect
-        x={-width / 2}
-        y={-13}
-        width={width}
-        height={26}
-        fill={isBest ? '#22C55E' : '#6B7280'}
-        rx={2}
-        ry={2}
-      />
+      <rect x={-width / 2} y={-13} width={width} height={26} fill={isBest ? '#22C55E' : '#6B7280'} rx={2} ry={2} />
 
       {!!providerId && (
         <g

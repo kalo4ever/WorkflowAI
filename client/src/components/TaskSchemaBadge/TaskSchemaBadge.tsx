@@ -25,16 +25,7 @@ export function TaskSchemaBadge(props: TaskSchemaBadgeProps) {
       </div>
 
       {isActive && (
-        <SimpleTooltip
-          content={
-            <TaskStats
-              tenant={tenant}
-              taskSchemaId={schemaId}
-              taskId={taskId}
-            />
-          }
-          side='top'
-        >
+        <SimpleTooltip content={<TaskStats tenant={tenant} taskSchemaId={schemaId} taskId={taskId} />} side='top'>
           <div>
             <TaskIterationActivityIndicator height={24} />
           </div>

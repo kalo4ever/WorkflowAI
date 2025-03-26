@@ -1,8 +1,4 @@
-import {
-  Play16Filled,
-  Save16Filled,
-  Stop16Filled,
-} from '@fluentui/react-icons';
+import { Play16Filled, Save16Filled, Stop16Filled } from '@fluentui/react-icons';
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { SimpleTooltip } from '@/components/ui/Tooltip';
@@ -52,9 +48,7 @@ export function RunAgentsButton(props: Props) {
   const isNormalButtonDisabled = inputLoading || areInstructionsLoading;
 
   const normalButtonContent = (
-    <SimpleTooltip
-      content={isNormalButtonDisabled ? undefined : '⌘ + Enter to run'}
-    >
+    <SimpleTooltip content={isNormalButtonDisabled ? undefined : '⌘ + Enter to run'}>
       <Button
         variant='newDesignIndigo'
         icon={<Play16Filled />}
@@ -69,24 +63,14 @@ export function RunAgentsButton(props: Props) {
   );
 
   const stopButtonContent = (
-    <Button
-      variant='newDesignIndigo'
-      icon={<Stop16Filled />}
-      onClick={onStopAllRuns}
-      className='min-h-8'
-    >
+    <Button variant='newDesignIndigo' icon={<Stop16Filled />} onClick={onStopAllRuns} className='min-h-8'>
       Stop All Runs
     </Button>
   );
 
   return (
-    <div
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => setIsHovering(false)}
-    >
-      {isHovering && singleTaskLoading
-        ? stopButtonContent
-        : normalButtonContent}
+    <div onMouseEnter={() => setIsHovering(true)} onMouseLeave={() => setIsHovering(false)}>
+      {isHovering && singleTaskLoading ? stopButtonContent : normalButtonContent}
     </div>
   );
 }

@@ -3,10 +3,7 @@ import { create } from 'zustand';
 import { client } from '@/lib/api';
 import { TaskID, TaskSchemaID, TenantID } from '@/types/aliases';
 import { CodeLanguage } from '@/types/snippets';
-import {
-  GenerateCodeBlockRequest,
-  GenerateCodeBlockResponse,
-} from '@/types/workflowAI';
+import { GenerateCodeBlockRequest, GenerateCodeBlockResponse } from '@/types/workflowAI';
 import { taskSchemaSubPath } from './utils';
 
 enableMapSet();
@@ -54,14 +51,7 @@ export const useTaskSnippets = create<TaskSnippetsState>((set, get) => ({
     url,
     secondaryInput
   ) => {
-    const scopeKey = buildSnippetScopeKey(
-      taskId,
-      taskSchemaId,
-      language,
-      iteration,
-      environment,
-      exampleTaskRunInput
-    );
+    const scopeKey = buildSnippetScopeKey(taskId, taskSchemaId, language, iteration, environment, exampleTaskRunInput);
     if (get().isLoadingByScope.get(scopeKey)) return;
     set(
       produce((state) => {
@@ -79,10 +69,7 @@ export const useTaskSnippets = create<TaskSnippetsState>((set, get) => ({
         separate_run_and_stream: true,
       };
 
-      const snippet = await client.post<
-        GenerateCodeBlockRequest,
-        GenerateCodeBlockResponse
-      >(
+      const snippet = await client.post<GenerateCodeBlockRequest, GenerateCodeBlockResponse>(
         taskSchemaSubPath(tenant, taskId, taskSchemaId, `/python`),
         requestBody
       );
@@ -92,10 +79,7 @@ export const useTaskSnippets = create<TaskSnippetsState>((set, get) => ({
         })
       );
     } catch (error) {
-      console.error(
-        'Failed to fetch AI agent snippet by AI agent schema id',
-        error
-      );
+      console.error('Failed to fetch AI agent snippet by AI agent schema id', error);
     }
     set(
       produce((state) => {

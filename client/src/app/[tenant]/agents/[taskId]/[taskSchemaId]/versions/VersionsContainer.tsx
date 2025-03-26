@@ -4,10 +4,7 @@ import { useCallback, useMemo } from 'react';
 import { Loader } from '@/components/ui/Loader';
 import { PageContainer } from '@/components/v2/PageContainer';
 import { useTaskSchemaParams } from '@/lib/hooks/useTaskParams';
-import {
-  useParsedSearchParams,
-  useRedirectWithParams,
-} from '@/lib/queryString';
+import { useParsedSearchParams, useRedirectWithParams } from '@/lib/queryString';
 import { useOrFetchTask, useOrFetchVersions } from '@/store';
 import { VersionEntryContainer } from './VersionEntryContainer';
 import { VersionFilterPicker } from './VersionFilterPicker';
@@ -16,10 +13,7 @@ import { filterVersions, numberOfVersions } from './utils';
 export default function VersionsContainer() {
   const { tenant, taskId, taskSchemaId } = useTaskSchemaParams();
 
-  const { task, isInitialized: isTaskInitialized } = useOrFetchTask(
-    tenant,
-    taskId
-  );
+  const { task, isInitialized: isTaskInitialized } = useOrFetchTask(tenant, taskId);
 
   const {
     majorVersions,

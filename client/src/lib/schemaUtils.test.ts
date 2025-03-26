@@ -21,28 +21,17 @@ describe('parseSchemaNode', () => {
     { type: 'null', expectedVoid: null, expectedNonVoid: 'undefined' },
   ] as const;
 
-  describe.each(TABLE)(
-    'type is $type',
-    ({ type, expectedVoid, expectedNonVoid }) => {
-      const schema = { type };
-      it(`is "${expectedVoid}" when void result is enabled`, () => {
-        const result = parseSchemaNode(
-          schema,
-          {},
-          InitInputFromSchemaMode.VOID
-        );
-        expect(result).toEqual(expectedVoid);
-      });
-      it(`is "${expectedNonVoid}" when void result is disabled`, () => {
-        const result = parseSchemaNode(
-          schema,
-          {},
-          InitInputFromSchemaMode.TYPE
-        );
-        expect(result).toEqual(expectedNonVoid);
-      });
-    }
-  );
+  describe.each(TABLE)('type is $type', ({ type, expectedVoid, expectedNonVoid }) => {
+    const schema = { type };
+    it(`is "${expectedVoid}" when void result is enabled`, () => {
+      const result = parseSchemaNode(schema, {}, InitInputFromSchemaMode.VOID);
+      expect(result).toEqual(expectedVoid);
+    });
+    it(`is "${expectedNonVoid}" when void result is disabled`, () => {
+      const result = parseSchemaNode(schema, {}, InitInputFromSchemaMode.TYPE);
+      expect(result).toEqual(expectedNonVoid);
+    });
+  });
 
   describe('type is object', () => {
     const SAMPLE_JSON_SCHEMA: JsonValueSchema = {
@@ -77,11 +66,7 @@ describe('parseSchemaNode', () => {
     };
 
     test('"add void" result is disabled', () => {
-      const result = parseSchemaNode(
-        SAMPLE_JSON_SCHEMA,
-        {},
-        InitInputFromSchemaMode.TYPE
-      );
+      const result = parseSchemaNode(SAMPLE_JSON_SCHEMA, {}, InitInputFromSchemaMode.TYPE);
       expect(result).toEqual({
         name: 'string',
         age: 'integer',
@@ -94,11 +79,7 @@ describe('parseSchemaNode', () => {
       });
     });
     test('"add void" result is enabled', () => {
-      const result = parseSchemaNode(
-        SAMPLE_JSON_SCHEMA,
-        {},
-        InitInputFromSchemaMode.VOID
-      );
+      const result = parseSchemaNode(SAMPLE_JSON_SCHEMA, {}, InitInputFromSchemaMode.VOID);
       expect(result).toEqual({
         name: '',
         age: 0,
@@ -126,19 +107,11 @@ describe('initInputFromSchema', () => {
     required: ['currentYear'],
   };
   it('initializes a number', () => {
-    const result = initInputFromSchema(
-      schema,
-      {},
-      InitInputFromSchemaMode.TYPE
-    );
+    const result = initInputFromSchema(schema, {}, InitInputFromSchemaMode.TYPE);
     expect(result).toEqual({ currentYear: 'number' });
   });
   it('initializes a number', () => {
-    const result = initInputFromSchema(
-      schema,
-      {},
-      InitInputFromSchemaMode.VOID
-    );
+    const result = initInputFromSchema(schema, {}, InitInputFromSchemaMode.VOID);
     expect(result).toEqual({ currentYear: 0 });
   });
 });
@@ -236,21 +209,13 @@ describe('mergeSchemas - items merging', () => {
     };
     const newSchema: JsonValueSchema = {
       type: 'array',
-      items: [
-        { type: 'string', minLength: 5 },
-        { type: 'number', maximum: 100 },
-        { type: 'boolean' },
-      ],
+      items: [{ type: 'string', minLength: 5 }, { type: 'number', maximum: 100 }, { type: 'boolean' }],
     };
 
     const result = mergeSchemas(oldSchema, newSchema);
     expect(result).toEqual({
       type: 'array',
-      items: [
-        { type: 'string', minLength: 5 },
-        { type: 'number', minimum: 0, maximum: 100 },
-        { type: 'boolean' },
-      ],
+      items: [{ type: 'string', minLength: 5 }, { type: 'number', minimum: 0, maximum: 100 }, { type: 'boolean' }],
     });
   });
 
@@ -390,11 +355,7 @@ describe('mergeItems', () => {
     };
     const newSchema: JsonValueSchema = {
       type: 'array',
-      items: [
-        { type: 'string', format: 'email' },
-        { type: 'number' },
-        { type: 'boolean' },
-      ],
+      items: [{ type: 'string', format: 'email' }, { type: 'number' }, { type: 'boolean' }],
     };
 
     const result = mergeItems(oldSchema, newSchema);

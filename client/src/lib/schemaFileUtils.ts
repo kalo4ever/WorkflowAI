@@ -9,11 +9,7 @@ import {
 import { FILE_REF_NAMES } from './constants';
 
 export function isFileSchema(schema: JsonValueSchema | undefined): boolean {
-  if (
-    schema?.type === 'object' &&
-    !!schema.followedRefName &&
-    FILE_REF_NAMES.includes(schema.followedRefName)
-  ) {
+  if (schema?.type === 'object' && !!schema.followedRefName && FILE_REF_NAMES.includes(schema.followedRefName)) {
     return true;
   }
 
@@ -30,10 +26,7 @@ function innerReplaceFileDataWithURL(
   schema: JsonValueSchema | undefined,
   defs: JsonSchemaDefinitions | undefined,
   obj: unknown,
-  replacer: (
-    obj: Record<string, unknown>,
-    schema: JsonValueSchema
-  ) => Record<string, unknown>
+  replacer: (obj: Record<string, unknown>, schema: JsonValueSchema) => Record<string, unknown>
 ): unknown {
   if (!obj || typeof obj !== 'object' || !schema) {
     return obj;
@@ -42,23 +35,13 @@ function innerReplaceFileDataWithURL(
   if (!isFileSchema(schema)) {
     if (Array.isArray(obj)) {
       return obj.map((item, idx) =>
-        innerReplaceFileDataWithURL(
-          getSubSchemaOptional(schema, defs, idx.toString()),
-          defs,
-          item,
-          replacer
-        )
+        innerReplaceFileDataWithURL(getSubSchemaOptional(schema, defs, idx.toString()), defs, item, replacer)
       );
     }
     // We dive into the object to replace the file data with the URL
     return Object.entries(obj).reduce(
       (acc, [key, value]) => {
-        acc[key] = innerReplaceFileDataWithURL(
-          getSubSchemaOptional(schema, defs, key),
-          defs,
-          value,
-          replacer
-        );
+        acc[key] = innerReplaceFileDataWithURL(getSubSchemaOptional(schema, defs, key), defs, value, replacer);
         return acc;
       },
       {} as Record<string, unknown>
@@ -70,17 +53,9 @@ function innerReplaceFileDataWithURL(
 export function replaceFileData(
   schema: JsonSchema,
   obj: Record<string, unknown>,
-  replacer: (
-    obj: Record<string, unknown>,
-    schema: JsonValueSchema
-  ) => Record<string, unknown>
+  replacer: (obj: Record<string, unknown>, schema: JsonValueSchema) => Record<string, unknown>
 ): Record<string, unknown> {
-  return innerReplaceFileDataWithURL(
-    schema,
-    schema.$defs,
-    obj,
-    replacer
-  ) as Record<string, unknown>;
+  return innerReplaceFileDataWithURL(schema, schema.$defs, obj, replacer) as Record<string, unknown>;
 }
 
 export type FileFormat = 'audio' | 'image' | 'text' | 'document';
@@ -135,9 +110,7 @@ function appendToFormats(
   }
 }
 
-export function extractFormats(
-  schema: JsonSchema | undefined | null
-): FileFormat[] | undefined {
+export function extractFormats(schema: JsonSchema | undefined | null): FileFormat[] | undefined {
   if (schema === undefined || schema === null) {
     return undefined;
   }

@@ -143,8 +143,7 @@ const config = {
           rgb(255 240 252 / 0.2) 100%
         ), linear-gradient(to bottom, white, white)`,
         'custom-indigo-gradient': 'linear-gradient(to right, #8759E3, #4235F8)',
-        'custom-indigo-gradient-hover':
-          'linear-gradient(to right, #784CD0, #3B30DF)',
+        'custom-indigo-gradient-hover': 'linear-gradient(to right, #784CD0, #3B30DF)',
         'custom-gradient-solid': `linear-gradient(90deg,
           #A960EE,
           #C789CB,
@@ -159,6 +158,7 @@ const config = {
   },
   plugins: [
     require('tailwindcss-animate'),
+    require('@tailwindcss/typography'),
     plugin(({ addUtilities }) => {
       addUtilities({
         '.bg-gradient-image': {

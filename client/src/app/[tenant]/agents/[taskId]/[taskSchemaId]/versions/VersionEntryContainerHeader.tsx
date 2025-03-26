@@ -10,9 +10,7 @@ type VersionEntryContainerHeaderProps = {
   isLatest: boolean;
 };
 
-export function VersionEntryContainerHeader(
-  props: VersionEntryContainerHeaderProps
-) {
+export function VersionEntryContainerHeader(props: VersionEntryContainerHeaderProps) {
   const { entry, previousEntry, isLatest } = props;
 
   const adaptedFromMajor = entry.majorVersion.previous_version?.major;
@@ -43,10 +41,7 @@ export function VersionEntryContainerHeader(
       return false;
     }
 
-    if (
-      !!previousEntry &&
-      adaptedFromMajor === previousEntry.majorVersion.major
-    ) {
+    if (!!previousEntry && adaptedFromMajor === previousEntry.majorVersion.major) {
       return false;
     }
 
@@ -65,22 +60,13 @@ export function VersionEntryContainerHeader(
           </div>
         )}
         {isLatest && (
-          <div className='text-[13px] font-medium text-gray-50 px-1.5 py-0.5 rounded-[2px] bg-gray-700'>
-            Latest
-          </div>
+          <div className='text-[13px] font-medium text-gray-50 px-1.5 py-0.5 rounded-[2px] bg-gray-700'>Latest</div>
         )}
       </div>
 
       <div className='flex flex-row items-center gap-2'>
-        {user && (
-          <UserAvatar
-            tooltipText={`Created by ${user.firstName} ${user.lastName}`}
-            user={user}
-          />
-        )}
-        <div className='text-[13px] font-base text-gray-500'>
-          {relativeTime}
-        </div>
+        {user && <UserAvatar tooltipText={`Created by ${user.firstName} ${user.lastName}`} user={user} />}
+        <div className='text-[13px] font-base text-gray-500'>{relativeTime}</div>
       </div>
     </div>
   );

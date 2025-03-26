@@ -7,9 +7,7 @@ import { getTenantSlug } from '../auth_utils';
 
 const alg = 'ES256';
 
-export async function parse_sign_key(
-  key = process.env.WORKFLOWAI_API_SIGN_KEY
-) {
+export async function parse_sign_key(key = process.env.WORKFLOWAI_API_SIGN_KEY) {
   if (!key) {
     throw new Error('API_SIGN_KEY is not set');
   }
@@ -33,11 +31,7 @@ interface Claims {
   sub: string;
 }
 
-export async function build_api_jwt(
-  claims: Claims,
-  expiration: string = '60d',
-  sign_key?: KeyLike
-) {
+export async function build_api_jwt(claims: Claims, expiration: string = '60d', sign_key?: KeyLike) {
   const key = sign_key ?? (await cache_sign_key());
 
   const jwt = await new SignJWT(claims)
@@ -65,13 +59,7 @@ export type TokenData = {
   unknownUserId?: string;
 };
 
-function token_data_to_claim({
-  email,
-  orgId,
-  orgSlug,
-  unknownUserId,
-  userId,
-}: TokenData): Claims {
+function token_data_to_claim({ email, orgId, orgSlug, unknownUserId, userId }: TokenData): Claims {
   return {
     orgId,
     // @ts-expect-error we check that at least one is provided above
@@ -82,16 +70,8 @@ function token_data_to_claim({
   };
 }
 
-export async function build_api_jwt_for_tenant(
-  token_data: TokenData,
-  expiration: string = '365d',
-  signKey?: KeyLike
-) {
-  return await build_api_jwt(
-    token_data_to_claim(token_data),
-    expiration,
-    signKey
-  );
+export async function build_api_jwt_for_tenant(token_data: TokenData, expiration: string = '365d', signKey?: KeyLike) {
+  return await build_api_jwt(token_data_to_claim(token_data), expiration, signKey);
 }
 
 export function extract_claim_from_jwt(jwt: string): TokenData | undefined {
@@ -129,9 +109,7 @@ export async function export_public_key(sign_key?: KeyLike) {
   return out;
 }
 
-export async function getAuthenticatedTokenData(): Promise<
-  TokenData | undefined
-> {
+export async function getAuthenticatedTokenData(): Promise<TokenData | undefined> {
   const user = await currentUser();
   const { orgSlug, orgId } = auth();
   const email = user?.email;
@@ -176,12 +154,9 @@ export function getOrSetUnknownUserId(cookieStore: CookieStore) {
     // we would get a lot of spam.
     // The safest way to proceed is to generate a new unknownUserId,
     // the existing x-api-token will be invalidated by check_jwt_for_tenant
-    console.warn(
-      'x-api-token with no unknownUserId when generating an unknownUserId',
-      {
-        tokenData,
-      }
-    );
+    console.warn('x-api-token with no unknownUserId when generating an unknownUserId', {
+      tokenData,
+    });
   }
 
   const newUnknownUserId = crypto.randomUUID();

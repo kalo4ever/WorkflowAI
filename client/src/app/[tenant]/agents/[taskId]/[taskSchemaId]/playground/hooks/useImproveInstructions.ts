@@ -1,0 +1,168 @@
+import { captureException } from '@sentry/nextjs';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { displayErrorToaster, displaySuccessToaster } from '@/components/ui/Sonner';
+import { ImproveVersionResponse, useOrFetchToken, useTasks } from '@/store';
+import { ToolCallName, usePlaygroundChatStore } from '@/store/playgroundChatStore';
+import { TaskID, TaskSchemaID, TenantID } from '@/types/aliases';
+import { ToolKind } from '@/types/workflowAI';
+import { RunTaskOptions } from './usePlaygroundPersistedState';
+
+type ImproveInstructionsProps = {
+  taskId: TaskID;
+  tenant: TenantID | undefined;
+  taskSchemaId: TaskSchemaID;
+  instructions: string;
+  variantId: string | undefined;
+  setInstructions: (instructions: string) => void;
+  setImproveVersionChangelog: (changelog: string[] | undefined) => void;
+  handleRunTasks: (options?: RunTaskOptions) => Promise<void>;
+};
+
+export function useImproveInstructions(props: ImproveInstructionsProps) {
+  const {
+    tenant,
+    taskId,
+    taskSchemaId,
+    instructions,
+    variantId,
+    setInstructions,
+    setImproveVersionChangelog,
+    handleRunTasks,
+  } = props;
+  const improveVersion = useTasks((state) => state.improveVersion);
+  const { token } = useOrFetchToken();
+
+  const [oldInstructions, setOldInstructions] = useState<string | undefined>(undefined);
+
+  const resetOldInstructions = useCallback(() => {
+    setOldInstructions(undefined);
+  }, []);
+
+  const instructionsRef = useRef(instructions);
+
+  useEffect(() => {
+    instructionsRef.current = instructions;
+  }, [instructions]);
+
+  const [isImproveVersionLoading, setIsImproveVersionLoading] = useState(false);
+  const { markToolCallAsDone, cancelToolCall } = usePlaygroundChatStore();
+
+  const abortControllerRef = useRef<AbortController | undefined>(undefined);
+
+  const improveInstructions = useCallback(
+    async (text: string, runId: string | undefined) => {
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
+
+      try {
+        const onMessage = (message: ImproveVersionResponse) => {
+          if (abortController.signal.aborted) {
+            return;
+          }
+          const { improved_properties, changelog } = message;
+          setImproveVersionChangelog(changelog);
+          const newInstructions = improved_properties.instructions || '';
+          setInstructions(newInstructions);
+        };
+
+        setOldInstructions(instructionsRef.current);
+        setIsImproveVersionLoading(true);
+
+        const { improved_properties, changelog } = await improveVersion(
+          tenant,
+          taskId,
+          {
+            run_id: runId,
+            user_evaluation: text,
+            variant_id: variantId,
+            instructions: instructionsRef.current,
+          },
+          token,
+          onMessage,
+          abortController.signal
+        );
+
+        setImproveVersionChangelog(changelog);
+        const newInstructions = improved_properties.instructions || '';
+        setInstructions(newInstructions);
+        displaySuccessToaster('Updated Instructions generated. Rerunning AI agent...');
+
+        setIsImproveVersionLoading(false);
+        markToolCallAsDone(taskId, ToolCallName.IMPROVE_AGENT_INSTRUCTIONS);
+        handleRunTasks({ externalInstructions: newInstructions });
+      } catch (error) {
+        cancelToolCall(ToolCallName.IMPROVE_AGENT_INSTRUCTIONS);
+        captureException(error);
+        if (!abortController.signal.aborted) {
+          displayErrorToaster('Failed to improve AI agent run version - Please try again');
+        }
+        throw new Error('Failed to improve AI agent run version');
+      }
+    },
+    [
+      improveVersion,
+      taskId,
+      tenant,
+      setInstructions,
+      handleRunTasks,
+      setImproveVersionChangelog,
+      token,
+      variantId,
+      cancelToolCall,
+      markToolCallAsDone,
+    ]
+  );
+
+  const updateTaskInstructions = useTasks((state) => state.updateTaskInstructions);
+
+  const handleUpdateTaskInstructions = useCallback(
+    async (tools: ToolKind[]) => {
+      setOldInstructions(instructionsRef.current);
+      setIsImproveVersionLoading(true);
+
+      try {
+        const data = await updateTaskInstructions(
+          tenant,
+          taskId,
+          taskSchemaId,
+          token,
+          instructions,
+          tools,
+          setInstructions
+        );
+        setInstructions(data);
+      } catch (error) {
+        captureException(error);
+        displayErrorToaster('Failed to update AI Agent instructions - Please try again');
+        throw new Error('Failed to update AI Agent instructions');
+      }
+
+      setIsImproveVersionLoading(false);
+    },
+    [instructions, updateTaskInstructions, tenant, taskId, taskSchemaId, token, setInstructions]
+  );
+
+  const cancelImproveInstructions = useCallback(() => {
+    if (!isImproveVersionLoading) {
+      return;
+    }
+
+    abortControllerRef.current?.abort();
+    setIsImproveVersionLoading(false);
+    setImproveVersionChangelog(undefined);
+
+    if (oldInstructions) {
+      setInstructions(oldInstructions);
+      setOldInstructions(undefined);
+    }
+  }, [oldInstructions, setInstructions, isImproveVersionLoading, setImproveVersionChangelog]);
+
+  return {
+    isImproveVersionLoading,
+    oldInstructions,
+    resetOldInstructions,
+    improveInstructions,
+    updateTaskInstructions: handleUpdateTaskInstructions,
+    cancelImproveInstructions,
+  };
+}

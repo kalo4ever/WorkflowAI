@@ -1,8 +1,4 @@
-import {
-  ChevronDown12Regular,
-  ChevronUp12Regular,
-  Dismiss12Regular,
-} from '@fluentui/react-icons';
+import { ChevronDown12Regular, ChevronUp12Regular, Dismiss12Regular } from '@fluentui/react-icons';
 import { Button } from '@/components/ui/Button';
 
 type TaskRunNavigationProps = {
@@ -26,26 +22,29 @@ export function TaskRunNavigation(props: TaskRunNavigationProps) {
       />
 
       <span className='text-gray-900 text-[16px] font-semibold px-2'>
-        Run {taskRunIndex + 1} of {totalModalRuns}
+        {totalModalRuns > 1 ? `Run ${taskRunIndex + 1} of ${totalModalRuns}` : 'Run'}
       </span>
 
-      <Button
-        disabled={!onPrev}
-        onClick={onPrev}
-        variant='newDesign'
-        icon={<ChevronUp12Regular className='w-3 h-3' />}
-        className='w-7 h-7'
-        size='none'
-      />
-
-      <Button
-        disabled={!onNext}
-        onClick={onNext}
-        variant='newDesign'
-        icon={<ChevronDown12Regular className='w-3 h-3' />}
-        className='w-7 h-7'
-        size='none'
-      />
+      {totalModalRuns > 1 && (
+        <>
+          <Button
+            disabled={!onPrev}
+            onClick={onPrev}
+            variant='newDesign'
+            icon={<ChevronUp12Regular className='w-3 h-3' />}
+            className='w-7 h-7'
+            size='none'
+          />
+          <Button
+            disabled={!onNext}
+            onClick={onNext}
+            variant='newDesign'
+            icon={<ChevronDown12Regular className='w-3 h-3' />}
+            className='w-7 h-7'
+            size='none'
+          />
+        </>
+      )}
     </div>
   );
 }

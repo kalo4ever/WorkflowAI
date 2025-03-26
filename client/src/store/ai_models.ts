@@ -12,22 +12,25 @@ interface AIModelsState {
   modelsByScope: Map<string, ModelResponse[]>;
   isLoadingByScope: Map<string, boolean>;
   isInitializedByScope: Map<string, boolean>;
-  fetchModels(
-    tenant: TenantID | undefined,
-    taskId: TaskID,
-    taskSchemaId: TaskSchemaID
-  ): Promise<void>;
+
+  models: ModelResponse[] | undefined;
+  isLoading: boolean;
+  isInitialized: boolean;
+
+  fetchModels(tenant: TenantID | undefined, taskId: TaskID, taskSchemaId: TaskSchemaID): Promise<void>;
+  fetchUniversalModels(): Promise<void>;
 }
 
 export const useAIModels = create<AIModelsState>((set, get) => ({
   modelsByScope: new Map(),
   isLoadingByScope: new Map(),
   isInitializedByScope: new Map(),
-  fetchModels: async (
-    tenant: TenantID | undefined,
-    taskId: TaskID,
-    taskSchemaId: TaskSchemaID
-  ) => {
+
+  models: undefined,
+  isLoading: false,
+  isInitialized: false,
+
+  fetchModels: async (tenant: TenantID | undefined, taskId: TaskID, taskSchemaId: TaskSchemaID) => {
     if (!tenant) {
       return;
     }
@@ -52,5 +55,30 @@ export const useAIModels = create<AIModelsState>((set, get) => ({
         state.isInitializedByScope.set(scope, true);
       })
     );
+  },
+
+  fetchUniversalModels: async () => {
+    if (get().isLoading) return;
+    set({ isLoading: true });
+
+    const path = `/api/data/features/models`;
+
+    try {
+      const response = await client.get<Page_ModelResponse_>(path);
+      set(
+        produce((state) => {
+          state.models = response.items;
+        })
+      );
+    } catch (error) {
+      console.error('Failed to fetch ai models', error);
+    } finally {
+      set(
+        produce((state) => {
+          state.isLoading = false;
+          state.isInitialized = true;
+        })
+      );
+    }
   },
 }));

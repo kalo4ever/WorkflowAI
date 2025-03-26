@@ -1,9 +1,11 @@
 import { TableView } from '@/components/ui/TableView';
-import { TableViewHeaderEntry } from '@/components/ui/TableView';
+import { TenantID } from '@/types/aliases';
 import { SerializableTask } from '@/types/workflowAI';
-import { TaskRow } from './TaskRow';
+import { TaskRowContainer } from './TaskRow';
+import { TasksTableHeaders } from './TasksTableHeaders';
 
 type TasksTableProps = {
+  tenant: TenantID;
   tasks: SerializableTask[];
   onTryInPlayground: (task: SerializableTask) => void;
   onViewRuns: (task: SerializableTask) => void;
@@ -12,26 +14,13 @@ type TasksTableProps = {
 };
 
 export function TasksTable(props: TasksTableProps) {
-  const {
-    tasks,
-    onTryInPlayground,
-    onViewRuns,
-    onViewCode,
-    onViewDeployments,
-  } = props;
+  const { tasks, onTryInPlayground, onViewRuns, onViewCode, onViewDeployments, tenant } = props;
 
   return (
-    <TableView
-      headers={
-        <>
-          <TableViewHeaderEntry title='AI agent' className='pl-2 flex-1' />
-          <TableViewHeaderEntry title='Runs' className='w-[70px]' />
-          <TableViewHeaderEntry title='Cost' className='w-[57px]' />
-        </>
-      }
-    >
+    <TableView headers={<TasksTableHeaders />}>
       {tasks.map((task) => (
-        <TaskRow
+        <TaskRowContainer
+          tenant={tenant}
           key={task.id}
           task={task}
           onTryInPlayground={() => onTryInPlayground(task)}

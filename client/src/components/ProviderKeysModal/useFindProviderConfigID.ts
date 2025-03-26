@@ -22,9 +22,7 @@ export function useFindProviderConfigID(props: UseFindProviderConfigIDProps) {
   });
 
   const providerConfigID = useMemo(() => {
-    const identifiedModel = allModels.find(
-      (candidate) => candidate.id === model
-    );
+    const identifiedModel = allModels.find((candidate) => candidate.id === model);
     const provider = identifiedModel?.providers[0];
     return providerSettings?.find((v) => v.provider === provider)?.id;
   }, [allModels, model, providerSettings]);

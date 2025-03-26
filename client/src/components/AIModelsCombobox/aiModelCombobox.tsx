@@ -1,9 +1,4 @@
-import {
-  Calendar16Regular,
-  ChevronUpDownFilled,
-  Sparkle16Regular,
-  Tag16Regular,
-} from '@fluentui/react-icons';
+import { Calendar16Regular, ChevronUpDownFilled, Sparkle16Regular, Tag16Regular } from '@fluentui/react-icons';
 import { cx } from 'class-variance-authority';
 import { Command as CommandPrimitive } from 'cmdk';
 import * as React from 'react';
@@ -17,11 +12,7 @@ import {
   CommandList,
   CustomCommandInput,
 } from '@/components/ui/Command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/Popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover';
 import { ScrollArea } from '@/components/ui/ScrollArea';
 import { Model } from '@/types/aliases';
 import { ModelResponse } from '@/types/workflowAI';
@@ -86,15 +77,9 @@ export function AIModelCombobox(props: AIModelComboboxProps) {
 
   const [search, setSearch] = useState('');
 
-  const [sort, setSort] = useLocalStorage<'intelligence' | 'price' | 'latest'>(
-    'aiModelComboboxSort',
-    'intelligence'
-  );
+  const [sort, setSort] = useLocalStorage<'intelligence' | 'price' | 'latest'>('aiModelComboboxSort', 'intelligence');
 
-  const [isReverted, setIsReverted] = useLocalStorage<boolean>(
-    'aiModelComboboxOrder',
-    false
-  );
+  const [isReverted, setIsReverted] = useLocalStorage<boolean>('aiModelComboboxOrder', false);
 
   const modelOptions = useMemo(() => formatAIModels(models, 'price'), [models]);
 
@@ -110,9 +95,7 @@ export function AIModelCombobox(props: AIModelComboboxProps) {
       // By default we only return models that have the is_latest flag
       return modelOptions.filter((model) => model.isLatest);
     }
-    return modelOptions.filter((option) =>
-      option.label.toLowerCase().includes(search.toLowerCase())
-    );
+    return modelOptions.filter((option) => option.label.toLowerCase().includes(search.toLowerCase()));
   }, [modelOptions, search]);
 
   const selectedOption = useMemo(() => {
@@ -153,14 +136,11 @@ export function AIModelCombobox(props: AIModelComboboxProps) {
     [setSort, setIsReverted, isReverted, sort]
   );
 
-  const commandListRef =
-    useRef<React.ElementRef<typeof CommandPrimitive.List>>(null);
+  const commandListRef = useRef<React.ElementRef<typeof CommandPrimitive.List>>(null);
 
   useEffect(() => {
     if (open && value && commandListRef.current) {
-      const item = commandListRef.current.querySelector(
-        `[cmdk-item][data-value="${value}"]`
-      );
+      const item = commandListRef.current.querySelector(`[cmdk-item][data-value="${value}"]`);
       if (item) {
         item.scrollIntoView({ block: 'center' });
       }
@@ -176,27 +156,17 @@ export function AIModelCombobox(props: AIModelComboboxProps) {
             open
               ? 'border-gray-300 bg-gray-100 shadow-inner'
               : 'bg-white text-gray-900 border-gray-300 shadow-sm border border-input bg-background hover:bg-gray-100',
-            fitToContent
-              ? 'min-w-[75px] justify-between'
-              : 'w-full justify-between'
+            fitToContent ? 'min-w-[75px] justify-between' : 'w-full justify-between'
           )}
         >
-          <TriggerContent
-            value={value}
-            selectedOption={selectedOption}
-            defaultLabel={noOptionsMessage}
-          />
+          <TriggerContent value={value} selectedOption={selectedOption} defaultLabel={noOptionsMessage} />
           <ChevronUpDownFilled className='h-4 w-4 shrink-0 text-gray-500 ml-2' />
         </div>
       </PopoverTrigger>
 
       <PopoverContent className='w-[auto] p-0 overflow-clip rounded-[2px]'>
         <Command>
-          <CustomCommandInput
-            placeholder={placeholder}
-            search={search}
-            onSearchChange={setSearch}
-          />
+          <CustomCommandInput placeholder={placeholder} search={search} onSearchChange={setSearch} />
           <CommandEmpty>{emptyMessage}</CommandEmpty>
           <ScrollArea>
             <div className='px-3 py-2 border-b border-gray-200 flex flex-row gap-2 items-center'>

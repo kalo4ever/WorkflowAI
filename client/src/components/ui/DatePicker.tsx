@@ -8,11 +8,7 @@ import * as React from 'react';
 import { useCallback } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Calendar } from '@/components/ui/Calendar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/Popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover';
 import { formatDatePickerDate } from '@/lib/date';
 import { cn } from '@/lib/utils';
 import { TimePicker } from './TimePicker/TimePicker';
@@ -29,13 +25,7 @@ type DatePickerProps = {
 };
 
 export function DatePicker(props: DatePickerProps) {
-  const {
-    className,
-    date,
-    setDate,
-    withTimePicker = false,
-    disabled = false,
-  } = props;
+  const { className, date, setDate, withTimePicker = false, disabled = false } = props;
 
   const timezone = dayjs.tz.guess();
 
@@ -52,11 +42,7 @@ export function DatePicker(props: DatePickerProps) {
       const hours = dayjs(newDateTime).hour();
       const minutes = dayjs(newDateTime).minute();
       const seconds = dayjs(newDateTime).second();
-      const newDate = dayjs(date)
-        .hour(hours)
-        .minute(minutes)
-        .second(seconds)
-        .toDate();
+      const newDate = dayjs(date).hour(hours).minute(minutes).second(seconds).toDate();
       const newDateStr = formatDatePickerDate(newDate, withTimePicker);
       setDate(newDateStr);
     },
@@ -69,18 +55,11 @@ export function DatePicker(props: DatePickerProps) {
         <PopoverTrigger asChild>
           <Button
             variant={'newDesign'}
-            className={cn(
-              'w-[280px] justify-start text-left font-normal',
-              !date && 'text-muted-foreground'
-            )}
+            className={cn('w-[280px] justify-start text-left font-normal', !date && 'text-muted-foreground')}
             disabled={disabled}
           >
             <CalendarIcon className='mr-2 h-4 w-4' />
-            {date ? (
-              formatDatePickerDate(date, withTimePicker)
-            ) : (
-              <span>Pick a date</span>
-            )}
+            {date ? formatDatePickerDate(date, withTimePicker) : <span>Pick a date</span>}
           </Button>
         </PopoverTrigger>
         <PopoverContent className='w-auto p-0 rounded-[2px] border-gray-300'>

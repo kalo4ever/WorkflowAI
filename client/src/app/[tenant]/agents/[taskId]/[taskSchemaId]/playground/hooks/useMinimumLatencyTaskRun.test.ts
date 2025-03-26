@@ -11,16 +11,12 @@ describe('useMinimumLatencyTaskRun', () => {
   } as TaskRun;
 
   it('is undefined when there are no task runs', () => {
-    const { result } = renderHook(() =>
-      useMinimumLatencyTaskRun([undefined, undefined, undefined])
-    );
+    const { result } = renderHook(() => useMinimumLatencyTaskRun([undefined, undefined, undefined]));
     expect(result.current).toBeUndefined();
   });
 
   test('should return the minimum cost task run', () => {
-    const { result } = renderHook(() =>
-      useMinimumLatencyTaskRun([MINIMUM_TASK_RUN, MAXIMUM_TASK_RUN, undefined])
-    );
+    const { result } = renderHook(() => useMinimumLatencyTaskRun([MINIMUM_TASK_RUN, MAXIMUM_TASK_RUN, undefined]));
     expect(result.current).toBe(MINIMUM_TASK_RUN);
   });
 });
