@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from core.domain.llm_completion import LLMCompletion
 from core.domain.llm_usage import LLMUsage
 from core.domain.message import Message
+from core.domain.metrics import Metric
 from core.domain.models import Model, Provider
 from core.domain.structured_output import StructuredOutput
 from core.domain.tool_call import ToolCallRequestWithID
@@ -224,7 +225,7 @@ def builder_context(mocked_provider: _MockedProvider):
 
 
 class TestComplete:
-    async def test_retry_complete(self, mocked_provider: _MockedProvider):
+    async def test_retry_complete(self, mocked_provider: _MockedProvider, patch_metric_send: Mock):
         mocked_provider.mock._single_complete.side_effect = ProviderError(
             "Test exception",
             retry=True,
@@ -234,7 +235,7 @@ class TestComplete:
         with pytest.raises(ProviderError) as e:
             await mocked_provider.complete(
                 messages=[],
-                options=ProviderOptions(model=Model.GPT_4O_2024_05_13),
+                options=ProviderOptions(model=Model.GPT_4O_2024_05_13, tenant="tenant1"),
                 output_factory=_output_factory,
             )
 
@@ -244,6 +245,17 @@ class TestComplete:
         assert e.value.task_run_id == "test"
         assert e.value.provider_options is not None
         assert e.value.provider_options.model == Model.GPT_4O_2024_05_13
+
+        assert patch_metric_send.call_count == 4
+        metric = patch_metric_send.call_args_list[0][0][0]
+        assert isinstance(metric, Metric)
+        assert metric.name == "provider_inference"
+        assert metric.tags == {
+            "model": "gpt-4o-2024-05-13",
+            "provider": "openai",
+            "tenant": "tenant1",
+            "status": "unknown_provider_error",
+        }
 
     async def test_complete_with_tool_calls(self, mocked_provider: _MockedProvider, builder_context: BuilderInterface):
         mocked_provider.mock._single_complete.return_value = StructuredOutput(
@@ -262,7 +274,7 @@ class TestComplete:
 
 
 class TestStream:
-    async def test_retry_stream(self, mocked_provider: _MockedProvider):
+    async def test_retry_stream(self, mocked_provider: _MockedProvider, patch_metric_send: Mock):
         mocked_provider.mock._single_stream.side_effect = ProviderError(
             "Test exception",
             retry=True,
@@ -272,7 +284,7 @@ class TestStream:
         with pytest.raises(ProviderError) as e:
             async for _ in mocked_provider.stream(
                 messages=[],
-                options=ProviderOptions(model=Model.GPT_4O_2024_05_13),
+                options=ProviderOptions(model=Model.GPT_4O_2024_05_13, tenant="tenant1"),
                 output_factory=_output_factory,
                 partial_output_factory=StructuredOutput,
             ):
@@ -284,6 +296,17 @@ class TestStream:
         assert e.value.task_run_id == "test"
         assert e.value.provider_options is not None
         assert e.value.provider_options.model == Model.GPT_4O_2024_05_13
+
+        assert patch_metric_send.call_count == 4
+        metric = patch_metric_send.call_args_list[0][0][0]
+        assert isinstance(metric, Metric)
+        assert metric.name == "provider_inference"
+        assert metric.tags == {
+            "model": "gpt-4o-2024-05-13",
+            "provider": "openai",
+            "tenant": "tenant1",
+            "status": "unknown_provider_error",
+        }
 
     async def test_stream_with_tool_calls(self, mocked_provider: _MockedProvider, builder_context: BuilderInterface):
         mocked_provider.mock._single_stream.return_value = mock_aiter(

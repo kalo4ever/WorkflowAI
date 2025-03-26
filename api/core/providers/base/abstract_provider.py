@@ -3,6 +3,7 @@ import logging
 import os
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator, Iterator
+from contextlib import asynccontextmanager
 from typing import Any, AsyncGenerator, Callable, Generic, Optional, Protocol, Self, Sequence, TypeVar
 
 from pydantic import ValidationError
@@ -19,7 +20,7 @@ from core.domain.errors import (
 from core.domain.llm_completion import LLMCompletion
 from core.domain.llm_usage import LLMUsage
 from core.domain.message import Message
-from core.domain.metrics import Metric
+from core.domain.metrics import Metric, send_counter, send_gauge
 from core.domain.models import Model, Provider
 from core.domain.models.model_data import ModelData
 from core.domain.models.model_provider_data import (
@@ -618,6 +619,26 @@ class AbstractProvider(ABC, Generic[ProviderConfigVar, ProviderRequestVar]):
         e.task_run_id = self._run_id()
         return e
 
+    @asynccontextmanager
+    async def _wrap_for_metric(self, model: Model, tenant: str | None):
+        status = "success"
+        try:
+            yield
+        except ProviderError as e:
+            status = e.code
+            raise e
+        except Exception as e:
+            status = "workflowai_internal_error"
+            raise e
+        finally:
+            await send_counter(
+                "provider_inference",
+                model=model.value,
+                provider=self.name(),
+                tenant=tenant or "unknown",
+                status=status,
+            )
+
     async def _retryable_complete(
         self,
         messages: list[Message],
@@ -629,12 +650,13 @@ class AbstractProvider(ABC, Generic[ProviderConfigVar, ProviderRequestVar]):
         # raw_completion cannot be in the StructuredOutput because it should still be used on raise
         raw_completion = RawCompletion(response="", usage=raw.usage)
         try:
-            output = await self._single_complete(
-                request=request,
-                output_factory=output_factory,
-                raw_completion=raw_completion,
-                options=options,
-            )
+            async with self._wrap_for_metric(options.model, options.tenant):
+                output = await self._single_complete(
+                    request=request,
+                    output_factory=output_factory,
+                    raw_completion=raw_completion,
+                    options=options,
+                )
             self._assign_raw_completion(raw_completion, raw, tool_calls=output.tool_calls)
             return output
         except ProviderError as e:
@@ -693,14 +715,15 @@ class AbstractProvider(ABC, Generic[ProviderConfigVar, ProviderRequestVar]):
             raw_completion = RawCompletion(response="", usage=raw.usage)
             try:
                 output: StructuredOutput | None = None
-                async for output in self._single_stream(
-                    kwargs,
-                    output_factory=output_factory,
-                    partial_output_factory=partial_output_factory,
-                    raw_completion=raw_completion,
-                    options=options,
-                ):
-                    yield output
+                async with self._wrap_for_metric(options.model, options.tenant):
+                    async for output in self._single_stream(
+                        kwargs,
+                        output_factory=output_factory,
+                        partial_output_factory=partial_output_factory,
+                        raw_completion=raw_completion,
+                        options=options,
+                    ):
+                        yield output
                 self._assign_raw_completion(raw_completion, raw, tool_calls=output.tool_calls if output else None)
                 return
             except ProviderError as e:
@@ -757,3 +780,38 @@ class AbstractProvider(ABC, Generic[ProviderConfigVar, ProviderRequestVar]):
     def sanitize_model_data(self, model_data: ModelData):
         """An opportunity for the provider to override the model data. Object should be updated in place"""
         pass
+
+    async def _log_rate_limit(self, limit_name: str, percentage: float, model: Model):
+        """Percentage is a float between 0 and 1"""
+        await send_gauge(
+            "provider_rate_limit",
+            percentage,
+            provider=self.name(),
+            limit_name=limit_name,
+            model=model.value,
+        )
+
+    async def _log_rate_limit_remaining(
+        self,
+        limit_name: str,
+        remaining: int | float | str | None,
+        total: int | float | str | None,
+        model: Model,
+    ):
+        if remaining is None or total is None:
+            self.logger.warning(
+                "Rate limit remaining or total is None while logging rate limit",
+                extra={"remaining": remaining, "total": total, "model": model.value},
+            )
+            return
+        try:
+            remaining = float(remaining)
+            total = float(total)
+        except (ValueError, TypeError):
+            self.logger.exception(
+                "Could not parse rate limit remaining and total",
+                extra={"remaining": remaining, "total": total, "model": model.value},
+            )
+            return
+
+        await self._log_rate_limit(limit_name, 1 - (remaining / total), model)

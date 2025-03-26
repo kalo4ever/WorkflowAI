@@ -28,12 +28,14 @@ class SerializableTask(BaseModel):
         last_active_at: datetime.datetime | None = None
 
     versions: list[PartialTaskVersion]
+    uid: int = 0
 
     def enrich(self, task_info: TaskInfo):
         self.name = task_info.name
         self.description = task_info.description
         self.is_public = task_info.is_public
         hidden_schema_ids = set(task_info.hidden_schema_ids or [])
+        self.uid = task_info.uid
         for version in self.versions:
             version.is_hidden = version.schema_id in hidden_schema_ids
             schema_details = task_info.get_schema_details(version.schema_id)

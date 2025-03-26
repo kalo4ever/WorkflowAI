@@ -140,7 +140,7 @@ async def int_clickhouse_client():
         {
             "CLICKHOUSE_CONNECTION_STRING": os.environ.get(
                 "CLICKHOUSE_TEST_CONNECTION_STRING",
-                "clickhouse://default:admin@localhost:8123/db_test",
+                "clickhouse://default:admin@localhost:8123/db_int_test",
             ),
         },
     ):

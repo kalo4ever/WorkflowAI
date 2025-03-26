@@ -6,12 +6,13 @@ from pymongo.errors import DuplicateKeyError
 
 from core.domain.ban import Ban
 from core.domain.task_info import TaskInfo
+from core.storage import ObjectNotFoundException
 from core.storage.models import TaskUpdate
-from core.storage.mongo.models.task import TaskDocument
+from core.storage.mongo.models.task_document import TaskDocument
 from core.storage.mongo.mongo_storage import MongoStorage
 from core.storage.mongo.mongo_types import AsyncCollection
+from core.storage.mongo.partials.mongo_tasks import MongoTaskStorage
 from core.storage.mongo.partials.task_variants import MongoTaskVariantsStorage
-from core.storage.mongo.partials.tasks import MongoTaskStorage
 from core.storage.mongo.utils import dump_model
 
 
@@ -206,3 +207,33 @@ class TestSchemaLastActiveAt:
         assert actual.schema_details[1]["schema_id"] == 2
         assert abs(actual.schema_details[0]["last_active_at"] - now) < timedelta(seconds=1)
         assert abs(actual.schema_details[1]["last_active_at"] - now) < timedelta(seconds=1)
+
+
+class TestGetPublicTaskInfo:
+    async def test_get_public_task_info_success(self, task_storage: MongoTaskStorage, tasks_col: AsyncCollection):
+        # Create a task document with all required fields
+        doc = TaskDocument(
+            task_id="test_task",
+            name="Test Task",
+            is_public=True,
+            tenant="test_tenant",
+            tenant_uid=1,
+            uid=123,
+        )
+        await tasks_col.insert_one(dump_model(doc))
+
+        # Get the public task info
+        result = await task_storage.get_public_task_info(123)
+
+        # Verify the result
+        assert result.task_id == "test_task"
+        assert result.name == "Test Task"
+        assert result.is_public is True
+        assert result.tenant == "test_tenant"
+        assert result.tenant_uid == 1
+        assert result.uid == 123
+
+    async def test_get_public_task_info_not_found(self, task_storage: MongoTaskStorage):
+        with pytest.raises(ObjectNotFoundException) as exc_info:
+            await task_storage.get_public_task_info(999)
+        assert str(exc_info.value) == "Task with uid 999 not found"

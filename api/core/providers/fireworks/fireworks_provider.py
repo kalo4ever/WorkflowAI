@@ -61,7 +61,9 @@ _NAME_OVERRIDE_MAP = {
     Model.LLAMA_3_1_70B: "accounts/fireworks/models/llama-v3p1-70b-instruct",
     Model.LLAMA_3_1_405B: "accounts/fireworks/models/llama-v3p1-405b-instruct",
     Model.DEEPSEEK_V3_2412: "accounts/fireworks/models/deepseek-v3",
+    Model.DEEPSEEK_V3_0324: "accounts/fireworks/models/deepseek-v3-0324",
     Model.DEEPSEEK_R1_2501: "accounts/fireworks/models/deepseek-r1",
+    Model.DEEPSEEK_R1_2501_BASIC: "accounts/fireworks/models/deepseek-r1-basic",
 }
 
 
@@ -572,3 +574,24 @@ class FireworksAIProvider(HTTPXProvider[FireworksConfig, CompletionResponse]):
             for tool_call in choice.message.tool_calls or []
         ]
         return tool_calls
+
+    @override
+    async def _extract_and_log_rate_limits(self, response: Response, model: Model):
+        await self._log_rate_limit_remaining(
+            "requests",
+            remaining=response.headers.get("x-ratelimit-remaining-requests"),
+            total=response.headers.get("x-ratelimit-limit-requests"),
+            model=model,
+        )
+        await self._log_rate_limit_remaining(
+            "input_tokens",
+            remaining=response.headers.get("x-ratelimit-remaining-tokens-prompt"),
+            total=response.headers.get("x-ratelimit-limit-tokens-prompt"),
+            model=model,
+        )
+        await self._log_rate_limit_remaining(
+            "output_tokens",
+            remaining=response.headers.get("x-ratelimit-remaining-tokens-generated"),
+            total=response.headers.get("x-ratelimit-limit-tokens-generated"),
+            model=model,
+        )

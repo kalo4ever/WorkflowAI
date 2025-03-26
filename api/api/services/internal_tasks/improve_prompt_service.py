@@ -2,9 +2,9 @@ import json
 import logging
 from typing import Any, AsyncIterator
 
-from api.services.internal_tasks._internal_tasks_utils import (
-    internal_tools_description,
-)
+from workflowai import Model
+
+from api.services.internal_tasks._internal_tasks_utils import officially_suggested_tools
 from api.tasks.chat_task_schema_generation.apply_field_updates import (
     InputFieldUpdate,
     OutputFieldUpdate,
@@ -15,14 +15,23 @@ from api.tasks.improve_prompt import (
     ImprovePromptAgentOutput,
     run_improve_prompt_agent,
 )
+from core.domain.task_group import TaskGroup
 from core.domain.task_group_properties import TaskGroupProperties
 from core.domain.task_io import SerializableTaskIO
+from core.domain.task_run import SerializableTaskRun
 from core.domain.task_variant import SerializableTaskVariant
 from core.storage import TaskTuple
 from core.storage.backend_storage import BackendStorage
 from core.utils.models.dumps import safe_dump_pydantic_model
 from core.utils.schema_sanitation import streamline_schema
 from core.utils.schemas import strip_json_schema_metadata_keys
+from core.utils.url_utils import extract_and_fetch_urls
+
+IMPROVE_PROMPT_MODELS = (
+    Model.GEMINI_2_0_FLASH_001,  # To iterate really quick, and smartly
+    Model.O3_MINI_2025_01_31_MEDIUM_REASONING_EFFORT,  # Strong struct gen model, if Gemini fails
+    Model.CLAUDE_3_7_SONNET_20250219,  # In case OpenAI is down...
+)
 
 
 class ImprovePromptService:
@@ -30,20 +39,34 @@ class ImprovePromptService:
         self._logger = logging.getLogger(self.__class__.__name__)
         self._storage = storage
 
-    async def _prepare_improve_prompt_input(self, task_tuple: TaskTuple, run_id: str, user_evaluation: str):
+    async def _prepare_improve_prompt_input(
+        self,
+        task_tuple: TaskTuple,
+        run_id: str | None,
+        variant_id: str | None,
+        instructions: str | None,
+        user_evaluation: str,
+    ):
         """Returns a tuple of ImprovePromptAgentInput, variant and baseline task group properties"""
-        run = await self._storage.task_runs.fetch_task_run_resource(
-            task_tuple,
-            run_id,
-            include={"version_id", "task_input", "task_output"},
-        )
-        version = await self._storage.task_groups.get_task_group_by_id(task_tuple[0], run.group.id)
-        variant_id = version.properties.task_variant_id
+
+        run: SerializableTaskRun | None = None
+        version: TaskGroup | None = None
+        if run_id:
+            run = await self._storage.task_runs.fetch_task_run_resource(
+                task_tuple,
+                run_id,
+                include={"version_id", "task_input", "task_output"},
+            )
+            version = await self._storage.task_groups.get_task_group_by_id(task_tuple[0], run.group.id)
+            instructions = version.properties.instructions  # OK to override non-mutable parameters
+            variant_id = version.properties.task_variant_id  # OK to override non-mutable parameters
+
         variant = await self._storage.task_version_resource_by_id(task_tuple[0], variant_id) if variant_id else None
+        url_contents = await extract_and_fetch_urls(user_evaluation)
 
         input_ = ImprovePromptAgentInput(
             original_agent_config=ImprovePromptAgentInput.AgentConfig(
-                prompt=version.properties.instructions,
+                prompt=instructions,
                 input_schema=variant.input_schema.json_schema if variant else None,
                 output_schema=variant.output_schema.json_schema if variant else None,
             ),
@@ -51,65 +74,103 @@ class ImprovePromptService:
                 run_input=json.dumps(run.task_input),
                 run_output=json.dumps(run.task_output),
                 user_evaluation=user_evaluation,
-            ),
-            available_tools_description=internal_tools_description(all=True),
+                user_evaluation_url_contents=url_contents,
+            )
+            if run
+            else None,
+            user_evaluation=user_evaluation,
+            available_tools_description=officially_suggested_tools(),
         )
-        return input_, variant, version.properties.model_dump(exclude_none=True)
+        return input_, variant, version.properties.model_dump(exclude_none=True) if version else {}
 
-    async def run(self, task_tuple: TaskTuple, run_id: str, user_evaluation: str):
+    async def run(
+        self,
+        task_tuple: TaskTuple,
+        run_id: str | None,
+        variant_id: str | None,
+        instructions: str | None,
+        user_evaluation: str,
+    ):
         improve_prompt_input, variant, properties = await self._prepare_improve_prompt_input(
             task_tuple,
             run_id,
+            variant_id,
+            instructions,
             user_evaluation,
         )
-        res = await run_improve_prompt_agent(improve_prompt_input)
-        updated_properties = {**properties, "instructions": res.improved_prompt}
-        if created := await self._safe_handle_improved_output_schema(
-            variant,
-            res.input_field_updates,
-            res.output_field_updates,
-        ):
-            updated_properties["task_variant_id"] = created
-        return TaskGroupProperties.model_validate(updated_properties), res.changelog
+
+        for model in IMPROVE_PROMPT_MODELS:
+            try:
+                res = await run_improve_prompt_agent(improve_prompt_input, model=model)
+                updated_properties = {**properties, "instructions": res.improved_prompt}
+                if created := await self._safe_handle_improved_output_schema(
+                    variant,
+                    res.input_field_updates,
+                    res.output_field_updates,
+                ):
+                    updated_properties["task_variant_id"] = created
+                return TaskGroupProperties.model_validate(updated_properties), res.changelog
+            except Exception as e:
+                self._logger.exception(
+                    "Error running improve prompt",
+                    exc_info=e,
+                )
+        # If all model have failed, there is something weird with the use case, we return the original properties
+        return TaskGroupProperties.model_validate(properties), ["Failed to improve prompt"]
 
     async def stream(
         self,
         task_tuple: TaskTuple,
-        run_id: str,
+        run_id: str | None,
+        variant_id: str | None,
+        instructions: str | None,
         user_evaluation: str,
     ) -> AsyncIterator[tuple[TaskGroupProperties, list[str] | None]]:
         improve_prompt_input, variant, properties = await self._prepare_improve_prompt_input(
             task_tuple,
             run_id,
+            variant_id,
+            instructions,
             user_evaluation,
         )
 
         chunk: ImprovePromptAgentOutput | None = None
-        async for payload in run_improve_prompt_agent.stream(improve_prompt_input):
-            chunk = payload.output
-            yield (
-                TaskGroupProperties.model_validate(
-                    {**properties, "instructions": chunk.improved_prompt},
-                ),
-                chunk.changelog,
-            )
-        if chunk:
-            if created_variant := await self._safe_handle_improved_output_schema(
-                variant,
-                chunk.input_field_updates,
-                chunk.output_field_updates,
-            ):
-                # We yield one last time to include the new variant
-                yield (
-                    TaskGroupProperties.model_validate(
-                        {
-                            **properties,
-                            "instructions": chunk.improved_prompt,
-                            "task_variant_id": created_variant,
-                        },
-                    ),
-                    chunk.changelog,
+
+        for model in IMPROVE_PROMPT_MODELS:
+            try:
+                async for payload in run_improve_prompt_agent.stream(improve_prompt_input, model=model):
+                    chunk = payload.output
+                    yield (
+                        TaskGroupProperties.model_validate(
+                            {**properties, "instructions": chunk.improved_prompt},
+                        ),
+                        chunk.changelog,
+                    )
+                if chunk:
+                    if created_variant := await self._safe_handle_improved_output_schema(
+                        variant,
+                        chunk.input_field_updates,
+                        chunk.output_field_updates,
+                    ):
+                        # We yield one last time to include the new variant
+                        yield (
+                            TaskGroupProperties.model_validate(
+                                {
+                                    **properties,
+                                    "instructions": chunk.improved_prompt,
+                                    "task_variant_id": created_variant,
+                                },
+                            ),
+                            chunk.changelog,
+                        )
+                return
+            except Exception as e:
+                self._logger.exception(
+                    "Error streaming improve prompt",
+                    exc_info=e,
                 )
+        # If all model have failed, there is something weird with the use case, we return the original properties
+        yield (TaskGroupProperties.model_validate(properties), ["Failed to improve prompt"])
 
     async def _safe_handle_improved_output_schema(
         self,

@@ -33,6 +33,9 @@ def _token_cache_ttl(_: Any, value: TokenCounts):
     return timedelta(hours=1)
 
 
+_logger = logging.getLogger(__name__)
+
+
 class ModelsService:
     _REASONING_MODELS_CORRECTION = {
         Model.O1_2024_12_17_LOW_REASONING_EFFORT: 0.9,
@@ -56,9 +59,10 @@ class ModelsService:
 
     def __init__(self, storage: BackendStorage):
         self.storage = storage
-        self._logger = logging.getLogger(__name__)
+        self._logger = _logger
 
-    async def _available_models_from_run_endpoint(self) -> list[Model]:
+    @classmethod
+    async def _available_models_from_run_endpoint(cls) -> list[Model]:
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.get(f"{WORKFLOWAI_RUN_URL}/v1/models")
@@ -71,13 +75,13 @@ class ModelsService:
                     m = Model(model)
                     out.append(m)
                 except ValueError:
-                    self._logger.warning(
+                    _logger.warning(
                         "Model is not a valid model",
                         extra={"model": model},
                     )
             return out
         except Exception:
-            self._logger.exception("Error fetching available models from run endpoint")
+            _logger.exception("Error fetching available models from run endpoint")
             return list(Model)
 
     class ModelForTask(NamedTuple):
@@ -97,11 +101,12 @@ class ModelsService:
         average_cost_per_run_usd: float | None = None
         is_latest: bool = False
 
+    @classmethod
     def _build_model_for_task(
-        self,
+        cls,
         model: Model,
-        task_typology: TaskTypology,
-        price_calculator: Callable[[ModelProviderData, Model], float | None],
+        task_typology: TaskTypology | None,
+        price_calculator: Callable[[ModelProviderData, Model], float | None] | None,
         instructions: str | None,
         requires_tools: bool | None,
     ):
@@ -124,7 +129,7 @@ class ModelsService:
         # We have tests in place checking that the model data of latest models is a ModelData
         # So this should never happen
         if not isinstance(data, ModelData):
-            self._logger.error(
+            _logger.error(
                 "Unexpected model data is not a ModelData",
                 extra={"model": safe_dump_pydantic_model(model)},
             )
@@ -135,7 +140,7 @@ class ModelsService:
             provider_data: ModelProviderData,
             average_cost_per_run_usd: float | None,
         ):
-            return self.ModelForTask(
+            return cls.ModelForTask(
                 id=model_id,
                 name=display_name,
                 icon_url=data.icon_url,
@@ -164,14 +169,21 @@ class ModelsService:
                 None,
             )
 
-        if is_not_supported_reason := data.is_not_supported_reason(task_typology):
+        if task_typology and (is_not_supported_reason := data.is_not_supported_reason(task_typology)):
             return _build(is_not_supported_reason, provider_data, None)
 
         return _build(
             None,
             provider_data,
-            price_calculator(provider_data, model),
+            price_calculator(provider_data, model) if price_calculator else None,
         )
+
+    @classmethod
+    async def preview_models(cls):
+        models = await cls._available_models_from_run_endpoint()
+        for model in models:
+            if m := cls._build_model_for_task(model, None, None, None, None):
+                yield m
 
     async def models_for_task(
         self,

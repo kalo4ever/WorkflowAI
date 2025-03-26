@@ -5,11 +5,12 @@ from typing import Any, NamedTuple
 
 from pydantic import BaseModel
 
-from api.services.internal_tasks._internal_tasks_utils import internal_tools_description
+from api.services.internal_tasks._internal_tasks_utils import officially_suggested_tools
 from api.services.internal_tasks.agent_suggestions_service import (
     get_supported_task_input_types,
     get_supported_task_output_types,
 )
+from api.services.slack_notifications import SlackNotificationDestination, get_user_and_org_str, send_slack_notification
 from api.services.tasks import list_agent_summaries
 from api.tasks.agent_output_example import SuggestedAgentOutputExampleInput, stream_suggested_agent_output_example
 from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task_utils import build_json_schema_with_defs
@@ -23,6 +24,7 @@ from api.tasks.company_agent_suggestion_agent import (
     stream_suggest_agents_for_company,
 )
 from core.domain.errors import InternalError, ObjectNotFoundError
+from core.domain.events import EventRouter, FeaturesByDomainGenerationStarted
 from core.domain.features import BaseFeature, tag_kind
 from core.domain.features_mapping import FEATURES_MAPPING
 from core.runners.workflowai.workflowai_runner import WorkflowAIRunner
@@ -202,7 +204,10 @@ class FeatureService:
     async def get_features_by_domain(
         self,
         company_domain: str,
+        event_router: EventRouter,
     ) -> AsyncIterator[CompanyFeaturePreviewList]:
+        event_router(FeaturesByDomainGenerationStarted(company_domain=company_domain))
+
         company_context: CompanyContext = CompanyContext(public="", private="")
         async for chunk in self._stream_company_context(company_domain):
             company_context = chunk
@@ -215,6 +220,16 @@ class FeatureService:
 
         async for chunk in self._stream_feature_suggestions(company_context.public, agent_suggestion_input):
             yield chunk
+
+    async def notify_features_by_domain_generation_started(self, event: FeaturesByDomainGenerationStarted):
+        user_and_org_str = get_user_and_org_str(event=event)
+        message = f"{user_and_org_str} started to generate features for domain: {event.company_domain}"
+
+        await send_slack_notification(
+            message=message,
+            user_email=event.user_properties.user_email if event.user_properties else None,
+            destination=SlackNotificationDestination.CUSTOMER_JOURNEY,
+        )
 
     @classmethod
     async def get_agent_preview(
@@ -253,7 +268,7 @@ class FeatureService:
                 agent_description=agent_description,
                 agent_specifications=agent_specifications,
                 company_context=company_context,
-                available_tools_description=internal_tools_description(all=True),
+                available_tools_description=officially_suggested_tools(),
             ),
         )
 

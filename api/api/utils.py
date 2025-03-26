@@ -110,6 +110,7 @@ async def setup_metrics():
         metrics_service = BetterStackMetricsService(
             tags={"e": os.getenv("ENV_NAME", "local"), "v": os.getenv("RELEASE_NAME", "unknown")},
             betterstack_api_key=betterstack_api_key,
+            betterstack_api_url=os.getenv("BETTERSTACK_API_URL"),
         )
         await metrics_service.start()
         Metric.sender = metrics_service.send_metric

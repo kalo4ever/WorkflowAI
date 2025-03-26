@@ -19,20 +19,18 @@ from core.domain.fields.zone_info import TimezoneInfo
 from core.domain.task import SerializableTask
 from core.domain.task_example_query import SerializableTaskExampleQuery
 from core.domain.task_group_properties import TaskGroupProperties
-from core.domain.task_image import TaskImage
 from core.domain.users import UserIdentifier
 from core.storage import ObjectNotFoundException
 from core.storage.mongo.models.pyobjectid import PyObjectID
-from core.storage.mongo.models.task import TaskDocument
+from core.storage.mongo.models.task_document import TaskDocument
 from core.storage.mongo.models.task_example import TaskExampleDocument
 from core.storage.mongo.models.task_group import TaskGroupDocument
 from core.storage.mongo.models.task_group_idx import TaskGroupIterations
-from core.storage.mongo.models.task_image import TaskImageDocument
 from core.storage.mongo.models.task_input import TaskInputDocument
 from core.storage.mongo.models.task_io import TaskIOSchema
 from core.storage.mongo.models.task_metadata import TaskMetadataSchema
 from core.storage.mongo.models.task_run_document import TaskRunDocument
-from core.storage.mongo.models.task_schema_ids import TaskSchemaIndexSchema
+from core.storage.mongo.models.task_schema_id_document import TaskSchemaIdDocument
 from core.storage.mongo.models.task_variant import TaskVariantDocument
 from core.storage.mongo.mongo_storage import MongoStorage
 from core.storage.mongo.mongo_types import AsyncClient, AsyncCollection
@@ -124,15 +122,19 @@ async def test_timezones_are_preserved(collection: AsyncCollection) -> None:
 async def test_get_schema_id(storage: MongoStorage) -> None:
     # No idx exists for the task -> it is created
     task_id = str(uuid.uuid4())
-    idx = await storage.get_schema_id(task_id, "1", "2")
+    idx = await storage.get_schema_id(task_id, 1, "1", "2")
     assert idx == 1
 
+    doc = await storage._task_schema_id_collection.find_one({"slug": task_id})  # pyright: ignore[reportPrivateUsage]
+    assert doc is not None
+    assert "tenant_uid" in doc
+    assert "task_uid" in doc
     # Re-retrieving the schema -> not incremented
-    idx = await storage.get_schema_id(task_id, "1", "2")
+    idx = await storage.get_schema_id(task_id, 1, "1", "2")
     assert idx == 1
 
     # Changing the schema
-    idx = await storage.get_schema_id(task_id, "1", "3")
+    idx = await storage.get_schema_id(task_id, 1, "3", "4")
     assert idx == 2
 
 
@@ -253,9 +255,9 @@ def _task_variant(
 #     return TaskSchemaDocument.model_validate({**doc.model_dump(by_alias=True), **kwargs})
 
 
-def _task_schema_id(**kwargs: Any) -> TaskSchemaIndexSchema:
-    doc = TaskSchemaIndexSchema(slug=TASK_ID, latest_idx=1, idx_mapping={}, tenant=TENANT)
-    return TaskSchemaIndexSchema.model_validate({**doc.model_dump(by_alias=True), **kwargs})
+def _task_schema_id(**kwargs: Any) -> TaskSchemaIdDocument:
+    doc = TaskSchemaIdDocument(slug=TASK_ID, latest_idx=1, idx_mapping={}, tenant=TENANT)
+    return TaskSchemaIdDocument.model_validate({**doc.model_dump(by_alias=True), **kwargs})
 
 
 def _task_group(
@@ -543,7 +545,7 @@ class TestDeleteTask:
         non_task_collections = {"migrations", "org_settings", "transcriptions"}
         all_collections = [col for col in all_collections if col.name not in non_task_collections]
         for col in all_collections:
-            doc: dict[str, Any] = {"tenant": TENANT}
+            doc: dict[str, Any] = {"tenant": TENANT, "tenant_uid": 1}
             match col.name:
                 case "tasks" | "task_schema_id":
                     doc["slug"] = TASK_ID
@@ -710,6 +712,10 @@ class TestGetOrCreateTaskGroup:
         assert group.iteration == 1
 
         doc = await task_run_group_col.find_one({"task_id": TASK_ID, "task_schema_id": 1, "iteration": 1})
+        assert doc
+        # TODO[uid]: add task_uid
+        # assert "task_uid" in doc
+        doc["tenant_uid"] = 1
         assert TaskGroupDocument.model_validate(doc).to_resource() == group
 
         group_1 = await storage.get_or_create_task_group(TASK_ID, 1, TaskGroupProperties(model="h1"), [], None)
@@ -811,6 +817,7 @@ class TestStoreTaskResource:
         assert task_info["tenant"] == TENANT
         assert task_info["name"] == "task_name"
         assert task_info["uid"] == stored.task_uid
+        assert task_info["tenant_uid"] == 1
 
         # I can do it again
         stored, created = await storage.store_task_resource(ser)
@@ -819,6 +826,11 @@ class TestStoreTaskResource:
         # Check that the task info is not updated
         new_task_info = await tasks_col.find_one({"tenant": TENANT, "task_id": TASK_ID})
         assert new_task_info == task_info
+
+        variant_doc = await task_variants_col.find_one({"tenant": TENANT, "slug": TASK_ID})
+        assert variant_doc is not None
+        assert variant_doc["tenant_uid"] == 1
+        assert variant_doc["task_uid"] == stored.task_uid
 
     async def test_existing_task_info(
         self,
@@ -1059,63 +1071,6 @@ class TestGetTask:
 
         with pytest.raises(ObjectNotFoundException):
             await storage.get_task("bla")
-
-
-class TestTaskImage:
-    async def test_create_task_image(self, storage: MongoStorage, task_images_col: AsyncCollection):
-        task_id = "test_task"
-        image_data = b"test_image_data"
-        compressed_image_data = b"test_compressed_image_data"
-        task_image = TaskImage(task_id=task_id, image_data=image_data, compressed_image_data=compressed_image_data)
-
-        await storage.create_task_image(task_image)
-
-        stored_image = await task_images_col.find_one({"task_id": task_id})
-        assert stored_image is not None
-        assert stored_image["task_id"] == task_id
-        assert stored_image["image_data"] == image_data
-        assert stored_image["compressed_image_data"] == compressed_image_data
-        assert stored_image["tenant"] == TENANT
-
-    async def test_get_task_image_existing(self, storage: MongoStorage, task_images_col: AsyncCollection):
-        task_id = "existing_task"
-        image_data = b"existing_image_data"
-        compressed_image_data = b"test_compressed_image_data"
-        task_image_doc = TaskImageDocument(
-            task_id=task_id,
-            image_data=image_data,
-            compressed_image_data=compressed_image_data,
-            tenant=TENANT,
-        )
-        await task_images_col.insert_one(dump_model(task_image_doc))
-
-        result = await storage.get_task_image(task_id)
-
-        assert result is not None
-        assert isinstance(result, TaskImage)
-        assert result.task_id == task_id
-        assert result.image_data == image_data
-
-    async def test_get_task_image_nonexistent(self, storage: MongoStorage):
-        task_id = "nonexistent_task"
-
-        result = await storage.get_task_image(task_id)
-
-        assert result is None
-
-    async def test_get_task_image_wrong_tenant(self, storage: MongoStorage, task_images_col: AsyncCollection):
-        task_id = "wrong_tenant_task"
-        image_data = b"wrong_tenant_image_data"
-        task_image_doc = TaskImageDocument(
-            task_id=task_id,
-            image_data=image_data,
-            tenant="wrong_tenant",
-        )
-        await task_images_col.insert_one(dump_model(task_image_doc))
-
-        result = await storage.get_task_image(task_id)
-
-        assert result is None
 
 
 class TestGetLatestGroupIteration:

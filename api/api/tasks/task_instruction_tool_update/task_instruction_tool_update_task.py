@@ -63,5 +63,5 @@ def stream_task_instruction_tool_update(
 
     DO NOT update any other part of the 'initial_task_instructions' that the parts related to 'tools_to_remove' or 'tools_to_add'.
     DO NOT use markdown formatting (**, *, #, etc.), unless markdown is already present in the 'initial_task_instructions'.
-    DO NOT add any character around tool handles (quotes, etc.) just uses @browser-text for example"""
+    DO NOT add any character around tool handles (quotes, etc.) just use @the-tool-handle"""
     ...

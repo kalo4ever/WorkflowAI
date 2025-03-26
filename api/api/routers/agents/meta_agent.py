@@ -6,22 +6,35 @@ from pydantic import BaseModel, Field
 
 from api.dependencies.analytics import UserPropertiesDep
 from api.dependencies.event_router import EventRouterDep
-from api.dependencies.storage import StorageDep
-from api.services.internal_tasks.meta_agent_service import MetaAgentService
-from core.domain.fields.chat_message import ChatMessage
+from api.dependencies.path_params import TaskSchemaID
+from api.dependencies.services import ModelsServiceDep, RunsServiceDep, StorageDep
+from api.dependencies.task_info import TaskTupleDep
+from api.services.internal_tasks.meta_agent_service import (
+    MetaAgentChatMessage,
+    MetaAgentService,
+    PlaygroundState,
+)
 from core.utils.stream_response_utils import safe_streaming_response
 
-router = APIRouter(prefix="/agents/meta-agent")
+router = APIRouter(prefix="/agents/{task_id}/prompt-engineer-agent")
 
 
 class MetaAgentChatRequest(BaseModel):
-    messages: list[ChatMessage] = Field(
+    # Schema id is passed here instead of as a path parameters in order to have the endpoint schema-agnostic since
+    # the schema id might change in the middle of the conversation based on the agent's actions.
+    schema_id: TaskSchemaID
+
+    playground_state: PlaygroundState = Field(
+        description="The state of the playground",
+    )
+
+    messages: list[MetaAgentChatMessage] = Field(
         description="The list of messages in the conversation, the last message being the most recent one",
     )
 
 
 class MetaAgentChatResponse(BaseModel):
-    messages: list[ChatMessage] = Field(
+    messages: list[MetaAgentChatMessage] = Field(
         description="The list of messages that compose the response of the meta-agent",
     )
 
@@ -40,18 +53,29 @@ class MetaAgentChatResponse(BaseModel):
     },
 )
 async def get_meta_agent_chat(
+    task_tuple: TaskTupleDep,
     request: MetaAgentChatRequest,
     user_properties: UserPropertiesDep,
+    runs_service: RunsServiceDep,
     storage: StorageDep,
     event_router: EventRouterDep,
+    models_service: ModelsServiceDep,
 ) -> StreamingResponse:
     async def _stream() -> AsyncIterator[BaseModel]:
-        meta_agent_service = MetaAgentService(storage=storage, event_router=event_router)
+        meta_agent_service = MetaAgentService(
+            storage=storage,
+            event_router=event_router,
+            runs_service=runs_service,
+            models_service=models_service,
+        )
 
-        async for chunk in meta_agent_service.stream_meta_agent_response(
+        async for messages in meta_agent_service.stream_meta_agent_response(
+            task_tuple=task_tuple,
+            agent_schema_id=request.schema_id,
             user_email=user_properties.user_email,
             messages=request.messages,
+            playground_state=request.playground_state,
         ):
-            yield MetaAgentChatResponse(messages=chunk)
+            yield MetaAgentChatResponse(messages=messages)
 
     return safe_streaming_response(_stream)

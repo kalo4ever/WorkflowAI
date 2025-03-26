@@ -340,3 +340,22 @@ class MistralAIProvider(HTTPXProvider[MistralAIConfig, CompletionResponse]):
             )
 
         return tool_calls
+
+    async def _extract_and_log_rate_limits(self, response: Response, model: Model):
+        # Mistral also has a per second request rate limit
+        # But it does not seem to be exposed
+        # https://admin.mistral.ai/plateforme/limits
+
+        await self._log_rate_limit_remaining(
+            "tokens",
+            remaining=response.headers.get("x-ratelimitbysize-remaining-minute"),
+            total=response.headers.get("x-ratelimitbysize-limit-minute"),
+            model=model,
+        )
+
+        await self._log_rate_limit_remaining(
+            "tokens_by_month",
+            remaining=response.headers.get("x-ratelimitbysize-remaining-month"),
+            total=response.headers.get("x-ratelimitbysize-limit-month"),
+            model=model,
+        )

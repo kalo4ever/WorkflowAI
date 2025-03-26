@@ -7,7 +7,6 @@ import pytest
 from bson import ObjectId
 from pymongo.errors import DuplicateKeyError
 
-from core.domain.errors import InternalError
 from core.domain.major_minor import MajorMinor
 from core.domain.task_group import TaskGroupQuery
 from core.domain.task_group_update import TaskGroupUpdate
@@ -115,27 +114,6 @@ class TestGetTaskGroup:
 
 
 class TestUpdateTaskGroup:
-    async def test_add_alias(self, task_groups_storage: MongoTaskGroupStorage, task_run_group_col: AsyncCollection):
-        # No longer supported
-        with pytest.raises(InternalError):
-            await task_groups_storage.update_task_group(
-                TASK_ID,
-                1,
-                2,
-                # Skipping validation
-                TaskGroupUpdate.model_construct(None, add_alias="bla1"),
-            )
-
-    async def test_remove_alias(self, task_groups_storage: MongoTaskGroupStorage, task_run_group_col: AsyncCollection):
-        with pytest.raises(InternalError):
-            await task_groups_storage.update_task_group(
-                TASK_ID,
-                1,
-                2,
-                # Skipping validation
-                TaskGroupUpdate.model_construct(None, remove_alias="bla"),
-            )
-
     async def test_update_is_favorite(
         self,
         task_groups_storage: MongoTaskGroupStorage,

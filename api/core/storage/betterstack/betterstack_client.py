@@ -25,9 +25,14 @@ class _MetricRequest(TypedDict):
 
 
 class BetterStackClient:
-    def __init__(self, betterstack_api_key: str, default_retry_delay: float = 10.0):
+    def __init__(
+        self,
+        betterstack_api_key: str,
+        betterstack_api_url: str | None = None,
+        default_retry_delay: float = 10.0,
+    ):
         self._betterstack_api_key = betterstack_api_key
-        self._client = httpx.AsyncClient(base_url="https://in.logs.betterstack.com")
+        self._client = httpx.AsyncClient(base_url=betterstack_api_url or "https://in.logs.betterstack.com")
         self._logger = logging.getLogger(__name__)
         self._default_retry_delay = default_retry_delay
 

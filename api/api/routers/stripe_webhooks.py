@@ -6,7 +6,7 @@ import stripe
 from fastapi import APIRouter, Header, Request, Response
 from pydantic import BaseModel
 
-from api.dependencies.security import SystemStorageDep
+from api.dependencies.security import OrgSystemStorageDep
 from core.domain.errors import DefaultError
 
 router = APIRouter(prefix="/webhooks/stripe", include_in_schema=False)
@@ -67,7 +67,7 @@ async def verify_stripe_signature(
 
 @router.post("")
 async def stripe_webhook(
-    storage: SystemStorageDep,
+    storage: OrgSystemStorageDep,
     request: Request,
     stripe_signature: str | None = Header(None, alias="Stripe-Signature"),
 ) -> Response:

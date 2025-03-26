@@ -18,7 +18,7 @@ from core.domain.task_run_aggregate_per_day import TaskRunAggregatePerDay
 from core.domain.task_run_query import SerializableTaskRunField, SerializableTaskRunQuery
 from core.storage import ObjectNotFoundException, TaskTuple
 from core.storage.clickhouse.models.runs import FIELD_TO_COLUMN, ClickhouseRun
-from core.storage.clickhouse.models.utils import data_and_columns
+from core.storage.clickhouse.models.utils import data_and_columns, id_lower_bound
 from core.storage.clickhouse.query_builder import Q, W, WhereAndClause
 from core.storage.task_run_storage import RunAggregate, TaskRunStorage, TokenCounts
 
@@ -449,3 +449,57 @@ class ClickhouseClient(TaskRunStorage):
             )
             for row in res.result_rows
         }
+
+    @override
+    async def run_count_by_version_id(
+        self,
+        agent_uid: int,
+        from_date: datetime,
+    ):
+        w = (
+            W("tenant_uid", type="UInt32", value=self.tenant_uid)
+            & W("task_uid", type="UInt32", value=agent_uid)
+            & W("created_at_date", type="Date", value=from_date.strftime("%Y-%m-%d"), operator=">=")
+            & W("run_uuid", type="UInt128", value=id_lower_bound(from_date), operator=">=")
+        )
+        raw, parameters = w.to_sql_req()
+        sql = f"""
+        SELECT
+            version_id,
+            count() AS total_count
+        FROM runs
+        WHERE {raw}
+        GROUP BY version_id
+        """
+        res = await self.query(sql, parameters=parameters)
+
+        for row in res.result_rows:
+            yield TaskRunStorage.VersionRunCount(
+                version_id=row[0].rstrip(b"\x00").decode(),
+                run_count=row[1],
+            )
+
+    @override
+    async def run_count_by_agent_uid(self, from_date: datetime) -> AsyncIterator[TaskRunStorage.AgentRunCount]:
+        w = (
+            W("tenant_uid", type="UInt32", value=self.tenant_uid)
+            & W("created_at_date", type="Date", value=from_date.strftime("%Y-%m-%d"), operator=">=")
+            & W("run_uuid", type="UInt128", value=id_lower_bound(from_date), operator=">=")
+        )
+        raw, parameters = w.to_sql_req()
+        sql = f"""
+        SELECT
+            task_uid,
+            count() AS total_count,
+            sum(cost_millionth_usd) AS total_cost_usd
+        FROM runs
+        WHERE {raw}
+        GROUP BY task_uid
+        """
+        res = await self.query(sql, parameters=parameters)
+        for row in res.result_rows:
+            yield TaskRunStorage.AgentRunCount(
+                agent_uid=row[0],
+                run_count=row[1],
+                total_cost_usd=ClickhouseRun.from_cost_millionth_usd(row[2]),
+            )

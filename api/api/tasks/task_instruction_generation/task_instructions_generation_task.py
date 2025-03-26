@@ -68,6 +68,7 @@ async def generate_task_instructions(
     Do NOT use markdown.
     Keep in mind that the tools in 'available_tools_description' are available: You can include those tools in the instructions when pertinent. Always refer to the tools as '@tool_name'
     When the instruction must include parts of content you really can not redact yourself, use [the context required from the user], ex: "[Insert your SOPs here]. Take into account the likely length of the content the user will insert. If the content is long, prefer putting line breaks before and after the [Insert ...]. Always include square brackets in this case.
+    When citing enum values, be very careful only citing the values that actually exist in the enum defined in the 'task.input_json_schema' or 'task.output_json_schema'.
 
     # Migrating user prompts
     When the user has passed in its messages a well-formed prompt, you MUST generate instructions that are identical to the initial user prompt. The only exception is if the user has passed templating elements (ex: variable injection, ifs) you must convert the instructions to jinja2 format and use the variables present in 'task.input_json_schema.json_schema'

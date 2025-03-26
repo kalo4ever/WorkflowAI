@@ -14,8 +14,7 @@ class Model(StrEnum):
     # Default model order
     GPT_4O_LATEST = "gpt-4o-latest"
     GEMINI_2_0_FLASH_LATEST = "gemini-2.0-flash-latest"
-    CLAUDE_3_5_SONNET_LATEST = "claude-3-5-sonnet-latest"
-    GEMINI_1_5_FLASH_LATEST = "gemini-1.5-flash-latest"
+    CLAUDE_3_7_SONNET_LATEST = "claude-3-7-sonnet-latest"
 
     # --------------------------------------------------------------------------
     # OpenAI Models
@@ -65,7 +64,7 @@ class Model(StrEnum):
     GEMINI_1_5_PRO_001 = "gemini-1.5-pro-001"
     GEMINI_1_5_PRO_PREVIEW_0514 = "gemini-1.5-pro-preview-0514"
     GEMINI_1_5_PRO_PREVIEW_0409 = "gemini-1.5-pro-preview-0409"
-    # GEMINI_1_5_FLASH_LATEST = "gemini-1.5-flash-latest"
+    GEMINI_1_5_FLASH_LATEST = "gemini-1.5-flash-latest"
     GEMINI_1_5_FLASH_002 = "gemini-1.5-flash-002"
     GEMINI_1_5_FLASH_001 = "gemini-1.5-flash-001"
     GEMINI_1_5_FLASH_8B = "gemini-1.5-flash-8b"
@@ -79,9 +78,9 @@ class Model(StrEnum):
     # --------------------------------------------------------------------------
     # Claude Models
     # --------------------------------------------------------------------------
-    CLAUDE_3_7_SONNET_LATEST = "claude-3-7-sonnet-latest"
+    # CLAUDE_3_7_SONNET_LATEST = "claude-3-7-sonnet-latest"
     CLAUDE_3_7_SONNET_20250219 = "claude-3-7-sonnet-20250219"
-    # CLAUDE_3_5_SONNET_LATEST = "claude-3-5-sonnet-latest"
+    CLAUDE_3_5_SONNET_LATEST = "claude-3-5-sonnet-latest"
     CLAUDE_3_5_SONNET_20241022 = "claude-3-5-sonnet-20241022"
     CLAUDE_3_5_SONNET_20240620 = "claude-3-5-sonnet-20240620"
     CLAUDE_3_5_HAIKU_LATEST = "claude-3-5-haiku-latest"
@@ -135,4 +134,7 @@ class Model(StrEnum):
     # DeepSeek Models
     # --------------------------------------------------------------------------
     DEEPSEEK_V3_2412 = "deepseek-v3-2412"
+    DEEPSEEK_V3_0324 = "deepseek-v3-0324"
+    DEEPSEEK_V3_LATEST = "deepseek-v3-latest"
     DEEPSEEK_R1_2501 = "deepseek-r1-2501"
+    DEEPSEEK_R1_2501_BASIC = "deepseek-r1-2501-basic"

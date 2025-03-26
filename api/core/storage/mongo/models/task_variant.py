@@ -57,4 +57,5 @@ class TaskVariantDocument(BaseDocumentWithStrID):
             created_at=self.created_at,
             is_public=self.is_public,
             creation_chat_messages=self.creation_chat_messages,
+            tenant=self.tenant,
         )

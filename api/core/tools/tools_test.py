@@ -163,6 +163,10 @@ def test_tool_handle_variations(instructions: str, handle: str, expected: bool) 
             "Use @search; with semicolon",
             {ToolKind.WEB_SEARCH_GOOGLE},
         ),
+        (
+            "Use @perplexity-sonar-pro to get content",
+            {ToolKind.WEB_SEARCH_PERPLEXITY_SONAR_PRO},
+        ),
     ],
 )
 def test_get_tools_in_instructions(instructions: str, expected_tools: set[ToolKind]) -> None:

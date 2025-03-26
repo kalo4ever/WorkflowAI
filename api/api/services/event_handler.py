@@ -7,6 +7,7 @@ from typing import Any, Concatenate, Coroutine, Generic, NamedTuple, TypeVar
 from taskiq import AsyncTaskiqDecoratedTask
 from taskiq_redis import RedisScheduleSource
 
+from api.jobs import features_by_domain_generation_started_jobs
 from core.domain.analytics_events.analytics_events import OrganizationProperties, TaskProperties, UserProperties
 from core.domain.events import (
     AIReviewCompletedEvent,
@@ -15,8 +16,9 @@ from core.domain.events import (
     AIReviewStartedEvent,
     Event,
     EventRouter,
+    FeaturesByDomainGenerationStarted,
+    FeedbackCreatedEvent,
     MetaAgentChatMessagesSent,
-    MetaAgentChatSessionStartedEvent,
     RecomputeReviewBenchmarkEvent,
     RunCreatedEvent,
     SendAnalyticsEvent,
@@ -52,8 +54,8 @@ def _jobs():
         ai_reviewer_updated_jobs,
         analytics_jobs,
         chat_started_jobs,
+        feedback_created_jobs,
         meta_agent_chat_messages_sent_jobs,
-        meta_agent_chat_session_started_jobs,
         recompute_review_benchmark_jobs,
         run_created_jobs,
         store_run_jobs,
@@ -94,8 +96,9 @@ def _jobs():
         _JobListing(TaskGroupSaved, task_group_saved_jobs.JOBS),
         _JobListing(TriggerRunEvaluationEvent, trigger_run_evaluation_jobs.JOBS),
         _JobListing(TaskInstructionsGeneratedEvent, task_instructions_generated_jobs.JOBS),
-        _JobListing(MetaAgentChatSessionStartedEvent, meta_agent_chat_session_started_jobs.JOBS),
         _JobListing(MetaAgentChatMessagesSent, meta_agent_chat_messages_sent_jobs.JOBS),
+        _JobListing(FeedbackCreatedEvent, feedback_created_jobs.JOBS),
+        _JobListing(FeaturesByDomainGenerationStarted, features_by_domain_generation_started_jobs.JOBS),
     ]
 
 

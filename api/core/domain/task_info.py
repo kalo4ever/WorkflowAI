@@ -6,6 +6,16 @@ from core.domain.ban import Ban
 from core.storage import TaskTuple
 
 
+class PublicTaskInfo(BaseModel):
+    uid: int = 0
+    task_id: str
+    name: str = ""
+    is_public: bool = False
+    # TODO[uids]: remove once we don't need the string tenant anymore
+    tenant: str = ""
+    tenant_uid: int = 0
+
+
 class TaskInfo(BaseModel):
     uid: int = 0
     task_id: str

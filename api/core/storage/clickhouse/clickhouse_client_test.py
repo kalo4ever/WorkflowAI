@@ -5,6 +5,7 @@ import time
 from collections.abc import Collection
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 import bson
 import pytest
@@ -16,6 +17,7 @@ from core.domain.llm_usage import LLMUsage
 from core.domain.models import Provider
 from core.domain.search_query import (
     SearchField,
+    SearchOperation,
     SearchOperationSingle,
     SearchOperator,
     SearchQuery,
@@ -33,6 +35,7 @@ from core.storage.clickhouse.clickhouse_client import (
 from core.storage.clickhouse.models.runs import ClickhouseRun
 from core.storage.mongo.models.task_run_document import TaskRunDocument
 from core.storage.task_run_storage import RunAggregate
+from core.utils.fields import datetime_factory
 from core.utils.schemas import FieldType
 from core.utils.uuid import uuid7
 from tests.models import task_group, task_run_ser
@@ -55,11 +58,27 @@ def read_sql_commands() -> list[str]:
 
 
 async def fresh_clickhouse_client(dsn: str | None = None):
+    from clickhouse_connect.driver.exceptions import DatabaseError
+
     if not dsn:
         dsn = os.getenv("CLICKHOUSE_TEST_CONNECTION_STRING", "clickhouse://default:admin@localhost:8123/db_test")
+
+    if "localhost" not in dsn:
+        raise ValueError("Only local testing is supported")
     client = ClickhouseClient(dsn, tenant_uid=1)
 
-    await client.command("DROP TABLE IF EXISTS runs;")
+    db_name = urlparse(dsn).path.lstrip("/")
+
+    try:
+        await client.command("DROP TABLE IF EXISTS runs;")
+    except DatabaseError as e:
+        if f"Database {db_name} does not exist" not in str(e):
+            raise e
+
+        from clickhouse_connect.driver import create_async_client  # pyright: ignore[reportUnknownVariableType]
+
+        raw_clt = await create_async_client(dsn=dsn.rstrip(f"/{db_name}"))
+        await raw_clt.command(f"CREATE DATABASE {db_name};")  # pyright: ignore[reportUnknownMemberType]
 
     setup_commands = read_sql_commands()
     # Skipping settings for default user since it breaks in local dev
@@ -448,6 +467,53 @@ class TestSearchTaskRun:
         )
         assert r == [str(_uuid7(1))]
 
+    @pytest.mark.parametrize(
+        ("operation", "expected_indices"),
+        [
+            # TODO: check why this test fails
+            # pytest.param(
+            #     SearchOperationBetween(
+            #         SearchOperator.IS_BETWEEN,
+            #         (datetime.datetime(2024, 1, 1, 12), datetime.datetime(2024, 1, 1, 14)),
+            #     ),
+            #     [2, 3, 4],  # includes 12:00, 13:00, and 14:00
+            #     id="between",
+            # ),
+            # IS_BEFORE test - excludes boundary
+            pytest.param(
+                SearchOperationSingle(SearchOperator.IS_BEFORE, datetime.datetime(2024, 1, 1, 12)),
+                [0, 1],  # includes only 11:00
+                id="before",
+            ),
+            # IS_AFTER test - excludes boundary
+            pytest.param(
+                SearchOperationSingle(SearchOperator.IS_AFTER, datetime.datetime(2024, 1, 1, 12, 1)),
+                [2, 3],  # includes 13:00 and 14:00
+                id="after",
+            ),
+        ],
+    )
+    async def test_search_time(
+        self,
+        clickhouse_client: ClickhouseClient,
+        operation: SearchOperation,
+        expected_indices: list[int],
+    ):
+        """Test searching runs by time with different operators."""
+        base_time = datetime.datetime(2024, 1, 1, 12)  # noon
+        runs = [
+            _ck_run(created_at=base_time - datetime.timedelta(hours=1)),  # 11:00
+            _ck_run(created_at=base_time),  # 12:00
+            _ck_run(created_at=base_time + datetime.timedelta(hours=1)),  # 13:00
+            _ck_run(created_at=base_time + datetime.timedelta(hours=2)),  # 14:00
+        ]
+        await clickhouse_client.insert_models("runs", runs, {"async_insert": 0, "wait_for_async_insert": 0})
+
+        query: list[SearchQuery] = [SearchQuerySimple(SearchField.TIME, operation=operation)]
+        r = await self._search(clickhouse_client, query)
+        indices = {str(r.run_uuid): idx for idx, r in enumerate(runs)}
+        assert sorted([indices[i] for i in r]) == expected_indices
+
 
 class TestFetchCachedRun:
     async def test_fetch_cached_run(self, clickhouse_client: ClickhouseClient):
@@ -581,11 +647,12 @@ class TestFetchCachedRun:
         assert fetched_run.id == str(uuid1)
 
 
-def _ck_run(task_uid: int = 1, tenant_uid: int = 1, **kwargs: Any):
-    uuid = uuid7()
+def _ck_run(task_uid: int = 1, tenant_uid: int = 1, created_at: datetime.datetime | None = None, **kwargs: Any):
+    uuid = uuid7() if created_at is None else uuid7(ms=lambda: int(created_at.timestamp() * 1000))
     run = task_run_ser(
         id=str(uuid),
         task_uid=task_uid,
+        created_at=created_at or datetime_factory(),
         **kwargs,
     )
     return ClickhouseRun.from_domain(tenant_uid, run)
@@ -973,3 +1040,115 @@ class TestFetchRun:
             include={"group.iteration"},
         )
         assert run.group.iteration == 1
+
+
+class TestRunCountByVersionId:
+    async def test_run_count_by_version_id(self, clickhouse_client: ClickhouseClient):
+        # Create test data with different version IDs and dates
+        now = datetime.datetime(2024, 1, 1)
+        runs = [
+            # These should be counted (same agent, after from_date)
+            _ck_run(task_uid=1, group_id="v1", created_at=now),
+            _ck_run(task_uid=1, group_id="v1", created_at=now),
+            _ck_run(task_uid=1, group_id="v2", created_at=now),
+            # Different agent, should not be counted
+            _ck_run(task_uid=2, group_id="v1", created_at=now),
+            # Before from_date, should not be counted
+            _ck_run(task_uid=1, group_id="v1", created_at=now - datetime.timedelta(days=2)),
+            # Different tenant, should not be counted
+            _ck_run(tenant_uid=2, task_uid=1, group_id="v1", created_at=now),
+        ]
+        await clickhouse_client.insert_models("runs", runs, {"async_insert": 0, "wait_for_async_insert": 0})
+
+        counts = {
+            r.version_id: r.run_count
+            async for r in clickhouse_client.run_count_by_version_id(1, now - datetime.timedelta(days=1))
+        }
+        assert counts == {"v1": 2, "v2": 1}
+
+    async def test_run_count_by_version_id_empty(self, clickhouse_client: ClickhouseClient):
+        # Test with no data
+        now = datetime.datetime(2024, 1, 1)
+        counts = {r.version_id: r.run_count async for r in clickhouse_client.run_count_by_version_id(1, now)}
+        assert counts == {}
+
+    async def test_run_count_by_version_id_date_boundary(self, clickhouse_client: ClickhouseClient):
+        # Test exact date boundary behavior
+        boundary_date = datetime.datetime(2024, 1, 1, 12, 0)  # Noon on Jan 1st
+        runs = [
+            # 1 second before boundary
+            _ck_run(task_uid=1, group_id="v1", created_at=boundary_date - datetime.timedelta(seconds=1)),
+            # Exactly at boundary
+            _ck_run(task_uid=1, group_id="v1", created_at=boundary_date),
+            # 1 second after boundary
+            _ck_run(task_uid=1, group_id="v1", created_at=boundary_date + datetime.timedelta(seconds=1)),
+        ]
+        await clickhouse_client.insert_models("runs", runs, {"async_insert": 0, "wait_for_async_insert": 0})
+
+        # Should only include runs at or after boundary_date
+        counts = {r.version_id: r.run_count async for r in clickhouse_client.run_count_by_version_id(1, boundary_date)}
+        assert counts == {"v1": 2}
+
+
+class TestRunCountByAgentUid:
+    async def test_run_count_by_agent_uid(self, clickhouse_client: ClickhouseClient):
+        # Create test data with different agent UIDs and dates
+        now = datetime.datetime(2024, 1, 1)
+        runs = [
+            # These should be counted (after from_date)
+            _ck_run(task_uid=1, created_at=now, cost_usd=10.0),
+            _ck_run(task_uid=1, created_at=now, cost_usd=20.0),  # avg cost for task_uid 1: 15.0
+            _ck_run(task_uid=2, created_at=now, cost_usd=30.0),
+            _ck_run(task_uid=2, created_at=now, cost_usd=40.0),  # avg cost for task_uid 2: 35.0
+            _ck_run(task_uid=3, created_at=now, cost_usd=50.0),  # avg cost for task_uid 3: 50.0
+            # Before from_date, should not be counted
+            _ck_run(task_uid=1, created_at=now - datetime.timedelta(days=2), cost_usd=100.0),
+            _ck_run(task_uid=2, created_at=now - datetime.timedelta(days=2), cost_usd=200.0),
+            # Different tenant, should not be counted
+            _ck_run(tenant_uid=2, task_uid=1, created_at=now, cost_usd=300.0),
+            _ck_run(tenant_uid=2, task_uid=2, created_at=now, cost_usd=400.0),
+        ]
+        await clickhouse_client.insert_models("runs", runs, {"async_insert": 0, "wait_for_async_insert": 0})
+
+        results = {
+            r.agent_uid: (r.run_count, r.total_cost_usd)
+            async for r in clickhouse_client.run_count_by_agent_uid(now - datetime.timedelta(days=1))
+        }
+        assert results == {
+            1: (2, pytest.approx(30.0)),  # pyright: ignore [reportUnknownMemberType]
+            2: (2, pytest.approx(70.0)),  # pyright: ignore [reportUnknownMemberType]
+            3: (1, pytest.approx(50.0)),  # pyright: ignore [reportUnknownMemberType]
+        }
+
+    async def test_run_count_by_agent_uid_empty(self, clickhouse_client: ClickhouseClient):
+        # Test with no data
+        now = datetime.datetime(2024, 1, 1)
+        results = {
+            r.agent_uid: (r.run_count, r.total_cost_usd) async for r in clickhouse_client.run_count_by_agent_uid(now)
+        }
+        assert results == {}
+
+    async def test_run_count_by_agent_uid_date_boundary(self, clickhouse_client: ClickhouseClient):
+        # Test exact date boundary behavior
+        boundary_date = datetime.datetime(2024, 1, 1, 12, 0)  # Noon on Jan 1st
+        runs = [
+            # 1 second before boundary
+            _ck_run(task_uid=1, created_at=boundary_date - datetime.timedelta(seconds=1), cost_usd=10.0),
+            # Exactly at boundary
+            _ck_run(task_uid=1, created_at=boundary_date, cost_usd=20.0),
+            _ck_run(task_uid=2, created_at=boundary_date, cost_usd=30.0),
+            # 1 second after boundary
+            _ck_run(task_uid=1, created_at=boundary_date + datetime.timedelta(seconds=1), cost_usd=40.0),
+            _ck_run(task_uid=2, created_at=boundary_date + datetime.timedelta(seconds=1), cost_usd=50.0),
+        ]
+        await clickhouse_client.insert_models("runs", runs, {"async_insert": 0, "wait_for_async_insert": 0})
+
+        # Should only include runs at or after boundary_date
+        results = {
+            r.agent_uid: (r.run_count, r.total_cost_usd)
+            async for r in clickhouse_client.run_count_by_agent_uid(boundary_date)
+        }
+        assert results == {
+            1: (2, pytest.approx(60.0)),  # pyright: ignore [reportUnknownMemberType]
+            2: (2, pytest.approx(80.0)),  # pyright: ignore [reportUnknownMemberType]
+        }

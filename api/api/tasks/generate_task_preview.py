@@ -24,6 +24,14 @@ class GenerateTaskPreviewTaskInput(BaseModel):
         default=None,
         description="The current task preview (input, output) to reuse and update, if already existing",
     )
+    current_preview_input_validation_error: str | None = Field(
+        default=None,
+        description="Any validation of the 'current_preview' against the 'task_input_schema'",
+    )
+    current_preview_output_validation_error: str | None = Field(
+        default=None,
+        description="Any validation of the 'current_preview' against the 'task_output_schema'",
+    )
 
 
 class GenerateTaskPreviewTaskOutput(BaseModel):
@@ -37,5 +45,18 @@ class GenerateTaskPreviewTaskOutput(BaseModel):
 def stream_generate_task_preview(
     input: GenerateTaskPreviewTaskInput,
 ) -> AsyncIterator[GenerateTaskPreviewTaskOutput]:
-    """You are a task preview generator specializing in creating representative examples for input and output schemas. Your goal is to generate a preview that includes realistic example data for both input and output that match the provided schemas (types, names, etc.). The preview should be clear, demonstrate typical usage, and be easy to understand. If the schema has not changed, you MUST reuse exactly the 'current_preview' provided. If a 'current_preview' exists and the schema has changed, you MUST use 'current_preview' as a base and fill fields while maintaining schema compatibility. Consider any chat messages to make the preview more relevant and accurate. Ensure that the preview includes example input data and corresponding example output data that clearly illustrate how the input data is processed according to the provided schemas. In case the schema contains any '#/$defs/File' field, use "sample_b64_data" as "data" and "sample_url" as "url"."""
+    """You are a task preview generator specializing in creating representative examples for input and output schemas. Your goal is to generate a preview that includes realistic example data for both input and output that match the provided schemas (types, names, etc.). The preview should be clear, demonstrate typical usage, and be easy to understand.
+
+    # Management of the 'current_preview'
+
+    If 'current_preview' is present, examine the 'task_input_schema', 'task_output_schema', 'current_preview_input_validation_error' as well as 'current_preview_output_validation_error' to determine if you can reuse the 'current_preview' as is or if you need to adjust it.
+
+    If 'current_preview' is present and strictly enforces the 'task_input_schema' and 'task_output_schema' (field types, names, valid enum values, etc.), you MUST exactly reuse the 'current_preview'.
+    If a 'current_preview' is present and does NOT strictly enforce the 'task_input_schema' and 'task_output_schema', you MUST use 'current_preview' as a base and adjust the 'current_preview' to enforce the 'task_input_schema' and 'task_output_schema'. For example, please be careful of enum values in  'current_preview' that would have been removed from the 'task_input_schema' and 'task_output_schema'. Use 'current_preview_input_validation_error' and 'current_preview_output_validation_error' as additional information to inform you of possible validation errors of the 'current_preview'.
+    In the case where you are forced to modify a field from the 'current_preview', make sure to update other field of the 'current_preview', if needed, in order to maintain the overall coherence of the example.
+
+    # Additional guidelines
+    Consider the 'chat_messages' to make the preview more relevant and accurate.
+    Ensure that the preview includes example input data and corresponding example output data that clearly illustrate how the input data is processed according to the provided schemas.
+    In case the schema contains any '#/$defs/File' field, use "sample_b64_data" as "data" and "sample_url" as "url"."""
     ...

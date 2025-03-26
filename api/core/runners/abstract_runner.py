@@ -1,11 +1,13 @@
 import logging
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from typing import Any, Generic, Literal, Optional, Protocol, TypeVar
 
 from pydantic import BaseModel, ValidationError
 
-from core.domain.errors import InvalidRunnerOptionsError, MissingCacheError
+from core.domain.errors import InvalidRunnerOptionsError, MissingCacheError, ProviderError
+from core.domain.metrics import send_counter
 from core.domain.run_output import RunOutput
 from core.domain.task_group_properties import TaskGroupProperties
 from core.domain.task_run import SerializableTaskRun
@@ -247,6 +249,26 @@ class AbstractRunner(
             return cached
         return None
 
+    @asynccontextmanager
+    async def _wrap_for_metric(self):
+        status = "success"
+        try:
+            yield
+        except ProviderError as e:
+            status = e.code
+            raise e
+        except Exception as e:
+            status = "workflowai_internal_error"
+            raise e
+        finally:
+            await send_counter(
+                "workflowai_inference",
+                model=self.properties.model or "unknown",
+                provider=self.properties.provider or "workflowai",
+                tenant=self.task.tenant or "unknown",
+                status=status,
+            )
+
     async def run(
         self,
         builder: TaskRunBuilder,
@@ -260,8 +282,9 @@ class AbstractRunner(
         if cached is not None:
             return cached
 
-        chunk = await self._build_task_output(builder.task_input)
-        return builder.build(chunk)
+        async with self._wrap_for_metric():
+            chunk = await self._build_task_output(builder.task_input)
+            return builder.build(chunk)
 
     async def stream(
         self,
@@ -273,8 +296,9 @@ class AbstractRunner(
             yield RunOutput.from_run(cached)
             return
 
-        async for o in self._stream_task_output(builder.task_input):
-            yield o
+        async with self._wrap_for_metric():
+            async for o in self._stream_task_output(builder.task_input):
+                yield o
 
     @classmethod
     @abstractmethod

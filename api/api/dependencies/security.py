@@ -21,7 +21,8 @@ from core.domain.organization_settings import (
 )
 from core.domain.users import User
 from core.storage import ObjectNotFoundException
-from core.storage.organization_storage import SystemOrganizationStorage
+from core.storage.backend_storage import SystemBackendStorage
+from core.storage.organization_storage import OrganizationSystemStorage
 from core.utils import no_op
 from core.utils.encryption import Encryption
 
@@ -144,14 +145,21 @@ async def _is_different_tenant_allowed(
     return await s.is_task_public(task_id)
 
 
-def system_org_storage(encryption: EncryptionDep) -> SystemOrganizationStorage:
-    return storage.storage_for_tenant("__system__", -1, no_op.event_router, encryption).organizations
+def system_storage(encryption: EncryptionDep) -> SystemBackendStorage:
+    return storage.system_storage(encryption)
 
 
-SystemStorageDep = Annotated[SystemOrganizationStorage, Depends(system_org_storage)]
+SystemStorageDep = Annotated[SystemBackendStorage, Depends(system_storage)]
 
 
-def security_service_dependency(org_storage: SystemStorageDep) -> SecurityService:
+def system_org_storage(storage: SystemStorageDep) -> OrganizationSystemStorage:
+    return storage.organizations
+
+
+OrgSystemStorageDep = Annotated[OrganizationSystemStorage, Depends(system_org_storage)]
+
+
+def security_service_dependency(org_storage: OrgSystemStorageDep) -> SecurityService:
     return SecurityService(org_storage, system_event_router())
 
 
@@ -185,7 +193,7 @@ async def non_anonymous_organization(user_org: RequiredUserOrganizationDep) -> T
 
 
 async def url_public_organization(
-    org_storage: SystemStorageDep,
+    org_storage: OrgSystemStorageDep,
     request: Request,
     user_org: UserOrganizationDep,
 ) -> PublicOrganizationData | None:
@@ -257,6 +265,13 @@ async def tenant_dependency(org: FinalTenantDataDep) -> str:
 
 
 TenantDep = Annotated[str, Depends(tenant_dependency)]
+
+
+async def tenant_uid_dependency(org: FinalTenantDataDep) -> int:
+    return org.uid
+
+
+TenantUIDDep = Annotated[int, Depends(tenant_uid_dependency)]
 
 
 def provider_settings_dependency(user_org: UserOrganizationDep) -> list[ProviderSettings] | None:

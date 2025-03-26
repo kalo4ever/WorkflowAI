@@ -28,3 +28,17 @@ class Metric(BaseModel):
     @classmethod
     def reset_sender(cls):
         cls.sender = _noop_sender
+
+
+async def send_counter(name: str, value: int = 1, **tags: int | str | float | bool):
+    try:
+        await Metric(name=name, counter=value, tags=tags).send()
+    except Exception:
+        logging.getLogger(__name__).exception("Failed to send counter metric %s: %s", name, tags)
+
+
+async def send_gauge(name: str, value: float, **tags: int | str | float | bool):
+    try:
+        await Metric(name=name, gauge=value, tags=tags).send()
+    except Exception:
+        logging.getLogger(__name__).exception("Failed to send gauge metric %s: %s", name, tags)

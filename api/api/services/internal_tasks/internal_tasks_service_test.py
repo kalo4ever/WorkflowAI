@@ -15,6 +15,7 @@ from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task impo
     AgentBuilderOutput,
     AgentSchema,
     AgentSchemaJson,
+    ChatMessageWithExtractedURLContent,
     EnumFieldConfig,
     InputArrayFieldConfig,
     InputGenericFieldConfig,
@@ -31,6 +32,7 @@ from api.tasks.generate_changelog import (
     Schema,
     TaskGroupWithSchema,
 )
+from api.tasks.generate_task_preview import GenerateTaskPreviewTaskInput, GenerateTaskPreviewTaskOutput
 from api.tasks.input_generation_instructions_agent import InputGenerationInstructionsOutput
 from api.tasks.task_description_generation.task_description_generation_task import (
     TaskDescriptionGenerationTaskInput,
@@ -48,14 +50,14 @@ from api.tasks.task_instructions_migration.task_instructions_migration_task impo
     TaskInstructionsMigrationTaskOutput,
 )
 from core.domain.deprecated.task import Task
-from core.domain.errors import UnparsableChunkError
+from core.domain.errors import JSONSchemaValidationError, UnparsableChunkError
 from core.domain.fields.chat_message import ChatMessage, UserChatMessage
 from core.domain.fields.file import File
 from core.domain.task_group import TaskGroup
 from core.domain.task_group_properties import TaskGroupProperties
-from core.domain.task_image import TaskImage
 from core.domain.task_info import TaskInfo
 from core.domain.task_io import SerializableTaskIO
+from core.domain.task_preview import TaskPreview
 from core.domain.task_variant import SerializableTaskVariant
 from core.domain.version_reference import VersionReference
 from core.storage.mongo.models.task_group import TaskGroupDocument
@@ -155,6 +157,16 @@ def patched_internal_tools_description():
 
 
 @pytest.fixture
+def patched_officially_suggested_tools():
+    with patch(
+        "api.services.internal_tasks.internal_tasks_service.officially_suggested_tools",
+        return_value="hello",
+        autospec=True,
+    ) as mock:
+        yield mock
+
+
+@pytest.fixture
 def mock_safe_generate_company_description():
     with patch(
         "api.services.internal_tasks.internal_tasks_service.safe_generate_company_description_from_email",
@@ -189,7 +201,7 @@ class TestNewTask:
         mock_agent_summaries: Mock,
         mock_safe_generate_company_description: Mock,
         mock_agent_builder: Mock,
-        patched_internal_tools_description: Mock,
+        patched_officially_suggested_tools: Mock,
     ):
         # Test the case when a new schema is actually generated + an assistant answer
 
@@ -225,7 +237,11 @@ class TestNewTask:
         assert mock_agent_builder.await_count == 1
         assert mock_agent_builder.call_args.args[0] == AgentBuilderInput(
             previous_messages=[],
-            new_message=UserChatMessage(content="mock user message"),
+            new_message=ChatMessageWithExtractedURLContent(
+                content="mock user message",
+                role="USER",
+                extracted_url_content=[],
+            ),
             existing_agent_schema=None,
             user_context=agent_context(),
             available_tools_description="hello",
@@ -243,14 +259,14 @@ class TestNewTask:
             "properties": {"output string field": {"type": "string"}},
             "type": "object",
         }
-        patched_internal_tools_description.assert_called_once_with(all=True)
+        patched_officially_suggested_tools.assert_called_once_with()
 
     async def test_new_task_no_new_schema(
         self,
         internal_tasks_service: InternalTasksService,
         mock_agent_summaries: Mock,
         mock_storage: Mock,
-        patched_internal_tools_description: Mock,
+        patched_officially_suggested_tools: Mock,
         mock_safe_generate_company_description: Mock,
         mock_agent_builder: Mock,
     ):
@@ -271,7 +287,11 @@ class TestNewTask:
         assert mock_agent_builder.await_count == 1
         assert mock_agent_builder.call_args.args[0] == AgentBuilderInput(
             previous_messages=[],
-            new_message=UserChatMessage(content="mock user message"),
+            new_message=ChatMessageWithExtractedURLContent(
+                content="mock user message",
+                role="USER",
+                extracted_url_content=[],
+            ),
             existing_agent_schema=None,
             user_context=agent_context(),
             available_tools_description="hello",
@@ -280,14 +300,14 @@ class TestNewTask:
         # Assert for the return values
         assert assistant_answer == "mock assistant_answer"
         assert not new_task_schema
-        patched_internal_tools_description.assert_called_once_with(all=True)
+        patched_officially_suggested_tools.assert_called_once_with()
 
     async def test_new_task_no_assistant_answer_no_schema(
         self,
         internal_tasks_service: InternalTasksService,
         mock_storage: Mock,
         mock_agent_summaries: Mock,
-        patched_internal_tools_description: Mock,
+        patched_officially_suggested_tools: Mock,
         mock_safe_generate_company_description: Mock,
         mock_agent_builder: Mock,
     ):
@@ -309,7 +329,11 @@ class TestNewTask:
         assert mock_agent_builder.await_count == 1
         assert mock_agent_builder.call_args.args[0] == AgentBuilderInput(
             previous_messages=[],
-            new_message=UserChatMessage(content="mock user message"),
+            new_message=ChatMessageWithExtractedURLContent(
+                content="mock user message",
+                role="USER",
+                extracted_url_content=[],
+            ),
             existing_agent_schema=None,
             user_context=agent_context(),
             available_tools_description="hello",
@@ -318,13 +342,13 @@ class TestNewTask:
         # Assert for the return values
         assert assistant_answer == "I did not understand your request. Can you try again ?"
         assert not new_task_schema
-        patched_internal_tools_description.assert_called_once_with(all=True)
+        patched_officially_suggested_tools.assert_called_once_with()
 
     async def test_new_task_no_assistant_answer_with_schema(
         self,
         internal_tasks_service: InternalTasksService,
         mock_agent_summaries: Mock,
-        patched_internal_tools_description: Mock,
+        patched_officially_suggested_tools: Mock,
         mock_safe_generate_company_description: Mock,
         mock_agent_builder: Mock,
     ):
@@ -361,7 +385,11 @@ class TestNewTask:
         assert mock_agent_builder.await_count == 1
         assert mock_agent_builder.call_args.args[0] == AgentBuilderInput(
             previous_messages=[],
-            new_message=UserChatMessage(content="mock user message"),
+            new_message=ChatMessageWithExtractedURLContent(
+                content="mock user message",
+                role="USER",
+                extracted_url_content=[],
+            ),
             existing_agent_schema=None,
             user_context=agent_context(),
             available_tools_description="hello",
@@ -379,7 +407,7 @@ class TestNewTask:
             "properties": {"output string field": {"type": "string"}},
             "type": "object",
         }
-        patched_internal_tools_description.assert_called_once_with(all=True)
+        patched_officially_suggested_tools.assert_called_once_with()
 
     async def test_generate_task_instructions(
         self,
@@ -527,110 +555,6 @@ class TestStreamTaskDescription:
         mock_storage.tasks.get_task_info.assert_called_once_with(task_id)
         mock_storage.task_variant_latest_by_schema_id.assert_not_called()
         mock_storage.set_task_description.assert_not_awaited()
-
-
-class TestGetTaskImage:
-    async def test_get_existing_task_image(self, mock_storage: Mock, internal_tasks_service: InternalTasksService):
-        task_id = "existing_task"
-        existing_image = TaskImage(
-            task_id=task_id,
-            image_data=b"existing_image_data",
-            compressed_image_data=b"compressed_existing_image_data",
-        )
-
-        mock_storage.get_task = AsyncMock()
-        mock_storage.get_task_image = AsyncMock(return_value=existing_image)
-        internal_tasks_service._generate_task_image = AsyncMock()  # type: ignore
-
-        result = await internal_tasks_service.get_task_image(task_id)
-
-        mock_storage.get_task.assert_called_once_with(task_id)
-        mock_storage.get_task_image.assert_called_once_with(task_id)
-        internal_tasks_service._generate_task_image.assert_not_called()  # type: ignore
-        assert result == existing_image
-
-    async def test_create_task_image_no_existing_image(
-        self,
-        mock_storage: Mock,
-        internal_tasks_service: InternalTasksService,
-    ):
-        task_id = "test_task_id"
-        task_name = "test_task_name"
-        new_image_data = b"test_new_image_data"
-        task_description = "test_task_description"
-
-        mock_storage.tasks.get_task_info = AsyncMock(
-            return_value=TaskInfo(task_id=task_id, name=task_name, is_public=True, description=task_description),
-        )
-
-        mock_storage.task_variant_latest_by_schema_id = AsyncMock()
-        mock_storage.get_task_image = AsyncMock(return_value=None)
-        mock_storage.create_task_image = AsyncMock()
-
-        internal_tasks_service._generate_task_image = AsyncMock(return_value=new_image_data)  # type: ignore
-
-        result = await internal_tasks_service.create_task_image(task_id=task_id)
-
-        mock_storage.tasks.get_task_info.assert_called_once_with(task_id)
-        mock_storage.task_variant_latest_by_schema_id.assert_not_called()
-        mock_storage.get_task_image.assert_called_once_with(task_id)
-        internal_tasks_service._generate_task_image.assert_called_once_with(task_description=task_description)  # type: ignore
-        mock_storage.create_task_image.assert_called_once()
-
-        assert isinstance(result, TaskImage)
-        assert result.task_id == task_id
-        assert result.image_data == new_image_data
-
-    async def test_create_task_image_existing_image(
-        self,
-        mock_storage: Mock,
-        internal_tasks_service: InternalTasksService,
-    ):
-        task_id = "test_task_id"
-        new_image_data = b"test_new_image_data"
-
-        mock_storage.tasks.get_task_info = AsyncMock()
-
-        mock_storage.task_variant_latest_by_schema_id = AsyncMock()
-        existing_image = TaskImage(
-            task_id=task_id,
-            image_data=b"existing_image_data",
-            compressed_image_data=b"existing_compressed_image_data",
-        )
-        mock_storage.get_task_image = AsyncMock(return_value=existing_image)
-        mock_storage.create_task_image = AsyncMock()
-
-        internal_tasks_service._generate_task_image = AsyncMock(return_value=new_image_data)  # type: ignore
-
-        result = await internal_tasks_service.create_task_image(task_id=task_id)
-
-        mock_storage.tasks.get_task_info.assert_not_awaited()
-        mock_storage.task_variant_latest_by_schema_id.assert_not_called()
-        mock_storage.get_task_image.assert_called_once_with(task_id)
-        internal_tasks_service._generate_task_image.assert_not_awaited()  # type: ignore
-        mock_storage.create_task_image.assert_not_awaited()
-
-        assert isinstance(result, TaskImage)
-        assert result.task_id == task_id
-        assert result == existing_image
-
-    async def test_get_task_image_nonexistent_task(
-        self,
-        mock_storage: Mock,
-        internal_tasks_service: InternalTasksService,
-    ):
-        task_id = "nonexistent_task"
-
-        mock_storage.get_task = AsyncMock(side_effect=Exception("Task not found"))
-        internal_tasks_service._generate_task_image = AsyncMock()  # type: ignore
-
-        with pytest.raises(Exception, match="Task not found"):
-            await internal_tasks_service.get_task_image(task_id)
-
-        mock_storage.get_task.assert_called_once_with(task_id)
-        mock_storage.get_task_image.assert_not_called()
-        internal_tasks_service._generate_task_image.assert_not_called()  # type: ignore
-        mock_storage.create_task_image.assert_not_called()
 
 
 @pytest.fixture(scope="function")
@@ -994,7 +918,9 @@ def mock_run_task_instructions_required_tools_picking():
     with patch(
         "api.services.internal_tasks.internal_tasks_service.run_task_instructions_required_tools_picking",
         new_callable=AsyncMock,
-        return_value=TaskInstructionsRequiredToolsPickingTaskOutput(required_tools=["@search-google"]),
+        return_value=Mock(
+            output=TaskInstructionsRequiredToolsPickingTaskOutput(required_tools=["@search-google"]),
+        ),
     ) as mock_run_task_instructions_required_tools_picking:
         yield mock_run_task_instructions_required_tools_picking
 
@@ -1208,7 +1134,9 @@ class TestStreamSuggestedInstructions:
             patch(
                 "api.services.internal_tasks.internal_tasks_service.run_task_instructions_required_tools_picking",
                 new_callable=AsyncMock,
-                return_value=TaskInstructionsRequiredToolsPickingTaskOutput(required_tools=["@search-google"]),
+                return_value=Mock(
+                    output=TaskInstructionsRequiredToolsPickingTaskOutput(required_tools=["@search-google"]),
+                ),
             ) as mock_run_task_instructions_required_tools_picking,
         ):
             mock_format_instructions.return_value = TaskInstructionsReformatingTaskOutput(
@@ -1293,7 +1221,9 @@ class TestStreamSuggestedInstructions:
             patch(
                 "api.services.internal_tasks.internal_tasks_service.run_task_instructions_required_tools_picking",
                 new_callable=AsyncMock,
-                return_value=TaskInstructionsRequiredToolsPickingTaskOutput(required_tools=["@search-google"]),
+                return_value=Mock(
+                    output=TaskInstructionsRequiredToolsPickingTaskOutput(required_tools=["@search-google"]),
+                ),
             ) as mock_run_task_instructions_required_tools_picking,
         ):
             mock_format_instructions.return_value = TaskInstructionsReformatingTaskOutput(
@@ -1357,7 +1287,10 @@ class TestInternalTasksServiceHelpers:
         )
 
         # Act
-        new_task_schema, assistant_answer = internal_tasks_service._handle_stream_task_iterations_chunk(chunk)  # pyright: ignore[reportPrivateUsage]
+        new_task_schema, assistant_answer = internal_tasks_service._handle_stream_task_iterations_chunk(  # pyright: ignore[reportPrivateUsage]
+            chunk,
+            partial=True,
+        )
 
         # Assert
         assert assistant_answer == "mock assistant_answer"
@@ -1419,7 +1352,10 @@ class TestInternalTasksServiceHelpers:
             ),
         )
 
-        new_task_schema, assistant_answer = internal_tasks_service._handle_stream_task_iterations_chunk(chunk)  # pyright: ignore[reportPrivateUsage]
+        new_task_schema, assistant_answer = internal_tasks_service._handle_stream_task_iterations_chunk(  # pyright: ignore[reportPrivateUsage]
+            chunk,
+            partial=True,
+        )
 
         # Assert
         assert assistant_answer == "mock assistant_answer"
@@ -1435,7 +1371,10 @@ class TestInternalTasksServiceHelpers:
         )
 
         # Act
-        new_task_schema, assistant_answer = internal_tasks_service._handle_stream_task_iterations_chunk(chunk)  # pyright: ignore[reportPrivateUsage]
+        new_task_schema, assistant_answer = internal_tasks_service._handle_stream_task_iterations_chunk(  # pyright: ignore[reportPrivateUsage]
+            chunk,
+            partial=True,
+        )
 
         # Assert
         assert assistant_answer == "mock assistant_answer"
@@ -1558,6 +1497,15 @@ class TestStreamTaskIterations:
                     ),
                     "assistant_answer",
                 ),
+                # Last chunk with partial = False
+                (
+                    AgentSchemaJson(
+                        agent_name="name",
+                        input_json_schema={"type": "objet"},
+                        output_json_schema={"type": "objet"},
+                    ),
+                    "assistant_answer",
+                ),
             ],
         )
 
@@ -1571,6 +1519,14 @@ class TestStreamTaskIterations:
 
         assert results == [
             # First chunk is skipped as it raises KeyError("Test exception")
+            (
+                AgentSchemaJson(
+                    agent_name="name",
+                    input_json_schema={"type": "objet"},
+                    output_json_schema={"type": "objet"},
+                ),
+                "assistant_answer",
+            ),
             (
                 AgentSchemaJson(
                     agent_name="name",
@@ -1629,3 +1585,183 @@ class TestStreamTaskIterations:
                 ),
             )
             patched_internal_tools_description.assert_called_once_with(include={ToolKind.WEB_SEARCH_GOOGLE})
+
+
+class TestStreamGenerateTaskPreview:
+    @pytest.fixture
+    def mock_stream_generate_task_preview(self):
+        with patch(
+            "api.services.internal_tasks.internal_tasks_service.stream_generate_task_preview",
+            return_value=mock_aiter(
+                GenerateTaskPreviewTaskOutput(
+                    preview=TaskPreview(
+                        input={"name": "test"},
+                        output={"result": "Test result"},
+                    ),
+                ),
+            ),
+        ) as mock_func:
+            yield mock_func
+
+    async def test_no_current_preview(
+        self,
+        internal_tasks_service: InternalTasksService,
+        mock_stream_generate_task_preview: Mock,
+    ):
+        # Arrange
+        task_input = GenerateTaskPreviewTaskInput(
+            chat_messages=[UserChatMessage(content="test")],
+            task_input_schema={"type": "object", "properties": {"name": {"type": "string"}}},
+            task_output_schema={"type": "object", "properties": {"result": {"type": "string"}}},
+            current_preview=None,
+        )
+
+        # Act
+        results = [chunk async for chunk in internal_tasks_service.stream_generate_task_preview(task_input)]
+
+        # Assert
+        assert len(results) == 1
+        assert results[0].preview
+        assert results[0].preview.input == {"name": "test"}
+        assert results[0].preview.output == {"result": "Test result"}
+
+        # Verify the function was called with the original task input
+        mock_stream_generate_task_preview.assert_called_once()
+        assert mock_stream_generate_task_preview.call_args[0][0] is task_input
+        assert task_input.current_preview_input_validation_error is None
+        assert task_input.current_preview_output_validation_error is None
+
+    async def test_valid_current_preview(
+        self,
+        internal_tasks_service: InternalTasksService,
+        mock_stream_generate_task_preview: Mock,
+    ):
+        # Arrange
+        task_input = GenerateTaskPreviewTaskInput(
+            chat_messages=[UserChatMessage(content="test")],
+            task_input_schema={"type": "object", "properties": {"name": {"type": "string"}}},
+            task_output_schema={"type": "object", "properties": {"result": {"type": "string"}}},
+            current_preview=TaskPreview(
+                input={"name": "valid input"},
+                output={"result": "valid output"},
+            ),
+        )
+
+        # Mock SerializableTaskIO.enforce to not raise any exceptions
+        with patch("core.domain.task_io.SerializableTaskIO.enforce") as mock_enforce:
+            # Act
+            results = [chunk async for chunk in internal_tasks_service.stream_generate_task_preview(task_input)]
+
+            # Assert
+            assert len(results) == 1
+            assert mock_enforce.call_count == 2  # Called for both input and output
+            assert task_input.current_preview_input_validation_error is None
+            assert task_input.current_preview_output_validation_error is None
+            mock_stream_generate_task_preview.assert_called_once()
+
+    async def test_invalid_input_in_preview(
+        self,
+        internal_tasks_service: InternalTasksService,
+        mock_stream_generate_task_preview: Mock,
+    ):
+        # Arrange
+        task_input = GenerateTaskPreviewTaskInput(
+            chat_messages=[UserChatMessage(content="test")],
+            task_input_schema={"type": "object", "properties": {"name": {"type": "string"}}},
+            task_output_schema={"type": "object", "properties": {"result": {"type": "string"}}},
+            current_preview=TaskPreview(
+                input={"invalid_key": "invalid value"},  # Invalid according to schema
+                output={"result": "valid output"},
+            ),
+        )
+
+        # Mock SerializableTaskIO.enforce to raise JSONSchemaValidationError for input only
+        with patch(
+            "core.domain.task_io.SerializableTaskIO.enforce",
+            side_effect=[JSONSchemaValidationError("Invalid input schema"), None],
+        ) as mock_enforce:
+            # Act
+            results = [chunk async for chunk in internal_tasks_service.stream_generate_task_preview(task_input)]
+
+            # Assert
+            assert len(results) == 1
+            assert mock_enforce.call_count == 2
+            assert task_input.current_preview_input_validation_error == "Invalid input schema"
+            assert task_input.current_preview_output_validation_error is None
+            mock_stream_generate_task_preview.assert_called_once()
+
+    async def test_invalid_output_in_preview(
+        self,
+        internal_tasks_service: InternalTasksService,
+        mock_stream_generate_task_preview: Mock,
+    ):
+        # Arrange
+        task_input = GenerateTaskPreviewTaskInput(
+            chat_messages=[UserChatMessage(content="test")],
+            task_input_schema={"type": "object", "properties": {"name": {"type": "string"}}},
+            task_output_schema={"type": "object", "properties": {"result": {"type": "string"}}},
+            current_preview=TaskPreview(
+                input={"name": "valid input"},
+                output={"invalid_key": "invalid value"},  # Invalid according to schema
+            ),
+        )
+
+        # Mock SerializableTaskIO.enforce to raise JSONSchemaValidationError for output only
+        with patch(
+            "core.domain.task_io.SerializableTaskIO.enforce",
+            side_effect=[None, JSONSchemaValidationError("Invalid output schema")],
+        ) as mock_enforce:
+            # Act
+            results = [chunk async for chunk in internal_tasks_service.stream_generate_task_preview(task_input)]
+
+            # Assert
+            assert len(results) == 1
+            assert mock_enforce.call_count == 2
+            assert task_input.current_preview_input_validation_error is None
+            assert task_input.current_preview_output_validation_error == "Invalid output schema"
+            mock_stream_generate_task_preview.assert_called_once()
+
+    async def test_unexpected_exception_during_validation(
+        self,
+        internal_tasks_service: InternalTasksService,
+        mock_stream_generate_task_preview: Mock,
+    ):
+        # Arrange
+        task_input = GenerateTaskPreviewTaskInput(
+            chat_messages=[UserChatMessage(content="test")],
+            task_input_schema={"type": "object", "properties": {"name": {"type": "string"}}},
+            task_output_schema={"type": "object", "properties": {"result": {"type": "string"}}},
+            current_preview=TaskPreview(
+                input={"name": "input"},
+                output={"result": "output"},
+            ),
+        )
+
+        # Mock SerializableTaskIO.enforce to raise unexpected exception
+        unexpected_error = ValueError("Unexpected validation error")
+        with patch(
+            "core.domain.task_io.SerializableTaskIO.enforce",
+            side_effect=unexpected_error,
+        ):
+            # Act
+            with patch.object(internal_tasks_service.logger, "exception") as mock_logger:
+                results = [chunk async for chunk in internal_tasks_service.stream_generate_task_preview(task_input)]
+
+                # Assert
+                assert len(results) == 1
+                assert mock_logger.call_count == 2
+                mock_stream_generate_task_preview.assert_called_once()
+
+
+class TestGetAvailableToolDescriptions:
+    def test_get_available_tool_descriptions(
+        self,
+        internal_tasks_service: InternalTasksService,
+    ):
+        # Act
+        result = internal_tasks_service._get_available_tool_descriptions()  # pyright: ignore[reportPrivateUsage]
+
+        # Assert
+        assert len(result) == 2
+        assert result[0].handle == ToolKind.WEB_SEARCH_PERPLEXITY_SONAR_PRO.value
+        assert result[1].handle == ToolKind.WEB_BROWSER_TEXT.value

@@ -3,6 +3,7 @@ from typing import Any, AsyncIterator
 from pydantic import BaseModel, Field
 from workflowai import Model, agent
 
+from core.domain.url_content import URLContent
 from core.utils.hash import compute_obj_hash
 
 
@@ -19,7 +20,11 @@ class TaskInputExampleTaskInput(BaseModel):
     )
     additional_instructions: str | None = Field(
         default=None,
-        description="Any additional instructions for generating the example input",
+        description="Any additional instructions from the user for generating the example input",
+    )
+    additional_instructions_url_contents: list[URLContent] | None = Field(
+        default=None,
+        description="A list of URL contents from the 'additional_instructions', if the 'additional_instructions' contains URLs",
     )
     previous_task_inputs: list[dict[str, Any]] | None = Field(
         default=None,

@@ -1,9 +1,8 @@
-import io
 import logging
 from datetime import datetime, timezone
 from typing import Any, Optional, Self
 
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter, Response
 from fastapi.responses import JSONResponse, StreamingResponse
 from jsonschema import SchemaError
 from jsonschema.validators import validator_for  # type:ignore
@@ -540,24 +539,6 @@ async def delete_task(
     storage: StorageDep,
 ) -> None:
     await storage.delete_task(task_id)
-
-
-@router.get("/{task_id}/image")
-async def get_image(
-    task_id: str,
-    internal_tasks: InternalTasksServiceDep,
-) -> StreamingResponse:
-    task_image = await internal_tasks.get_task_image(task_id)
-
-    if task_image:
-        # Create a byte stream from the image data
-        image_stream: io.BytesIO = io.BytesIO(task_image.compressed_image_data)
-        image_stream.seek(0)
-
-        # Return the image as a StreamingResponse
-        return StreamingResponse(image_stream, media_type="image/png")
-
-    raise HTTPException(404, "Not found")
 
 
 class TaskStats(BaseModel):

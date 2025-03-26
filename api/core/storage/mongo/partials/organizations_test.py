@@ -1314,3 +1314,54 @@ class TestAttemptLockForPayment:
         # Now lock it again it should return None
         res = await organization_storage.attempt_lock_for_payment()
         assert res is None
+
+
+class TestFeedbackSlackHookForTenant:
+    async def test_get_feedback_slack_hook_success(
+        self,
+        organization_storage: MongoOrganizationStorage,
+        org_col: AsyncCollection,
+    ) -> None:
+        # Insert an organization with a slack hook
+        slack_hook = "https://hooks.slack.com/services/123/456/789"
+        await org_col.insert_one(
+            dump_model(
+                OrganizationDocument(
+                    tenant=TENANT,
+                    uid=1,
+                    feedback_slack_hook=slack_hook,
+                ),
+            ),
+        )
+
+        # Get the slack hook
+        result = await organization_storage.feedback_slack_hook_for_tenant(tenant_uid=1)
+        assert result == slack_hook
+
+    async def test_get_feedback_slack_hook_not_found(
+        self,
+        organization_storage: MongoOrganizationStorage,
+        org_col: AsyncCollection,
+    ) -> None:
+        # Insert an organization without a slack hook
+        await org_col.insert_one(
+            dump_model(
+                OrganizationDocument(
+                    tenant=TENANT,
+                    uid=1,
+                ),
+            ),
+        )
+
+        # Get the slack hook
+        result = await organization_storage.feedback_slack_hook_for_tenant(tenant_uid=1)
+        assert result is None
+
+    async def test_get_feedback_slack_hook_org_not_found(
+        self,
+        organization_storage: MongoOrganizationStorage,
+        org_col: AsyncCollection,
+    ) -> None:
+        # Try to get slack hook for non-existent organization
+        with pytest.raises(ObjectNotFoundException):
+            await organization_storage.feedback_slack_hook_for_tenant(tenant_uid=999)

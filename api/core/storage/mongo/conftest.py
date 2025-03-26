@@ -107,11 +107,6 @@ def task_inputs_col(base_storage: MongoStorage) -> AsyncCollection:
 
 
 @pytest.fixture(scope="function")
-def task_images_col(base_storage: MongoStorage) -> AsyncCollection:
-    return base_storage._task_images_collection  # pyright: ignore [reportPrivateUsage]
-
-
-@pytest.fixture(scope="function")
 def migrations_col(base_storage: MongoStorage) -> AsyncCollection:
     return base_storage._migrations_collection  # pyright: ignore [reportPrivateUsage]
 
@@ -156,6 +151,11 @@ def task_deployments_col(base_storage: MongoStorage):
 
 
 @pytest.fixture(scope="function")
+def feedback_col(base_storage: MongoStorage):
+    return base_storage._feedback_collection  # pyright: ignore [reportPrivateUsage]
+
+
+@pytest.fixture(scope="function")
 def all_collections(
     task_example_col: AsyncCollection,
     task_run_col: AsyncCollection,
@@ -169,7 +169,6 @@ def all_collections(
     task_evaluators_col: AsyncCollection,
     tasks_col: AsyncCollection,
     task_inputs_col: AsyncCollection,
-    task_images_col: AsyncCollection,
     migrations_col: AsyncCollection,
     dataset_benchmarks_col: AsyncCollection,
     input_evaluations_col: AsyncCollection,
@@ -178,6 +177,7 @@ def all_collections(
     task_deployments_col: AsyncCollection,
     task_group_semvers_col: AsyncCollection,
     changelogs_col: AsyncCollection,
+    feedback_col: AsyncCollection,
 ) -> list[AsyncCollection]:
     return [
         task_example_col,
@@ -193,7 +193,6 @@ def all_collections(
         tasks_col,
         task_inputs_col,
         migrations_col,
-        task_images_col,
         dataset_benchmarks_col,
         input_evaluations_col,
         reviews_col,
@@ -201,6 +200,7 @@ def all_collections(
         task_deployments_col,
         task_group_semvers_col,
         changelogs_col,
+        feedback_col,
     ]
 
 

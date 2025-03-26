@@ -1,5 +1,6 @@
 import logging
 from collections.abc import Callable, Sequence
+from datetime import datetime, timedelta
 from typing import Annotated, Any
 
 from pydantic import AfterValidator, BaseModel
@@ -9,6 +10,7 @@ from core.domain.search_query import SearchOperation, SearchOperationBetween, Se
 from core.storage.clickhouse.query_builder import WJSON, W, WJSONArray, WJSONArrayLength
 from core.utils.generics import BM
 from core.utils.schemas import FieldType
+from core.utils.uuid import uuid7
 
 
 def data_and_columns(model: BaseModel, exclude_none: bool = True):
@@ -154,3 +156,15 @@ def json_query(field_type: FieldType | None, field: str, key_path: str, operatio
         nested_w = WJSON(key=field, path=splits[1].removeprefix("."), operator=operator, type=field_type, value=value)
 
     return WJSONArray(key=field, path=splits[0], clause=nested_w)
+
+
+def id_lower_bound(value: datetime):
+    # We just 0 the gen as a lower bound
+    time_ms = int((value).timestamp() * 1000)
+    return uuid7(ms=lambda: time_ms, rand=lambda: 0).int
+
+
+def id_upper_bound(value: datetime):
+    # As an upper bound, we need to add a second to the id
+    time_ms = int((value + timedelta(seconds=1)).timestamp() * 1000)
+    return uuid7(ms=lambda: time_ms, rand=lambda: 0).int

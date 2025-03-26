@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 from fastapi import FastAPI
+from freezegun import freeze_time
 from httpx import AsyncClient
 
 from api.dependencies.security import user_organization
@@ -602,6 +603,7 @@ class TestRun:
 
 
 class TestReply:
+    @freeze_time("2025-04-17T12:56:41.413541")
     async def test_reply(
         self,
         test_api_client: AsyncClient,
@@ -654,6 +656,7 @@ class TestReply:
         assert res.json() == {
             "duration_seconds": 1.0,
             "id": "run_id",
+            "feedback_token": "eyJ0IjoxLCJ1IjoxLCJyIjoicnVuX2lkIn0=.l70649xjrowih8DX75xLBkWxa3NFmeMbaAYiYtiZPKM=",
             "task_output": {"say_hello": ""},
             "tool_call_requests": [
                 {

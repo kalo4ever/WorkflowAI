@@ -199,11 +199,17 @@ _download_client = httpx.AsyncClient()
 async def _fetch_file_with_retries(url: str, retries: int = 2) -> httpx.Response:
     try:
         return await _download_client.get(url)
-    except (httpx.ConnectTimeout, httpx.ReadTimeout, httpx.ReadError, httpx.ConnectError) as e:
+    except (
+        httpx.ConnectTimeout,
+        httpx.ReadTimeout,
+        httpx.ReadError,
+        httpx.ConnectError,
+        httpx.RemoteProtocolError,
+    ) as e:
         if retries <= 0:
             raise InvalidFileError(
                 f"Failed to download file: {e}",
-                capture=True,
+                capture=False,
             )
         return await _fetch_file_with_retries(url, retries - 1)
 

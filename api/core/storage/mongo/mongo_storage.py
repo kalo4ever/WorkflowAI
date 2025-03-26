@@ -20,7 +20,6 @@ from core.domain.task_example import SerializableTaskExample
 from core.domain.task_example_query import SerializableTaskExampleQuery
 from core.domain.task_group import TaskGroup, TaskGroupIdentifier
 from core.domain.task_group_properties import TaskGroupProperties
-from core.domain.task_image import TaskImage
 from core.domain.task_info import TaskInfo
 from core.domain.task_input import TaskInput, TaskInputFields
 from core.domain.task_run import SerializableTaskRun
@@ -32,11 +31,12 @@ from core.storage.backend_storage import BackendStorage
 from core.storage.evaluator_storage import EvaluatorStorage
 from core.storage.models import TaskUpdate
 from core.storage.mongo.models.task_group import TaskGroupDocument
-from core.storage.mongo.models.task_image import TaskImageDocument
 from core.storage.mongo.models.user_identifier import UserIdentifierSchema
 from core.storage.mongo.partials.changelogs import MongoChangeLogStorage
 from core.storage.mongo.partials.evaluators import MongoEvaluatorStorage
 from core.storage.mongo.partials.input_evaluations import MongoInputEvaluationStorage
+from core.storage.mongo.partials.mongo_feedback import MongoFeedbackStorage
+from core.storage.mongo.partials.mongo_tasks import MongoTaskStorage
 from core.storage.mongo.partials.organizations import MongoOrganizationStorage
 from core.storage.mongo.partials.reviews import MongoReviewsStorage
 from core.storage.mongo.partials.reviews_benchmark import MongoReviewsBenchmarkStorage
@@ -45,7 +45,6 @@ from core.storage.mongo.partials.task_group_semvers import TaskGroupSemverStorag
 from core.storage.mongo.partials.task_groups import MongoTaskGroupStorage
 from core.storage.mongo.partials.task_inputs import MongoTaskInputStorage
 from core.storage.mongo.partials.task_variants import MongoTaskVariantsStorage
-from core.storage.mongo.partials.tasks import MongoTaskStorage
 from core.storage.mongo.partials.transcriptions import MongoTranscriptionStorage
 from core.storage.task_group_storage import TaskGroupStorage
 from core.storage.task_input_storage import TaskInputsStorage
@@ -54,7 +53,7 @@ from core.utils.encryption import Encryption
 
 from .codecs import type_registry
 from .models.task_example import TaskExampleDocument
-from .models.task_schema_ids import TaskSchemaIndexSchema
+from .models.task_schema_id_document import TaskSchemaIdDocument
 from .models.task_variant import TaskVariantDocument
 from .mongo_types import AsyncClient, AsyncCollection, AsyncCursor, AsyncDatabase
 from .utils import dump_model, extract_connection_info, object_id
@@ -169,10 +168,6 @@ class MongoStorage(BackendStorage):
         return self._get_collection("task_info")
 
     @property
-    def _task_images_collection(self) -> AsyncCollection:
-        return self._get_collection("task_images")
-
-    @property
     def _changelogs_collection(self) -> AsyncCollection:
         return self._get_collection("changelogs")
 
@@ -199,6 +194,10 @@ class MongoStorage(BackendStorage):
     @property
     def _task_group_semvers_collection(self) -> AsyncCollection:
         return self._get_collection("task_run_group_semver")
+
+    @property
+    def _feedback_collection(self) -> AsyncCollection:
+        return self._get_collection("feedback")
 
     @property
     def _tenant_tuple(self):
@@ -267,6 +266,10 @@ class MongoStorage(BackendStorage):
     def task_group_semvers(self):
         return TaskGroupSemverStorage(self._tenant_tuple, self._task_group_semvers_collection)
 
+    @property
+    def feedback(self):
+        return MongoFeedbackStorage(self._tenant_tuple, self._feedback_collection)
+
     @override
     async def is_ready(self) -> bool:
         try:
@@ -333,6 +336,9 @@ class MongoStorage(BackendStorage):
 
     def _tenant_filter(self) -> dict[str, Any]:
         return {"tenant": self._tenant}
+
+    def _tenant_uid_filter(self) -> dict[str, Any]:
+        return {"tenant_uid": self._tenant_uid}
 
     def _build_list_tasks_pipeline(self, filter: dict[str, Any], limit: int | None) -> list[dict[str, Any]]:
         match_clause = {"$match": {**filter, **self._tenant_filter()}}
@@ -466,8 +472,14 @@ class MongoStorage(BackendStorage):
             )
             task.task_uid = task_info.uid
 
-        idx = await self.get_schema_id(task.task_id, task.input_schema.version, task.output_schema.version)
+        idx = await self.get_schema_id(
+            task.task_id,
+            task.task_uid,
+            task.input_schema.version,
+            task.output_schema.version,
+        )
         schema = TaskVariantDocument.from_resource(self._tenant, task)
+        schema.tenant_uid = self._tenant_uid
         schema.schema_id = idx
         try:
             await self._task_variants_collection.insert_one(dump_model(schema))
@@ -664,6 +676,7 @@ class MongoStorage(BackendStorage):
             task_schema_id=task.task_schema_id,
             resource=run.group,
         )
+        group.tenant_uid = self._tenant_uid
         group = await self._get_or_create_run_group(group, run_is_external=run_is_external, user=user)
 
         run.group = group.to_resource()
@@ -722,16 +735,25 @@ class MongoStorage(BackendStorage):
 
         return example
 
-    async def get_schema_id(self, task_id: str, task_input_version: str, task_output_version: str) -> int:
+    async def get_schema_id(
+        self,
+        task_id: str,
+        task_uid: int,
+        task_input_version: str,
+        task_output_version: str,
+    ) -> int:
         schema_id = f"{task_input_version}/{task_output_version}"
 
         async def _find_existing():
+            # TODO[uid]: switch to uid filter
             return await self._task_schema_id_collection.find_one({"slug": task_id, **self._tenant_filter()})
 
         doc = await _find_existing()
         if not doc:
             # There is no task schema idx record for the given task id -> we can create it
-            inserting = TaskSchemaIndexSchema(
+            inserting = TaskSchemaIdDocument(
+                tenant_uid=self._tenant_uid,
+                task_uid=task_uid,
                 slug=task_id,
                 tenant=self._tenant,
                 latest_idx=1,
@@ -747,7 +769,7 @@ class MongoStorage(BackendStorage):
                 if not doc:
                     raise ValueError("DuplicateKeyError but no record found")
 
-        indices = TaskSchemaIndexSchema.model_validate(doc)
+        indices = TaskSchemaIdDocument.model_validate(doc)
         # We return the already existing mapping if possible
         try:
             return indices.idx_mapping[schema_id]
@@ -856,6 +878,7 @@ class MongoStorage(BackendStorage):
 
         return TaskExampleDocument.model_validate(example).to_resource()
 
+    # TODO[uid]: add task_uid
     @override
     async def get_or_create_task_group(
         self,
@@ -871,6 +894,7 @@ class MongoStorage(BackendStorage):
         doc = TaskGroupDocument(
             hash=properties.model_hash(),
             task_id=task_id,
+            tenant_uid=self._tenant_uid,
             task_schema_id=task_schema_id,
             properties=properties.model_dump(exclude_none=True),
             tags=tags,
@@ -913,8 +937,6 @@ class MongoStorage(BackendStorage):
         await self._task_inputs_collection.delete_many({"task.id": task_id, **self._tenant_filter()})
         # Remove task info
         await self._tasks_collection.delete_many({"task_id": task_id, **self._tenant_filter()})
-        # Remove task images
-        await self._task_images_collection.delete_many({"task_id": task_id, **self._tenant_filter()})
         # Remove task changelogs
         await self._changelogs_collection.delete_many({"task_id": task_id, **self._tenant_filter()})
         # Remove dataset benchmarks
@@ -925,6 +947,7 @@ class MongoStorage(BackendStorage):
         await self._review_benchmarks_collection.delete_many({"task_id": task_id, **self._tenant_filter()})
         await self._task_deployments_collection.delete_many({"task_id": task_id, **self._tenant_filter()})
         await self._task_group_semvers_collection.delete_many({"task_id": task_id, **self._tenant_filter()})
+        await self._feedback_collection.delete_many({"task_id": task_id, **self._tenant_uid_filter()})
 
     @override
     async def get_inputs_by_hash(
@@ -971,26 +994,6 @@ class MongoStorage(BackendStorage):
             {"task_id": task_id, **self._tenant_filter()},
             update={"$set": {"description": description}},
         )
-
-    @override
-    async def get_task_image(self, task_id: str) -> TaskImage | None:
-        # Try to fetch a task document
-        filter = {"task_id": task_id, **self._tenant_filter()}
-
-        doc = await self._task_images_collection.find_one(
-            filter,
-        )
-
-        if not doc:
-            return None
-
-        task_image_doc = TaskImageDocument.model_validate(doc)
-        return task_image_doc.to_resource()
-
-    @override
-    async def create_task_image(self, task_image: TaskImage) -> None:
-        task_image_doc = TaskImageDocument.from_resource(self._tenant, task_image)
-        await self._task_images_collection.insert_one(dump_model(task_image_doc))
 
     @override
     async def get_latest_idx(self, task_id: str) -> int:

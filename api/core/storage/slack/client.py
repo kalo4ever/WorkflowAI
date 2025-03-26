@@ -2,6 +2,8 @@ import logging
 
 import httpx
 
+from core.storage.slack.slack_types import SlackMessage
+
 logger = logging.getLogger(__name__)
 
 
@@ -15,7 +17,7 @@ class SlackClient:
         if self.webhook_url is None:
             logger.debug("SLACK_WEBHOOK_URL environment variable is not set. Slack notifications will be skipped.")
 
-    async def send_message(self, message: str) -> None:
+    async def send_message(self, message: str | SlackMessage) -> None:
         if self.webhook_url is None:
             logger.warning(
                 "Skipped Slack message sending because 'webhook_url' is not set",
@@ -23,7 +25,7 @@ class SlackClient:
             )
             return
 
-        data = {"text": message}
+        data = message if isinstance(message, dict) else {"text": message}
 
         async with httpx.AsyncClient() as client:
             try:

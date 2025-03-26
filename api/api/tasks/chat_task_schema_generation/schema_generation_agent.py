@@ -41,7 +41,8 @@ class SchemaBuilderOutput(BaseModel):
     )
 
 
-@workflowai.agent(id="agent-schema-generation", model=workflowai.Model.CLAUDE_3_7_SONNET_20250219)
+# TODO: switch back to Claude 3.7 when we'll have more token quotas
+@workflowai.agent(id="agent-schema-generation", model=workflowai.Model.CLAUDE_3_5_HAIKU_20241022)
 async def run_agent_schema_generation(
     input: SchemaBuilderInput,
 ) -> SchemaBuilderOutput:
@@ -55,7 +56,7 @@ async def run_agent_schema_generation(
     - Do not extrapolate user's instructions and create too many fields. Always use the minimum fields to perform the agent goal described by the user. Better to start with a simple schema and refine, than the opposite.
     - Do not add extra fields that are not asked by the user.
     - Use 'enum' field type in the 'input_schema' IF AND ONLY IF the user EXPLICITLY requests to use 'enums" (ex: "this field should be an enum"), if the word "enum" is absent from the user's message, you CAN NOT use enums in the input schema. Prefer using 'string', even for fields that can have a predefined, limited set of values. Example. Note that those restrictions do not apply to 'output_schema' where the use of enums is encouraged, when that makes sense.
-    - For agents (and ONLY those) that have a predefined set of values in the output (ex: boolean, enum), you can add a 'explaination' field at the beginning of the 'output_schema'. Justify this choice in the 'answer_to_user' by saying that this choice enhances reasonning and transparency of the result.
+    - Do not add an 'explanation' field in the 'output_schema' unless asked by the user.
     - For classification cases, make sure to include an additional "UNSURE" option, for the cases that are undetermined. Do not use a "confidence_score" unless asked by the user.
     - Make sure to strictly enforce the output schema, even if the user asks otherwise, e.g the 'input_schema' can not contain any examples.
     - When refusing a query, propose an alternative.

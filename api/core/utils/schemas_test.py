@@ -14,6 +14,7 @@ from .schemas import (
     make_optional,
     remove_extra_keys,
     remove_optional_nulls_and_empty_strings,
+    schema_needs_explanation,
     strip_json_schema_metadata_keys,
     strip_metadata,
 )
@@ -1254,3 +1255,215 @@ class TestChildIterator:
         assert len(file_children) == 2
         assert set(file_children.keys()) == {"name", "content"}
         assert all(child.type == "string" for child in file_children.values())
+
+
+class TestSchemaNeedsExplaination:
+    @pytest.mark.parametrize(
+        "schema, expected",
+        [
+            # Same tests but wrapped in object properties
+            # Single enum wrapped in object
+            (
+                {
+                    "type": "object",
+                    "properties": {
+                        "choice": {"enum": ["value1", "value2", "value3"], "description": "Select a value"},
+                    },
+                },
+                True,
+            ),
+            # Enum without description wrapped in object
+            (
+                {"type": "object", "properties": {"numbers": {"enum": [1, 2, 3]}}},
+                True,
+            ),
+            # Array of enums wrapped in object
+            (
+                {
+                    "type": "object",
+                    "properties": {
+                        "colors": {
+                            "type": "array",
+                            "items": {"enum": ["red", "green", "blue"]},
+                            "description": "Select colors",
+                        },
+                    },
+                },
+                True,
+            ),
+            # Array of enums with description in items wrapped in object
+            (
+                {
+                    "type": "object",
+                    "properties": {
+                        "colors": {
+                            "type": "array",
+                            "items": {"enum": ["red", "green", "blue"], "description": "Color choices"},
+                        },
+                    },
+                },
+                True,
+            ),
+            # OneOf with enum wrapped in object
+            (
+                {
+                    "type": "object",
+                    "properties": {
+                        "priority": {
+                            "oneOf": [{"enum": ["low", "medium", "high"]}],
+                            "description": "Priority level",
+                        },
+                    },
+                },
+                True,
+            ),
+            # AnyOf with enum wrapped in object
+            (
+                {
+                    "type": "object",
+                    "properties": {
+                        "status": {"anyOf": [{"enum": ["draft", "published", "archived"]}]},
+                    },
+                },
+                True,
+            ),
+            # AllOf with enum wrapped in object
+            (
+                {
+                    "type": "object",
+                    "properties": {
+                        "answer": {
+                            "allOf": [{"enum": ["yes", "no", "maybe"], "description": "Answer choices"}],
+                            "description": "Your answer",
+                        },
+                    },
+                },
+                True,
+            ),
+            # Boolean schema wrapped in object
+            (
+                {
+                    "type": "object",
+                    "properties": {
+                        "agree": {"type": "boolean", "description": "True or false question"},
+                    },
+                },
+                True,
+            ),
+            # Boolean schema without description wrapped in object
+            (
+                {"type": "object", "properties": {"flag": {"type": "boolean"}}},
+                True,
+            ),
+            # String schema wrapped in object
+            (
+                {"type": "object", "properties": {"name": {"type": "string"}}},
+                False,
+            ),
+            # Nested object should NOT return True
+            (
+                {
+                    "type": "object",
+                    "properties": {
+                        "user": {"type": "object", "properties": {"name": {"type": "string"}}},
+                    },
+                },
+                False,
+            ),
+            # Array but not of enums wrapped in object should NOT return True
+            (
+                {
+                    "type": "object",
+                    "properties": {
+                        "tags": {"type": "array", "items": {"type": "string"}},
+                    },
+                },
+                False,
+            ),
+            # OneOf but not with enum wrapped in object should NOT return True
+            (
+                {
+                    "type": "object",
+                    "properties": {
+                        "value": {"oneOf": [{"type": "string"}, {"type": "number"}]},
+                    },
+                },
+                False,
+            ),
+            # Enum with other properties should NOT return True
+            (
+                {
+                    "type": "object",
+                    "properties": {
+                        "enum_field": {"enum": ["value1", "value2", "value3"], "description": "Select a value"},
+                        "other_field": {"type": "string"},
+                    },
+                },
+                False,
+            ),
+            # Enum array with other properties should NOT return True
+            (
+                {
+                    "type": "object",
+                    "properties": {
+                        "enum_array": {
+                            "type": "array",
+                            "items": {"enum": ["value1", "value2", "value3"], "description": "Select a value"},
+                        },
+                        "other_field": {"type": "string"},
+                    },
+                },
+                False,
+            ),
+            # Bool with other properties should NOT return True
+            (
+                {
+                    "type": "object",
+                    "properties": {
+                        "bool_field": {"type": "boolean"},
+                        "other_field": {"type": "string"},
+                    },
+                },
+                False,
+            ),
+            # Object with enum inside should NOT return True
+            (
+                {
+                    "type": "object",
+                    "properties": {
+                        "parent": {"type": "object", "properties": {"child": {"enum": ["value1", "value2", "value3"]}}},
+                    },
+                },
+                False,
+            ),
+            # Array of objects with enum inside should NOT return True
+            (
+                {
+                    "type": "object",
+                    "properties": {
+                        "parent_array": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "parent_object": {
+                                        "type": "object",
+                                        "properties": {"child": {"enum": ["value1", "value2", "value3"]}},
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+                False,
+            ),
+            # Explaination is already present
+            (
+                {"type": "object", "properties": {"explanation": {"type": "boolean"}}},
+                False,
+            ),
+        ],
+    )
+    def test_schema_needs_explanation(self, schema: dict[str, Any], expected: bool):
+        result = schema_needs_explanation(schema)
+        assert result == expected

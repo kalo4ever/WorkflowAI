@@ -51,6 +51,7 @@ from core.storage.mongo.migrations.migrations.m2025_02_06_anon_user_id_unique_in
 )
 from core.storage.mongo.migrations.migrations.m2025_02_07_review_eval_hash import AddReviewEvalHashIndexMigration
 from core.storage.mongo.migrations.migrations.m2025_03_07_org_settings_idx import OrgSettingsIndicesMigration
+from core.storage.mongo.migrations.migrations.m2025_03_18_feedback import FeedbackIndicesMigration
 from core.storage.mongo.mongo_storage import MongoStorage
 
 MIGRATIONS: list[type[AbstractMigration]] = [
@@ -83,6 +84,7 @@ MIGRATIONS: list[type[AbstractMigration]] = [
     AddAnonymousUserIdUniqueIndexMigration,
     AddReviewEvalHashIndexMigration,
     OrgSettingsIndicesMigration,
+    FeedbackIndicesMigration,
 ]
 
 

@@ -16,7 +16,13 @@ from api.dependencies.security import (
     key_ring_dependency,
     tenant_dependency,
 )
-from api.dependencies.services import FileStorageDep, GroupServiceDep, RunServiceDep, RunsServiceDep
+from api.dependencies.services import (
+    FileStorageDep,
+    GroupServiceDep,
+    RunFeedbackGeneratorDep,
+    RunServiceDep,
+    RunsServiceDep,
+)
 from api.dependencies.task_ban import check_task_banned_dependency
 from api.dependencies.task_info import TaskTupleDep
 from api.errors import prettify_errors
@@ -165,8 +171,12 @@ class RunResponse(_RunResponseCommon):
         description="A list of tools that were executed during the run.",
     )
 
+    feedback_token: str = Field(
+        description="A signed token that can be used to post feedback from a client side application",
+    )
+
     @classmethod
-    def from_domain(cls, task_run: SerializableTaskRun):
+    def from_domain(cls, task_run: SerializableTaskRun, feedback_token: str):
         """
         Converts a domain object to a stored task run
         """
@@ -189,6 +199,7 @@ class RunResponse(_RunResponseCommon):
                 logger=_logger,
             ),
             reasoning_steps=safe_map_optional(task_run.reasoning_steps, ReasoningStep.from_domain, logger=_logger),
+            feedback_token=feedback_token,
         )
 
     @override
@@ -287,6 +298,7 @@ async def run_task(
     author_tenant: AuthorTenantDep,
     provider_settings: ProviderSettingsDep,
     user_org: UserOrganizationDep,
+    feedback_token_generator: RunFeedbackGeneratorDep,
 ) -> Response:
     reference = version_reference_to_domain(request.version)
 
@@ -309,7 +321,7 @@ async def run_task(
         metadata=request.metadata,
         trigger="user",
         author_tenant=author_tenant,
-        serializer=RunResponse.from_domain,
+        serializer=lambda run: RunResponse.from_domain(run, feedback_token_generator(run.id)),
         stream_last_chunk=True,
         stream_serializer=RunResponseStreamChunk.from_stream if request.stream else None,
         store_inline=False,
@@ -365,6 +377,7 @@ async def reply_to_run(
     task_tuple: TaskTupleDep,
     user_org: UserOrganizationDep,
     provider_settings: ProviderSettingsDep,
+    feedback_token_generator: RunFeedbackGeneratorDep,
 ):
     start = time.time()
     previous_run = await runs_service.run_by_id(task_tuple, run_id, exclude={"task_output"}, max_wait_ms=400)
@@ -391,7 +404,7 @@ async def reply_to_run(
         tool_calls=[r.to_domain() for r in request.tool_results] if request.tool_results else None,
         metadata=request.metadata,
         stream_serializer=RunResponseStreamChunk.from_stream if request.stream else None,
-        serializer=RunResponse.from_domain,
+        serializer=lambda run: RunResponse.from_domain(run, feedback_token_generator(run.id)),
         is_different_version=is_different_version,
         start=start,
     )

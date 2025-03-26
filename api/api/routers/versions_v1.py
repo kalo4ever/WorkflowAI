@@ -1,9 +1,9 @@
-from datetime import datetime
-from typing import Annotated, Any
+from datetime import datetime, timedelta
+from typing import Annotated, Any, Self
 
 from fastapi import APIRouter, Depends, Path, Query
 from fastapi.responses import JSONResponse, StreamingResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from api.dependencies.path_params import TaskID, TaskSchemaID
 from api.dependencies.security import RequiredUserDep
@@ -102,11 +102,20 @@ async def create_version(
 class ImproveVersionRequest(BaseModel):
     # The run id that received an evaluation
     # We will use the input / output / version properties of the associated run to improve on the version properties
-    run_id: str = Field(description="The id of the run that received an evaluation")
+    run_id: str | None = None
+    variant_id: str | None = None
+    instructions: str | None = None
 
     user_evaluation: str = Field(description="A comment on why the task run was not optimal")
 
     stream: bool = False
+
+    @model_validator(mode="after")
+    def sanitize(self) -> Self:
+        # We should have either a run_id or a variant_id AND instructions
+        if not (any([any([self.run_id, self.variant_id]), self.instructions])):
+            raise ValueError("Either 'run_id' or 'variant_id' and 'instructions' must be provided")
+        return self
 
 
 class ImproveVersionResponse(BaseModel):
@@ -136,6 +145,8 @@ async def improve_prompt(
         improved_properties, changelog = await internal_tasks.improve_prompt.run(
             task_id,
             run_id=request.run_id,
+            variant_id=request.variant_id,
+            instructions=request.instructions,
             user_evaluation=request.user_evaluation,
         )
         return JSONResponse(
@@ -149,6 +160,8 @@ async def improve_prompt(
         async for chunk in internal_tasks.improve_prompt.stream(
             task_id,
             run_id=request.run_id,
+            variant_id=request.variant_id,
+            instructions=request.instructions,
             user_evaluation=request.user_evaluation,
         ):
             yield format_model_for_sse(ImproveVersionResponse(improved_properties=chunk[0], changelog=chunk[1]))
@@ -294,6 +307,35 @@ async def list_versions(
 ) -> Page[MajorVersion]:
     versions = await versions_service.list_version_majors(task_id, schema_id, models_service)
     return Page(items=[MajorVersion.from_domain(v) for v in versions], count=len(versions))
+
+
+class VersionStat(BaseModel):
+    version_id: str
+    run_count: int
+
+
+@router.get(
+    "/versions/stats",
+    description="Get stats about versions for a agent",
+    response_model_exclude_none=True,
+)
+async def get_version_stats(
+    task_id: TaskTupleDep,
+    storage: StorageDep,
+    from_date: Annotated[
+        datetime | None,
+        Query(description="The date to filter versions by. Defaults to 24 hours ago"),
+    ] = None,
+) -> Page[VersionStat]:
+    from_date = from_date or datetime.now() - timedelta(hours=24)
+    stats = [
+        VersionStat(
+            version_id=stat.version_id,
+            run_count=stat.run_count,
+        )
+        async for stat in storage.task_runs.run_count_by_version_id(task_id[1], from_date)
+    ]
+    return Page(items=stats)
 
 
 class VersionV1(MinorVersionBase):

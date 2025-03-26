@@ -9,12 +9,12 @@ from core.domain.events import EventRouter
 from core.domain.organization_settings import TenantData
 from core.domain.users import User
 from core.storage import ObjectNotFoundException
-from core.storage.organization_storage import SystemOrganizationStorage
+from core.storage.organization_storage import OrganizationSystemStorage
 
 
 @pytest.fixture(scope="function")
 def mock_org_storage():
-    return Mock(spec=SystemOrganizationStorage)
+    return Mock(spec=OrganizationSystemStorage)
 
 
 @pytest.fixture(scope="function")

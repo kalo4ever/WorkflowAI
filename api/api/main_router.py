@@ -4,6 +4,7 @@ from api.dependencies.security import URLPublicOrganizationDep, key_ring_depende
 from api.routers import (
     clerk_webhooks,
     features,
+    feedback_v1,
     stripe_webhooks,
 )
 from api.routers.agents import home_agent, meta_agent, new_task_agent, new_tool_agent
@@ -13,6 +14,7 @@ from core.domain.organization_settings import PublicOrganizationData
 main_router = APIRouter()
 main_router.include_router(clerk_webhooks.router)
 main_router.include_router(stripe_webhooks.router)
+main_router.include_router(feedback_v1.feedback_router)
 
 
 # Route for public organization data
@@ -56,7 +58,7 @@ def _tenant_router():
     tenant_router.include_router(reviews.router, tags=[RouteTags.REVIEWS])
     tenant_router.include_router(new_task_agent.router, tags=[RouteTags.NEW_AGENT])
     tenant_router.include_router(payments.router, tags=[RouteTags.PAYMENTS])
-    tenant_router.include_router(meta_agent.router, tags=[RouteTags.META_AGENT])
+    tenant_router.include_router(meta_agent.router, tags=[RouteTags.PROMPT_ENGINEER_AGENT])
     tenant_router.include_router(new_tool_agent.router, tags=[RouteTags.NEW_TOOL_AGENT])
     return tenant_router
 
@@ -76,6 +78,7 @@ def _authenticated_router():
     authenticated_router.include_router(agents_v1.router)
     authenticated_router.include_router(_tenant_router())
     authenticated_router.include_router(features.router, tags=[RouteTags.FEATURES])
+    authenticated_router.include_router(feedback_v1.router)
     return authenticated_router
 
 

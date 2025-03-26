@@ -46,7 +46,7 @@ class ModelData(ModelDataSupports):
     release_date: date = Field(description="The date the model was released")
 
     quality_index: int = Field(
-        description="The quality index of the model. None if not available",
+        description="The quality index of the model. None if not available, calculated from MMLU and GPQA scores quality index = ((MMLU + QPQA) / 2) * 10",
     )
 
     provider_name: str = Field(
@@ -131,8 +131,7 @@ class LatestModel(BaseModel):
     # Used to map a latest model to a specific model
     model: Model
     display_name: str
-    # By default all latest models can be used as default model
-    is_default: bool = True
+    is_default: bool = False
     icon_url: str = ""  # Fixed at build time
 
 

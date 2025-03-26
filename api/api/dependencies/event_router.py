@@ -9,7 +9,7 @@ from api.dependencies.analytics import (
     UserPropertiesDep,
 )
 from api.dependencies.security import FinalTenantDataDep
-from api.services.event_handler import tenant_event_router
+from api.services.event_handler import system_event_router, tenant_event_router
 from core.domain.events import EventRouter
 
 logger = logging.getLogger(__name__)
@@ -25,3 +25,6 @@ def event_router_dependency(
 
 
 EventRouterDep = Annotated[EventRouter, Depends(event_router_dependency)]
+
+
+SystemEventRouterDep = Annotated[EventRouter, Depends(system_event_router)]

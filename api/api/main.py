@@ -10,7 +10,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from sentry_sdk.integrations.logging import ignore_logger
 
 from api.errors import configure_scope_for_error
-from api.services.security_svc import SecurityService
 from api.services.storage import storage_for_tenant
 from api.tags import RouteTags
 from api.utils import (
@@ -31,6 +30,7 @@ from core.providers.factory.local_provider_factory import shared_provider_factor
 from core.storage import ObjectNotFoundException
 from core.storage.mongo.migrations.migrate import check_migrations, migrate
 from core.utils import no_op
+from core.utils.background import wait_for_background_tasks
 from core.utils.uuid import uuid7
 
 from .common import setup
@@ -46,6 +46,28 @@ logger = logging.getLogger(__name__)
 ignore_logger(__name__)
 
 
+async def _prepare_storage():
+    storage = storage_for_tenant(
+        tenant="__system__",
+        tenant_uid=-1,
+        event_router=no_op.event_router,
+        encryption=no_op.NoopEncryption(),
+    )
+    # If the environment variable is set to true, we migrate the database
+    if os.environ.get("WORKFLOWAI_MONGO_MIGRATIONS_ON_START") == "true":
+        await migrate(storage)
+        return
+
+    # By default, We check migrations and log an exception if they are not in sync
+    # Crashing if the migrations are not good here would be problematic in
+    # a multi replica environment
+    try:
+        # check_migrations raises an error if the migrations are not in sync
+        await check_migrations(storage)
+    except Exception as e:
+        logger.exception(e)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     metrics_service = await setup_metrics()
@@ -54,22 +76,7 @@ async def lifespan(app: FastAPI):
 
     # TODO: purge connection pool for httpx_provider
 
-    # We check migrations and log an exception if they are not in sync
-    # Crashing if the migrations are not good here would be problematic in
-    # a multi replica environment
-    storage = storage_for_tenant(
-        tenant="__system__",
-        tenant_uid=-1,
-        event_router=no_op.event_router,
-        encryption=no_op.NoopEncryption(),
-    )
-    if os.environ.get("WORKFLOWAI_MONGO_MIGRATIONS_ON_START") == "true":
-        await migrate(storage)
-    else:
-        try:
-            await check_migrations(storage)
-        except Exception as e:
-            logger.exception(e)
+    await _prepare_storage()
 
     logger.info("Preparing providers")
 
@@ -80,7 +87,7 @@ async def lifespan(app: FastAPI):
 
     # Closing the metrics service to send whatever is left in the buffer
     await close_metrics(metrics_service)
-    await SecurityService.wait_for_background_tasks()
+    await wait_for_background_tasks()
 
 
 _ONLY_RUN_ROUTES = os.getenv("ONLY_RUN_ROUTES") == "true"

@@ -6,7 +6,7 @@ import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
 
-from api.dependencies.security import tenant_dependency, url_public_organization, user_organization
+from api.dependencies.security import final_tenant_data, url_public_organization, user_organization
 from api.routers.task_schemas import UpdateTaskInstructionsRequest
 from core.domain.organization_settings import PublicOrganizationData, TenantData
 from core.domain.page import Page
@@ -35,7 +35,7 @@ def mock_bedrock_model_region_map(patched_bedrock_config: None):
 class TestGetTaskSchema:
     @pytest.fixture(scope="function", autouse=True)
     async def reset_security_dependencies(self, test_app: FastAPI):
-        del test_app.dependency_overrides[tenant_dependency]
+        del test_app.dependency_overrides[final_tenant_data]
         del test_app.dependency_overrides[user_organization]
         del test_app.dependency_overrides[url_public_organization]
 
@@ -94,7 +94,7 @@ class TestGetTaskSchema:
             tenant="another_tenant",
             sub="auser",
         )
-        mock_tenant_dep.side_effect = tenant_dependency
+        mock_tenant_dep.side_effect = final_tenant_data
         mock_storage.tasks.is_task_public = AsyncMock(return_value=False)
 
         mock_storage.task_variant_latest_by_schema_id.return_value = task_variant()
@@ -126,7 +126,7 @@ class TestGetTaskSchema:
             sub="auser",
             org_id="test",
         )
-        mock_tenant_dep.side_effect = tenant_dependency
+        mock_tenant_dep.side_effect = final_tenant_data
         mock_storage.tasks.is_task_public = AsyncMock(return_value=False)
 
         mock_storage.task_variant_latest_by_schema_id.return_value = task_variant()
@@ -156,7 +156,7 @@ class TestGetTaskSchema:
             sub="auser",
             org_id="test",
         )
-        mock_tenant_dep.side_effect = tenant_dependency
+        mock_tenant_dep.side_effect = final_tenant_data
         mock_storage.tasks.is_task_public = AsyncMock(return_value=False)
 
         mock_storage.task_variant_latest_by_schema_id.return_value = task_variant()
@@ -189,7 +189,7 @@ class TestGetTaskSchema:
             sub="auser",
             org_id="test",
         )
-        mock_tenant_dep.side_effect = tenant_dependency
+        mock_tenant_dep.side_effect = final_tenant_data
         mock_storage.tasks.is_task_public = AsyncMock(return_value=False)
 
         mock_storage.task_variant_latest_by_schema_id.return_value = task_variant()
@@ -220,7 +220,7 @@ class TestGetTaskSchema:
             sub="auser",
             org_id="test",
         )
-        mock_tenant_dep.side_effect = tenant_dependency
+        mock_tenant_dep.side_effect = final_tenant_data
         mock_storage.tasks.is_task_public = AsyncMock(return_value=False)
 
         mock_storage.task_variant_latest_by_schema_id.return_value = task_variant()

@@ -296,40 +296,54 @@ class TestModelAvailability:
     @pytest.mark.parametrize(
         "typology",
         [
-            TaskTypology(
-                has_image_in_input=False,
-                has_multiple_images_in_input=False,
-                has_audio_in_input=False,
+            pytest.param(
+                TaskTypology(
+                    has_image_in_input=False,
+                    has_multiple_images_in_input=False,
+                    has_audio_in_input=False,
+                ),
+                id="text",
             ),
-            TaskTypology(
-                has_image_in_input=True,
-                has_multiple_images_in_input=False,
-                has_audio_in_input=False,
+            pytest.param(
+                TaskTypology(
+                    has_image_in_input=True,
+                    has_multiple_images_in_input=False,
+                    has_audio_in_input=False,
+                ),
+                id="image",
             ),
-            TaskTypology(
-                has_image_in_input=True,
-                has_multiple_images_in_input=True,
-                has_audio_in_input=False,
+            pytest.param(
+                TaskTypology(
+                    has_image_in_input=True,
+                    has_multiple_images_in_input=True,
+                    has_audio_in_input=False,
+                ),
+                id="multiple_images",
             ),
-            TaskTypology(
-                has_image_in_input=False,
-                has_multiple_images_in_input=False,
-                has_audio_in_input=True,
+            pytest.param(
+                TaskTypology(
+                    has_image_in_input=False,
+                    has_multiple_images_in_input=False,
+                    has_audio_in_input=True,
+                ),
+                id="audio",
             ),
         ],
     )
     def test_minimum_models_per_typology(self, typology: TaskTypology):
         # Count models that support this typology
-        supported_models: list[ModelData] = []
+        supported_models: list[ModelData | LatestModel] = []
         for model_data in MODEL_DATAS.values():
             if isinstance(model_data, DeprecatedModel):
                 continue
 
             if isinstance(model_data, LatestModel):
-                model_data = MODEL_DATAS[model_data.model]
-                assert isinstance(model_data, ModelData), "sanity"
+                model_data_for_check = MODEL_DATAS[model_data.model]
+                assert isinstance(model_data_for_check, ModelData), "sanity"
+            else:
+                model_data_for_check = model_data
 
-            if model_data.is_not_supported_reason(typology) is not None:
+            if model_data_for_check.is_not_supported_reason(typology) is not None:
                 continue
             supported_models.append(model_data)
 

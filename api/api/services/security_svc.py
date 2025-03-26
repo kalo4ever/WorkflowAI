@@ -1,4 +1,3 @@
-import asyncio
 import logging
 from collections.abc import Awaitable, Callable
 from datetime import datetime, timezone
@@ -16,8 +15,9 @@ from core.domain.events import EventRouter, SendAnalyticsEvent
 from core.domain.organization_settings import TenantData
 from core.domain.users import User
 from core.storage import ObjectNotFoundException
-from core.storage.organization_storage import SystemOrganizationStorage
-from core.utils.coroutines import capture_errors, safe_in_background
+from core.storage.organization_storage import OrganizationSystemStorage
+from core.utils.background import add_background_task
+from core.utils.coroutines import capture_errors
 from core.utils.hash import secure_hash
 from core.utils.ids import id_uint32
 from core.utils.models.dumps import safe_dump_pydantic_model
@@ -26,19 +26,10 @@ _logger = logging.getLogger(__name__)
 
 
 class SecurityService:
-    _background_tasks: set[asyncio.Task[None]] = set()
-
     # Can't use the analytics service here since it depends on data provided by this service
-    def __init__(self, org_storage: SystemOrganizationStorage, event_router: EventRouter):
+    def __init__(self, org_storage: OrganizationSystemStorage, event_router: EventRouter):
         self._org_storage = org_storage
         self._event_router = event_router
-
-    @classmethod
-    async def wait_for_background_tasks(cls):
-        if not cls._background_tasks:
-            return
-        _logger.info("Waiting for background tasks to finish", extra={"tasks": len(cls._background_tasks)})
-        await asyncio.gather(*cls._background_tasks)
 
     def _send_created_org(self, org: TenantData):
         self._event_router(
@@ -186,9 +177,8 @@ class SecurityService:
         try:
             # We split the find and the update, the find is on the critical path
             res = await self._org_storage.find_tenant_for_api_key(secure_hash(credentials))
-            safe_in_background(
+            add_background_task(
                 self._org_storage.update_api_key_last_used_at(secure_hash(credentials), datetime.now(timezone.utc)),
-                self._background_tasks,
             )
             return res
         except ObjectNotFoundException:

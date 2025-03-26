@@ -28,6 +28,7 @@ class SerializableTaskVariant(BaseModel):
         of the input / ouput objects change so all task versions with the same schema idx
         have compatible input / output objects. Read only""",
     )
+    tenant: str | None = Field(default=None, description="A unique tenant id that the task variant belongs to")
     # TODO: remove, should be at task info level
     name: str = Field(description="the task display name")
     # TODO: remove, should be at task info level

@@ -22,6 +22,7 @@ from core.domain.errors import (
 from core.domain.fields.file import File
 from core.domain.fields.internal_reasoning_steps import InternalReasoningStep
 from core.domain.message import Message
+from core.domain.metrics import Metric
 from core.domain.models import Model, Provider
 from core.domain.models.model_data import FinalModelData, LatestModel, MaxTokensData, ModelData
 from core.domain.models.model_datas_mapping import MODEL_DATAS, DisplayedProvider
@@ -295,7 +296,7 @@ def test_init() -> None:
 
 @pytest.fixture(scope="function")
 def mock_task():
-    # We should probably just wrap the task variant instead
+    # Can't really use a wrap here since we use properties
     mock = Mock(spec=SerializableTaskVariant)
     mock.input_schema = SerializableTaskIO(json_schema={"properties": {}}, version="v1")
     mock.output_schema = SerializableTaskIO(json_schema={"properties": {}}, version="v1")
@@ -303,6 +304,7 @@ def mock_task():
     mock.id = "task_version_id"
     mock.task_id = "task_id"
     mock.task_schema_id = 1
+    mock.tenant = "tenant1"
 
     def _validate_output(output: Any, *args: Any, **kwargs: Any):
         # Not performing any validation
@@ -2599,6 +2601,45 @@ class TestRun:
             FileWithKeyPath(url="https://example.com/image", format="image", key_path=["image"]),
             Model.GPT_4O_2024_11_20,
         )
+
+    async def test_provider_failover(
+        self,
+        patched_runner: WorkflowAIRunner,
+        mock_provider_factory: Mock,
+        patch_metric_send: Mock,
+    ):
+        """Test that the correct metric is sent when a provider fails"""
+        patched_runner._options.model = Model.GEMINI_1_5_FLASH_002  # pyright: ignore[reportPrivateUsage]
+        patched_runner._options.provider = None  # pyright: ignore[reportPrivateUsage]
+        patched_runner.properties.model = Model.GEMINI_1_5_FLASH_002
+
+        mock_provider_factory.google.complete.side_effect = ProviderInternalError()
+        mock_provider_factory.gemini.complete.return_value = StructuredOutput(
+            {"output": "final"},
+        )
+        builder = await patched_runner.task_run_builder({})
+
+        run = await patched_runner.run(builder)
+        assert run.task_output == {"output": "final"}
+
+        mock_provider_factory.google.complete.assert_awaited_once()
+        first_opts = mock_provider_factory.google.complete.call_args_list[0].args[1]
+        assert isinstance(first_opts, ProviderOptions), "sanity check"
+        # Google does not support structured generation
+        assert first_opts.structured_generation is False
+
+        mock_provider_factory.gemini.complete.assert_awaited_once()
+        patch_metric_send.assert_called_once()
+
+        metric = patch_metric_send.call_args_list[0].args[0]
+        assert isinstance(metric, Metric)
+        assert metric.name == "workflowai_inference"
+        assert metric.tags == {
+            "model": "gemini-1.5-flash-002",
+            "provider": "workflowai",
+            "tenant": "tenant1",
+            "status": "success",
+        }
 
 
 def test_check_tool_calling_support_tool_enabled_model_not_supporting_tool_calling(

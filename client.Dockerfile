@@ -62,7 +62,7 @@ COPY --from=deps /app/package.json .
 
 FROM sources AS builder
 
-RUN --mount=type=secret,id=sentry_auth_token,env=SENTRY_AUTH_TOKEN NODE_OPTIONS="--max-old-space-size=4096" yarn build
+RUN --mount=type=secret,id=sentry_auth_token,env=SENTRY_AUTH_TOKEN NODE_OPTIONS="--max-old-space-size=4096" yarn next build
 
 FROM base AS runner
 

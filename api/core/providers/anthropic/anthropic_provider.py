@@ -322,6 +322,11 @@ class AnthropicProvider(HTTPXProvider[AnthropicConfig, CompletionResponse]):
                     response=response,
                     capture=True,
                 )
+            case msg if "prompt is too long" in msg:
+                return MaxTokensExceededError(
+                    msg=payload.error.message,
+                    response=response,
+                )
             case _:
                 pass
         return None
@@ -354,3 +359,30 @@ class AnthropicProvider(HTTPXProvider[AnthropicConfig, CompletionResponse]):
             for c in response.content
             if isinstance(c, ToolUseContent)
         ]
+
+    @override
+    async def _extract_and_log_rate_limits(self, response: Response, model: Model):
+        await self._log_rate_limit_remaining(
+            "requests",
+            model=model,
+            remaining=response.headers.get("anthropic-ratelimit-requests-remaining"),
+            total=response.headers.get("anthropic-ratelimit-requests-limit"),
+        )
+        await self._log_rate_limit_remaining(
+            "tokens",
+            model=model,
+            remaining=response.headers.get("anthropic-ratelimit-tokens-remaining"),
+            total=response.headers.get("anthropic-ratelimit-tokens-limit"),
+        )
+        await self._log_rate_limit_remaining(
+            "input_tokens",
+            model=model,
+            remaining=response.headers.get("anthropic-ratelimit-input-tokens-remaining"),
+            total=response.headers.get("anthropic-ratelimit-input-tokens-limit"),
+        )
+        await self._log_rate_limit_remaining(
+            "output_tokens",
+            model=model,
+            remaining=response.headers.get("anthropic-ratelimit-output-tokens-remaining"),
+            total=response.headers.get("anthropic-ratelimit-output-tokens-limit"),
+        )
