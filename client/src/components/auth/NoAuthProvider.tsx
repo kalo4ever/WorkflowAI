@@ -7,7 +7,7 @@ import { TenantID } from '@/types/aliases';
 
 export function NoAuthProvider({ children }: { children: ReactNode }) {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense>
       <AuthContext.Provider
         value={{
           isLoaded: true,

@@ -81,6 +81,7 @@ services:
       - mongo
       - redis
       - azurite
+      - clickhouse
   worker:
     <<: *api
     # No ports needed
