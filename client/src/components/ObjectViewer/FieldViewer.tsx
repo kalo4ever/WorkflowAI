@@ -111,8 +111,6 @@ export function FieldViewer(props: FieldViewerProps) {
     [subSchemaFieldType]
   );
 
-  const nullableFieldHidden = useMemo(() => subSchema?.nullable && fieldValue === null, [subSchema, fieldValue]);
-
   const [isValueVisible, setIsValueVisible] = useState(isExpandable ? defaultExpanded : true);
 
   const toggleValueVisible = useCallback(() => {
@@ -180,7 +178,7 @@ export function FieldViewer(props: FieldViewerProps) {
                   onShowEditDescriptionModal={rest.onShowEditDescriptionModal}
                 />
               )}
-              {isValueVisible && !nullableFieldHidden && (
+              {isValueVisible && (
                 <FieldViewerContent
                   value={fieldValue}
                   referenceValue={fieldReferenceValue}
@@ -210,7 +208,7 @@ export function FieldViewer(props: FieldViewerProps) {
             <div className='flex-1 flex flex-col w-full'>
               <div className='flex-1 flex flex-row w-full items-center'>
                 {fieldViewerLabel}
-                {isValueVisible && !nullableFieldHidden && (
+                {isValueVisible && (
                   <div className='flex flex-row w-full'>
                     <div
                       onMouseEnter={() => setIsHovering(true)}
