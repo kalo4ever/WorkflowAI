@@ -14,6 +14,7 @@ FROM base AS deps
 
 WORKDIR /app
 COPY package.json yarn.lock .yarnrc.yml ./
+COPY client/package.json ./client/package.json
 COPY ./.yarn/releases ./.yarn/releases/
 RUN yarn install --immutable
 
@@ -46,14 +47,7 @@ ENV NEXT_PUBLIC_DISABLE_AUTHENTICATION=${NEXT_PUBLIC_DISABLE_AUTHENTICATION}
 
 WORKDIR /app
 
-COPY client/src /app/src
-COPY client/tsconfig.json \
-    client/next.config.mjs \
-    client/postcss.config.js \
-    client/tailwind.config.ts \
-    client/sentry.server.config.ts \
-    client/sentry.client.config.ts \
-    ./
+COPY client /app/client
 COPY --from=deps /app/.yarn ./.yarn/
 COPY --from=deps /app/yarn.lock .
 COPY --from=deps /app/node_modules ./node_modules
@@ -62,7 +56,8 @@ COPY --from=deps /app/package.json .
 
 FROM sources AS builder
 
-RUN --mount=type=secret,id=sentry_auth_token,env=SENTRY_AUTH_TOKEN NODE_OPTIONS="--max-old-space-size=4096" yarn next build
+RUN --mount=type=secret,id=sentry_auth_token,env=SENTRY_AUTH_TOKEN NODE_OPTIONS="--max-old-space-size=4096" \
+    yarn workspace workflowai build
 
 FROM base AS runner
 
@@ -71,8 +66,8 @@ WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static/
+COPY --from=builder --chown=nextjs:nodejs /app/client/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/client/.next/static ./.next/static/
 COPY client/public ./public/
 
 
