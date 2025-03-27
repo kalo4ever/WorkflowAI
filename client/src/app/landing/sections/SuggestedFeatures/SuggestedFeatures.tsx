@@ -86,7 +86,7 @@ export function SuggestedFeatures() {
         <div className='flex px-6 sm:px-16 py-6 sm:py-10 border-b border-gray-100'>
           <div className='flex flex-col gap-4 w-full sm:items-start items-center'>
             <div className='text-[18px] text-gray-500 font-normal'>
-              What <span className='font-semibold'>AI features</span> can you build for your product?
+              What Al features would make your users say <span className='font-semibold'>&apos;wow&apos;</span>?
             </div>
             <SuggestedFeaturesSearch companyURL={companyURL} />
           </div>

@@ -97,7 +97,7 @@ function PriceSectionModelSelectorItem(props: PriceSectionModelSelectorItemProps
   return (
     <div
       className={cn(
-        'flex flex-col items-center justify-center w-[188px] py-3 cursor-pointer border-b-2',
+        'flex flex-col items-center justify-center sm:w-[188px] h-full w-[115px] py-3 cursor-pointer border-b-2 shrink-0',
         isSelected
           ? 'text-gray-700 border-gray-700'
           : 'text-gray-500 border-gray-200 hover:border-gray-400 hover:text-gray-600'
@@ -108,7 +108,7 @@ function PriceSectionModelSelectorItem(props: PriceSectionModelSelectorItemProps
         <AIProviderIcon name={model.metadata.provider_name} sizeClassName='w-[14px] h-[14px]' />
         <div className='text-[16px] font-semibold'>{model.metadata.provider_name}</div>
       </div>
-      <div className='text-[12px] font-normal'>{model.name}</div>
+      <div className='text-[12px] font-normal text-center px-1'>{model.name}</div>
     </div>
   );
 }
@@ -123,7 +123,7 @@ function PriceSectionModelSelector(props: PriceSectionModelSelectorProps) {
   const { models, selectedModelIndex, setSelectedModelIndex } = props;
 
   return (
-    <div className='flex flex-row items-center justify-center overflow-auto w-full'>
+    <div className='flex flex-row items-center justify-center overflow-x-auto w-full scrollbar-hide'>
       {models?.map((model, index) => (
         <PriceSectionModelSelectorItem
           key={model.id}

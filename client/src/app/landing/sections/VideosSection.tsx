@@ -36,7 +36,7 @@ export function VideosSection(props: VideosSectionProps) {
                 {video.description}
               </div>
             </div>
-            <div className='flex max-w-[1000px] w-full overflow-hidden items-center justify-center'>
+            <div className='flex max-w-[800px] w-full overflow-hidden items-center justify-center'>
               <Stream
                 src={video.videoId}
                 controls={false}

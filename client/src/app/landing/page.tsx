@@ -109,7 +109,9 @@ export function LandingPage() {
     <LandingPageContainer scrollToPricing={scrollToPricing} scrollRef={scrollRef}>
       <HeaderSection className='sm:mt-28 mt-24' scrollToPricing={scrollToPricing} />
       <SuggestedFeaturesSection className='mt-16 mb-32' />
-      <div className='text-center text-gray-900 text-[36px] font-medium'>Explore WorkflowAI as a...</div>
+      <div className='text-center text-gray-900 sm:text-[36px] text-[32px] sm:font-medium font-semibold'>
+        Explore WorkflowAI as a...
+      </div>
       <div className='h-[1px] w-[1px]' ref={secondStickyHeaderRef} />
       <div className='sticky top-0 z-10 w-full'>
         <StickyHeader
