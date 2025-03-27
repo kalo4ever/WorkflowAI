@@ -8,12 +8,7 @@ describe('BoolValueViewer', () => {
     { value: null, expected: 'Empty' },
   ])('handles $value', ({ value, expected }) => {
     const { getByTestId } = render(
-      <BoolValueViewer
-        schema={{ type: 'boolean' }}
-        value={value}
-        defs={{}}
-        keyPath={''}
-      />
+      <BoolValueViewer schema={{ type: 'boolean' }} value={value} defs={{}} keyPath={''} />
     );
     expect(getByTestId('viewer-readonly-value').textContent).toEqual(expected);
   });

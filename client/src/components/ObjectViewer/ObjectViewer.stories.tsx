@@ -1,23 +1,15 @@
 import { Meta, StoryObj } from '@storybook/react';
 import { cloneDeep, set } from 'lodash';
 import { useCallback, useState } from 'react';
-import {
-  InitInputFromSchemaMode,
-  initInputFromSchema,
-} from '@/lib/schemaUtils';
-import {
-  refObjectDefinitionFixtures,
-  refObjectsSchemaFixture,
-} from '@/tests/fixtures/schemaEditor/refObjects';
+import { InitInputFromSchemaMode, initInputFromSchema } from '@/lib/schemaUtils';
+import { refObjectDefinitionFixtures, refObjectsSchemaFixture } from '@/tests/fixtures/schemaEditor/refObjects';
 import { schemaMismatch } from '@/tests/fixtures/schemaMismatch';
 import { taskSchemaFixture } from '@/tests/fixtures/taskSchema';
 import { JsonObjectSchema } from '@/types';
 import { ObjectViewer, ObjectViewerProps } from './ObjectViewer';
 
 function Wrapper(props: ObjectViewerProps) {
-  const [value, setValue] = useState<Record<string, unknown> | undefined>(
-    cloneDeep(props.value)
-  );
+  const [value, setValue] = useState<Record<string, unknown> | undefined>(cloneDeep(props.value));
 
   const onEdit = useCallback((keyPath: string, newVal: unknown) => {
     setValue((prev) => {
@@ -27,14 +19,7 @@ function Wrapper(props: ObjectViewerProps) {
     });
   }, []);
 
-  return (
-    <ObjectViewer
-      {...props}
-      onEdit={onEdit}
-      value={value}
-      originalVal={props.value}
-    />
-  );
+  return <ObjectViewer {...props} onEdit={onEdit} value={value} originalVal={props.value} />;
 }
 
 const meta = {
@@ -56,13 +41,7 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-const {
-  taskSchema,
-  taskRun,
-  taskSchemaImage,
-  taskSchemaImageArray,
-  taskInputImage,
-} = taskSchemaFixture;
+const { taskSchema, taskRun, taskSchemaImage, taskSchemaImageArray, taskInputImage } = taskSchemaFixture;
 
 const schema = taskSchema.input_schema.json_schema;
 const taskInput = taskRun.task_input;
@@ -165,10 +144,7 @@ export const WithFieldErrors: Story = {
     defs: schema.$defs,
     errorsByKeypath: new Map([
       ['articles.0.id', 'Bool values do not match. Got True expected False.'],
-      [
-        'articles.0.title',
-        'Bool values do not match. Got True expected False.',
-      ],
+      ['articles.0.title', 'Bool values do not match. Got True expected False.'],
     ]),
   },
 };

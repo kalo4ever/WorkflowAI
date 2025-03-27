@@ -1,8 +1,5 @@
 import { FluentIcon } from '@fluentui/react-icons';
-import {
-  TaskVersionsContainer,
-  TaskVersionsContainerProps,
-} from '@/components/v2/TaskVersions/TaskVersionsContainer';
+import { TaskVersionsContainer, TaskVersionsContainerProps } from '@/components/v2/TaskVersions/TaskVersionsContainer';
 import { TaskVersionsListSectionHeader } from '@/components/v2/TaskVersions/TaskVersionsListSectionHeader';
 import { VersionAvatarType } from '@/components/v2/TaskVersions/utils';
 import { VersionV1 } from '@/types/workflowAI';
@@ -17,10 +14,7 @@ type TaskVersionsListSectionProps = TaskVersionsContainerProps & {
 export function TaskVersionsListSection(props: TaskVersionsListSectionProps) {
   const { icon, title, ...rest } = props;
   const finalTitle =
-    title ||
-    (rest.avatarType === VersionAvatarType.Favorited
-      ? `Favorites (${rest.allVersions.length})`
-      : 'Deployed');
+    title || (rest.avatarType === VersionAvatarType.Favorited ? `Favorites (${rest.allVersions.length})` : 'Deployed');
   if (rest.allVersions.length === 0) {
     return null;
   }

@@ -8,10 +8,7 @@ function customizer(objValue: unknown, srcValue: unknown) {
   return srcValue;
 }
 
-export function mergeTaskInputAndVoid(
-  taskInput: GeneralizedTaskInput,
-  voidInput: GeneralizedTaskInput | undefined
-) {
+export function mergeTaskInputAndVoid(taskInput: GeneralizedTaskInput, voidInput: GeneralizedTaskInput | undefined) {
   if (Array.isArray(taskInput) || !voidInput) return taskInput;
   return mergeWith(cloneDeep(taskInput), voidInput, customizer);
 }

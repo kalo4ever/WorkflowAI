@@ -40,14 +40,9 @@ export function useFavoriteToggle(props: UseFavoriteToggleProps) {
         <>
           <span>{`V${semverVersion} ${newIsFavorite ? 'Added to' : 'Removed from'} favorites. `}</span>
           <Link
-            href={taskVersionsRoute(
-              tenant,
-              taskId,
-              `${version.schema_id}` as TaskSchemaID,
-              {
-                filter: 'favorites',
-              }
-            )}
+            href={taskVersionsRoute(tenant, taskId, `${version.schema_id}` as TaskSchemaID, {
+              filter: 'favorites',
+            })}
             className='underline cursor-pointer'
             onClick={(e) => e.stopPropagation()}
           >

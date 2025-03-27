@@ -18,13 +18,9 @@ type NewTaskModalContentProps = {
   isInitialized: boolean;
   isEditMode: boolean;
   inputSplattedSchema: SchemaEditorField | undefined;
-  setInputSplattedSchema: (
-    splattedSchema: SchemaEditorField | undefined
-  ) => void;
+  setInputSplattedSchema: (splattedSchema: SchemaEditorField | undefined) => void;
   outputSplattedSchema: SchemaEditorField | undefined;
-  setOutputSplattedSchema: (
-    splattedSchema: SchemaEditorField | undefined
-  ) => void;
+  setOutputSplattedSchema: (splattedSchema: SchemaEditorField | undefined) => void;
   open: boolean;
   loading: boolean;
   userMessage: string;
@@ -104,10 +100,7 @@ export function NewTaskModalContent(props: NewTaskModalContentProps) {
   }
 
   return (
-    <div
-      className='flex flex-row w-full h-[calc(100%-60px)]'
-      ref={containerRef}
-    >
+    <div className='flex flex-row w-full h-[calc(100%-60px)]' ref={containerRef}>
       <div className='flex flex-row w-[calc(100%-336px)] h-full overflow-y-auto overflow-x-hidden border-t border-gray-200 border-dashed'>
         <div className='flex flex-col w-[50%] h-max min-h-full border-r border-gray-200 border-dashed overflow-x-hidden'>
           <SchemaSplattedEditor

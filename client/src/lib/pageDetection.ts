@@ -11,6 +11,7 @@ export enum Page {
   Reviews = 'reviews',
   Tasks = 'agents',
   Cost = 'cost',
+  Feedback = 'feedback',
 }
 
 export const pageRegexMap: Record<Page, RegExp> = {
@@ -26,12 +27,11 @@ export const pageRegexMap: Record<Page, RegExp> = {
   [Page.Deployments]: /\/agents\/[^/]+\/[^/]+\/deployments$/,
   [Page.Tasks]: /\/agents$/,
   [Page.Cost]: /\/agents\/[^/]+\/[^/]+\/cost$/,
+  [Page.Feedback]: /\/agents\/[^/]+\/[^/]+\/feedback$/,
 };
 
 export function detectPage(pathname: string): Page | undefined {
-  return Object.keys(pageRegexMap).find((page) =>
-    pageRegexMap[page as Page].test(pathname)
-  ) as Page;
+  return Object.keys(pageRegexMap).find((page) => pageRegexMap[page as Page].test(pathname)) as Page;
 }
 
 export function detectPageIsUsingNewDesign(pathname: string): boolean {
@@ -45,13 +45,12 @@ export function detectPageIsUsingNewDesign(pathname: string): boolean {
     Page.Benchmarks,
     Page.Runs,
     Page.Schemas,
+    Page.Feedback,
   ];
   return pagesUsingNewDesign.some((page) => pageRegexMap[page].test(pathname));
 }
 
 export function detectPageIsRequiringTaskSchema(pathname: string): boolean {
   const pagesNotRequiringTaskSchema = [Page.Schemas];
-  return !pagesNotRequiringTaskSchema.some((page) =>
-    pageRegexMap[page].test(pathname)
-  );
+  return !pagesNotRequiringTaskSchema.some((page) => pageRegexMap[page].test(pathname));
 }

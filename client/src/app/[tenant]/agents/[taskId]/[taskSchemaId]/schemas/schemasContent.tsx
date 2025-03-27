@@ -25,11 +25,7 @@ export function SchemaCell(props: SchemaCellProps) {
       className='p-1 hover:bg-gradient-to-r hover:from-[#E0E7FF]/15 hover:to-[#C7D2FE]/15'
       onClick={() => onSelect(schemaId)}
     >
-      <CircleCheckbox
-        checked={isSelected}
-        onClick={() => onSelect(schemaId)}
-        className='w-4 h-4'
-      >
+      <CircleCheckbox checked={isSelected} onClick={() => onSelect(schemaId)} className='w-4 h-4'>
         <TaskSchemaBadgeContainer schemaId={schemaId} isActive={isActive} />
       </CircleCheckbox>
     </div>
@@ -61,15 +57,8 @@ type SchemasContentProps = {
 };
 
 export function SchemasContent(props: SchemasContentProps) {
-  const {
-    taskSchema,
-    isInitialized,
-    visibleSchemaIds,
-    hiddenSchemaIds,
-    activeSchemaIds,
-    currentSchemaId,
-    onSelect,
-  } = props;
+  const { taskSchema, isInitialized, visibleSchemaIds, hiddenSchemaIds, activeSchemaIds, currentSchemaId, onSelect } =
+    props;
   return (
     <div className='flex flex-row w-full h-full border-r border-gray-200'>
       <SchemasSelector

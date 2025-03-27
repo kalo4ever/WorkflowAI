@@ -19,20 +19,9 @@ type RestApiTabProps = {
 };
 
 export function RestApiTab(props: RestApiTabProps) {
-  const {
-    tenant,
-    taskId,
-    taskSchemaId,
-    environment,
-    taskRun: rawTaskRun,
-    version,
-    apiUrl,
-  } = props;
+  const { tenant, taskId, taskSchemaId, environment, taskRun: rawTaskRun, version, apiUrl } = props;
 
-  const taskRunJSON = useMemo(
-    () => JSON.stringify({ task_output: rawTaskRun?.task_output }, null, 2),
-    [rawTaskRun]
-  );
+  const taskRunJSON = useMemo(() => JSON.stringify({ task_output: rawTaskRun?.task_output }, null, 2), [rawTaskRun]);
 
   const payload = useMemo(() => {
     if (!rawTaskRun) {
@@ -55,10 +44,7 @@ export function RestApiTab(props: RestApiTabProps) {
     };
   }, [rawTaskRun, environment, version]);
 
-  const payloadJSON = useMemo(
-    () => JSON.stringify(payload, null, 2),
-    [payload]
-  );
+  const payloadJSON = useMemo(() => JSON.stringify(payload, null, 2), [payload]);
 
   const code = useMemo(() => {
     const host = apiUrl ?? PROD_RUN_URL;
@@ -80,12 +66,7 @@ export function RestApiTab(props: RestApiTabProps) {
   return (
     <div className='flex flex-col w-full h-full overflow-y-auto'>
       <CodeBlock language='HTTP Request' snippet={code} />
-      <CodeBlock
-        language='JSON'
-        snippet={taskRunJSON}
-        showCopyButton={false}
-        showTopBorder={true}
-      />
+      <CodeBlock language='JSON' snippet={taskRunJSON} showCopyButton={false} showTopBorder={true} />
     </div>
   );
 }

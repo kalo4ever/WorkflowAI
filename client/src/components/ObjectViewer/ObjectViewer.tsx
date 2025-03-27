@@ -2,10 +2,7 @@ import { cx } from 'class-variance-authority';
 import { cloneDeep, get, isEmpty } from 'lodash';
 import { Plus } from 'lucide-react';
 import { useCallback, useMemo } from 'react';
-import {
-  InitInputFromSchemaMode,
-  initInputFromSchema,
-} from '@/lib/schemaUtils';
+import { InitInputFromSchemaMode, initInputFromSchema } from '@/lib/schemaUtils';
 import { ObjectKeyType } from '@/lib/schemaUtils';
 import { JsonValueSchema, WithPartial, joinKeyPath } from '@/types';
 import { Button } from '../ui/Button';
@@ -27,9 +24,7 @@ function ObjectViewerContent(props: ObjectViewerContentProps) {
   return (
     // The FieldViewer is surrounded by spacing divs to add a gap between the fields while maintaining a junction between ListItemSidelines
     <div className='relative'>
-      {isFirst && (
-        <div className={cx('py-1', { 'border-l border-gray-200': isArray })} />
-      )}
+      {isFirst && <div className={cx('py-1', { 'border-l border-gray-200': isArray })} />}
       <FieldViewer isLast={rest.editable ? false : isLast} {...rest} />
       <div
         className={cx({
@@ -99,26 +94,16 @@ export function ObjectViewer(props: ObjectViewerProps) {
       ('properties' in schema || 'items' in schema)
     ) {
       // It's a new mode only for the input and output schemas on Version page
-      const onlyShowDescriptionsAndExamplesAndHideTypes =
-        !showTypes && !!rest.showDescriptionExamples;
+      const onlyShowDescriptionsAndExamplesAndHideTypes = !showTypes && !!rest.showDescriptionExamples;
 
       return initInputFromSchema(
         schema,
         rest.defs,
-        onlyShowDescriptionsAndExamplesAndHideTypes
-          ? InitInputFromSchemaMode.NOTHING
-          : InitInputFromSchemaMode.TYPE
+        onlyShowDescriptionsAndExamplesAndHideTypes ? InitInputFromSchemaMode.NOTHING : InitInputFromSchemaMode.TYPE
       );
     }
     return rawValue;
-  }, [
-    rawValue,
-    schema,
-    rest.defs,
-    editable,
-    showTypes,
-    rest.showDescriptionExamples,
-  ]);
+  }, [rawValue, schema, rest.defs, editable, showTypes, rest.showDescriptionExamples]);
 
   const keys = useMemo(() => {
     const keys = extractKeys(schema, value);
@@ -126,15 +111,10 @@ export function ObjectViewer(props: ObjectViewerProps) {
     return keys?.filter((key) => !blacklistedKeys.has(key));
   }, [schema, value, blacklistedKeys]);
 
-  const showArrayButtons = useMemo(
-    () => isArray && editable,
-    [isArray, editable]
-  );
+  const showArrayButtons = useMemo(() => isArray && editable, [isArray, editable]);
 
   const onAdd = useCallback(() => {
-    const itemValue = rest.voidValue
-      ? get(rest.voidValue, `${keyPath}[0]`)
-      : null;
+    const itemValue = rest.voidValue ? get(rest.voidValue, `${keyPath}[0]`) : null;
     const copiedItemValue = !!itemValue ? cloneDeep(itemValue) : itemValue;
     const newValue = [...(value || []), copiedItemValue];
     props.onEdit?.(keyPath, newValue);
@@ -151,18 +131,13 @@ export function ObjectViewer(props: ObjectViewerProps) {
 
   const handleNullToggle = useCallback(
     (fieldKeyPath: string, isNull: boolean) => {
-      const newValue = isNull
-        ? undefined
-        : cloneDeep(get(rest.voidValue, fieldKeyPath));
+      const newValue = isNull ? undefined : cloneDeep(get(rest.voidValue, fieldKeyPath));
       props.onEdit?.(fieldKeyPath, newValue);
     },
     [props, rest.voidValue]
   );
 
-  if (
-    (schema?.type === 'object' || schema?.type === 'array') &&
-    typeof value !== 'object'
-  ) {
+  if ((schema?.type === 'object' || schema?.type === 'array') && typeof value !== 'object') {
     return (
       <ReadonlyValue
         {...props}
@@ -189,9 +164,7 @@ export function ObjectViewer(props: ObjectViewerProps) {
             fieldValue={value?.[key]}
             fieldReferenceValue={referenceValue?.[key]}
             keyPath={keyPath}
-            handleNullToggle={(isNull: boolean) =>
-              handleNullToggle(joinKeyPath(keyPath, key), isNull)
-            }
+            handleNullToggle={(isNull: boolean) => handleNullToggle(joinKeyPath(keyPath, key), isNull)}
             onEdit={onEdit}
             schema={schema}
             showTypes={showTypes}
@@ -207,17 +180,8 @@ export function ObjectViewer(props: ObjectViewerProps) {
         ))}
         {showArrayButtons && (
           <div className='w-full flex gap-3 items-stretch pr-3'>
-            <ListItemSideline
-              isRoot={false}
-              isLast
-              arrayIndex={keys?.length ?? 0}
-            />
-            <Button
-              lucideIcon={Plus}
-              onClick={onAdd}
-              variant='newDesign'
-              className='w-full'
-            >
+            <ListItemSideline isRoot={false} isLast arrayIndex={keys?.length ?? 0} />
+            <Button lucideIcon={Plus} onClick={onAdd} variant='newDesign' className='w-full'>
               Add Item
             </Button>
           </div>

@@ -9,11 +9,13 @@ import { useDefaultRedirectRoute } from '@/lib/hooks/useTaskParams';
 import { PATHS, signInRoute, signUpRoute } from '@/lib/routeFormatter';
 
 type LandingPageContainerProps = {
+  scrollToPricing: () => void;
   children: React.ReactNode;
+  scrollRef?: React.RefObject<HTMLDivElement>;
 };
 
 export function LandingPageContainer(props: LandingPageContainerProps) {
-  const { children } = props;
+  const { children, scrollToPricing, scrollRef } = props;
 
   const { isSignedIn: isLogged } = useAuth();
 
@@ -22,12 +24,8 @@ export function LandingPageContainer(props: LandingPageContainerProps) {
   const dashboardRoute = useDefaultRedirectRoute(PATHS.SIGNIN);
 
   return (
-    <div className='flex flex-col h-full w-full font-lato p-6'>
-      <ExtendedBordersContainer
-        className='flex flex-col h-full w-full'
-        borderColor='gray-100'
-        margin={24}
-      >
+    <div className='flex flex-col h-full w-full font-lato p-6 bg-custom-gradient-1'>
+      <ExtendedBordersContainer className='flex flex-col h-full w-full' borderColor='gray-100' margin={24}>
         <div className='flex items-center justify-between gap-2 h-[60px] px-4 flex-shrink-0 border-b border-gray-100'>
           <Button variant='text' size='none' toRoute={'/'}>
             <div className='flex items-center gap-2 flex-shrink-0'>
@@ -40,11 +38,11 @@ export function LandingPageContainer(props: LandingPageContainerProps) {
           </Button>
 
           <div className='flex flex-row gap-2 items-center'>
-            <Button
-              variant='newDesignText'
-              toRoute='mailto:team@workflowai.support'
-            >
-              Contact Us
+            <Button variant='newDesignText' toRoute='mailto:team@workflowai.support'>
+              Contact
+            </Button>
+            <Button variant='newDesignText' onClick={scrollToPricing}>
+              Pricing
             </Button>
             <Button
               variant='newDesignText'
@@ -87,7 +85,10 @@ export function LandingPageContainer(props: LandingPageContainerProps) {
             )}
           </div>
         </div>
-        <div className='flex h-[calc(100%-60px)] w-full flex-col items-center overflow-y-auto landing-scroll-container'>
+        <div
+          className='flex h-[calc(100%-60px)] w-full flex-col items-center overflow-y-auto landing-scroll-container'
+          ref={scrollRef}
+        >
           {children}
         </div>
       </ExtendedBordersContainer>

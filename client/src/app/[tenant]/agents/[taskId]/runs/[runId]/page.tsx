@@ -10,11 +10,6 @@ export default async function RunRedirectPage({
   searchParams?: { schemaId?: number };
 }) {
   return (
-    <RunRedirect
-      runId={params.runId}
-      taskId={params.taskId}
-      tenant={params.tenant}
-      schemaId={searchParams?.schemaId}
-    />
+    <RunRedirect runId={params.runId} taskId={params.taskId} tenant={params.tenant} schemaId={searchParams?.schemaId} />
   );
 }

@@ -82,10 +82,7 @@ export function InternalReasoningSteps(props: InternalReasoningStepsProps) {
   const tooltipContent = open ? 'Hide all steps' : 'View all steps';
   return (
     <div className='flex flex-col border-b pb-2'>
-      <div
-        className='flex items-center justify-between px-4 pt-2 cursor-pointer'
-        onClick={toggleOpen}
-      >
+      <div className='flex items-center justify-between px-4 pt-2 cursor-pointer' onClick={toggleOpen}>
         <div className='flex items-center gap-2 text-gray-700 text-xsm'>
           <StreamOutputRegular className='w-4 h-4 text-gray-400' />
           {`Created output in ${mergedSteps.length} ${suffix}`}

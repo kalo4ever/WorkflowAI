@@ -6,8 +6,7 @@ import { SchemaEditorTextCaseFixture } from './types';
 
 const unionObjectsOriginalDefinitions: JsonSchemaDefinitions = {
   DatetimeLocal: {
-    description:
-      'This class represents a local datetime, with a datetime and a timezone.',
+    description: 'This class represents a local datetime, with a datetime and a timezone.',
     properties: {
       date: {
         description: 'The date of the local datetime.',
@@ -502,8 +501,7 @@ const splattedEditorFields: SchemaEditorField = {
       type: 'date-time',
     },
     {
-      description:
-        'This class represents a local datetime, with a datetime and a timezone.',
+      description: 'This class represents a local datetime, with a datetime and a timezone.',
       fields: [
         {
           description: 'The date of the local datetime.',
@@ -618,8 +616,7 @@ const splattedEditorFields: SchemaEditorField = {
           type: 'date-time',
         },
         {
-          description:
-            'This class represents a local datetime, with a datetime and a timezone.',
+          description: 'This class represents a local datetime, with a datetime and a timezone.',
           fields: [
             {
               description: 'The date of the local datetime.',
@@ -629,8 +626,7 @@ const splattedEditorFields: SchemaEditorField = {
               type: 'date',
             },
             {
-              description:
-                'The time of the local datetime without timezone info.',
+              description: 'The time of the local datetime without timezone info.',
               examples: ['12:00:00', '22:00:00'],
               keyName: 'local_time',
               title: 'Local Time',
@@ -932,8 +928,7 @@ const splattedEditorFields: SchemaEditorField = {
           type: 'date-time',
         },
         {
-          description:
-            'This class represents a local datetime, with a datetime and a timezone.',
+          description: 'This class represents a local datetime, with a datetime and a timezone.',
           fields: [
             {
               description: 'The date of the local datetime.',
@@ -943,8 +938,7 @@ const splattedEditorFields: SchemaEditorField = {
               type: 'date',
             },
             {
-              description:
-                'The time of the local datetime without timezone info.',
+              description: 'The time of the local datetime without timezone info.',
               examples: ['12:00:00', '22:00:00'],
               keyName: 'local_time',
               title: 'Local Time',
@@ -1062,8 +1056,7 @@ const finalSchema: JsonObjectSchema = {
       type: 'array',
     },
     datetime_local_example: {
-      description:
-        'This class represents a local datetime, with a datetime and a timezone.',
+      description: 'This class represents a local datetime, with a datetime and a timezone.',
       properties: {
         date: {
           description: 'The date of the local datetime.',
@@ -1102,8 +1095,7 @@ const finalSchema: JsonObjectSchema = {
             type: 'string',
           },
           local_time: {
-            description:
-              'The time of the local datetime without timezone info.',
+            description: 'The time of the local datetime without timezone info.',
             examples: ['12:00:00', '22:00:00'],
             format: 'time',
             title: 'Local Time',
@@ -1272,8 +1264,7 @@ const finalSchema: JsonObjectSchema = {
           type: 'string',
         },
         nested_datetime_local_example: {
-          description:
-            'This class represents a local datetime, with a datetime and a timezone.',
+          description: 'This class represents a local datetime, with a datetime and a timezone.',
           properties: {
             date: {
               description: 'The date of the local datetime.',
@@ -1283,8 +1274,7 @@ const finalSchema: JsonObjectSchema = {
               type: 'string',
             },
             local_time: {
-              description:
-                'The time of the local datetime without timezone info.',
+              description: 'The time of the local datetime without timezone info.',
               examples: ['12:00:00', '22:00:00'],
               format: 'time',
               title: 'Local Time',
@@ -1388,8 +1378,7 @@ const finalSchema: JsonObjectSchema = {
             type: 'string',
           },
           nested_datetime_local_example: {
-            description:
-              'This class represents a local datetime, with a datetime and a timezone.',
+            description: 'This class represents a local datetime, with a datetime and a timezone.',
             properties: {
               date: {
                 description: 'The date of the local datetime.',
@@ -1399,8 +1388,7 @@ const finalSchema: JsonObjectSchema = {
                 type: 'string',
               },
               local_time: {
-                description:
-                  'The time of the local datetime without timezone info.',
+                description: 'The time of the local datetime without timezone info.',
                 examples: ['12:00:00', '22:00:00'],
                 format: 'time',
                 title: 'Local Time',

@@ -22,10 +22,7 @@ export function ExtendedBordersContainer({
       {/* Left border */}
       {borders.includes('left') && (
         <div
-          className={cn(
-            'absolute w-[1px]',
-            borderColor ? `bg-${borderColor}` : 'bg-border'
-          )}
+          className={cn('absolute w-[1px]', borderColor ? `bg-${borderColor}` : 'bg-border')}
           style={{
             left: 0,
             top: `-${margin}px`,
@@ -37,10 +34,7 @@ export function ExtendedBordersContainer({
       {/* Right border */}
       {borders.includes('right') && (
         <div
-          className={cn(
-            'absolute w-[1px]',
-            borderColor ? `bg-${borderColor}` : 'bg-border'
-          )}
+          className={cn('absolute w-[1px]', borderColor ? `bg-${borderColor}` : 'bg-border')}
           style={{
             right: 0,
             top: `-${margin}px`,
@@ -52,10 +46,7 @@ export function ExtendedBordersContainer({
       {/* Top border */}
       {borders.includes('top') && (
         <div
-          className={cn(
-            'absolute h-[1px]',
-            borderColor ? `bg-${borderColor}` : 'bg-border'
-          )}
+          className={cn('absolute h-[1px]', borderColor ? `bg-${borderColor}` : 'bg-border')}
           style={{
             top: 0,
             left: `-${margin}px`,
@@ -67,10 +58,7 @@ export function ExtendedBordersContainer({
       {/* Bottom border */}
       {borders.includes('bottom') && (
         <div
-          className={cn(
-            'absolute h-[1px]',
-            borderColor ? `bg-${borderColor}` : 'bg-border'
-          )}
+          className={cn('absolute h-[1px]', borderColor ? `bg-${borderColor}` : 'bg-border')}
           style={{
             bottom: 0,
             left: `-${margin}px`,

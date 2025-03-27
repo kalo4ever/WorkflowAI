@@ -14,11 +14,7 @@ import {
 
 export const description = 'A bar chart with a label';
 
-function formatValue(
-  value: number,
-  fractionalPart?: number,
-  hideWhenItsFraction: boolean = false
-): string {
+function formatValue(value: number, fractionalPart?: number, hideWhenItsFraction: boolean = false): string {
   if (value === 0) return '0';
 
   if (hideWhenItsFraction && value % 1 !== 0) return '';
@@ -71,10 +67,7 @@ export function BarChart(props: BarChartProps) {
     tooltipLabel,
   } = props;
 
-  const areAllTheValuesZero = useMemo(
-    () => data.every((item) => item.y === 0),
-    [data]
-  );
+  const areAllTheValuesZero = useMemo(() => data.every((item) => item.y === 0), [data]);
 
   const [containerWidth, setContainerWidth] = useState(0);
 
@@ -88,12 +81,7 @@ export function BarChart(props: BarChartProps) {
   }, [containerWidth, data.length]);
 
   return (
-    <ResponsiveContainer
-      width='100%'
-      height={height}
-      className={className}
-      onResize={handleResize}
-    >
+    <ResponsiveContainer width='100%' height={height} className={className} onResize={handleResize}>
       <RechartsBarChart
         accessibilityLayer
         data={data}
@@ -142,9 +130,7 @@ export function BarChart(props: BarChartProps) {
           <Tooltip
             formatter={(value: number) => [
               <div key='tooltip' className='flex justify-between w-full'>
-                <div className='text-xs font-medium font-lato text-gray-500'>
-                  {tooltipLabel}
-                </div>
+                <div className='text-xs font-medium font-lato text-gray-500'>{tooltipLabel}</div>
                 <div className='text-xs font-semibold font-lato text-gray-700'>
                   {`${prefix ?? ''}${formatValue(value, fractionalPart)}`}
                 </div>
@@ -177,9 +163,7 @@ export function BarChart(props: BarChartProps) {
               position='top'
               offset={12}
               fontSize={12}
-              formatter={(value: number) =>
-                `${prefix ?? ''}${formatValue(value, fractionalPart)}`
-              }
+              formatter={(value: number) => `${prefix ?? ''}${formatValue(value, fractionalPart)}`}
               style={{
                 fill: textColor,
                 fontSize: '12px',

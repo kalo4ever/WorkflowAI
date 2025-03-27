@@ -16,20 +16,8 @@ export function TaskModelBadge(props: TaskModelBadgeProps) {
   }
 
   return (
-    <Badge
-      variant='tertiary'
-      className={cx(
-        'truncate flex items-center gap-1.5 max-w-[300px]',
-        className
-      )}
-    >
-      {providerId ? (
-        <AIProviderIcon
-          providerId={providerId}
-          fallbackOnMysteryIcon
-          sizeClassName='w-4 h-4'
-        />
-      ) : null}
+    <Badge variant='tertiary' className={cx('truncate flex items-center gap-1.5 max-w-[300px]', className)}>
+      {providerId ? <AIProviderIcon providerId={providerId} fallbackOnMysteryIcon sizeClassName='w-4 h-4' /> : null}
       {model && <div className='truncate'>{model}</div>}
     </Badge>
   );

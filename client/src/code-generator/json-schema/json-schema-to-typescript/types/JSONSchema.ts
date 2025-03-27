@@ -78,8 +78,7 @@ export const Intersection = Symbol('Intersection');
  *
  * Note: `definitions` and `id` are removed by the normalizer. Use `$defs` and `$id` instead.
  */
-export interface NormalizedJSONSchema
-  extends Omit<LinkedJSONSchema, 'definitions' | 'id'> {
+export interface NormalizedJSONSchema extends Omit<LinkedJSONSchema, 'definitions' | 'id'> {
   [Intersection]?: NormalizedJSONSchema;
   [Parent]: NormalizedJSONSchema | null;
   [Types]: ReadonlySet<SchemaType>;
@@ -132,25 +131,19 @@ export interface CustomTypeJSONSchema extends NormalizedJSONSchema {
   tsType: string;
 }
 
-export const getRootSchema = memoize(
-  (schema: NormalizedJSONSchema): NormalizedJSONSchema => {
-    const parent = schema[Parent];
-    if (!parent) {
-      return schema;
-    }
-    return getRootSchema(parent);
+export const getRootSchema = memoize((schema: NormalizedJSONSchema): NormalizedJSONSchema => {
+  const parent = schema[Parent];
+  if (!parent) {
+    return schema;
   }
-);
+  return getRootSchema(parent);
+});
 
-export function isBoolean(
-  schema: LinkedJSONSchema | JSONSchemaType
-): schema is boolean {
+export function isBoolean(schema: LinkedJSONSchema | JSONSchemaType): schema is boolean {
   return schema === true || schema === false;
 }
 
-export function isPrimitive(
-  schema: LinkedJSONSchema | JSONSchemaType
-): schema is JSONSchemaType {
+export function isPrimitive(schema: LinkedJSONSchema | JSONSchemaType): schema is JSONSchemaType {
   return !isPlainObject(schema);
 }
 

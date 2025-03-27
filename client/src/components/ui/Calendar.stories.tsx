@@ -60,12 +60,7 @@ export const Range: Story = {
  */
 export const Disabled: Story = {
   args: {
-    disabled: [
-      addDays(new Date(), 1),
-      addDays(new Date(), 2),
-      addDays(new Date(), 3),
-      addDays(new Date(), 5),
-    ],
+    disabled: [addDays(new Date(), 1), addDays(new Date(), 2), addDays(new Date(), 3), addDays(new Date(), 5)],
   },
 };
 

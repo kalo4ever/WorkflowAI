@@ -10,12 +10,7 @@ import { useQueryParamModal } from '@/lib/globalModal';
 import { NEW_TASK_MODAL_OPEN } from '@/lib/globalModal';
 import { useIsAllowed } from '@/lib/hooks/useIsAllowed';
 import { useIsSameTenant } from '@/lib/hooks/useTaskParams';
-import {
-  taskApiRoute,
-  taskDeploymentsRoute,
-  taskRunsRoute,
-  taskSchemaRoute,
-} from '@/lib/routeFormatter';
+import { taskApiRoute, taskDeploymentsRoute, taskRunsRoute, taskSchemaRoute } from '@/lib/routeFormatter';
 import { getNewestSchemaId } from '@/lib/taskUtils';
 import { useOrFetchTasks } from '@/store/fetchers';
 import { TaskID, TenantID } from '@/types/aliases';
@@ -75,8 +70,7 @@ export function TasksContainer(props: TasksContainerProps) {
     [router, tenant]
   );
 
-  const { openModal: openNewTaskModal } =
-    useQueryParamModal(NEW_TASK_MODAL_OPEN);
+  const { openModal: openNewTaskModal } = useQueryParamModal(NEW_TASK_MODAL_OPEN);
 
   const onNewTask = useCallback(() => {
     if (!checkIfSignedIn()) return;
@@ -98,9 +92,7 @@ export function TasksContainer(props: TasksContainerProps) {
       name={
         <div className='flex flex-row gap-3 items-center'>
           <AppsList20Regular className='w-5 h-5 text-gray-500' />
-          <div className='text-[16px] font-semibold text-gray-700'>
-            AI Agents
-          </div>
+          <div className='text-[16px] font-semibold text-gray-700'>AI Agents</div>
         </div>
       }
       showCopyLink={false}
@@ -110,6 +102,7 @@ export function TasksContainer(props: TasksContainerProps) {
       <div className='flex w-full h-full p-4'>
         {tasks.length > 0 ? (
           <TasksTable
+            tenant={tenant}
             tasks={sortedTasks}
             onTryInPlayground={onTryInPlayground}
             onViewRuns={onViewRuns}

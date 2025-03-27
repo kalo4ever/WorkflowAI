@@ -11,20 +11,17 @@ import { sortVersions } from '@/lib/versionUtils';
 import { isNullish } from '@/types';
 import { TaskID, TaskSchemaID, TenantID } from '@/types/aliases';
 import { CodeLanguage } from '@/types/snippets';
-import { ChatMessage, FieldQuery, VersionV1 } from '@/types/workflowAI';
+import { ChatMessage, FieldQuery, PlaygroundState, VersionV1 } from '@/types/workflowAI';
 import { useAIModels } from './ai_models';
 import { useApiKeys } from './api_keys';
 import { useClerkOrganizationStore } from './clerk_organisations';
 import { useClerkUserStore } from './clerk_users';
+import { useFeaturesState } from './features';
+import { useMetaAgentChat } from './meta_agent_messages';
 import { useOrganizationSettings } from './organization_settings';
 import { usePayments } from './payments';
+import { usePlaygroundChatStore } from './playgroundChatStore';
 import { useRunCompletions } from './run_completions';
-import {
-  SuggestedAgent,
-  buildSuggestedAgentPreviewScopeKey,
-  useSuggestedAgentPreview,
-  useSuggestedAgents,
-} from './suggested_agents';
 import { useTasks } from './task';
 import { useTaskEvaluation } from './task_evaluation';
 import { useTaskPreview } from './task_preview';
@@ -45,11 +42,7 @@ import {
   buildVersionScopeKey,
   getOrUndef,
 } from './utils';
-import {
-  getVersionsPerEnvironment,
-  mapMajorVersionsToVersions,
-  useVersions,
-} from './versions';
+import { getVersionsPerEnvironment, mapMajorVersionsToVersions, useVersions } from './versions';
 
 type TUseOrFetchAllAiModelsProps = {
   tenant: TenantID | undefined;
@@ -62,9 +55,7 @@ export function useOrFetchAllAiModels(props: TUseOrFetchAllAiModelsProps) {
   const scope = buildScopeKey({ tenant, taskId, taskSchemaId });
   const models = useAIModels((state) => state.modelsByScope.get(scope));
   const isLoading = useAIModels((state) => state.isLoadingByScope.get(scope));
-  const isInitialized = useAIModels((state) =>
-    state.isInitializedByScope.get(scope)
-  );
+  const isInitialized = useAIModels((state) => state.isInitializedByScope.get(scope));
   const fetchModels = useAIModels((state) => state.fetchModels);
 
   useEffect(() => {
@@ -98,6 +89,25 @@ export function useOrFetchAllAiModels(props: TUseOrFetchAllAiModelsProps) {
   };
 }
 
+export function useOrFetchModels() {
+  const models = useAIModels((state) => state.models);
+  const isLoading = useAIModels((state) => state.isLoading);
+  const isInitialized = useAIModels((state) => state.isInitialized);
+  const fetchUniversalModels = useAIModels((state) => state.fetchUniversalModels);
+
+  useEffect(() => {
+    if (!isInitialized) {
+      fetchUniversalModels();
+    }
+  }, [isInitialized, fetchUniversalModels]);
+
+  return {
+    models,
+    isLoading,
+    isInitialized,
+  };
+}
+
 export const useOrFetchTaskRuns = (
   tenant: TenantID | undefined,
   taskId: TaskID,
@@ -107,9 +117,7 @@ export const useOrFetchTaskRuns = (
   const scope = buildScopeKey({ tenant, taskId, taskSchemaId, searchParams });
   const taskRuns = useTaskRuns((state) => state.taskRunsByScope.get(scope));
   const isLoading = useTaskRuns((state) => state.isLoadingByScope.get(scope));
-  const isInitialized = useTaskRuns(
-    (state) => state.isInitializedByScope.get(scope) === true
-  );
+  const isInitialized = useTaskRuns((state) => state.isInitializedByScope.get(scope) === true);
   const fetchTaskRuns = useTaskRuns((state) => state.fetchTaskRuns);
   const count = useTaskRuns((state) => state.countByScope.get(scope));
 
@@ -143,13 +151,9 @@ export const useOrSearchTaskRuns = (
     fieldQueries,
   });
 
-  const taskRunItems = useTaskRuns((state) =>
-    state.taskRunItemsV1ByScope.get(scope)
-  );
+  const taskRunItems = useTaskRuns((state) => state.taskRunItemsV1ByScope.get(scope));
   const isLoading = useTaskRuns((state) => state.isLoadingByScope.get(scope));
-  const isInitialized = useTaskRuns(
-    (state) => state.isInitializedByScope.get(scope) === true
-  );
+  const isInitialized = useTaskRuns((state) => state.isInitializedByScope.get(scope) === true);
   const searchTaskRuns = useTaskRuns((state) => state.searchTaskRuns);
   const count = useTaskRuns((state) => state.countByScope.get(scope));
 
@@ -178,18 +182,10 @@ export const useOrFetchTaskRunsSearchFields = (
 ) => {
   const scope = buildScopeKey({ tenant, taskId, taskSchemaId });
 
-  const searchFields = useTaskRunsSearchFields((state) =>
-    state.searchFieldsByScope.get(scope)
-  );
-  const isLoading = useTaskRunsSearchFields((state) =>
-    state.isLoadingByScope.get(scope)
-  );
-  const isInitialized = useTaskRunsSearchFields(
-    (state) => state.isInitializedByScope.get(scope) === true
-  );
-  const fetchSearchFields = useTaskRunsSearchFields(
-    (state) => state.fetchSearchFields
-  );
+  const searchFields = useTaskRunsSearchFields((state) => state.searchFieldsByScope.get(scope));
+  const isLoading = useTaskRunsSearchFields((state) => state.isLoadingByScope.get(scope));
+  const isInitialized = useTaskRunsSearchFields((state) => state.isInitializedByScope.get(scope) === true);
+  const fetchSearchFields = useTaskRunsSearchFields((state) => state.fetchSearchFields);
 
   useEffect(() => {
     fetchSearchFields({
@@ -214,19 +210,10 @@ export function latestTaskRunInputSearchParams() {
   return params.toString();
 }
 
-export const useOrFetchLatestTaskRun = (
-  tenant: TenantID | undefined,
-  taskId: TaskID,
-  taskSchemaId: TaskSchemaID
-) => {
+export const useOrFetchLatestTaskRun = (tenant: TenantID | undefined, taskId: TaskID, taskSchemaId: TaskSchemaID) => {
   const searchParams = useMemo(latestTaskRunInputSearchParams, []);
 
-  const { taskRuns, isInitialized, isLoading } = useOrFetchTaskRuns(
-    tenant,
-    taskId,
-    taskSchemaId,
-    searchParams
-  );
+  const { taskRuns, isInitialized, isLoading } = useOrFetchTaskRuns(tenant, taskId, taskSchemaId, searchParams);
 
   const fetchTaskRuns = useTaskRuns((state) => state.fetchTaskRuns);
 
@@ -246,20 +233,10 @@ export const useOrFetchLatestTaskRun = (
   };
 };
 
-export const useOrFetchTaskRun = (
-  tenant: TenantID | undefined,
-  taskId: TaskID,
-  taskRunId: string | undefined
-) => {
-  const taskRun = useTaskRuns((state) =>
-    getOrUndef(state.taskRunsById, taskRunId)
-  );
-  const isLoading = useTaskRuns((state) =>
-    getOrUndef(state.isLoadingById, taskRunId)
-  );
-  const isInitialized = useTaskRuns(
-    (state) => getOrUndef(state.isInitializedById, taskRunId) === true
-  );
+export const useOrFetchTaskRun = (tenant: TenantID | undefined, taskId: TaskID, taskRunId: string | undefined) => {
+  const taskRun = useTaskRuns((state) => getOrUndef(state.taskRunsById, taskRunId));
+  const isLoading = useTaskRuns((state) => getOrUndef(state.isLoadingById, taskRunId));
+  const isInitialized = useTaskRuns((state) => getOrUndef(state.isInitializedById, taskRunId) === true);
   const fetchTaskRun = useTaskRuns((state) => state.fetchTaskRun);
 
   const refresh = useCallback(() => {
@@ -282,20 +259,12 @@ export const useOrFetchTaskRun = (
   };
 };
 
-export const useOrFetchRunV1 = (
-  tenant: TenantID | undefined,
-  taskId: TaskID,
-  runId: string | undefined
-) => {
+export const useOrFetchRunV1 = (tenant: TenantID | undefined, taskId: TaskID, runId: string | undefined) => {
   const run = useTaskRuns((state) => getOrUndef(state.runV1ById, runId));
 
-  const isLoading = useTaskRuns((state) =>
-    getOrUndef(state.isRunV1LoadingById, runId)
-  );
+  const isLoading = useTaskRuns((state) => getOrUndef(state.isRunV1LoadingById, runId));
 
-  const isInitialized = useTaskRuns(
-    (state) => getOrUndef(state.isRunV1InitializedById, runId) === true
-  );
+  const isInitialized = useTaskRuns((state) => getOrUndef(state.isRunV1InitializedById, runId) === true);
 
   const fetchRun = useTaskRuns((state) => state.fetchRunV1);
 
@@ -324,18 +293,10 @@ export const useOrFetchTaskRunTranscriptions = (
   taskId: TaskID,
   taskRunId: string | undefined
 ) => {
-  const transcriptions = useTaskRunTranscriptions((state) =>
-    getOrUndef(state.transcriptionsById, taskRunId)
-  );
-  const isLoading = useTaskRunTranscriptions((state) =>
-    getOrUndef(state.isLoadingById, taskRunId)
-  );
-  const isInitialized = useTaskRunTranscriptions(
-    (state) => getOrUndef(state.isInitializedById, taskRunId) === true
-  );
-  const fetchTaskRunTranscriptions = useTaskRunTranscriptions(
-    (state) => state.fetchTaskRunTranscriptions
-  );
+  const transcriptions = useTaskRunTranscriptions((state) => getOrUndef(state.transcriptionsById, taskRunId));
+  const isLoading = useTaskRunTranscriptions((state) => getOrUndef(state.isLoadingById, taskRunId));
+  const isInitialized = useTaskRunTranscriptions((state) => getOrUndef(state.isInitializedById, taskRunId) === true);
+  const fetchTaskRunTranscriptions = useTaskRunTranscriptions((state) => state.fetchTaskRunTranscriptions);
 
   useEffect(() => {
     if (taskRunId) {
@@ -355,18 +316,10 @@ export const useOrFetchTaskRunReviews = (
   taskId: TaskID,
   taskRunId: string | undefined
 ) => {
-  const reviews = useTaskRunReviews((state) =>
-    getOrUndef(state.reviewsById, taskRunId)
-  );
-  const isLoading = useTaskRunReviews((state) =>
-    getOrUndef(state.isLoadingById, taskRunId)
-  );
-  const isInitialized = useTaskRunReviews(
-    (state) => getOrUndef(state.isInitializedById, taskRunId) === true
-  );
-  const fetchTaskRunReviews = useTaskRunReviews(
-    (state) => state.fetchTaskRunReviews
-  );
+  const reviews = useTaskRunReviews((state) => getOrUndef(state.reviewsById, taskRunId));
+  const isLoading = useTaskRunReviews((state) => getOrUndef(state.isLoadingById, taskRunId));
+  const isInitialized = useTaskRunReviews((state) => getOrUndef(state.isInitializedById, taskRunId) === true);
+  const fetchTaskRunReviews = useTaskRunReviews((state) => state.fetchTaskRunReviews);
 
   useEffect(() => {
     if (taskRunId && !isInitialized) {
@@ -379,9 +332,7 @@ export const useOrFetchTaskRunReviews = (
       return true;
     }
 
-    const isThereUserReview = reviews.some(
-      (review) => review.created_by.reviewer_type === 'user'
-    );
+    const isThereUserReview = reviews.some((review) => review.created_by.reviewer_type === 'user');
 
     if (isThereUserReview) {
       return false;
@@ -415,15 +366,9 @@ export const useOrFetchCurrentTaskSchema = (
   taskSchemaId: TaskSchemaID | undefined
 ) => {
   const scopeKey = buildScopeKey({ tenant, taskId, taskSchemaId });
-  const taskSchema = useTaskSchemas((state) =>
-    state.taskSchemasByScope.get(scopeKey)
-  );
-  const isLoading = useTaskSchemas((state) =>
-    state.isTaskSchemaLoadingByScope.get(scopeKey)
-  );
-  const isInitialized = useTaskSchemas(
-    (state) => !!state.isTaskSchemaInitializedByScope.get(scopeKey)
-  );
+  const taskSchema = useTaskSchemas((state) => state.taskSchemasByScope.get(scopeKey));
+  const isLoading = useTaskSchemas((state) => state.isTaskSchemaLoadingByScope.get(scopeKey));
+  const isInitialized = useTaskSchemas((state) => !!state.isTaskSchemaInitializedByScope.get(scopeKey));
   const fetchTaskSchema = useTaskSchemas((state) => state.fetchTaskSchema);
 
   useEffect(() => {
@@ -445,12 +390,8 @@ export const CURRENT_TENANT = '_' as TenantID;
 
 export const useOrFetchTasks = (tenant: TenantID) => {
   const tasks = useTasks((state) => state.tasksByTenant.get(tenant) ?? []);
-  const isLoading = useTasks(
-    (state) => state.isLoadingTasksByTenant.get(tenant) ?? false
-  );
-  const isInitialized = useTasks(
-    (state) => state.isInitialiazedTasksByTenant.get(tenant) === true
-  );
+  const isLoading = useTasks((state) => state.isLoadingTasksByTenant.get(tenant) ?? false);
+  const isInitialized = useTasks((state) => state.isInitialiazedTasksByTenant.get(tenant) === true);
   const fetchTasks = useTasks((state) => state.fetchTasks);
 
   useEffect(() => {
@@ -471,9 +412,7 @@ export const useOrFetchTask = (
 ) => {
   const tasksByScope = useTasks((state) => state.tasksByScope);
   const isLoadingByScope = useTasks((state) => state.isLoadingTaskByScope);
-  const isInitializedByScope = useTasks(
-    (state) => state.isInitialiazedTaskByScope
-  );
+  const isInitializedByScope = useTasks((state) => state.isInitialiazedTaskByScope);
   const fetchTask = useTasks((state) => state.fetchTask);
 
   const scopeKey = buildScopeKey({ tenant, taskId: taskId ?? ('_' as TaskID) });
@@ -493,9 +432,7 @@ export const useOrFetchTask = (
   return { task, isLoading, isInitialized };
 };
 
-const getTokenExpirationTime = (
-  token: string | undefined
-): number | undefined => {
+const getTokenExpirationTime = (token: string | undefined): number | undefined => {
   if (!token) return undefined;
 
   try {
@@ -510,10 +447,7 @@ const getTokenExpirationTime = (
 
 export const useOrFetchToken = () => {
   const { user, tenantId } = useAuth();
-  const tokenScope = useMemo(
-    () => tokenScopeKey({ userID: user?.id, orgID: tenantId }),
-    [user?.id, tenantId]
-  );
+  const tokenScope = useMemo(() => tokenScopeKey({ userID: user?.id, orgID: tenantId }), [user?.id, tenantId]);
 
   const token = useToken((state) => state.tokenByScope.get(tokenScope));
   const isLoading = useToken((state) => state.isLoadingByScope.get(tokenScope));
@@ -567,23 +501,10 @@ export const useOrFetchTaskSnippet = (
   apiUrl?: string,
   secondaryInput?: Record<string, unknown>
 ) => {
-  const scopeKey = buildSnippetScopeKey(
-    taskId,
-    taskSchemaId,
-    language,
-    iteration,
-    environment,
-    exampleTaskRunInput
-  );
-  const taskSnippet = useTaskSnippets((state) =>
-    state.taskSnippetsByScope.get(scopeKey)
-  );
-  const isLoading = useTaskSnippets((state) =>
-    state.isLoadingByScope.get(scopeKey)
-  );
-  const isInitialized = useTaskSnippets(
-    (state) => state.isInitializedByScope.get(scopeKey) === true
-  );
+  const scopeKey = buildSnippetScopeKey(taskId, taskSchemaId, language, iteration, environment, exampleTaskRunInput);
+  const taskSnippet = useTaskSnippets((state) => state.taskSnippetsByScope.get(scopeKey));
+  const isLoading = useTaskSnippets((state) => state.isLoadingByScope.get(scopeKey));
+  const isInitialized = useTaskSnippets((state) => state.isInitializedByScope.get(scopeKey) === true);
   const fetchSnippet = useTaskSnippets((state) => state.fetchSnippet);
 
   useEffect(() => {
@@ -619,14 +540,10 @@ export const useOrFetchTaskSnippet = (
 };
 
 export const useOrFetchOrganizationSettings = (pollingInterval?: number) => {
-  const organizationSettings = useOrganizationSettings(
-    (state) => state.settings
-  );
+  const organizationSettings = useOrganizationSettings((state) => state.settings);
   const isLoading = useOrganizationSettings((state) => state.isLoading);
   const isInitialized = useOrganizationSettings((state) => state.isInitialized);
-  const fetchOrganizationSettings = useOrganizationSettings(
-    (state) => state.fetchOrganizationSettings
-  );
+  const fetchOrganizationSettings = useOrganizationSettings((state) => state.fetchOrganizationSettings);
 
   useEffect(() => {
     if (organizationSettings === undefined) {
@@ -662,15 +579,9 @@ export const useOrFetchOrganizationSettings = (pollingInterval?: number) => {
 };
 
 export const useOrFetchProviderSchemas = () => {
-  const providerSchemas = useOrganizationSettings(
-    (state) => state.providerSchemas
-  );
-  const isLoading = useOrganizationSettings(
-    (state) => state.isLoadingProviderSchemas
-  );
-  const fetchProviderSchemas = useOrganizationSettings(
-    (state) => state.fetchProviderSchemas
-  );
+  const providerSchemas = useOrganizationSettings((state) => state.providerSchemas);
+  const isLoading = useOrganizationSettings((state) => state.isLoadingProviderSchemas);
+  const fetchProviderSchemas = useOrganizationSettings((state) => state.fetchProviderSchemas);
 
   useEffect(() => {
     if (providerSchemas === undefined) {
@@ -684,27 +595,17 @@ export const useOrFetchProviderSchemas = () => {
   };
 };
 
-export const useOrFetchReviewBenchmark = (
-  tenant: TenantID,
-  taskId: TaskID,
-  taskSchemaId: TaskSchemaID
-) => {
+export const useOrFetchReviewBenchmark = (tenant: TenantID, taskId: TaskID, taskSchemaId: TaskSchemaID) => {
   const scopeKey = buildScopeKey({
     tenant,
     taskId,
     taskSchemaId,
   });
 
-  const benchmark = useReviewBenchmark((state) =>
-    state.benchmarkByScope.get(scopeKey)
-  );
+  const benchmark = useReviewBenchmark((state) => state.benchmarkByScope.get(scopeKey));
 
-  const isLoading = useReviewBenchmark((state) =>
-    state.isLoadingByScope.get(scopeKey)
-  );
-  const isInitialized = useReviewBenchmark(
-    (state) => state.isInitializedByScope.get(scopeKey) === true
-  );
+  const isLoading = useReviewBenchmark((state) => state.isLoadingByScope.get(scopeKey));
+  const isInitialized = useReviewBenchmark((state) => state.isInitializedByScope.get(scopeKey) === true);
 
   const fetchBenchmark = useReviewBenchmark((state) => state.fetchBenchmark);
 
@@ -732,16 +633,10 @@ export const useOrFetchTaskStats = (
     createdBefore,
   });
 
-  const taskStats = useTaskStats((state) =>
-    state.taskStatsByScope.get(scopeKey)
-  );
+  const taskStats = useTaskStats((state) => state.taskStatsByScope.get(scopeKey));
 
-  const isLoading = useTaskStats((state) =>
-    state.isLoadingByScope.get(scopeKey)
-  );
-  const isInitialized = useTaskStats(
-    (state) => state.isInitializedByScope.get(scopeKey) === true
-  );
+  const isLoading = useTaskStats((state) => state.isLoadingByScope.get(scopeKey));
+  const isInitialized = useTaskStats((state) => state.isInitializedByScope.get(scopeKey) === true);
 
   const fetchTaskStats = useTaskStats((state) => state.fetchTaskStats);
 
@@ -759,14 +654,10 @@ export const useOrFetchTaskStats = (
 export const useOrFetchClerkUsers = (userIds: string[]) => {
   const usersByID = useClerkUserStore((state) => state.usersByID);
   const fetchClerkUsers = useClerkUserStore((state) => state.fetchClerkUsers);
-  const isInitializedById = useClerkUserStore(
-    (state) => state.isInitializedById
-  );
+  const isInitializedById = useClerkUserStore((state) => state.isInitializedById);
 
   useEffect(() => {
-    const filteredUserIds = userIds.filter(
-      (userId) => !isInitializedById[userId]
-    );
+    const filteredUserIds = userIds.filter((userId) => !isInitializedById[userId]);
     fetchClerkUsers(filteredUserIds);
   }, [fetchClerkUsers, userIds, isInitializedById]);
 
@@ -775,9 +666,7 @@ export const useOrFetchClerkUsers = (userIds: string[]) => {
   };
 };
 
-export const useOrFetchClerkOrganization = (
-  organizationId: string | undefined
-) => {
+export const useOrFetchClerkOrganization = (organizationId: string | undefined) => {
   const organization = useClerkOrganizationStore((state) =>
     organizationId ? state.clerkOrganizationsById[organizationId] : undefined
   );
@@ -787,17 +676,11 @@ export const useOrFetchClerkOrganization = (
   const isInitialized = useClerkOrganizationStore((state) =>
     organizationId ? state.isInitializedById[organizationId] : false
   );
-  const fetchClerkOrganization = useClerkOrganizationStore(
-    (state) => state.fetchClerkOrganization
-  );
+  const fetchClerkOrganization = useClerkOrganizationStore((state) => state.fetchClerkOrganization);
 
   useEffect(() => {
     // Not fetching if the organizationId is the placeholder or a user slug
-    if (
-      !organizationId ||
-      organizationId === TENANT_PLACEHOLDER ||
-      organizationId.startsWith(USER_SLUG_PREFIX)
-    ) {
+    if (!organizationId || organizationId === TENANT_PLACEHOLDER || organizationId.startsWith(USER_SLUG_PREFIX)) {
       return;
     }
     if (!isInitialized) {
@@ -848,33 +731,19 @@ export const useOrFetchTaskPreview = (
     outputSchema,
   });
 
-  const generatedInput = useTaskPreview((state) =>
-    state.generatedInputByScope.get(scopeKey)
-  );
+  const generatedInput = useTaskPreview((state) => state.generatedInputByScope.get(scopeKey));
 
-  const generatedOutput = useTaskPreview((state) =>
-    state.generatedOutputByScope.get(scopeKey)
-  );
+  const generatedOutput = useTaskPreview((state) => state.generatedOutputByScope.get(scopeKey));
 
-  const finalGeneratedInput = useTaskPreview((state) =>
-    state.finalGeneratedInputByScope.get(scopeKey)
-  );
+  const finalGeneratedInput = useTaskPreview((state) => state.finalGeneratedInputByScope.get(scopeKey));
 
-  const finalGeneratedOutput = useTaskPreview((state) =>
-    state.finalGeneratedOutputByScope.get(scopeKey)
-  );
+  const finalGeneratedOutput = useTaskPreview((state) => state.finalGeneratedOutputByScope.get(scopeKey));
 
-  const inputBySchemaId = useTaskPreview((state) =>
-    state.inputBySchemaId.get(schemaId)
-  );
+  const inputBySchemaId = useTaskPreview((state) => state.inputBySchemaId.get(schemaId));
 
-  const outputBySchemaId = useTaskPreview((state) =>
-    state.outputBySchemaId.get(schemaId)
-  );
+  const outputBySchemaId = useTaskPreview((state) => state.outputBySchemaId.get(schemaId));
 
-  const generateTaskPreviewIsLoading = useTaskPreview((state) =>
-    state.isLoadingByScope.get(scopeKey)
-  );
+  const generateTaskPreviewIsLoading = useTaskPreview((state) => state.isLoadingByScope.get(scopeKey));
 
   const [internalIsLoading, setInternalIsLoading] = useState(false);
 
@@ -882,13 +751,9 @@ export const useOrFetchTaskPreview = (
     return generateTaskPreviewIsLoading || internalIsLoading;
   }, [generateTaskPreviewIsLoading, internalIsLoading]);
 
-  const isInitialized = useTaskPreview(
-    (state) => state.isInitialiazedByScope.get(scopeKey) === true
-  );
+  const isInitialized = useTaskPreview((state) => state.isInitialiazedByScope.get(scopeKey) === true);
 
-  const generateTaskPreview = useTaskPreview(
-    (state) => state.generateTaskPreview
-  );
+  const generateTaskPreview = useTaskPreview((state) => state.generateTaskPreview);
 
   const previewRef = useRef({
     input: previouseInputPreview,
@@ -970,17 +835,11 @@ export const useOrFetchVersions = (
     taskSchemaId,
   });
 
-  const majorVersions = useVersions(
-    (state) => state.versionsByScope.get(scopeKey) || []
-  );
+  const majorVersions = useVersions((state) => state.versionsByScope.get(scopeKey) || []);
 
-  const isLoading = useVersions((state) =>
-    state.isLoadingVersionsByScope.get(scopeKey)
-  );
+  const isLoading = useVersions((state) => state.isLoadingVersionsByScope.get(scopeKey));
 
-  const isInitialized = useVersions(
-    (state) => state.isInitializedVersionsByScope.get(scopeKey) === true
-  );
+  const isInitialized = useVersions((state) => state.isInitializedVersionsByScope.get(scopeKey) === true);
 
   const versions = useMemo(() => {
     const result = mapMajorVersionsToVersions(majorVersions);
@@ -1032,11 +891,7 @@ export const useOrFetchVersions = (
   };
 };
 
-export const useOrFetchVersion = (
-  tenant: TenantID | undefined,
-  taskId: TaskID,
-  versionId: string | undefined
-) => {
+export const useOrFetchVersion = (tenant: TenantID | undefined, taskId: TaskID, versionId: string | undefined) => {
   const scopeKey = buildVersionScopeKey({
     tenant,
     taskId,
@@ -1045,13 +900,9 @@ export const useOrFetchVersion = (
 
   const version = useVersions((state) => state.versionByScope.get(scopeKey));
 
-  const isLoading = useVersions((state) =>
-    state.isLoadingVersionByScope.get(scopeKey)
-  );
+  const isLoading = useVersions((state) => state.isLoadingVersionByScope.get(scopeKey));
 
-  const isInitialized = useVersions(
-    (state) => state.isInitializedVersionByScope.get(scopeKey) === true
-  );
+  const isInitialized = useVersions((state) => state.isInitializedVersionByScope.get(scopeKey) === true);
 
   const fetchVersion = useVersions((state) => state.fetchVersion);
 
@@ -1070,9 +921,7 @@ export const useOrFetchVersion = (
 };
 
 export const useIsSavingVersion = (versionId: string | undefined) => {
-  const isSavingVersion = useVersions((state) =>
-    !!versionId ? state.isSavingVersion.get(versionId) : false
-  );
+  const isSavingVersion = useVersions((state) => (!!versionId ? state.isSavingVersion.get(versionId) : false));
   return isSavingVersion;
 };
 
@@ -1087,21 +936,13 @@ export const useOrFetchEvaluationInputs = (
     taskSchemaId,
   });
 
-  const evaluationInputs = useTaskEvaluation((state) =>
-    state.evaluationInputsByScope.get(scopeKey)
-  );
+  const evaluationInputs = useTaskEvaluation((state) => state.evaluationInputsByScope.get(scopeKey));
 
-  const isLoading = useTaskEvaluation((state) =>
-    state.isLoadingEvaluationInputsByScope.get(scopeKey)
-  );
+  const isLoading = useTaskEvaluation((state) => state.isLoadingEvaluationInputsByScope.get(scopeKey));
 
-  const isInitialized = useTaskEvaluation(
-    (state) => state.isInitializedEvaluationInputsByScope.get(scopeKey) === true
-  );
+  const isInitialized = useTaskEvaluation((state) => state.isInitializedEvaluationInputsByScope.get(scopeKey) === true);
 
-  const fetchEvaluationInputs = useTaskEvaluation(
-    (state) => state.fetchEvaluationInputs
-  );
+  const fetchEvaluationInputs = useTaskEvaluation((state) => state.fetchEvaluationInputs);
 
   useEffect(() => {
     fetchEvaluationInputs(tenant, taskId, taskSchemaId);
@@ -1114,28 +955,18 @@ export const useOrFetchEvaluationInputs = (
   };
 };
 
-export const useOrFetchEvaluation = (
-  tenant: TenantID | undefined,
-  taskId: TaskID,
-  taskSchemaId: TaskSchemaID
-) => {
+export const useOrFetchEvaluation = (tenant: TenantID | undefined, taskId: TaskID, taskSchemaId: TaskSchemaID) => {
   const scopeKey = buildScopeKey({
     tenant,
     taskId,
     taskSchemaId,
   });
 
-  const evaluation = useTaskEvaluation((state) =>
-    state.evaluationByScope.get(scopeKey)
-  );
+  const evaluation = useTaskEvaluation((state) => state.evaluationByScope.get(scopeKey));
 
-  const isLoading = useTaskEvaluation((state) =>
-    state.isLoadingEvaluationByScope.get(scopeKey)
-  );
+  const isLoading = useTaskEvaluation((state) => state.isLoadingEvaluationByScope.get(scopeKey));
 
-  const isInitialized = useTaskEvaluation(
-    (state) => state.isInitializedEvaluationByScope.get(scopeKey) === true
-  );
+  const isInitialized = useTaskEvaluation((state) => state.isInitializedEvaluationByScope.get(scopeKey) === true);
 
   const fetchEvaluation = useTaskEvaluation((state) => state.fetchEvaluation);
 
@@ -1150,114 +981,17 @@ export const useOrFetchEvaluation = (
   };
 };
 
-export const useOrFetchSuggestedAgentsIfNeeded = (companyURL?: string) => {
-  const suggestedAgents = useSuggestedAgents((state) =>
-    !!companyURL ? state.suggestedAgentsByURL[companyURL] : undefined
-  );
-
-  const streamedAgents = useSuggestedAgents((state) =>
-    !!companyURL ? state.streamedAgentsByURL[companyURL] : undefined
-  );
-
-  const messages = useSuggestedAgents((state) =>
-    !!companyURL ? state.messagesByURL[companyURL] : undefined
-  );
-
-  const isLoading = useSuggestedAgents(
-    (state) => !!companyURL && state.isLoadingByURL[companyURL]
-  );
-
-  const isInitialized = useSuggestedAgents(
-    (state) => !!companyURL && state.isInitializedByURL[companyURL]
-  );
-
-  const fetchSuggestedAgents = useSuggestedAgents(
-    (state) => state.fetchSuggestedAgents
-  );
-
-  const reset = useSuggestedAgents((state) => state.reset);
-
-  const resetToInitialState = useSuggestedAgents(
-    (state) => state.resetToInitialState
-  );
-
-  const agentsExistRef = useRef<boolean>(false);
-  agentsExistRef.current = Boolean(suggestedAgents?.length);
-
-  useEffect(() => {
-    if (!companyURL || agentsExistRef.current) {
-      return;
-    }
-    fetchSuggestedAgents(companyURL);
-  }, [fetchSuggestedAgents, companyURL]);
-
-  return {
-    suggestedAgents,
-    streamedAgents:
-      !!streamedAgents && streamedAgents.length > 0
-        ? streamedAgents
-        : undefined,
-    messages,
-    isLoading,
-    isInitialized,
-    resetToInitialState,
-    reset,
-  };
-};
-
-export const useOrFetchSuggestedTaskPreview = (
-  agent: SuggestedAgent | undefined
-) => {
-  const scopeKey = buildSuggestedAgentPreviewScopeKey({ agent });
-
-  const preview = useSuggestedAgentPreview((state) =>
-    !!scopeKey ? state.previewByScope.get(scopeKey) : undefined
-  );
-
-  const isLoading = useSuggestedAgentPreview((state) =>
-    !!scopeKey ? state.isLoadingByScope.get(scopeKey) ?? false : false
-  );
-  const isInitialized = useSuggestedAgentPreview((state) =>
-    !!scopeKey ? state.isInitializedByScope.get(scopeKey) ?? false : false
-  );
-
-  const fetchSuggestedTaskPreview = useSuggestedAgentPreview(
-    (state) => state.fetchSuggestedTaskPreviewIfNeeded
-  );
-
-  const previewExistRef = useRef<boolean>(false);
-  previewExistRef.current = !!preview;
-
-  useEffect(() => {
-    if (!agent || previewExistRef.current) {
-      return;
-    }
-    fetchSuggestedTaskPreview(agent);
-  }, [fetchSuggestedTaskPreview, agent]);
-
-  return {
-    preview,
-    isLoading,
-    isInitialized,
-  };
-};
-
 export const useOrFetchPayments = (tenant: TenantID | undefined) => {
   const paymentMethod = usePayments((state) => state.paymentMethod);
   const stripeCustomerId = usePayments((state) => state.stripeCustomerId);
 
   const isLoading = usePayments((state) => state.isLoading);
 
-  const isCreateCustomerInitialized = usePayments(
-    (state) => state.isCreateCustomerInitialized
-  );
+  const isCreateCustomerInitialized = usePayments((state) => state.isCreateCustomerInitialized);
 
-  const isPaymentMethodInitialized = usePayments(
-    (state) => state.isPaymentMethodInitialized
-  );
+  const isPaymentMethodInitialized = usePayments((state) => state.isPaymentMethodInitialized);
 
-  const isInitialized =
-    isCreateCustomerInitialized && isPaymentMethodInitialized;
+  const isInitialized = isCreateCustomerInitialized && isPaymentMethodInitialized;
 
   const createCustomer = usePayments((state) => state.createCustomer);
   const getPaymentMethod = usePayments((state) => state.getPaymentMethod);
@@ -1282,26 +1016,13 @@ export const useOrFetchPayments = (tenant: TenantID | undefined) => {
   };
 };
 
-export const useOrFetchRunCompletions = (
-  tenant: TenantID | undefined,
-  taskId: TaskID,
-  taskRunId: string
-) => {
-  const completions = useRunCompletions((state) =>
-    state.runCompletionsById.get(taskRunId)
-  );
+export const useOrFetchRunCompletions = (tenant: TenantID | undefined, taskId: TaskID, taskRunId: string) => {
+  const completions = useRunCompletions((state) => state.runCompletionsById.get(taskRunId));
 
-  const isLoading = useRunCompletions(
-    (state) => state.isLoadingById.get(taskRunId) ?? false
-  );
+  const isLoading = useRunCompletions((state) => state.isLoadingById.get(taskRunId) ?? false);
+  const isInitialized = useRunCompletions((state) => state.isInitializedById.get(taskRunId) ?? false);
 
-  const isInitialized = useRunCompletions(
-    (state) => state.isInitializedById.get(taskRunId) ?? false
-  );
-
-  const fetchRunCompletions = useRunCompletions(
-    (state) => state.fetchRunCompletion
-  );
+  const fetchRunCompletions = useRunCompletions((state) => state.fetchRunCompletion);
 
   useEffect(() => {
     fetchRunCompletions(tenant, taskId, taskRunId);
@@ -1311,5 +1032,226 @@ export const useOrFetchRunCompletions = (
     completions,
     isLoading,
     isInitialized,
+  };
+};
+
+export const useOrFetchFeatureSections = () => {
+  const featureSections = useFeaturesState((state) => state.featureSections);
+  const isLoading = useFeaturesState((state) => state.isLoadingFeatureSections);
+  const isInitialized = useFeaturesState((state) => state.isInitializedFeatureSections);
+
+  const fetchFeatureSections = useFeaturesState((state) => state.fetchFeatureSections);
+
+  useEffect(() => {
+    fetchFeatureSections();
+  }, [fetchFeatureSections]);
+
+  return {
+    featureSections,
+    isLoading,
+    isInitialized,
+  };
+};
+
+export const useOrFetchFeaturesByTag = (tag: string | undefined, token: string | undefined) => {
+  const features = useFeaturesState((state) => (tag ? state.featuresByTag[tag] : undefined));
+  const isLoading = useFeaturesState((state) => (tag ? state.isLoadingFeaturesByTag[tag] : false));
+  const isInitialized = useFeaturesState((state) => (tag ? state.isInitializedFeaturesByTag[tag] : false));
+
+  const isInitializedRef = useRef(isInitialized);
+  isInitializedRef.current = isInitialized;
+
+  const isLoadingRef = useRef(isLoading);
+  isLoadingRef.current = isLoading;
+
+  const fetchFeaturesByTag = useFeaturesState((state) => state.fetchFeaturesByTag);
+
+  useEffect(() => {
+    if (!!tag && !isInitializedRef.current && !isLoadingRef.current) {
+      fetchFeaturesByTag(tag, token);
+    }
+  }, [fetchFeaturesByTag, tag, token]);
+
+  return {
+    features,
+    isLoading,
+    isInitialized,
+  };
+};
+
+export const useOrFetchFeaturesByDomain = (domain: string | undefined, token: string | undefined) => {
+  const features = useFeaturesState((state) => (domain ? state.featuresByDomain[domain] : undefined));
+  const isLoading = useFeaturesState((state) => (domain ? state.isLoadingFeaturesByDomain[domain] : false));
+  const isInitialized = useFeaturesState((state) => (domain ? state.isInitializedFeaturesByDomain[domain] : false));
+
+  const companyContext = useFeaturesState((state) => (domain ? state.companyContextByDomain[domain] : undefined));
+
+  const fetchFeaturesByDomain = useFeaturesState((state) => state.fetchFeaturesByDomain);
+
+  const isInitializedRef = useRef(isInitialized);
+  isInitializedRef.current = isInitialized;
+
+  const isLoadingRef = useRef(isLoading);
+  isLoadingRef.current = isLoading;
+
+  useEffect(() => {
+    if (!!domain && !isInitializedRef.current && !isLoadingRef.current) {
+      fetchFeaturesByDomain(domain, token);
+    }
+  }, [fetchFeaturesByDomain, domain, token]);
+
+  return {
+    features,
+    isLoading,
+    isInitialized,
+    companyContext,
+  };
+};
+
+export const useOrFetchMetaAgentMessagesIfNeeded = (
+  tenant: TenantID | undefined,
+  taskId: TaskID,
+  schemaId: TaskSchemaID,
+  token: string | undefined,
+  playgroundState: PlaygroundState
+) => {
+  const messages = useMetaAgentChat((state) => state.messagesByTaskId[taskId]);
+  const isLoading = useMetaAgentChat((state) => state.isLoadingByTaskId[taskId]);
+  const isInitialized = useMetaAgentChat((state) => state.isInitializedByTaskId[taskId]);
+
+  const sendMessageMetaAgentChat = useMetaAgentChat((state) => state.sendMessage);
+
+  const playgroundStateRef = useRef<PlaygroundState>(playgroundState);
+  playgroundStateRef.current = playgroundState;
+
+  const schemaIdRef = useRef<TaskSchemaID>(schemaId);
+  schemaIdRef.current = schemaId;
+
+  const abortController = useRef<AbortController | null>(null);
+
+  const sendMessage = useCallback(
+    async (text: string) => {
+      abortController.current?.abort();
+      const newAbortController = new AbortController();
+      abortController.current = newAbortController;
+
+      try {
+        await sendMessageMetaAgentChat(
+          tenant,
+          taskId,
+          schemaIdRef.current,
+          token,
+          text,
+          'USER',
+          playgroundStateRef.current,
+          newAbortController.signal
+        );
+      } catch (error) {
+        console.error('Error sending message:', error);
+      }
+    },
+    [sendMessageMetaAgentChat, tenant, taskId, token]
+  );
+
+  const resetMetaAgentChat = useMetaAgentChat((state) => state.reset);
+  const updateStateForToolCallIdAgentChat = useMetaAgentChat((state) => state.updateStateForToolCallId);
+
+  const reset = useCallback(() => {
+    resetMetaAgentChat(tenant, taskId, schemaIdRef.current, token, playgroundStateRef.current);
+  }, [resetMetaAgentChat, tenant, taskId, token]);
+
+  const updateStateForToolCallId = useCallback(
+    (toolCallId: string, status: 'assistant_proposed' | 'user_ignored' | 'completed' | 'failed') => {
+      updateStateForToolCallIdAgentChat(taskId, toolCallId, status);
+    },
+    [updateStateForToolCallIdAgentChat, taskId]
+  );
+
+  useEffect(() => {
+    sendMessageMetaAgentChat(tenant, taskId, schemaIdRef.current, token, undefined, 'USER', playgroundStateRef.current);
+  }, [sendMessageMetaAgentChat, tenant, taskId, token]);
+
+  const onStop = useCallback(() => {
+    abortController.current?.abort();
+  }, []);
+
+  return {
+    messages,
+    isLoading,
+    isInitialized,
+    sendMessage,
+    reset,
+    updateStateForToolCallId,
+    onStop,
+  };
+};
+
+export const useScheduledMetaAgentMessages = (
+  tenant: TenantID | undefined,
+  taskId: TaskID,
+  schemaId: TaskSchemaID,
+  token: string | undefined,
+  playgroundState: PlaygroundState,
+  scheduledPlaygroundStateMessage: string | undefined,
+  setScheduledPlaygroundStateMessage: (message: string | undefined) => void,
+  delay: number
+) => {
+  const sendMessageMetaAgentChat = useMetaAgentChat((state) => state.sendMessage);
+
+  const markScheduledPlaygroundStateMessageAsSend = usePlaygroundChatStore(
+    (state) => state.markScheduledPlaygroundStateMessageAsSend
+  );
+
+  const playgroundStateRef = useRef<PlaygroundState>(playgroundState);
+  playgroundStateRef.current = playgroundState;
+
+  const schemaIdRef = useRef<TaskSchemaID>(schemaId);
+  schemaIdRef.current = schemaId;
+
+  const abortController = useRef<AbortController | null>(null);
+
+  const sendPlaygroundMessage = useCallback(
+    async (text: string) => {
+      abortController.current?.abort();
+      const newAbortController = new AbortController();
+      abortController.current = newAbortController;
+
+      markScheduledPlaygroundStateMessageAsSend();
+
+      try {
+        await sendMessageMetaAgentChat(
+          tenant,
+          taskId,
+          schemaIdRef.current,
+          token,
+          text,
+          'PLAYGROUND',
+          playgroundStateRef.current,
+          newAbortController.signal
+        );
+      } catch (error) {
+        console.error('Error sending message:', error);
+      }
+    },
+    [sendMessageMetaAgentChat, tenant, taskId, token, markScheduledPlaygroundStateMessageAsSend]
+  );
+
+  useEffect(() => {
+    if (!!scheduledPlaygroundStateMessage) {
+      const message = scheduledPlaygroundStateMessage;
+      setScheduledPlaygroundStateMessage(undefined);
+      setTimeout(() => {
+        sendPlaygroundMessage(message);
+      }, delay);
+    }
+  }, [scheduledPlaygroundStateMessage, sendPlaygroundMessage, setScheduledPlaygroundStateMessage, delay]);
+
+  const cancelScheduledPlaygroundMessage = useCallback(() => {
+    setScheduledPlaygroundStateMessage(undefined);
+    abortController.current?.abort();
+  }, [setScheduledPlaygroundStateMessage]);
+
+  return {
+    cancelScheduledPlaygroundMessage,
   };
 };

@@ -7,9 +7,7 @@ import { Textarea } from '../ui/Textarea';
 import { ReadonlyValue } from './ReadOnlyValue';
 import { ValueViewerProps, stringifyNil } from './utils';
 
-function EnumValueViewer(
-  props: ValueViewerProps<string | null | undefined, JsonStringSchema>
-) {
+function EnumValueViewer(props: ValueViewerProps<string | null | undefined, JsonStringSchema>) {
   const { value, className, schema, keyPath, onEdit } = props;
   const isNullable = schema?.nullable === true;
   const options = useMemo(() => {
@@ -41,18 +39,12 @@ function EnumValueViewer(
 
   return (
     <div className={cx(className, '-mt-0.5')}>
-      <Combobox
-        value={value ?? ''}
-        options={formattedOptions}
-        onChange={onChange}
-      />
+      <Combobox value={value ?? ''} options={formattedOptions} onChange={onChange} />
     </div>
   );
 }
 
-function EditableStringValueViewer(
-  props: ValueViewerProps<string | null | undefined, JsonStringSchema>
-) {
+function EditableStringValueViewer(props: ValueViewerProps<string | null | undefined, JsonStringSchema>) {
   const { value, className, editable, keyPath, onEdit, schema } = props;
 
   const onChange = useCallback(
@@ -93,25 +85,17 @@ function EditableStringValueViewer(
 
   return (
     <div className='flex flex-col gap-1 w-full'>
-      {textProps.pattern ? (
-        <Input {...textProps} />
-      ) : (
-        <Textarea {...textProps} />
-      )}
+      {textProps.pattern ? <Input {...textProps} /> : <Textarea {...textProps} />}
       {isInvalidPattern && (
         <p className='text-xs text-red-500'>
-          {isEmail
-            ? 'Value is not a valid email address'
-            : `Value does not match pattern: ${pattern}`}
+          {isEmail ? 'Value is not a valid email address' : `Value does not match pattern: ${pattern}`}
         </p>
       )}
     </div>
   );
 }
 
-export function StringValueViewer(
-  props: ValueViewerProps<string | null | undefined, JsonStringSchema>
-) {
+export function StringValueViewer(props: ValueViewerProps<string | null | undefined, JsonStringSchema>) {
   const { schema, editable } = props;
 
   if (editable && schema?.enum) {

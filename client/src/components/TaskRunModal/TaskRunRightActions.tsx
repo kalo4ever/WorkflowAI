@@ -10,12 +10,7 @@ type TaskRunRightActionsProps = {
 };
 
 export function TaskRunRightActions(props: TaskRunRightActionsProps) {
-  const {
-    togglePromptModal,
-    disablePromptButton,
-    playgroundFullRoute,
-    copyTaskRunURL,
-  } = props;
+  const { togglePromptModal, disablePromptButton, playgroundFullRoute, copyTaskRunURL } = props;
   return (
     <div className='flex items-center gap-[8px]'>
       {playgroundFullRoute && (
@@ -28,26 +23,13 @@ export function TaskRunRightActions(props: TaskRunRightActionsProps) {
             </div>
           }
         >
-          <Button
-            toRoute={playgroundFullRoute}
-            icon={<Open16Regular />}
-            variant='newDesign'
-          >
+          <Button toRoute={playgroundFullRoute} icon={<Open16Regular />} variant='newDesign'>
             Try in Playground
           </Button>
         </SimpleTooltip>
       )}
-      <Button
-        variant='newDesign'
-        icon={<Link16Regular />}
-        onClick={copyTaskRunURL}
-        className='w-9 h-9 px-0 py-0'
-      />
-      <Button
-        variant='newDesign'
-        onClick={togglePromptModal}
-        disabled={disablePromptButton}
-      >
+      <Button variant='newDesign' icon={<Link16Regular />} onClick={copyTaskRunURL} className='w-9 h-9 px-0 py-0' />
+      <Button variant='newDesign' onClick={togglePromptModal} disabled={disablePromptButton}>
         View Prompt
       </Button>
     </div>

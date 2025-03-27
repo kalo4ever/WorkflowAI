@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { cloneDeep } from 'lodash';
 import { usePathname, useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useIsMounted, useToggle } from 'usehooks-ts';
 import { useVariants } from '@/app/[tenant]/agents/[taskId]/[taskSchemaId]/playground/hooks/useVariants';
 import { AlertDialog } from '@/components/ui/AlertDialog';
@@ -13,19 +13,9 @@ import { Dialog, DialogContent } from '@/components/ui/Dialog';
 import { WORKFLOW_AI_USERNAME } from '@/lib/constants';
 import { NEW_TASK_MODAL_OPEN, useQueryParamModal } from '@/lib/globalModal';
 import { useIsAllowed } from '@/lib/hooks/useIsAllowed';
-import {
-  useLoggedInTenantID,
-  useTaskSchemaParams,
-} from '@/lib/hooks/useTaskParams';
-import {
-  useParsedSearchParams,
-  useRedirectWithParams,
-} from '@/lib/queryString';
-import {
-  TENANT_PLACEHOLDER,
-  replaceTaskSchemaId,
-  taskSchemaRoute,
-} from '@/lib/routeFormatter';
+import { useLoggedInTenantID, useTaskSchemaParams } from '@/lib/hooks/useTaskParams';
+import { useParsedSearchParams, useRedirectWithParams } from '@/lib/queryString';
+import { TENANT_PLACEHOLDER, replaceTaskSchemaId, taskSchemaRoute } from '@/lib/routeFormatter';
 import {
   SchemaEditorField,
   areSchemasEquivalent,
@@ -33,16 +23,12 @@ import {
   fromSplattedEditorFieldsToSchema,
 } from '@/lib/schemaEditorUtils';
 import { mergeSchemas } from '@/lib/schemaUtils';
-import {
-  useOrFetchCurrentTaskSchema,
-  useOrFetchToken,
-  useOrFetchVersions,
-  useTasks,
-} from '@/store';
+import { useOrFetchCurrentTaskSchema, useOrFetchToken, useOrFetchVersions, useTasks } from '@/store';
+import { ToolCallName, usePlaygroundChatStore } from '@/store/playgroundChatStore';
 import { useTaskSchemas } from '@/store/task_schemas';
 import { JsonSchema } from '@/types';
 import { TaskID, TaskSchemaID, TenantID } from '@/types/aliases';
-import { BuildAgentIteration, CreateTaskRequest } from '@/types/workflowAI';
+import { BuildAgentIteration, CreateAgentRequest } from '@/types/workflowAI';
 import { useAuth } from '../../lib/AuthContext';
 import { DescriptionExampleEditor } from '../DescriptionExampleEditor/DescriptionExampleEditor';
 import { displayErrorToaster } from '../ui/Sonner';
@@ -62,9 +48,7 @@ function computeSendIterationPreviousIterations(
   if (previousIterations.length === 0) {
     return [];
   }
-  const lastIteration = cloneDeep(
-    previousIterations[previousIterations.length - 1]
-  );
+  const lastIteration = cloneDeep(previousIterations[previousIterations.length - 1]);
   const processedLastIteration = {
     ...lastIteration,
     task_schema: {
@@ -81,31 +65,29 @@ export type NewTaskModalQueryParams = {
   mode: 'new' | 'editSchema' | 'editDescription';
   redirectToPlaygrounds: string;
   variantId?: string;
-  prefilledDescription?: string;
+  prefilledMessage?: string;
 };
 
 const searchParams: (keyof NewTaskModalQueryParams)[] = [
   'mode',
   'redirectToPlaygrounds',
   'variantId',
-  'prefilledDescription',
+  'prefilledMessage',
 ];
 
 export function useNewTaskModal() {
-  return useQueryParamModal<NewTaskModalQueryParams>(
-    NEW_TASK_MODAL_OPEN,
-    searchParams
-  );
+  return useQueryParamModal<NewTaskModalQueryParams>(NEW_TASK_MODAL_OPEN, searchParams);
 }
 
 export function NewTaskModal() {
   const { tenant, taskId, taskSchemaId } = useTaskSchemaParams();
   const loggedInTenant = useLoggedInTenantID();
 
-  const {
-    taskSchema: currentTaskSchema,
-    isInitialized: taskSchemaInitialized,
-  } = useOrFetchCurrentTaskSchema(tenant, taskId, taskSchemaId);
+  const { taskSchema: currentTaskSchema, isInitialized: taskSchemaInitialized } = useOrFetchCurrentTaskSchema(
+    tenant,
+    taskId,
+    taskSchemaId
+  );
 
   const { open, closeModal: onClose } = useNewTaskModal();
 
@@ -113,20 +95,12 @@ export function NewTaskModal() {
     mode: modeValue,
     redirectToPlaygrounds: redirectToPlaygroundsValue,
     variantId,
-    prefilledDescription,
-  } = useParsedSearchParams(
-    'mode',
-    'redirectToPlaygrounds',
-    'variantId',
-    'prefilledDescription'
-  );
+    prefilledMessage,
+  } = useParsedSearchParams('mode', 'redirectToPlaygrounds', 'variantId', 'prefilledMessage');
 
   const { versions } = useOrFetchVersions(tenant, taskId);
 
-  const {
-    inputSchema: inputSchemaForVariant,
-    outputSchema: outputSchemaForVariant,
-  } = useVariants({
+  const { inputSchema: inputSchemaForVariant, outputSchema: outputSchemaForVariant } = useVariants({
     tenant,
     taskId,
     versions: versions,
@@ -141,13 +115,9 @@ export function NewTaskModal() {
 
   const iterateTaskInputOutput = useTasks((s) => s.iterateTaskInputOutput);
 
-  const [previousIterations, setPreviousIterations] = useState<
-    BuildAgentIteration[]
-  >([]);
+  const [previousIterations, setPreviousIterations] = useState<BuildAgentIteration[]>([]);
 
-  const [streamedIteration, setStreamedIteration] = useState<
-    BuildAgentIteration | undefined
-  >(undefined);
+  const [streamedIteration, setStreamedIteration] = useState<BuildAgentIteration | undefined>(undefined);
 
   const mergedWithPreviousStreamedIteration = useMemo(() => {
     if (!streamedIteration) return undefined;
@@ -184,9 +154,7 @@ export function NewTaskModal() {
   }, [previousIterations, mergedWithPreviousStreamedIteration]);
 
   const [messages, setMessages] = useState<ConversationMessage[]>([]);
-  const [streamingMessage, setStreamingMessage] = useState<
-    ConversationMessage | undefined
-  >(undefined);
+  const [streamingMessage, setStreamingMessage] = useState<ConversationMessage | undefined>(undefined);
 
   const [showRetry, setShowRetry] = useState(false);
 
@@ -218,37 +186,24 @@ export function NewTaskModal() {
   const outputSchema = taskSchema?.output_json_schema as JsonSchema | undefined;
   const taskName = taskSchema?.task_name ?? currentTaskSchema?.name;
 
-  const [inputSplattedSchema, setInputSplattedSchema] = useState<
-    SchemaEditorField | undefined
-  >();
-  const [outputSplattedSchema, setOutputSplattedSchema] = useState<
-    SchemaEditorField | undefined
-  >();
+  const [inputSplattedSchema, setInputSplattedSchema] = useState<SchemaEditorField | undefined>();
+  const [outputSplattedSchema, setOutputSplattedSchema] = useState<SchemaEditorField | undefined>();
 
   useEffect(() => {
     if (!inputSchema) return;
-    const newInputSplattedSchema = fromSchemaToSplattedEditorFields(
-      inputSchema,
-      '',
-      inputSchema?.$defs
-    );
+    const newInputSplattedSchema = fromSchemaToSplattedEditorFields(inputSchema, '', inputSchema?.$defs);
     setInputSplattedSchema(newInputSplattedSchema);
   }, [inputSchema]);
 
   useEffect(() => {
     if (!outputSchema) return;
-    const newOutputSplattedSchema = fromSchemaToSplattedEditorFields(
-      outputSchema,
-      '',
-      outputSchema?.$defs
-    );
+    const newOutputSplattedSchema = fromSchemaToSplattedEditorFields(outputSchema, '', outputSchema?.$defs);
     setOutputSplattedSchema(newOutputSplattedSchema);
   }, [outputSchema]);
 
   const computedInputSchema = useMemo(() => {
     if (!inputSplattedSchema) return undefined;
-    const { schema, definitions } =
-      fromSplattedEditorFieldsToSchema(inputSplattedSchema);
+    const { schema, definitions } = fromSplattedEditorFieldsToSchema(inputSplattedSchema);
 
     return {
       ...schema,
@@ -258,8 +213,7 @@ export function NewTaskModal() {
 
   const computedOutputSchema = useMemo(() => {
     if (!outputSplattedSchema) return undefined;
-    const { schema, definitions } =
-      fromSplattedEditorFieldsToSchema(outputSplattedSchema);
+    const { schema, definitions } = fromSplattedEditorFieldsToSchema(outputSplattedSchema);
     return {
       ...schema,
       $defs: definitions,
@@ -273,25 +227,12 @@ export function NewTaskModal() {
     if (loading) return true;
     if (!isEditMode) return false;
 
-    const inputIsEqual = areSchemasEquivalent(
-      computedInputSchema as JsonSchema,
-      inputSchemaForVariant
-    );
+    const inputIsEqual = areSchemasEquivalent(computedInputSchema as JsonSchema, inputSchemaForVariant);
 
-    const outputIsEqual = areSchemasEquivalent(
-      computedOutputSchema as JsonSchema,
-      outputSchemaForVariant
-    );
+    const outputIsEqual = areSchemasEquivalent(computedOutputSchema as JsonSchema, outputSchemaForVariant);
 
     return inputIsEqual && outputIsEqual;
-  }, [
-    computedInputSchema,
-    computedOutputSchema,
-    inputSchemaForVariant,
-    outputSchemaForVariant,
-    loading,
-    isEditMode,
-  ]);
+  }, [computedInputSchema, computedOutputSchema, inputSchemaForVariant, outputSchemaForVariant, loading, isEditMode]);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -299,9 +240,13 @@ export function NewTaskModal() {
   const createTask = useTasks((state) => state.createTask);
   const fetchTaskSchema = useTaskSchemas((state) => state.fetchTaskSchema);
   const fetchTask = useTasks((state) => state.fetchTask);
+
+  const { cancelToolCall, markToolCallAsDone } = usePlaygroundChatStore();
+
   const onSave = useCallback(async () => {
     if (!computedInputSchema || !computedOutputSchema) return;
-    const payload: CreateTaskRequest = {
+
+    const payload: CreateAgentRequest = {
       chat_messages: messages.map((message) => ({
         content: message.message as string,
         role: message.username === WORKFLOW_AI_USERNAME ? 'ASSISTANT' : 'USER',
@@ -314,9 +259,9 @@ export function NewTaskModal() {
     if (isEditMode) {
       const task = await updateTaskSchema(loggedInTenant, taskId, payload);
 
-      const updatedTaskSchemaId = !!task.schema_id
-        ? (`${task.schema_id}` as TaskSchemaID)
-        : taskSchemaId;
+      const updatedTaskSchemaId = !!task.schema_id ? (`${task.schema_id}` as TaskSchemaID) : taskSchemaId;
+
+      markToolCallAsDone(taskId, ToolCallName.EDIT_AGENT_SCHEMA);
 
       if (!!loggedInTenant) {
         await fetchTaskSchema(loggedInTenant, taskId, updatedTaskSchemaId);
@@ -324,13 +269,7 @@ export function NewTaskModal() {
         await fetchTask(loggedInTenant, taskId);
 
         if (redirectToPlaygrounds) {
-          router.push(
-            taskSchemaRoute(
-              loggedInTenant,
-              taskId,
-              `${task.schema_id}` as TaskSchemaID
-            )
-          );
+          router.push(taskSchemaRoute(loggedInTenant, taskId, `${task.schema_id}` as TaskSchemaID));
         } else {
           if (taskSchemaId === updatedTaskSchemaId) {
             redirectWithParams({
@@ -342,11 +281,12 @@ export function NewTaskModal() {
                 newTaskModalOpen: undefined,
                 mode: undefined,
                 redirectToPlaygrounds: undefined,
+                runAgents: 'true',
               },
               scroll: false,
             });
           } else {
-            const newUrl = replaceTaskSchemaId(pathname, updatedTaskSchemaId);
+            const newUrl = replaceTaskSchemaId(pathname, updatedTaskSchemaId) + '?runAgents=true';
             router.push(newUrl);
           }
         }
@@ -359,6 +299,7 @@ export function NewTaskModal() {
     }
 
     const task = await createTask(loggedInTenant, payload);
+    markToolCallAsDone(taskId, ToolCallName.EDIT_AGENT_SCHEMA);
 
     if (!redirectToPlaygrounds) {
       redirectWithParams({
@@ -406,12 +347,18 @@ export function NewTaskModal() {
     redirectWithParams,
     redirectToPlaygrounds,
     pathname,
+    markToolCallAsDone,
   ]);
 
   const isMounted = useIsMounted();
 
+  const [abortController, setAbortController] = useState<AbortController | undefined>(undefined);
+
   const onSendIteration = useCallback(
     async (suggestion?: string) => {
+      const abortController = new AbortController();
+      setAbortController(abortController);
+
       setShowRetry(false);
 
       const newMessage = suggestion || userMessage;
@@ -437,6 +384,7 @@ export function NewTaskModal() {
         },
       ]);
       setLoading(true);
+
       try {
         const newIteration = await iterateTaskInputOutput(
           loggedInTenant,
@@ -453,8 +401,16 @@ export function NewTaskModal() {
             });
 
             setStreamedIteration(data);
-          }
+          },
+          abortController?.signal
         );
+
+        if (abortController?.signal.aborted) {
+          setStreamingMessage(undefined);
+          setStreamedIteration(undefined);
+          setShowRetry(false);
+          return;
+        }
 
         if (!isMounted() || !open) return;
 
@@ -496,27 +452,18 @@ export function NewTaskModal() {
     ]
   );
 
-  useEffect(() => {
-    if (prefilledDescription) {
-      onSendIteration(prefilledDescription);
-      redirectWithParams({
-        params: {
-          prefilledDescription: undefined,
-        },
-      });
-    }
-  }, [prefilledDescription, onSendIteration, redirectWithParams]);
-
   const [showConfirmModal, toggleConfirmModal] = useToggle(false);
   const onConfirmClose = useCallback(() => {
     toggleConfirmModal();
+    cancelToolCall(ToolCallName.EDIT_AGENT_SCHEMA);
     onClose();
-  }, [toggleConfirmModal, onClose]);
+  }, [toggleConfirmModal, onClose, cancelToolCall]);
 
   const onCloseRequest = useCallback(() => {
     if (!isEditMode && messages.length === 0 && !userMessage) {
       // TODO: there is a weird issue where currentTaskSchema is the task for the URL
       // when in creation mode.
+      cancelToolCall(ToolCallName.EDIT_AGENT_SCHEMA);
       onClose();
       return;
     }
@@ -524,17 +471,12 @@ export function NewTaskModal() {
     if (
       messages.length > 1 ||
       !!userMessage ||
-      !areSchemasEquivalent(
-        computedInputSchema as JsonSchema,
-        inputSchemaForVariant
-      ) ||
-      !areSchemasEquivalent(
-        computedOutputSchema as JsonSchema,
-        outputSchemaForVariant
-      )
+      !areSchemasEquivalent(computedInputSchema as JsonSchema, inputSchemaForVariant) ||
+      !areSchemasEquivalent(computedOutputSchema as JsonSchema, outputSchemaForVariant)
     ) {
       toggleConfirmModal();
     } else {
+      cancelToolCall(ToolCallName.EDIT_AGENT_SCHEMA);
       onClose();
     }
   }, [
@@ -547,6 +489,7 @@ export function NewTaskModal() {
     computedOutputSchema,
     onClose,
     toggleConfirmModal,
+    cancelToolCall,
   ]);
 
   const firstMessageDisplay = useMemo(
@@ -558,8 +501,40 @@ export function NewTaskModal() {
     [userFirstName, isEditMode]
   );
 
+  const abortControllerRef = useRef<AbortController | undefined>(undefined);
+  abortControllerRef.current = abortController;
+
+  const prefilledMessageWasSend = useRef(false);
+
+  useEffect(() => {
+    if (
+      !prefilledMessageWasSend.current &&
+      !!prefilledMessage &&
+      open &&
+      !!previousIterations &&
+      !!computedInputSchema &&
+      !!computedOutputSchema &&
+      previousIterations.length > 0
+    ) {
+      prefilledMessageWasSend.current = true;
+      setTimeout(() => {
+        onSendIteration(prefilledMessage);
+      }, 1000);
+    }
+  }, [
+    onSendIteration,
+    prefilledMessage,
+    computedInputSchema,
+    computedOutputSchema,
+    open,
+    previousIterations,
+    inputSchemaForVariant,
+    outputSchemaForVariant,
+  ]);
+
   useEffect(() => {
     if (!open) {
+      abortControllerRef.current?.abort();
       setInputSplattedSchema(undefined);
       setOutputSplattedSchema(undefined);
       setPreviousIterations([]);
@@ -568,23 +543,25 @@ export function NewTaskModal() {
       setStreamingMessage(undefined);
       setUserMessage('');
       setLoading(false);
+      prefilledMessageWasSend.current = false;
       return;
     } else if (isEditMode) {
       setMessages([firstMessageDisplay]);
     }
+  }, [open, isEditMode, firstMessageDisplay]);
 
-    if (
-      !inputSchemaForVariant ||
-      !outputSchemaForVariant ||
-      !taskName ||
-      !isEditMode
-    ) {
+  const taskNameRef = useRef(taskName);
+  taskNameRef.current = taskName;
+
+  useEffect(() => {
+    if (!inputSchemaForVariant || !outputSchemaForVariant || !taskNameRef.current || !isEditMode) {
       return;
     }
+
     setPreviousIterations([
       {
         task_schema: {
-          task_name: taskName,
+          task_name: taskNameRef.current,
           input_json_schema: inputSchemaForVariant as Record<string, unknown>,
           output_json_schema: outputSchemaForVariant as Record<string, unknown>,
         },
@@ -592,17 +569,9 @@ export function NewTaskModal() {
         assistant_answer: INITIAL_ASSISTANT_MESSAGE,
       },
     ]);
-  }, [
-    taskName,
-    inputSchemaForVariant,
-    outputSchemaForVariant,
-    isEditMode,
-    open,
-    firstMessageDisplay,
-  ]);
+  }, [taskNameRef, inputSchemaForVariant, outputSchemaForVariant, isEditMode, open, firstMessageDisplay]);
 
-  const isFullMessageView =
-    !isEditMode && !inputSplattedSchema && !outputSplattedSchema;
+  const isFullMessageView = !isEditMode && !inputSplattedSchema && !outputSplattedSchema;
   const isSaveButtonHidden = isFullMessageView;
 
   const { checkIfAllowed } = useIsAllowed();
@@ -670,9 +639,7 @@ export function NewTaskModal() {
           )}
           <AlertDialog
             open={showConfirmModal}
-            title={
-              isEditMode ? 'Confirm Cancellation' : 'Leave AI Agent Creation?'
-            }
+            title={isEditMode ? 'Confirm Cancellation' : 'Leave AI Agent Creation?'}
             text={
               isEditMode
                 ? 'You haven’t saved your recent edits. Are you sure you want to cancel them?'

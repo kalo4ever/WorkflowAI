@@ -9,14 +9,7 @@ import { AlertDialog } from '../ui/AlertDialog';
 import { UserAvatar } from '../ui/Avatar/UserAvatar';
 import { Button } from '../ui/Button';
 import { LoginSignUpPlaceholder } from '../ui/LoginSignUpPlaceholder';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../ui/Table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/Table';
 
 function formatDate(date: string | null) {
   if (!date) {
@@ -36,10 +29,7 @@ type ApiKeyRowProps = {
 function ApiKeyRow(props: ApiKeyRowProps) {
   const { apiKey, user, setDeleteId } = props;
 
-  const handleDelete = useCallback(
-    () => setDeleteId(apiKey.id),
-    [setDeleteId, apiKey.id]
-  );
+  const handleDelete = useCallback(() => setDeleteId(apiKey.id), [setDeleteId, apiKey.id]);
 
   return (
     <TableRow className={rowClassNames}>
@@ -48,26 +38,14 @@ function ApiKeyRow(props: ApiKeyRowProps) {
           {apiKey.name}
         </div>
       </TableCell>
-      <TableCell>
-        {!!user && (
-          <UserAvatar
-            tooltipText={`${user.firstName} ${user.lastName}`}
-            user={user}
-          />
-        )}
-      </TableCell>
+      <TableCell>{!!user && <UserAvatar tooltipText={`${user.firstName} ${user.lastName}`} user={user} />}</TableCell>
       <TableCell>{formatDate(apiKey.created_at)}</TableCell>
       <TableCell>{formatDate(apiKey.last_used_at)}</TableCell>
       <TableCell>
         <Badge variant='tertiaryWithHover'>{apiKey.partial_key}</Badge>
       </TableCell>
       <TableCell>
-        <Button
-          icon={<Delete16Filled />}
-          variant='destructive'
-          onClick={handleDelete}
-          size='icon-sm'
-        />
+        <Button icon={<Delete16Filled />} variant='destructive' onClick={handleDelete} size='icon-sm' />
       </TableCell>
     </TableRow>
   );
@@ -84,10 +62,7 @@ export function ApiKeysTable(props: ApiKeysModalContentProps) {
   const { apiKeys, usersByID, onDelete, isLogged } = props;
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const orderedApiKeys = useMemo(
-    () => orderBy(apiKeys, ['created_at'], ['desc']),
-    [apiKeys]
-  );
+  const orderedApiKeys = useMemo(() => orderBy(apiKeys, ['created_at'], ['desc']), [apiKeys]);
 
   const onConfirmDelete = useCallback(async () => {
     if (!deleteId) {

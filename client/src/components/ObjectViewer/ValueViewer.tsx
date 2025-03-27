@@ -16,20 +16,9 @@ import { ValueViewerProps } from './utils';
 import { ObjectViewer } from '..';
 
 export function ValueViewer(props: ValueViewerProps<unknown>) {
-  const {
-    schema,
-    value,
-    referenceValue,
-    originalVal,
-    schemaRefName,
-    columnDisplay,
-    ...rest
-  } = props;
+  const { schema, value, referenceValue, originalVal, schemaRefName, columnDisplay, ...rest } = props;
 
-  const type = useMemo(
-    () => viewerType(schema, rest.defs, value),
-    [value, rest.defs, schema]
-  );
+  const type = useMemo(() => viewerType(schema, rest.defs, value), [value, rest.defs, schema]);
 
   const viewerProps = {
     ...rest,
@@ -55,13 +44,7 @@ export function ValueViewer(props: ValueViewerProps<unknown>) {
         />
       );
     } else if (Array.isArray(value) && value.length === 0) {
-      return (
-        <ReadonlyValue
-          value='Empty List'
-          schema={schema}
-          previewMode={rest.previewMode}
-        />
-      );
+      return <ReadonlyValue value='Empty List' schema={schema} previewMode={rest.previewMode} />;
     }
   }
 
@@ -79,12 +62,7 @@ export function ValueViewer(props: ValueViewerProps<unknown>) {
   }
 
   // Sometimes during streaming, the value does not match the schema type
-  if (
-    schema?.type === 'string' &&
-    value !== null &&
-    typeof value !== 'string' &&
-    !rest.editable
-  ) {
+  if (schema?.type === 'string' && value !== null && typeof value !== 'string' && !rest.editable) {
     return (
       <ReadonlyValue
         value={JSON.stringify(value)}
@@ -123,13 +101,7 @@ export function ValueViewer(props: ValueViewerProps<unknown>) {
     case 'null':
       return <ReadonlyValue {...viewerProps} value='null' />;
     case 'undefined':
-      return (
-        <ReadonlyValue
-          {...viewerProps}
-          value='undefined'
-          className='bg-red-500'
-        />
-      );
+      return <ReadonlyValue {...viewerProps} value='undefined' className='bg-red-500' />;
     case 'array':
       return (
         <div className='pl-[10px] w-full'>

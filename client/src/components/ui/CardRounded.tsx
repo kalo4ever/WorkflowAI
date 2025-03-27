@@ -33,22 +33,10 @@ export function CardRounded(props: CardRoundedProps) {
       )}
     >
       {(!!title || !!middleText || !!badgeText || !!headerChildren) && (
-        <div
-          className={cx(
-            'flex w-full px-[16px] py-[8px] items-center bg-slate-50'
-          )}
-        >
-          <div className='flex-1 text-slate-500 text-[14px] font-medium py-[4px]'>
-            {title}
-          </div>
-          {!!middleText && (
-            <div className='flex-1 font-medium text-slate-700 text-[14px]'>
-              {middleText}
-            </div>
-          )}
-          {!!badgeText && (
-            <Badge variant='tertiaryWithHover'>{badgeText}</Badge>
-          )}
+        <div className={cx('flex w-full px-[16px] py-[8px] items-center bg-slate-50')}>
+          <div className='flex-1 text-slate-500 text-[14px] font-medium py-[4px]'>{title}</div>
+          {!!middleText && <div className='flex-1 font-medium text-slate-700 text-[14px]'>{middleText}</div>}
+          {!!badgeText && <Badge variant='tertiaryWithHover'>{badgeText}</Badge>}
           {!!headerChildren && headerChildren}
         </div>
       )}

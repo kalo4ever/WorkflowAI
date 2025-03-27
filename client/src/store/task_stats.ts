@@ -62,17 +62,11 @@ export const useTaskStats = create<TaskStatsState>((set, get) => ({
       const queryParams = new URLSearchParams();
 
       if (createdAfter) {
-        queryParams.append(
-          'created_after',
-          format(createdAfter, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx")
-        );
+        queryParams.append('created_after', format(createdAfter, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"));
       }
 
       if (createdBefore) {
-        queryParams.append(
-          'created_before',
-          format(createdBefore, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx")
-        );
+        queryParams.append('created_before', format(createdBefore, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"));
       }
 
       if (taskSchemaId) {
@@ -88,11 +82,7 @@ export const useTaskStats = create<TaskStatsState>((set, get) => ({
       }
 
       const queryString = queryParams.toString();
-      const url = taskSubPath(
-        tenant,
-        taskId,
-        `/runs/stats${queryString ? `?${queryString}` : ''}`
-      );
+      const url = taskSubPath(tenant, taskId, `/runs/stats${queryString ? `?${queryString}` : ''}`);
 
       const { data: taskStats } = await client.get<TaskStatsResponse>(url);
       set(

@@ -6,10 +6,7 @@ import { TaskID, TenantID } from '@/types/aliases';
  * Attempds several time to fetch the task run after a 404
  * Task runs are created asynchronously so we need to retry until we get a 200
  */
-export function useFetchTaskRunUntilCreated(
-  max_retries: number = 10,
-  delay_ms: number = 500
-) {
+export function useFetchTaskRunUntilCreated(max_retries: number = 10, delay_ms: number = 500) {
   const fetchTaskRun = useTaskRuns((state) => state.fetchTaskRun);
 
   return useCallback(

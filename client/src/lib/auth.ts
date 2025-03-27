@@ -1,9 +1,7 @@
 // eslint-disable-next-line no-restricted-imports
-import {
-  auth as clerkAuth,
-  currentUser as clerkCurrentUser,
-} from '@clerk/nextjs/server';
+import { auth as clerkAuth, currentUser as clerkCurrentUser } from '@clerk/nextjs/server';
 import { User, clerkUserToUser } from '@/types/user';
+import { getTenantSlug } from './auth_utils';
 import { DISABLE_AUTHENTICATION, HARDCODED_TENANT } from './constants';
 
 interface AuthResult {
@@ -32,4 +30,16 @@ export async function currentUser(): Promise<User | null> {
     return null;
   }
   return clerkUserToUser(clerkUser);
+}
+
+export async function tenantSlug(): Promise<string | undefined> {
+  const user = await currentUser();
+  if (!user) {
+    return undefined;
+  }
+  const authResult = auth();
+  if (!authResult) {
+    return undefined;
+  }
+  return getTenantSlug({ slug: authResult.orgSlug }, user);
 }

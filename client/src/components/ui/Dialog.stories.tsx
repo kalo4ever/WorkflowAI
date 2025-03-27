@@ -20,15 +20,12 @@ function Wrapper(props: DialogProps) {
       <DialogContent className='p-0 gap-0'>
         <DialogHeader title='Are you absolutely sure?' onClose={onClose} />
         <DialogDescription className='p-4'>
-          This action cannot be undone. This will permanently delete your
-          account and remove your data from our servers.
+          This action cannot be undone. This will permanently delete your account and remove your data from our servers.
         </DialogDescription>
         <DialogFooter className='p-4 gap-4'>
           <button className='hover:underline'>Cancel</button>
           <DialogClose>
-            <button className='rounded bg-primary px-4 py-2 text-primary-foreground'>
-              Continue
-            </button>
+            <button className='rounded bg-primary px-4 py-2 text-primary-foreground'>Continue</button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>

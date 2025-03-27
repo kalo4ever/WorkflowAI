@@ -1,13 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { CommandSeparator } from 'cmdk';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/Command';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/Command';
 
 /**
  * Fast, composable, unstyled command menu for React.

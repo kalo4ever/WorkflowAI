@@ -4,11 +4,7 @@ import { Plus, Trash2 } from 'lucide-react';
 import { useCallback, useMemo } from 'react';
 import { useToggle } from 'usehooks-ts';
 import { SimpleTooltip } from '@/components/ui/Tooltip';
-import {
-  SchemaEditorField,
-  SelectableFieldType,
-  shouldDisableRemove,
-} from '@/lib/schemaEditorUtils';
+import { SchemaEditorField, SelectableFieldType, shouldDisableRemove } from '@/lib/schemaEditorUtils';
 import { Button } from '../ui/Button';
 import { EnumMultiSelect } from '../ui/EnumMultiSelect';
 import { DynamicWidthInput } from './DynamicWidthInput';
@@ -48,12 +44,7 @@ function SchemaEditorFieldLabel(props: SchemaEditorFieldLabelProps) {
   return (
     <div className='w-full flex items-center gap-2 p-2 hover:bg-gray-100 transition-colors rounded-[2px] group font-lato'>
       <FieldTypeIcon type={type} onClick={toggleCollapse} />
-      <DynamicWidthInput
-        value={keyName}
-        onChange={onFieldKeyChange}
-        className='w-fit'
-        placeholder='Enter field'
-      />
+      <DynamicWidthInput value={keyName} onChange={onFieldKeyChange} className='w-fit' placeholder='Enter field' />
       <div className='text-gray-500 text-sm font-medium -translate-x-1'>:</div>
       <SchemaTypeSelector
         type={type}
@@ -75,13 +66,7 @@ function SchemaEditorFieldLabel(props: SchemaEditorFieldLabelProps) {
           />
         </>
       )}
-      <SimpleTooltip
-        content={
-          !onFieldRemove
-            ? 'You need at least one field in an object'
-            : undefined
-        }
-      >
+      <SimpleTooltip content={!onFieldRemove ? 'You need at least one field in an object' : undefined}>
         <Trash2
           size={16}
           className={cx(
@@ -112,15 +97,8 @@ type SchemaEditorFieldContentProps = {
 };
 
 function SchemaEditorFieldContent(props: SchemaEditorFieldContentProps) {
-  const {
-    splattedSchema,
-    setSplattedSchema,
-    isRoot,
-    isRootObject,
-    disableImage,
-    disableAudio,
-    disableDocuments,
-  } = props;
+  const { splattedSchema, setSplattedSchema, isRoot, isRootObject, disableImage, disableAudio, disableDocuments } =
+    props;
   const { keyName, type, fields, arrayType } = splattedSchema;
 
   const enumValues = useMemo(() => {
@@ -139,9 +117,7 @@ function SchemaEditorFieldContent(props: SchemaEditorFieldContentProps) {
       }
       const newSplattedSchema = {
         ...cloneDeep(splattedSchema),
-        fields: fields
-          .map((field, i) => (i === index ? newField : field))
-          .filter((f) => !!f) as SchemaEditorField[],
+        fields: fields.map((field, i) => (i === index ? newField : field)).filter((f) => !!f) as SchemaEditorField[],
       };
       setSplattedSchema(newSplattedSchema);
     },
@@ -156,10 +132,7 @@ function SchemaEditorFieldContent(props: SchemaEditorFieldContentProps) {
     setSplattedSchema(newSplattedSchema);
   }, [fields, splattedSchema, setSplattedSchema]);
 
-  const disableRemove = useMemo(
-    () => shouldDisableRemove(splattedSchema),
-    [splattedSchema]
-  );
+  const disableRemove = useMemo(() => shouldDisableRemove(splattedSchema), [splattedSchema]);
 
   const onEnumUpdate = useCallback(
     (newEnumValues: string[]) => {
@@ -197,9 +170,7 @@ function SchemaEditorFieldContent(props: SchemaEditorFieldContentProps) {
           <InnerSchemaSplattedEditor
             key={`${keyName}-${index}`}
             splattedSchema={field}
-            setSplattedSchema={(newField: SchemaEditorField | undefined) =>
-              handleSetSplattedSchema(newField, index)
-            }
+            setSplattedSchema={(newField: SchemaEditorField | undefined) => handleSetSplattedSchema(newField, index)}
             disableRemove={disableRemove}
             disableImage={disableImage}
             disableAudio={disableAudio}
@@ -211,10 +182,7 @@ function SchemaEditorFieldContent(props: SchemaEditorFieldContentProps) {
     );
 
     return !isRoot ? (
-      <SchemaObjectCard
-        onAddField={onAddField}
-        className={commonWrapperClassName}
-      >
+      <SchemaObjectCard onAddField={onAddField} className={commonWrapperClassName}>
         {content}
       </SchemaObjectCard>
     ) : (
@@ -233,13 +201,7 @@ function SchemaEditorFieldContent(props: SchemaEditorFieldContentProps) {
       </div>
     );
   } else if ((type === 'enum' || arrayType === 'enum') && !!enumValues) {
-    return (
-      <EnumMultiSelect
-        onChange={onEnumUpdate}
-        enumValues={enumValues}
-        className={commonWrapperClassName}
-      />
-    );
+    return <EnumMultiSelect onChange={onEnumUpdate} enumValues={enumValues} className={commonWrapperClassName} />;
   }
   return null;
 }
@@ -347,10 +309,7 @@ function InnerSchemaSplattedEditor(props: InnerSchemaSplattedEditorProps) {
   }
 
   return (
-    <div
-      className='min-w-full flex flex-col w-fit gap-1 p-2 overflow-x-auto'
-      ref={contentRef}
-    >
+    <div className='min-w-full flex flex-col w-fit gap-1 p-2 overflow-x-auto' ref={contentRef}>
       {!isRoot && (
         <SchemaEditorFieldLabel
           splattedSchema={splattedSchema}
@@ -381,11 +340,7 @@ function InnerSchemaSplattedEditor(props: InnerSchemaSplattedEditorProps) {
 
 type SchemaSplattedEditorProps = Pick<
   InnerSchemaSplattedEditorProps,
-  | 'splattedSchema'
-  | 'setSplattedSchema'
-  | 'disableImage'
-  | 'disableAudio'
-  | 'disableDocuments'
+  'splattedSchema' | 'setSplattedSchema' | 'disableImage' | 'disableAudio' | 'disableDocuments'
 > & {
   className?: string;
   title: string;
@@ -459,12 +414,7 @@ export function SchemaSplattedEditor(props: SchemaSplattedEditorProps) {
     <SchemaSplattedSection
       title={title}
       details={details}
-      rightContent={
-        <RootObjectListSwitch
-          onToggle={toggleRootObjectList}
-          isRootObject={isRootObject}
-        />
-      }
+      rightContent={<RootObjectListSwitch onToggle={toggleRootObjectList} isRootObject={isRootObject} />}
       className={className}
       style={style}
     >

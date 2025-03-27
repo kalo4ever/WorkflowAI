@@ -7,19 +7,13 @@ const MARGIN = 1024;
 const INNER_MARGIN = 24;
 const MAX_CARD_WIDTH = 846;
 
-function calculatePage(
-  offset: number,
-  cardWidth: number,
-  carouselWidth: number | undefined,
-  innerMargin: number
-) {
+function calculatePage(offset: number, cardWidth: number, carouselWidth: number | undefined, innerMargin: number) {
   if (!carouselWidth) {
     return 0;
   }
 
   const notCountedFirstCardOverscroll = carouselWidth - cardWidth;
-  const result =
-    (offset + notCountedFirstCardOverscroll) / (cardWidth + innerMargin);
+  const result = (offset + notCountedFirstCardOverscroll) / (cardWidth + innerMargin);
 
   if (result < 1) {
     const beginningForFirstCard = notCountedFirstCardOverscroll;
@@ -59,17 +53,11 @@ export function CardsCarousel(props: CardsCarouselProps) {
         return;
       }
 
-      const containerTop =
-        headerContainer.getBoundingClientRect().top -
-        scrollContainer.getBoundingClientRect().top;
+      const containerTop = headerContainer.getBoundingClientRect().top - scrollContainer.getBoundingClientRect().top;
 
-      const horizontalContainerHeight =
-        horizontalContainer.getBoundingClientRect().height;
+      const horizontalContainerHeight = horizontalContainer.getBoundingClientRect().height;
 
-      if (
-        containerTop <= -horizontalContainerHeight &&
-        horizontalContainer.scrollLeft === 0
-      ) {
+      if (containerTop <= -horizontalContainerHeight && horizontalContainer.scrollLeft === 0) {
         setIsHorizontalScroll(false);
         horizontalContainer.scrollTo({
           left: horizontalContainer.scrollWidth,
@@ -109,12 +97,7 @@ export function CardsCarousel(props: CardsCarouselProps) {
       const horizontalContainer = horizontalContainerRef.current;
       const headerContainer = headerContainerRef.current;
 
-      if (
-        !headerContainer ||
-        !horizontalContainer ||
-        !isHorizontalScroll ||
-        !scrollContainer
-      ) {
+      if (!headerContainer || !horizontalContainer || !isHorizontalScroll || !scrollContainer) {
         return;
       }
 
@@ -129,14 +112,7 @@ export function CardsCarousel(props: CardsCarouselProps) {
 
       horizontalContainer.scrollLeft += event.deltaY;
 
-      setCurrentPage(
-        calculatePage(
-          horizontalContainer.scrollLeft,
-          cardWidth,
-          carouselWidth,
-          INNER_MARGIN
-        )
-      );
+      setCurrentPage(calculatePage(horizontalContainer.scrollLeft, cardWidth, carouselWidth, INNER_MARGIN));
 
       if (horizontalContainer.scrollLeft === 0 && event.deltaY < 0) {
         setIsHorizontalScroll(false);
@@ -145,9 +121,7 @@ export function CardsCarousel(props: CardsCarouselProps) {
 
       if (
         Math.ceil(horizontalContainer.scrollLeft) ===
-        Math.ceil(
-          horizontalContainer.scrollWidth - horizontalContainer.clientWidth
-        )
+        Math.ceil(horizontalContainer.scrollWidth - horizontalContainer.clientWidth)
       ) {
         setIsHorizontalScroll(false);
         return;
@@ -165,13 +139,7 @@ export function CardsCarousel(props: CardsCarouselProps) {
         scrollContainer.removeEventListener('wheel', handleWheelScroll);
       }
     };
-  }, [
-    isHorizontalScroll,
-    scrollContainerRef,
-    cardWidth,
-    carouselWidth,
-    headerContainerRef,
-  ]);
+  }, [isHorizontalScroll, scrollContainerRef, cardWidth, carouselWidth, headerContainerRef]);
 
   return (
     <div
@@ -202,12 +170,7 @@ export function CardsCarousel(props: CardsCarouselProps) {
           }}
         >
           {entryContent.map((entry, index) => (
-            <CarouselCard
-              key={index}
-              entry={entry}
-              width={cardWidth}
-              isSelected={Math.floor(currentPage) === index}
-            />
+            <CarouselCard key={index} entry={entry} width={cardWidth} isSelected={Math.floor(currentPage) === index} />
           ))}
         </div>
       </div>

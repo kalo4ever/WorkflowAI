@@ -1,20 +1,10 @@
-import {
-  FluentIcon,
-  KeyFilled,
-  KeyMultipleFilled,
-} from '@fluentui/react-icons';
+import { FluentIcon, KeyFilled, KeyMultipleFilled } from '@fluentui/react-icons';
 import { cx } from 'class-variance-authority';
 import { useCallback, useMemo } from 'react';
-import {
-  AIProviderMetadata,
-  AI_PROVIDERS_METADATA,
-} from '@/components/AIModelsCombobox/utils';
+import { AIProviderMetadata, AI_PROVIDERS_METADATA } from '@/components/AIModelsCombobox/utils';
 import { Button } from '@/components/ui/Button';
 import { Dialog, DialogContent, DialogHeader } from '@/components/ui/Dialog';
-import {
-  PROVIDER_KEYS_MODAL_OPEN,
-  useQueryParamModal,
-} from '@/lib/globalModal';
+import { PROVIDER_KEYS_MODAL_OPEN, useQueryParamModal } from '@/lib/globalModal';
 import { Provider, VersionV1 } from '@/types/workflowAI';
 import { GradientBackground } from './GradiantBackground';
 
@@ -39,15 +29,8 @@ function ProviderSelectionCard(props: ProviderSelectionCardProps) {
         <GradientBackground size={40} className='absolute top-0 left-0' />
         <Icon className='w-5 h-5 text-white z-10' />
       </div>
-      <div className='text-gray-500 text-xs font-medium text-center whitespace-nowrap'>
-        {title}
-      </div>
-      <Button
-        variant='newDesign'
-        onClick={onClick}
-        className='w-full'
-        disabled={disabled || selected}
-      >
+      <div className='text-gray-500 text-xs font-medium text-center whitespace-nowrap'>{title}</div>
+      <Button variant='newDesign' onClick={onClick} className='w-full' disabled={disabled || selected}>
         {selected ? 'Selected' : 'Tap to Switch'}
       </Button>
     </div>
@@ -93,9 +76,7 @@ function UpdateProviderModalContent(props: UpdateProviderModalContentProps) {
         />
         <ProviderSelectionCard
           icon={KeyFilled}
-          title={`Use my own ${providerName} Key. ${
-            !providerSupported ? '(Coming Soon!)' : ''
-          }`}
+          title={`Use my own ${providerName} Key. ${!providerSupported ? '(Coming Soon!)' : ''}`}
           selected={usesOwnKey}
           disabled={!providerSupported}
           onClick={onUseOwnKey}
@@ -104,11 +85,7 @@ function UpdateProviderModalContent(props: UpdateProviderModalContentProps) {
       <div className='text-gray-800 text-xs font-semibold'>
         You will be charged the same price using WorkflowAI’s keys as your own.
       </div>
-      <Button
-        variant='link'
-        className='w-fit'
-        onClick={handleOpenProviderKeysModal}
-      >
+      <Button variant='link' className='w-fit' onClick={handleOpenProviderKeysModal}>
         Manage Provider Keys
       </Button>
     </div>
@@ -134,8 +111,7 @@ export function UpdateProviderModal(props: UpdateProviderModalProps) {
   );
 
   const providerMetadata = useMemo(
-    () =>
-      AI_PROVIDERS_METADATA[selectedVersion?.properties?.provider as Provider],
+    () => AI_PROVIDERS_METADATA[selectedVersion?.properties?.provider as Provider],
     [selectedVersion]
   );
 

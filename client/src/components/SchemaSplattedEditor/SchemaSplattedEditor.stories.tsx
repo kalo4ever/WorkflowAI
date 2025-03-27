@@ -1,17 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useCallback, useMemo, useState } from 'react';
-import {
-  SchemaEditorField,
-  fromSplattedEditorFieldsToSchema,
-} from '@/lib/schemaEditorUtils';
+import { SchemaEditorField, fromSplattedEditorFieldsToSchema } from '@/lib/schemaEditorUtils';
 import { arrayObjectSchemaFixture } from '@/tests/fixtures/schemaEditor/arrayObject';
 import { defaultInputObjectSchemaFixture } from '@/tests/fixtures/schemaEditor/defaultInputObjects';
 import { defaultOutputObjectSchemaFixture } from '@/tests/fixtures/schemaEditor/defaultOutputObject';
 import { productionObjectsSchemaFixture } from '@/tests/fixtures/schemaEditor/productionObject';
-import {
-  refObjectDefinitionFixtures,
-  refObjectsSchemaFixture,
-} from '@/tests/fixtures/schemaEditor/refObjects';
+import { refObjectDefinitionFixtures, refObjectsSchemaFixture } from '@/tests/fixtures/schemaEditor/refObjects';
 import { simpleObjectSchemaFixture } from '@/tests/fixtures/schemaEditor/simpleObject';
 import { unionObjectsSchemaFixture } from '@/tests/fixtures/schemaEditor/unionObjects';
 import { JsonSchemaDefinitions } from '@/types';
@@ -25,9 +19,7 @@ type WrapperProps = {
 
 function Wrapper(props: WrapperProps) {
   const { splattedSchema: initialSplattedSchema } = props;
-  const [splattedSchema, setSplattedSchema] = useState<
-    SchemaEditorField | undefined
-  >(initialSplattedSchema);
+  const [splattedSchema, setSplattedSchema] = useState<SchemaEditorField | undefined>(initialSplattedSchema);
   const finalSchema = useMemo(() => {
     if (!splattedSchema) {
       return undefined;
@@ -57,17 +49,11 @@ function Wrapper(props: WrapperProps) {
       </div>
       <div className='flex flex-col gap-2 basis-1/3'>
         <div>Splatted Schema</div>
-        <CodeBlock
-          language='json'
-          snippet={JSON.stringify(splattedSchema, null, 2)}
-        />
+        <CodeBlock language='json' snippet={JSON.stringify(splattedSchema, null, 2)} />
       </div>
       <div className='flex flex-col gap-2 basis-1/3'>
         <div>Final Schema</div>
-        <CodeBlock
-          language='json'
-          snippet={JSON.stringify(finalSchema, null, 2)}
-        />
+        <CodeBlock language='json' snippet={JSON.stringify(finalSchema, null, 2)} />
       </div>
     </div>
   );

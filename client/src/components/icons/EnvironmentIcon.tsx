@@ -14,10 +14,7 @@ type EnvironmentIconProps = {
   filled?: boolean;
 };
 
-function iconForEnvironment(
-  environment: VersionEnvironment | null | undefined,
-  filled: boolean = false
-) {
+function iconForEnvironment(environment: VersionEnvironment | null | undefined, filled: boolean = false) {
   if (!environment) {
     return null;
   }

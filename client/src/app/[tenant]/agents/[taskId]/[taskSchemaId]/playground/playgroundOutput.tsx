@@ -27,10 +27,7 @@ import { TaskRunner } from './hooks/useTaskRunners';
 import { PlaygroundModels } from './hooks/utils';
 import { PlaygroundModelOutputContent } from './playgroundModelOutputContent';
 
-function computeHasInputChanged(
-  taskRun: TaskRun | undefined,
-  generatedInput: GeneralizedTaskInput | undefined
-) {
+function computeHasInputChanged(taskRun: TaskRun | undefined, generatedInput: GeneralizedTaskInput | undefined) {
   if (taskRun === undefined || generatedInput === undefined) {
     return false;
   }
@@ -45,11 +42,7 @@ type ModelOutputProps = {
   areInstructionsLoading: boolean;
   errorForModels: Omit<Map<string, Error>, 'set' | 'clear' | 'delete'>;
   generatedInput: GeneralizedTaskInput | undefined;
-  improveTaskRunVersion: (
-    taskRunId: string,
-    userEvaluation: string,
-    index: number
-  ) => Promise<void>;
+  improveInstructions: (text: string, runId: string | undefined) => Promise<void>;
   index: number;
   minimumCostTaskRun: TaskRun | undefined;
   minimumLatencyTaskRun: TaskRun | undefined;
@@ -72,7 +65,7 @@ function ModelOutput(props: ModelOutputProps) {
     areInstructionsLoading,
     errorForModels,
     generatedInput,
-    improveTaskRunVersion,
+    improveInstructions,
     index,
     minimumCostTaskRun,
     minimumLatencyTaskRun,
@@ -91,10 +84,7 @@ function ModelOutput(props: ModelOutputProps) {
 
   const taskRun = taskRunner.data;
   const taskRunId = taskRun?.id;
-  const hasInputChanged = useMemo(
-    () => computeHasInputChanged(taskRun, generatedInput),
-    [taskRun, generatedInput]
-  );
+  const hasInputChanged = useMemo(() => computeHasInputChanged(taskRun, generatedInput), [taskRun, generatedInput]);
 
   const redirectWithParams = useRedirectWithParams();
   const onOpenTaskRun = useCallback(() => {
@@ -106,24 +96,20 @@ function ModelOutput(props: ModelOutputProps) {
 
   const currentModel = models[index];
   const currentAIModel = useMemo(
-    () =>
-      aiModels.find((model) => model.id === taskRun?.group.properties?.model),
+    () => aiModels.find((model) => model.id === taskRun?.group.properties?.model),
     [aiModels, taskRun?.group.properties?.model]
   );
   const minimumCostAIModel = useMemo(
-    () =>
-      aiModels.find(
-        (model) => model.id === minimumCostTaskRun?.group.properties?.model
-      ),
+    () => aiModels.find((model) => model.id === minimumCostTaskRun?.group.properties?.model),
     [aiModels, minimumCostTaskRun?.group.properties?.model]
   );
 
   const onImprovePrompt = useCallback(
     async (evaluation: string) => {
       if (!taskRunId) return;
-      await improveTaskRunVersion(taskRunId, evaluation, index);
+      await improveInstructions(evaluation, taskRunId);
     },
-    [taskRunId, improveTaskRunVersion, index]
+    [taskRunId, improveInstructions]
   );
 
   const handleModelChange = useCallback(
@@ -166,6 +152,7 @@ function ModelOutput(props: ModelOutputProps) {
           <CreateTaskRunButton
             taskRunner={taskRunner}
             disabled={areInstructionsLoading}
+            containsError={!!errorForModel}
           />
         </div>
         <div className='flex sm:hidden w-full'>
@@ -220,7 +207,7 @@ type PlaygroundOutputProps = Pick<
   | 'areInstructionsLoading'
   | 'errorForModels'
   | 'generatedInput'
-  | 'improveTaskRunVersion'
+  | 'improveInstructions'
   | 'models'
   | 'onModelsChange'
   | 'outputSchema'
@@ -276,10 +263,7 @@ export function PlaygroundOutput(props: PlaygroundOutputProps) {
     return taskRunners;
   }, [taskRunners, show2ColumnLayout]);
 
-  const taskRuns = useMemo(
-    () => [taskRunners[0].data, taskRunners[1].data, taskRunners[2].data],
-    [taskRunners]
-  );
+  const taskRuns = useMemo(() => [taskRunners[0].data, taskRunners[1].data, taskRunners[2].data], [taskRunners]);
   const minimumCostTaskRun = useMinimumCostTaskRun(taskRuns);
   const minimumLatencyTaskRun = useMinimumLatencyTaskRun(taskRuns);
 
@@ -288,9 +272,7 @@ export function PlaygroundOutput(props: PlaygroundOutputProps) {
   }, [onShowEditSchemaModal]);
 
   const { isLoggedOut } = useDemoMode();
-  const { noCreditsLeft } = useOrFetchOrganizationSettings(
-    isLoggedOut ? 30000 : undefined
-  );
+  const { noCreditsLeft } = useOrFetchOrganizationSettings(isLoggedOut ? 30000 : undefined);
 
   const shouldShowFreeCreditsLimitReachedInfo = useMemo(() => {
     if (!isLoggedOut) {
@@ -323,39 +305,21 @@ export function PlaygroundOutput(props: PlaygroundOutputProps) {
           )}
         </div>
         <div className='flex items-center gap-2'>
-          <SimpleTooltip
-            content={showDiffMode ? 'Hide differences' : 'Show differences'}
-          >
+          <SimpleTooltip content={showDiffMode ? 'Hide differences' : 'Show differences'}>
             <Button
               className='w-7 h-7'
               variant='newDesign'
               size='none'
-              icon={
-                showDiffMode ? (
-                  <ColumnDoubleCompare20Filled />
-                ) : (
-                  <ColumnDoubleCompare20Regular />
-                )
-              }
+              icon={showDiffMode ? <ColumnDoubleCompare20Filled /> : <ColumnDoubleCompare20Regular />}
               onClick={toggleShowDiffMode}
             />
           </SimpleTooltip>
-          <SimpleTooltip
-            content={
-              show2ColumnLayout ? 'Show third column' : 'Hide third column'
-            }
-          >
+          <SimpleTooltip content={show2ColumnLayout ? 'Show third column' : 'Hide third column'}>
             <Button
               className='w-7 h-7'
               variant='newDesign'
               size='none'
-              icon={
-                show2ColumnLayout ? (
-                  <LayoutColumnThree20Regular />
-                ) : (
-                  <LayoutColumnTwo20Regular />
-                )
-              }
+              icon={show2ColumnLayout ? <LayoutColumnThree20Regular /> : <LayoutColumnTwo20Regular />}
               onClick={toggleShow2ColumnLayout}
             />
           </SimpleTooltip>
@@ -370,11 +334,7 @@ export function PlaygroundOutput(props: PlaygroundOutputProps) {
           {filteredTaskRunners.map((taskRunner, index) => (
             <ModelOutput
               {...rest}
-              version={
-                !!taskRunner.data?.group.id
-                  ? versionsForRuns[taskRunner.data?.group.id]
-                  : undefined
-              }
+              version={!!taskRunner.data?.group.id ? versionsForRuns[taskRunner.data?.group.id] : undefined}
               index={index}
               key={`${taskRunner.data?.id}-${index}`}
               minimumCostTaskRun={minimumCostTaskRun}

@@ -1,7 +1,4 @@
-import {
-  EventSourceMessage,
-  fetchEventSource,
-} from '@microsoft/fetch-event-source';
+import { EventSourceMessage, fetchEventSource } from '@microsoft/fetch-event-source';
 import { captureException } from '@sentry/nextjs';
 import { StreamError } from '@/types/errors';
 
@@ -94,10 +91,7 @@ async function fetchWrapper<T, R = unknown>(
   return toJSON;
 }
 
-export async function get<T>(
-  path: string,
-  query?: URLSearchParams
-): Promise<T> {
+export async function get<T>(path: string, query?: URLSearchParams): Promise<T> {
   const url = query ? `${path}?${query.toString()}` : path;
 
   return fetchWrapper(url, { method: Method.GET });
@@ -115,10 +109,7 @@ export async function patch<T, R = unknown>(path: string, body: T): Promise<R> {
   return fetchWrapper(path, { method: Method.PATCH, body });
 }
 
-export async function del<T = undefined, R = unknown>(
-  path: string,
-  body?: T
-): Promise<R> {
+export async function del<T = undefined, R = unknown>(path: string, body?: T): Promise<R> {
   return fetchWrapper(path, { method: Method.DELETE, body });
 }
 
@@ -176,11 +167,14 @@ function parseSSEEvent(eventData: string) {
 
   if ('error' in parsed) {
     const msg = extractErrorMessage(parsed);
-    throw new StreamError(
-      msg ?? 'An unknown error occurred',
-      msg === undefined,
-      { eventData }
-    );
+    if ('task_run_id' in parsed) {
+      throw new StreamError(msg ?? 'An unknown error occurred', msg === undefined, {
+        eventData,
+        runId: parsed.task_run_id,
+      });
+    } else {
+      throw new StreamError(msg ?? 'An unknown error occurred', msg === undefined, { eventData });
+    }
   }
 
   return parsed;
@@ -218,10 +212,7 @@ export async function SSEClient<R, T>(
       'x-workflowai-source': 'web',
       'x-workflowai-version': process.env.NEXT_PUBLIC_RELEASE_NAME ?? 'unknown',
     },
-    body:
-      method !== Method.GET
-        ? JSON.stringify({ ...body, stream: true })
-        : undefined,
+    body: method !== Method.GET ? JSON.stringify({ ...body, stream: true }) : undefined,
     openWhenHidden: true,
     // We should not keepalive because we noticed that running audio tasks
     // with keepalive enabled causes unexpected "Failed to fetch" errors.

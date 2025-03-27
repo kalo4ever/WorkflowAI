@@ -1,10 +1,7 @@
 import { ChevronUpDownFilled } from '@fluentui/react-icons';
 import { useState } from 'react';
 import { TaskSwitcherMode } from '@/app/[tenant]/components/TaskSwitcher';
-import {
-  SchemaSelectorContainer,
-  TaskSwitcherContainer,
-} from '@/app/[tenant]/components/TaskSwitcherContainer';
+import { SchemaSelectorContainer, TaskSwitcherContainer } from '@/app/[tenant]/components/TaskSwitcherContainer';
 import { useLoggedInTenantID, useTaskParams } from '@/lib/hooks/useTaskParams';
 import { cn } from '@/lib/utils';
 import { useOrFetchClerkOrganization, useOrFetchTasks } from '@/store';
@@ -62,19 +59,13 @@ export function PageHeader(props: PageHeaderProps) {
 
   const loggedInTenant = useLoggedInTenantID();
   const { organization } = useOrFetchClerkOrganization(tenant);
-  const { organization: userOrganization } =
-    useOrFetchClerkOrganization(loggedInTenant);
+  const { organization: userOrganization } = useOrFetchClerkOrganization(loggedInTenant);
   const showOrganization = loggedInTenant !== tenant;
 
   const { tasks } = useOrFetchTasks(loggedInTenant ?? tenant);
 
   return (
-    <div
-      className={cn(
-        'flex felx-col items-center justify-between px-4',
-        className
-      )}
-    >
+    <div className={cn('flex felx-col items-center justify-between px-4', className)}>
       <div className='flex flex-row items-center'>
         <TaskSwitcherContainer
           mode={TaskSwitcherMode.TASKS}
@@ -85,34 +76,20 @@ export function PageHeader(props: PageHeaderProps) {
             <div>
               <TaskSection
                 task={task}
-                organizationName={
-                  showOrganization ? organization?.name : undefined
-                }
+                organizationName={showOrganization ? organization?.name : undefined}
                 isSelected={taskPopoverOpen}
               />
             </div>
           }
-          titleForFeatures={
-            showOrganization && !!userOrganization
-              ? `${userOrganization.name}'s AI Agents`
-              : undefined
-          }
+          titleForFeatures={showOrganization && !!userOrganization ? `${userOrganization.name}'s AI Agents` : undefined}
         />
         {!!taskSchemaId && showSchema && (
-          <SchemaSelectorContainer
-            tenant={tenant}
-            taskId={task.id as TaskID}
-            selectedSchemaId={taskSchemaId}
-          />
+          <SchemaSelectorContainer tenant={tenant} taskId={task.id as TaskID} selectedSchemaId={taskSchemaId} />
         )}
-        <div className='ml-3 text-[13px] font-semibold text-gray-900'>
-          {name}
-        </div>
+        <div className='ml-3 text-[13px] font-semibold text-gray-900'>{name}</div>
       </div>
 
-      <div className='flex flex-row gap-2 justify-end items-center'>
-        {children}
-      </div>
+      <div className='flex flex-row gap-2 justify-end items-center'>{children}</div>
     </div>
   );
 }

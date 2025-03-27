@@ -115,8 +115,7 @@ describe('Validate variable names', () => {
         taskName: config.taskName,
       });
       expect(result.runTask.code).toContain(`function ${config.expected}Run()`);
-      const nameExpected =
-        config.expected.charAt(0).toUpperCase() + config.expected.slice(1);
+      const nameExpected = config.expected.charAt(0).toUpperCase() + config.expected.slice(1);
       expect(result.initializeTask.code).toContain(
         `const ${config.expected} = workflowAI.agent < ${nameExpected}Input, ${nameExpected}Output > ({`
       );

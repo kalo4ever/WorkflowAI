@@ -25,9 +25,7 @@ export function TaskMetadataSection(props: TaskMetadataSectionProps) {
   return (
     <div className='flex flex-col gap-2 px-4 py-1.5 font-lato'>
       <div className='flex flex-col gap-1'>
-        <div className='text-[13px] font-medium text-gray-800 capitalize'>
-          {title}
-        </div>
+        <div className='text-[13px] font-medium text-gray-800 capitalize'>{title}</div>
         <div className='flex-1 flex justify-start overflow-hidden'>
           <div className='truncate'>{children}</div>
         </div>
@@ -53,16 +51,12 @@ const keysToFilter = [
   'model_icon',
 ];
 
-function extractNamesAndValues(
-  version: VersionV1 | undefined
-): { name: string; value: string }[] {
+function extractNamesAndValues(version: VersionV1 | undefined): { name: string; value: string }[] {
   if (!version) {
     return [];
   }
 
-  const keys = Object.keys(version.properties).filter(
-    (key) => !keysToFilter.includes(key)
-  );
+  const keys = Object.keys(version.properties).filter((key) => !keysToFilter.includes(key));
 
   const result: { name: string; value: string }[] = [];
 
@@ -80,9 +74,7 @@ type TaskMetadataProps = {
   bottomText?: string;
   children?: React.ReactNode;
   className?: string;
-  handleUpdateNotes?: DebouncedState<
-    (versionId: string, notes: string) => Promise<void>
-  >;
+  handleUpdateNotes?: DebouncedState<(versionId: string, notes: string) => Promise<void>>;
   limitNumberOfLines?: boolean;
   maximalHeightOfInstructions?: number;
   version: VersionV1;
@@ -103,18 +95,12 @@ export function TaskVersionDetails(props: TaskMetadataProps) {
 
   const onViewRuns = useViewRuns(version?.schema_id, version);
 
-  const environments = useMemo(
-    () => environmentsForVersion(version) || [],
-    [version]
-  );
+  const environments = useMemo(() => environmentsForVersion(version) || [], [version]);
 
   const { temperature, instructions, provider, few_shot } = properties;
   const model = version?.model;
 
-  const namesAndValues: { name: string; value: string }[] = useMemo(
-    () => extractNamesAndValues(version),
-    [version]
-  );
+  const namesAndValues: { name: string; value: string }[] = useMemo(() => extractNamesAndValues(version), [version]);
 
   const onUpdateNotes = useCallback(
     async (notes: string) => {
@@ -159,10 +145,7 @@ export function TaskVersionDetails(props: TaskMetadataProps) {
         <TaskMetadataSection title='environment'>
           <div className='flex flex-wrap items-center justify-end gap-1'>
             {environments.map((environment) => (
-              <TaskEnvironmentBadge
-                key={environment}
-                environment={environment}
-              />
+              <TaskEnvironmentBadge key={environment} environment={environment} />
             ))}
           </div>
         </TaskMetadataSection>
@@ -190,9 +173,7 @@ export function TaskVersionDetails(props: TaskMetadataProps) {
 
       {!!instructions && (
         <div className='flex flex-col w-full items-top pl-4 pr-4 py-1.5 gap-1'>
-          <div className='text-[13px] font-medium text-gray-800'>
-            Instructions
-          </div>
+          <div className='text-[13px] font-medium text-gray-800'>Instructions</div>
           <div>
             <div
               className={`flex-1 text-gray-900 bg-white px-3 py-2 border border-gray-300 rounded-[2px] overflow-auto font-lato font-normal text-[13px]`}
@@ -200,20 +181,11 @@ export function TaskVersionDetails(props: TaskMetadataProps) {
                 maxHeight: maximalHeightOfInstructions,
               }}
             >
-              <p
-                className={cx(
-                  'whitespace-pre-line',
-                  limitNumberOfLines === true && 'line-clamp-5'
-                )}
-              >
-                {instructions}
-              </p>
+              <p className={cx('whitespace-pre-line', limitNumberOfLines === true && 'line-clamp-5')}>{instructions}</p>
             </div>
 
             {!!bottomText && (
-              <p className='flex justify-end text-slate-500 text-xs font-medium pt-3 pr-1'>
-                {bottomText}
-              </p>
+              <p className='flex justify-end text-slate-500 text-xs font-medium pt-3 pr-1'>{bottomText}</p>
             )}
           </div>
         </div>

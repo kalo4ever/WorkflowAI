@@ -89,3 +89,12 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .bordered-box {
+    @apply rounded-[2px] border border-gray-200;
+  }
+  .bordered-box-title {
+    @apply flex h-10 flex-row items-center text-[13px] font-normal text-gray-500;
+  }
+}

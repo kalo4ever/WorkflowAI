@@ -8,11 +8,7 @@ type VersionOutputValueRowProps = {
   side?: HoverCardContentProps['side'];
   showTaskIterationDetails?: boolean;
 };
-export function VersionOutputValueRow({
-  version,
-  side,
-  showTaskIterationDetails,
-}: VersionOutputValueRowProps) {
+export function VersionOutputValueRow({ version, side, showTaskIterationDetails }: VersionOutputValueRowProps) {
   if (version === undefined) {
     return <BaseOutputValueRow label='Version' variant='empty' value='-' />;
   }
@@ -20,13 +16,7 @@ export function VersionOutputValueRow({
   return (
     <BaseOutputValueRow
       label='Version'
-      value={
-        <TaskVersionBadgeContainer
-          version={version}
-          side={side}
-          showDetails={showTaskIterationDetails}
-        />
-      }
+      value={<TaskVersionBadgeContainer version={version} side={side} showDetails={showTaskIterationDetails} />}
     />
   );
 }

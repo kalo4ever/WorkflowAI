@@ -1,17 +1,8 @@
-import {
-  Bot20Filled,
-  FastForward16Regular,
-  QuestionCircle20Filled,
-} from '@fluentui/react-icons';
+import { Bot20Filled, FastForward16Regular, QuestionCircle20Filled } from '@fluentui/react-icons';
 import { Button } from '@/components/ui/Button';
 import { SimpleTooltip } from '@/components/ui/Tooltip';
 import { ReviewCommentAspects } from './ReviewCommentAspects';
-import {
-  getAccentColor,
-  getBackgroundColor,
-  getBorderColor,
-  getTriangleClasses,
-} from './utils';
+import { getAccentColor, getBackgroundColor, getBorderColor, getTriangleClasses } from './utils';
 
 function getOverallReview(state: string | undefined): JSX.Element {
   const textColor = getAccentColor(state);
@@ -38,9 +29,7 @@ function getOverallReview(state: string | undefined): JSX.Element {
         </>
       );
     default:
-      return (
-        <>Oops. I&apos;m unsure about how to review this. Can you review it?</>
-      );
+      return <>Oops. I&apos;m unsure about how to review this. Can you review it?</>;
   }
 }
 
@@ -52,11 +41,8 @@ type AIEvaluationReviewCommentProps = {
   onImprovePrompt?: () => Promise<void>;
 };
 
-export function AIEvaluationReviewComment(
-  props: AIEvaluationReviewCommentProps
-) {
-  const { summary, positiveAspects, negativeAspects, state, onImprovePrompt } =
-    props;
+export function AIEvaluationReviewComment(props: AIEvaluationReviewCommentProps) {
+  const { summary, positiveAspects, negativeAspects, state, onImprovePrompt } = props;
 
   const triangleOffset = state === 'positive' ? 37 : 5;
 
@@ -94,33 +80,19 @@ export function AIEvaluationReviewComment(
             )}
           </div>
         </SimpleTooltip>
-        <div className='text-gray-700 text-[13px] font-normal'>
-          {overallReview}
-        </div>
+        <div className='text-gray-700 text-[13px] font-normal'>{overallReview}</div>
       </div>
       <div className='flex w-full flex-1 flex-col bg-white overflow-y-hidden'>
         <div className='flex flex-col w-full flex-1 overflow-y-auto'>
           {state === 'negative' ? (
             <>
-              <ReviewCommentAspects
-                aspects={negativeAspects}
-                state={'negative'}
-              />
-              <ReviewCommentAspects
-                aspects={positiveAspects}
-                state={'positive'}
-              />
+              <ReviewCommentAspects aspects={negativeAspects} state={'negative'} />
+              <ReviewCommentAspects aspects={positiveAspects} state={'positive'} />
             </>
           ) : (
             <>
-              <ReviewCommentAspects
-                aspects={positiveAspects}
-                state={'positive'}
-              />
-              <ReviewCommentAspects
-                aspects={negativeAspects}
-                state={'negative'}
-              />
+              <ReviewCommentAspects aspects={positiveAspects} state={'positive'} />
+              <ReviewCommentAspects aspects={negativeAspects} state={'negative'} />
             </>
           )}
           {showOldStyleComment && (

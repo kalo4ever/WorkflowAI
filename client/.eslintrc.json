@@ -11,8 +11,11 @@
   },
   "rules": {
     "eqeqeq": "error",
-    // TODO - turn this on while coding to remove these error step by step from the codebase
+    // TODO - set to warning
     "@typescript-eslint/strict-boolean-expressions": "off",
+    // TODO: turn back on
+    "@typescript-eslint/no-empty-object-type": "warn",
+    "@typescript-eslint/no-unused-vars": "warn",
     "react-hooks/exhaustive-deps": "error",
     "no-use-before-define": "error",
     "max-lines": ["warn", 500],

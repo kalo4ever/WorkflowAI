@@ -2,11 +2,7 @@ import { generateMetadataWithTitle } from '@/lib/metadata';
 import { TaskSchemaParams } from '@/lib/routeFormatter';
 import { PlaygroundContentWrapper } from './playground/playgroundContentWrapper';
 
-export async function generateMetadata({
-  params,
-}: {
-  params: TaskSchemaParams;
-}) {
+export async function generateMetadata({ params }: { params: TaskSchemaParams }) {
   return generateMetadataWithTitle('Playground', params);
 }
 

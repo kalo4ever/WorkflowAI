@@ -98,18 +98,10 @@ function addPrefixToEachLine(str: string, prefix: string) {
     .join('\n');
 }
 
-function runTaskCode(
-  taskFunctionName: string,
-  baseTypeName: string,
-  beautifiedInput: string,
-  secondaryInput?: string
-) {
+function runTaskCode(taskFunctionName: string, baseTypeName: string, beautifiedInput: string, secondaryInput?: string) {
   const firstInput = `const input: ${baseTypeName}Input = ${beautifiedInput}`;
   const secondInput = secondaryInput
-    ? addPrefixToEachLine(
-        `const input: ${baseTypeName}Input = ${secondaryInput}`,
-        '  //'
-      )
+    ? addPrefixToEachLine(`const input: ${baseTypeName}Input = ${secondaryInput}`, '  //')
     : '';
 
   return `
@@ -162,9 +154,7 @@ const ${taskFunctionName} = workflowAI.agent<${baseTypeName}Input, ${baseTypeNam
 }
 
 function toPascalCase(str: string) {
-  return str.replace(/(^\w|-\w)/g, (match) =>
-    match.toUpperCase().replace(/-/, '')
-  );
+  return str.replace(/(^\w|-\w)/g, (match) => match.toUpperCase().replace(/-/, ''));
 }
 
 export const getPlaygroundSnippets = async (
@@ -186,14 +176,8 @@ export const getPlaygroundSnippets = async (
   const taskFunctionName = validVarName(taskName || taskId);
   const baseTypeName = toPascalCase(taskFunctionName);
   const _stringifiedInput = JSON.stringify(example.input, null, 2);
-  const { compiled: inputTS, existingWAIRefs: inputRefs } = await schemaToTS(
-    baseTypeName + 'Input',
-    schema.input
-  );
-  const { compiled: outputTS, existingWAIRefs: outputRefs } = await schemaToTS(
-    baseTypeName + 'Output',
-    schema.output
-  );
+  const { compiled: inputTS, existingWAIRefs: inputRefs } = await schemaToTS(baseTypeName + 'Input', schema.input);
+  const { compiled: outputTS, existingWAIRefs: outputRefs } = await schemaToTS(baseTypeName + 'Output', schema.output);
   // Unioning the sets
   for (const ref of outputRefs) {
     inputRefs.add(ref);
@@ -212,15 +196,7 @@ export const getPlaygroundSnippets = async (
 
     initializeTask: {
       language: 'typescript',
-      code: initializeTaskCode(
-        baseTypeName,
-        taskFunctionName,
-        schema,
-        taskId,
-        version,
-        inputTS,
-        outputTS
-      ),
+      code: initializeTaskCode(baseTypeName, taskFunctionName, schema, taskId, version, inputTS, outputTS),
     },
 
     runTask: {

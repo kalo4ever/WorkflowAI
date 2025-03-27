@@ -1,11 +1,6 @@
 'use client';
 
-import {
-  Archive16Regular,
-  ArrowCounterclockwise16Regular,
-  Edit16Regular,
-  Open16Filled,
-} from '@fluentui/react-icons';
+import { Archive16Regular, ArrowCounterclockwise16Regular, Edit16Regular, Open16Filled } from '@fluentui/react-icons';
 import { captureException } from '@sentry/nextjs';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
@@ -18,11 +13,7 @@ import { useDemoMode } from '@/lib/hooks/useDemoMode';
 import { useIsAllowed } from '@/lib/hooks/useIsAllowed';
 import { useTaskSchemaParams } from '@/lib/hooks/useTaskParams';
 import { replaceTaskSchemaId, taskSchemaRoute } from '@/lib/routeFormatter';
-import {
-  getActiveSchemaIds,
-  getHiddenSchemaIds,
-  getVisibleSchemaIds,
-} from '@/lib/taskUtils';
+import { getActiveSchemaIds, getHiddenSchemaIds, getVisibleSchemaIds } from '@/lib/taskUtils';
 import { useOrFetchCurrentTaskSchema, useOrFetchTask } from '@/store';
 import { useTaskSchemas } from '@/store/task_schemas';
 import { TaskSchemaID } from '@/types/aliases';
@@ -30,11 +21,7 @@ import { SchemasContent } from './schemasContent';
 
 export function SchemasContainer() {
   const { tenant, taskId, taskSchemaId } = useTaskSchemaParams();
-  const { taskSchema, isInitialized } = useOrFetchCurrentTaskSchema(
-    tenant,
-    taskId,
-    taskSchemaId
-  );
+  const { taskSchema, isInitialized } = useOrFetchCurrentTaskSchema(tenant, taskId, taskSchemaId);
   const { task } = useOrFetchTask(tenant, taskId, true);
   const { openModal: openEditTaskModal } = useNewTaskModal();
   const { checkIfAllowed } = useIsAllowed();
@@ -85,12 +72,7 @@ export function SchemasContainer() {
   const handleRestoreTaskSchema = useCallback(async () => {
     if (!tenant || !taskId || !taskSchemaId) return;
 
-    const promise = changeTaskSchemaVisibility(
-      tenant,
-      taskId,
-      taskSchemaId,
-      true
-    );
+    const promise = changeTaskSchemaVisibility(tenant, taskId, taskSchemaId, true);
 
     toast.promise(promise, {
       loading: 'Restoring AI agent schema...',
@@ -107,12 +89,7 @@ export function SchemasContainer() {
   const handleArchiveTaskSchema = useCallback(async () => {
     if (!tenant || !taskId || !taskSchemaId) return;
 
-    const promise = changeTaskSchemaVisibility(
-      tenant,
-      taskId,
-      taskSchemaId,
-      false
-    );
+    const promise = changeTaskSchemaVisibility(tenant, taskId, taskSchemaId, false);
 
     toast.promise(promise, {
       loading: 'Archiving AI agent schema...',
@@ -146,11 +123,7 @@ export function SchemasContainer() {
           >
             Add or Update Fields
           </Button>
-          <Button
-            toRoute={taskSchemaRoute(tenant, taskId, taskSchemaId)}
-            icon={<Open16Filled />}
-            variant='newDesign'
-          >
+          <Button toRoute={taskSchemaRoute(tenant, taskId, taskSchemaId)} icon={<Open16Filled />} variant='newDesign'>
             Try in Playground
           </Button>
           {isArchived ? (

@@ -15,10 +15,7 @@ const config: KnipConfig = {
   },
   storybook: {
     config: ['.storybook/{main,test-runner}.{js,ts}'],
-    entry: [
-      '.storybook/{manager,preview}.{js,jsx,ts,tsx}',
-      '**/*.@(mdx|stories.@(mdx|js|jsx|mjs|ts|tsx))',
-    ],
+    entry: ['.storybook/{manager,preview}.{js,jsx,ts,tsx}', '**/*.@(mdx|stories.@(mdx|js|jsx|mjs|ts|tsx))'],
     project: ['.storybook/**/*.{js,jsx,ts,tsx}'],
   },
 };

@@ -4,16 +4,8 @@ import { ModelBadge } from '@/components/ModelBadge/ModelBadge';
 import { TaskEnvironmentBadge } from '@/components/TaskEnvironmentBadge';
 import { TaskVersionBadgeContainer } from '@/components/TaskIterationBadge/TaskVersionBadgeContainer';
 import { CustomCommandInput } from '@/components/ui/Command';
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from '@/components/ui/HoverCard';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/Popover';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/HoverCard';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover';
 import { TaskVersionDetails } from '@/components/v2/TaskVersionDetails';
 import { cn } from '@/lib/utils';
 import { formatSemverVersion, sortVersions } from '@/lib/versionUtils';
@@ -30,8 +22,7 @@ type VersionPopoverItemProps = {
 };
 
 function VersionPopoverItem(props: VersionPopoverItemProps) {
-  const { environment, version, onClick, className, showFullEnvironmentName } =
-    props;
+  const { environment, version, onClick, className, showFullEnvironmentName } = props;
 
   if (!environment && !version) {
     return null;
@@ -47,12 +38,8 @@ function VersionPopoverItem(props: VersionPopoverItemProps) {
           )}
           onClick={onClick}
         >
-          {environment && showFullEnvironmentName && (
-            <TaskEnvironmentBadge environment={environment} />
-          )}
-          {environment && !showFullEnvironmentName && (
-            <TaskRunEnvironments environments={[environment]} />
-          )}
+          {environment && showFullEnvironmentName && <TaskEnvironmentBadge environment={environment} />}
+          {environment && !showFullEnvironmentName && <TaskRunEnvironments environments={[environment]} />}
           {version && (
             <>
               <TaskVersionBadgeContainer
@@ -70,10 +57,7 @@ function VersionPopoverItem(props: VersionPopoverItemProps) {
         </div>
       </HoverCardTrigger>
       {!!version && (
-        <HoverCardContent
-          className='w-fit max-w-[660px] p-0 rounded-[2px] border-gray-200'
-          side='right'
-        >
+        <HoverCardContent className='w-fit max-w-[660px] p-0 rounded-[2px] border-gray-200' side='right'>
           <TaskVersionDetails version={version} className='w-[350px]' />
         </HoverCardContent>
       )}
@@ -87,10 +71,7 @@ type VersionPopoverProps = {
   selectedVersionId: string | undefined;
   setSelectedVersionId: (newVersionId: string | undefined) => void;
   selectedEnvironment: VersionEnvironment | undefined;
-  setSelectedEnvironment: (
-    environment: VersionEnvironment | undefined,
-    versionId: string | undefined
-  ) => void;
+  setSelectedEnvironment: (environment: VersionEnvironment | undefined, versionId: string | undefined) => void;
 };
 
 export function VersionPopover(props: VersionPopoverProps) {
@@ -108,14 +89,9 @@ export function VersionPopover(props: VersionPopoverProps) {
   const searchLower = search.toLowerCase();
 
   const environmentsAndVersions = useMemo(() => {
-    const sortedEnvironments: VersionEnvironment[] = [
-      'production',
-      'staging',
-      'dev',
-    ];
+    const sortedEnvironments: VersionEnvironment[] = ['production', 'staging', 'dev'];
 
-    const result: { environment: VersionEnvironment; version: VersionV1 }[] =
-      [];
+    const result: { environment: VersionEnvironment; version: VersionV1 }[] = [];
 
     sortedEnvironments.forEach((environment) => {
       const versions = versionsPerEnvironment?.[environment];
@@ -146,10 +122,7 @@ export function VersionPopover(props: VersionPopoverProps) {
   }, [versions, selectedVersionId]);
 
   const onSelectedEnvironment = useCallback(
-    (
-      environment: VersionEnvironment | undefined,
-      versionId: string | undefined
-    ) => {
+    (environment: VersionEnvironment | undefined, versionId: string | undefined) => {
       setSelectedEnvironment(environment, versionId);
       setOpen(false);
     },
@@ -179,25 +152,18 @@ export function VersionPopover(props: VersionPopoverProps) {
                 showFullEnvironmentName={false}
               />
             ) : (
-              <div className='text-sm font-medium text-gray-500 truncate'>
-                Select
-              </div>
+              <div className='text-sm font-medium text-gray-500 truncate'>Select</div>
             )}
           </div>
           <ChevronsUpDown className='h-4 w-4 shrink-0 text-gray-500' />
         </div>
       </PopoverTrigger>
       <PopoverContent className='w-[275px] overflow-auto max-h-[300px] p-0 rounded-[2px]'>
-        <CustomCommandInput
-          placeholder='Search versions'
-          search={search}
-          onSearchChange={setSearch}
-        />
+        <CustomCommandInput placeholder='Search versions' search={search} onSearchChange={setSearch} />
         <div className='p-1'>
-          {environmentsAndVersions.length === 0 &&
-            filteredVersions.length === 0 && (
-              <div className='text-sm text-center p-2'>No versions found</div>
-            )}
+          {environmentsAndVersions.length === 0 && filteredVersions.length === 0 && (
+            <div className='text-sm text-center p-2'>No versions found</div>
+          )}
           {environmentsAndVersions.map(({ environment, version }) => {
             return (
               <VersionPopoverItem

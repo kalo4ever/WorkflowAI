@@ -1,10 +1,7 @@
 import { DismissFilled, SearchRegular } from '@fluentui/react-icons';
 import { cx } from 'class-variance-authority';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import {
-  useParsedSearchParams,
-  useRedirectWithParams,
-} from '@/lib/queryString';
+import { useParsedSearchParams, useRedirectWithParams } from '@/lib/queryString';
 import { SearchFieldParam } from '@/lib/routeFormatter';
 import { SearchFields } from '@/types/workflowAI';
 import { TaskRunSearchFieldHints } from './TaskRunSearchFieldHints';
@@ -31,28 +28,20 @@ type TaskRunSearchFieldProps = {
   defaultOperatorsForFields: Record<string, string>;
 };
 
-const parameters = [
-  SearchFieldParam.FieldNames,
-  SearchFieldParam.Operators,
-  SearchFieldParam.Values,
-];
+const parameters = [SearchFieldParam.FieldNames, SearchFieldParam.Operators, SearchFieldParam.Values];
 
 export function TaskRunSearchField(props: TaskRunSearchFieldProps) {
   const { className, searchFields, defaultOperatorsForFields } = props;
 
   const currentQueryParams = useParsedSearchParams(...parameters);
-  const [localQueryParams, setLocalQueryParams] = useState<
-    Record<string, string | undefined>
-  >({});
+  const [localQueryParams, setLocalQueryParams] = useState<Record<string, string | undefined>>({});
 
-  const allCurrentAndLocalQueryParams: Record<string, string | undefined> =
-    useMemo(() => {
-      return { ...currentQueryParams, ...localQueryParams };
-    }, [currentQueryParams, localQueryParams]);
+  const allCurrentAndLocalQueryParams: Record<string, string | undefined> = useMemo(() => {
+    return { ...currentQueryParams, ...localQueryParams };
+  }, [currentQueryParams, localQueryParams]);
 
   const fieldNames = useMemo(
-    () =>
-      allCurrentAndLocalQueryParams[SearchFieldParam.FieldNames]?.split(','),
+    () => allCurrentAndLocalQueryParams[SearchFieldParam.FieldNames]?.split(','),
     [allCurrentAndLocalQueryParams]
   );
   const operators = useMemo(
@@ -65,9 +54,7 @@ export function TaskRunSearchField(props: TaskRunSearchFieldProps) {
   );
 
   const numberOfParametersEntered: number =
-    (fieldNames?.length ?? 0) +
-    (operators?.length ?? 0) +
-    (values?.length ?? 0);
+    (fieldNames?.length ?? 0) + (operators?.length ?? 0) + (values?.length ?? 0);
 
   const currentParamToEnter: SearchFieldParam = useMemo(
     () => findCurrentParamToEnter(fieldNames, operators, values),
@@ -79,15 +66,9 @@ export function TaskRunSearchField(props: TaskRunSearchFieldProps) {
 
   const redirectWithParams = useRedirectWithParams();
 
-  const activeIndex = useMemo(
-    () => findActiveIndex(fieldNames, operators, values),
-    [fieldNames, operators, values]
-  );
+  const activeIndex = useMemo(() => findActiveIndex(fieldNames, operators, values), [fieldNames, operators, values]);
 
-  const currentIndex = useMemo(
-    () => findCurrentIndex(fieldNames, operators, values),
-    [fieldNames, operators, values]
-  );
+  const currentIndex = useMemo(() => findCurrentIndex(fieldNames, operators, values), [fieldNames, operators, values]);
 
   const [isFocused, setIsFocused] = useState(false);
   const blurTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -101,12 +82,7 @@ export function TaskRunSearchField(props: TaskRunSearchFieldProps) {
       if (key === SearchFieldParam.FieldNames && !!text) {
         // Special case for field names, we need to remove the previous field name and move it to the end
         newParams = remove(index, newParams);
-        newParams = add(
-          newParams,
-          text,
-          text ? defaultOperatorsForFields[text] : undefined,
-          undefined
-        );
+        newParams = add(newParams, text, text ? defaultOperatorsForFields[text] : undefined, undefined);
       } else if (key === SearchFieldParam.FieldNames && !text) {
         // Special case for field names, if we remove the field name, we remove the whole entry
         newParams = remove(index, newParams);
@@ -135,14 +111,7 @@ export function TaskRunSearchField(props: TaskRunSearchFieldProps) {
         params: newParams,
       });
     },
-    [
-      redirectWithParams,
-      defaultOperatorsForFields,
-      allCurrentAndLocalQueryParams,
-      setIsFocused,
-      fieldNames,
-      operators,
-    ]
+    [redirectWithParams, defaultOperatorsForFields, allCurrentAndLocalQueryParams, setIsFocused, fieldNames, operators]
   );
 
   const clearParamKeys = useCallback(
@@ -174,17 +143,11 @@ export function TaskRunSearchField(props: TaskRunSearchFieldProps) {
     }, 200);
   }, []);
 
-  const handleInputChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      setText(event.target.value);
-    },
-    []
-  );
+  const handleInputChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    setText(event.target.value);
+  }, []);
 
-  const lastFieldName = useMemo(
-    () => findLastFieldName(fieldNames),
-    [fieldNames]
-  );
+  const lastFieldName = useMemo(() => findLastFieldName(fieldNames), [fieldNames]);
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
@@ -206,10 +169,7 @@ export function TaskRunSearchField(props: TaskRunSearchFieldProps) {
         event.preventDefault();
 
         if (lastDefinedKey === SearchFieldParam.Operators) {
-          clearParamKeys(
-            [SearchFieldParam.Operators, SearchFieldParam.FieldNames],
-            currentIndex
-          );
+          clearParamKeys([SearchFieldParam.Operators, SearchFieldParam.FieldNames], currentIndex);
           return;
         }
 
@@ -222,19 +182,13 @@ export function TaskRunSearchField(props: TaskRunSearchFieldProps) {
       if (!text || !currentParamToEnter) return;
       const hints = findHints(currentParamToEnter, lastFieldName, searchFields);
 
-      if (
-        !hints ||
-        hints.length === 0 ||
-        currentParamToEnter === SearchFieldParam.Values
-      ) {
+      if (!hints || hints.length === 0 || currentParamToEnter === SearchFieldParam.Values) {
         setParam(currentParamToEnter, text, activeIndex);
         setText('');
         return;
       }
 
-      const matchedHint = hints.find((hint) =>
-        hint.toLowerCase().includes(text.toLowerCase())
-      );
+      const matchedHint = hints.find((hint) => hint.toLowerCase().includes(text.toLowerCase()));
 
       if (!matchedHint) return;
 
@@ -274,13 +228,7 @@ export function TaskRunSearchField(props: TaskRunSearchFieldProps) {
   const isClearButtonHidden = numberOfParametersEntered === 0 && !text;
 
   const currentHints = useMemo(
-    () =>
-      findAndFilterHints(
-        currentParamToEnter,
-        lastFieldName,
-        searchFields,
-        text
-      ),
+    () => findAndFilterHints(currentParamToEnter, lastFieldName, searchFields, text),
     [currentParamToEnter, lastFieldName, searchFields, text]
   );
 
@@ -293,9 +241,7 @@ export function TaskRunSearchField(props: TaskRunSearchFieldProps) {
     <div
       className={cx(
         'relative flex flex-row items-center justify-between rounded-[2px] bg-white px-2.5 font-lato gap-2',
-        isFocused
-          ? 'border-[2px] border-gray-900 -m-[1px]'
-          : 'border-[1px] border-gray-200',
+        isFocused ? 'border-[2px] border-gray-900 -m-[1px]' : 'border-[1px] border-gray-200',
         className
       )}
     >
@@ -313,11 +259,7 @@ export function TaskRunSearchField(props: TaskRunSearchFieldProps) {
               setParam={setParam}
               onClear={() =>
                 clearParamKeys(
-                  [
-                    SearchFieldParam.FieldNames,
-                    SearchFieldParam.Operators,
-                    SearchFieldParam.Values,
-                  ],
+                  [SearchFieldParam.FieldNames, SearchFieldParam.Operators, SearchFieldParam.Values],
                   index
                 )
               }

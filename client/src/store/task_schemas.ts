@@ -3,10 +3,7 @@ import { create } from 'zustand';
 import { client } from '@/lib/api';
 import { TaskID, TaskSchemaID, TenantID } from '@/types/aliases';
 import { TaskSchemaResponseWithSchema } from '@/types/task';
-import {
-  TaskSchemaResponse,
-  TaskSchemaUpdateRequest,
-} from '@/types/workflowAI';
+import { TaskSchemaResponse, TaskSchemaUpdateRequest } from '@/types/workflowAI';
 import { useTasks } from './task';
 import { buildScopeKey, taskSchemaSubPath } from './utils';
 
@@ -16,11 +13,7 @@ interface TaskVersionsState {
   taskSchemasByScope: Map<string, TaskSchemaResponseWithSchema>;
   isTaskSchemaLoadingByScope: Map<string, boolean>;
   isTaskSchemaInitializedByScope: Map<string, boolean>;
-  fetchTaskSchema: (
-    tenant: TenantID | undefined,
-    taskId: TaskID,
-    taskSchemaId: TaskSchemaID
-  ) => Promise<void>;
+  fetchTaskSchema: (tenant: TenantID | undefined, taskId: TaskID, taskSchemaId: TaskSchemaID) => Promise<void>;
   changeTaskSchemaVisibility: (
     tenant: TenantID | undefined,
     taskId: TaskID,
@@ -61,12 +54,7 @@ export const useTaskSchemas = create<TaskVersionsState>((set, get) => ({
     );
   },
 
-  changeTaskSchemaVisibility: async (
-    tenant,
-    taskId,
-    taskSchemaId,
-    isVisible
-  ) => {
+  changeTaskSchemaVisibility: async (tenant, taskId, taskSchemaId, isVisible) => {
     try {
       await client.patch<TaskSchemaUpdateRequest, TaskSchemaResponse>(
         taskSchemaSubPath(tenant, taskId, taskSchemaId, ''),

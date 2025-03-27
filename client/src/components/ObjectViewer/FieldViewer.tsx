@@ -13,8 +13,7 @@ import { FieldViewerLabel } from './FieldViewerLabel';
 import { ListItemSideline } from './ListItemSideline';
 import { ValueViewerProps } from './utils';
 
-export interface FieldViewerProps
-  extends Omit<ValueViewerProps<unknown>, 'value' | 'referenceValue'> {
+export interface FieldViewerProps extends Omit<ValueViewerProps<unknown>, 'value' | 'referenceValue'> {
   className?: string;
   defaultExpanded?: boolean;
   fieldKey: string;
@@ -66,9 +65,7 @@ export function FieldViewer(props: FieldViewerProps) {
   const isError = !!fieldKeyError;
 
   const isValueOverriden = useMemo(
-    () =>
-      !!rest.originalVal &&
-      !isEqual(get(rest.originalVal, fieldKeyPath), fieldValue),
+    () => !!rest.originalVal && !isEqual(get(rest.originalVal, fieldKeyPath), fieldValue),
     [fieldValue, rest.originalVal, fieldKeyPath]
   );
 
@@ -98,8 +95,7 @@ export function FieldViewer(props: FieldViewerProps) {
     return viewerType(subSchema, defs, fieldValue);
   }, [subSchema, defs, fieldValue]);
 
-  const isArrayObject =
-    subSchemaFieldType === 'object' && arrayIndex !== undefined;
+  const isArrayObject = subSchemaFieldType === 'object' && arrayIndex !== undefined;
 
   const isRequired = useMemo(() => {
     if (schema && 'required' in schema) {
@@ -108,25 +104,16 @@ export function FieldViewer(props: FieldViewerProps) {
     return false;
   }, [schema, fieldKey]);
 
-  const schemaRefName = useMemo(
-    () => extractSchemaRefName(schema, fieldKey),
-    [schema, fieldKey]
-  );
+  const schemaRefName = useMemo(() => extractSchemaRefName(schema, fieldKey), [schema, fieldKey]);
 
   const isExpandable = useMemo(
-    () =>
-      !!subSchemaFieldType && ['object', 'array'].includes(subSchemaFieldType),
+    () => !!subSchemaFieldType && ['object', 'array'].includes(subSchemaFieldType),
     [subSchemaFieldType]
   );
 
-  const nullableFieldHidden = useMemo(
-    () => subSchema?.nullable && fieldValue === null,
-    [subSchema, fieldValue]
-  );
+  const nullableFieldHidden = useMemo(() => subSchema?.nullable && fieldValue === null, [subSchema, fieldValue]);
 
-  const [isValueVisible, setIsValueVisible] = useState(
-    isExpandable ? defaultExpanded : true
-  );
+  const [isValueVisible, setIsValueVisible] = useState(isExpandable ? defaultExpanded : true);
 
   const toggleValueVisible = useCallback(() => {
     setIsValueVisible((prev) => !prev);
@@ -136,9 +123,7 @@ export function FieldViewer(props: FieldViewerProps) {
   const onNullClick = useCallback(() => {
     handleNullToggle(!isNull);
   }, [isNull, handleNullToggle]);
-  const textColorToUse = isValueOverriden
-    ? 'text-red-400'
-    : textColor ?? 'text-gray-600';
+  const textColorToUse = isValueOverriden ? 'text-red-400' : textColor ?? 'text-gray-600';
 
   const columnLayout = isExpandable || !rest.showTypes;
   const isParentArray = arrayIndex !== undefined;
@@ -178,12 +163,7 @@ export function FieldViewer(props: FieldViewerProps) {
   return (
     <div>
       <div className={cx(className, 'flex items-stretch')}>
-        <ListItemSideline
-          arrayIndex={arrayIndex}
-          isRoot={isRoot}
-          isLast={isLast}
-          showTypes={!!rest.showTypes}
-        />
+        <ListItemSideline arrayIndex={arrayIndex} isRoot={isRoot} isLast={isLast} showTypes={!!rest.showTypes} />
         <div className='px-3 flex items-start w-full'>
           {columnLayout ? (
             <div className='flex-1 flex flex-col w-full items-start'>
@@ -194,8 +174,7 @@ export function FieldViewer(props: FieldViewerProps) {
                   fieldType={subSchemaFieldType}
                   className={cx('w-full px-3 py-2', {
                     'pl-7': subSchemaFieldType === 'array',
-                    'bg-white border-l border-r border-gray-200':
-                      subSchemaFieldType === 'object',
+                    'bg-white border-l border-r border-gray-200': subSchemaFieldType === 'object',
                   })}
                   showExamples={showExamples}
                   onShowEditDescriptionModal={rest.onShowEditDescriptionModal}

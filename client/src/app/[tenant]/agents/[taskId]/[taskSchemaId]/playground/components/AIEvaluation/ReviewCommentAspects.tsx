@@ -36,9 +36,7 @@ export function ReviewCommentAspects(props: ReviewCommentAspectsProps) {
 
   return (
     <div className='flex flex-col max-h-none px-3 py-2 border-t border-gray-200 border-dashed'>
-      {aspects?.map((aspect) => (
-        <ReviewCommentAspectsRow aspect={aspect} state={state} key={aspect} />
-      ))}
+      {aspects?.map((aspect) => <ReviewCommentAspectsRow aspect={aspect} state={state} key={aspect} />)}
     </div>
   );
 }

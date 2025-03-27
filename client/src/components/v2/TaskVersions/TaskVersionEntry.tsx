@@ -5,19 +5,15 @@ import { TaskRunEnvironments } from '@/app/[tenant]/agents/[taskId]/[taskSchemaI
 import { TaskVersionBadgeContainer } from '@/components/TaskIterationBadge/TaskVersionBadgeContainer';
 import { SimpleRadioIndicator } from '@/components/ui/RadioGroup';
 import { TaskEnvironmentBadge } from '@/components/v2/TaskEnvironmentBadge';
-import { TaskRunCountButton } from '@/components/v2/TaskRunCountBadge/TaskRunCountBadge';
 import { cn } from '@/lib/utils';
 import { User } from '@/types/user';
 import { VersionV1 } from '@/types/workflowAI';
 import { TaskCostBadge, TaskCostView } from '../TaskCostBadge';
+import { TaskRunCountButton } from '../TaskRunCountBadge/TaskRunCountBadge';
 import { useViewRuns } from '../TaskRunCountBadge/useViewRuns';
 import { TaskTemperatureView } from '../TaskTemperatureBadge';
 import { TaskVersionTooltip } from './TaskVersionTooltip';
-import {
-  COLUMN_WIDTHS,
-  ColumnName,
-  SMALL_COLUMN_WIDTHS,
-} from './TaskVersionsHeader';
+import { COLUMN_WIDTHS, ColumnName, SMALL_COLUMN_WIDTHS } from './TaskVersionsHeader';
 import { TaskVersionAvatar } from './VersionAvatarType';
 import { VersionAvatarType } from './utils';
 
@@ -81,47 +77,18 @@ export function TaskVersionEntry(props: TaskVersionEntryProps) {
           )}
           onClick={!!onSelect ? handleSelect : undefined}
         >
-          <div
-            className={cn(
-              'flex items-center',
-              SMALL_COLUMN_WIDTHS[ColumnName.Version]
-            )}
-          >
+          <div className={cn('flex items-center', SMALL_COLUMN_WIDTHS[ColumnName.Version])}>
             <div className='flex items-center gap-1'>
-              {!!onSelect && (
-                <SimpleRadioIndicator
-                  isSelected={isSelected}
-                  onClick={handleSelect}
-                />
-              )}
-              <TaskVersionBadgeContainer
-                version={version}
-                side='right'
-                showActiveIndicator={true}
-                height={26}
-              />
+              {!!onSelect && <SimpleRadioIndicator isSelected={isSelected} onClick={handleSelect} />}
+              <TaskVersionBadgeContainer version={version} side='right' showActiveIndicator={true} height={26} />
             </div>
           </div>
           <div className='flex items-center overflow-hidden truncate gap-1.5 flex-1'>
-            {!!environments && (
-              <TaskRunEnvironments environments={environments} />
-            )}
-            {!!version.model && (
-              <div className='truncate text-gray-700 text-[13px] font-normal'>
-                {version.model}
-              </div>
-            )}
+            {!!environments && <TaskRunEnvironments environments={environments} />}
+            {!!version.model && <div className='truncate text-gray-700 text-[13px] font-normal'>{version.model}</div>}
           </div>
-          <div
-            className={cn(
-              'flex items-center',
-              SMALL_COLUMN_WIDTHS[ColumnName.Price]
-            )}
-          >
-            <TaskCostBadge
-              cost={version.cost_estimate_usd}
-              className='text-gray-500 bg-gray-50'
-            />
+          <div className={cn('flex items-center', SMALL_COLUMN_WIDTHS[ColumnName.Price])}>
+            <TaskCostBadge cost={version.cost_estimate_usd} className='text-gray-500 bg-gray-50' />
           </div>
         </div>
       </TaskVersionTooltip>
@@ -144,57 +111,25 @@ export function TaskVersionEntry(props: TaskVersionEntryProps) {
         )}
         onClick={!!onSelect ? handleSelect : undefined}
       >
-        <div
-          className={cn('flex items-center', COLUMN_WIDTHS[ColumnName.Version])}
-        >
+        <div className={cn('flex items-center', COLUMN_WIDTHS[ColumnName.Version])}>
           <div className='flex items-center gap-1'>
-            {!!onSelect && (
-              <SimpleRadioIndicator
-                isSelected={isSelected}
-                onClick={handleSelect}
-              />
-            )}
-            <TaskVersionBadgeContainer
-              version={version}
-              side='right'
-              showActiveIndicator={true}
-              height={26}
-            />
+            {!!onSelect && <SimpleRadioIndicator isSelected={isSelected} onClick={handleSelect} />}
+            <TaskVersionBadgeContainer version={version} side='right' showActiveIndicator={true} height={26} />
           </div>
         </div>
-        <div
-          className={cn(
-            'flex items-center overflow-hidden truncate gap-1.5',
-            COLUMN_WIDTHS[ColumnName.Model]
-          )}
-        >
-          {!!version.model && (
-            <div className='truncate text-gray-500 text-[13px] font-normal'>
-              {version.model}
-            </div>
-          )}
+        <div className={cn('flex items-center overflow-hidden truncate gap-1.5', COLUMN_WIDTHS[ColumnName.Model])}>
+          {!!version.model && <div className='truncate text-gray-500 text-[13px] font-normal'>{version.model}</div>}
         </div>
-        <div
-          className={cn('flex items-center', COLUMN_WIDTHS[ColumnName.Price])}
-        >
+        <div className={cn('flex items-center', COLUMN_WIDTHS[ColumnName.Price])}>
           <TaskCostView cost={version.cost_estimate_usd} />
         </div>
-        <div
-          className={cn('flex items-center', COLUMN_WIDTHS[ColumnName.Avatar])}
-        >
-          <TaskVersionAvatar
-            avatarType={avatarType}
-            version={version}
-            usersByID={usersByID}
-          />
+        <div className={cn('flex items-center', COLUMN_WIDTHS[ColumnName.Avatar])}>
+          <TaskVersionAvatar avatarType={avatarType} version={version} usersByID={usersByID} />
         </div>
         {!!environments && (
           <div className='flex flex-row gap-1'>
             {environments.map((environment) => (
-              <TaskEnvironmentBadge
-                key={environment}
-                environment={environment}
-              />
+              <TaskEnvironmentBadge key={environment} environment={environment} />
             ))}
           </div>
         )}
@@ -205,25 +140,16 @@ export function TaskVersionEntry(props: TaskVersionEntryProps) {
               <div className='line-clamp-1 break-all'>{version.notes}</div>
             </div>
           ) : (
-            <div className='line-clamp-1 break-all'>
-              {version.properties.instructions || ''}
-            </div>
+            <div className='line-clamp-1 break-all'>{version.properties.instructions || ''}</div>
           )}
         </div>
-        <div
-          className={cn(
-            'flex items-center',
-            COLUMN_WIDTHS[ColumnName.Temperature]
-          )}
-        >
+        <div className={cn('flex items-center', COLUMN_WIDTHS[ColumnName.Temperature])}>
           <TaskTemperatureView temperature={version.properties.temperature} />
         </div>
-        <div
-          className={cn('flex items-center', COLUMN_WIDTHS[ColumnName.Runs])}
-        >
+        <div className={cn('flex items-center', COLUMN_WIDTHS[ColumnName.Runs])}>
           <TaskRunCountButton
-            runsCount={version.run_count ?? undefined}
             onClick={!!onSelect ? undefined : onViewRuns}
+            runsCount={version.run_count ?? undefined}
           />
         </div>
       </div>

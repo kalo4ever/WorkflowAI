@@ -11,15 +11,8 @@ type SectionWrapperProps = {
 function SectionWrapper(props: SectionWrapperProps) {
   const { title, whiteBackground, children } = props;
   return (
-    <div
-      className={cx(
-        'flex-1 flex flex-col rounded-2xl',
-        whiteBackground && 'bg-white shadow-floating'
-      )}
-    >
-      <div className='text-sm text-slate-500 text-medium px-4 py-3 border-b'>
-        {title}
-      </div>
+    <div className={cx('flex-1 flex flex-col rounded-2xl', whiteBackground && 'bg-white shadow-floating')}>
+      <div className='text-sm text-slate-500 text-medium px-4 py-3 border-b'>{title}</div>
       <div className='flex-1 px-4 py-3 overflow-auto'>{children}</div>
     </div>
   );
@@ -33,12 +26,7 @@ type DescriptionExampleEditorProps = {
 };
 
 export function DescriptionExampleEditor(props: DescriptionExampleEditorProps) {
-  const {
-    inputSplattedSchema,
-    setInputSplattedSchema,
-    outputSplattedSchema,
-    setOutputSplattedSchema,
-  } = props;
+  const { inputSplattedSchema, setInputSplattedSchema, outputSplattedSchema, setOutputSplattedSchema } = props;
 
   if (!inputSplattedSchema || !outputSplattedSchema) {
     return null;

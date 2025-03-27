@@ -2,13 +2,7 @@
 import { captureException } from '@sentry/nextjs';
 import dayjs from 'dayjs';
 import { AUDIO_REF_NAME, IMAGE_REF_NAME, PDF_REF_NAME } from '@/lib/constants';
-import {
-  JsonArraySchema,
-  JsonObjectSchema,
-  JsonSchemaDefinitions,
-  JsonValueSchema,
-  sanitizeRef,
-} from '@/types';
+import { JsonArraySchema, JsonObjectSchema, JsonSchemaDefinitions, JsonValueSchema, sanitizeRef } from '@/types';
 import { extractFileFieldType } from './schemaEditorUtils';
 import { isFileSchema } from './schemaFileUtils';
 
@@ -39,10 +33,7 @@ export function viewerType(
   if (schema?.type === 'string' && schema.format === 'date-time') {
     return 'date-time';
   }
-  if (
-    value instanceof Date ||
-    (schema?.type === 'string' && schema.format === 'date')
-  ) {
+  if (value instanceof Date || (schema?.type === 'string' && schema.format === 'date')) {
     return 'date';
   }
   if (schema?.type === 'string' && schema.format === 'timezone') {
@@ -105,14 +96,7 @@ export function viewerType(
   return 'unknown';
 }
 
-export type SchemaNodeType =
-  | Record<string, unknown>
-  | unknown[]
-  | string
-  | number
-  | boolean
-  | null
-  | Date;
+export type SchemaNodeType = Record<string, unknown> | unknown[] | string | number | boolean | null | Date;
 
 export enum InitInputFromSchemaMode {
   NOTHING = 'nothing',
@@ -155,9 +139,7 @@ export function parseSchemaNode(
     if (!valueSchema.items) {
       return mode === InitInputFromSchemaMode.TYPE ? 'array' : [];
     }
-    const item = Array.isArray(valueSchema.items)
-      ? valueSchema.items[0]
-      : valueSchema.items;
+    const item = Array.isArray(valueSchema.items) ? valueSchema.items[0] : valueSchema.items;
     return [parseSchemaNode(item, defs, mode)];
   }
   if ('properties' in valueSchema) {
@@ -250,9 +232,7 @@ export function initInputFromSchema(
   return undefined;
 }
 
-export function resetTaskOutput(
-  taskOutput: Record<string, unknown> | undefined
-): Record<string, unknown> | undefined {
+export function resetTaskOutput(taskOutput: Record<string, unknown> | undefined): Record<string, unknown> | undefined {
   if (!taskOutput) {
     return undefined;
   }
@@ -274,9 +254,7 @@ export function resetTaskOutput(
           result[key] = null;
           break;
         }
-        result[key] = Array.isArray(taskOutput[key])
-          ? []
-          : resetTaskOutput(taskOutput[key] as Record<string, unknown>);
+        result[key] = Array.isArray(taskOutput[key]) ? [] : resetTaskOutput(taskOutput[key] as Record<string, unknown>);
         break;
       default:
         result[key] = taskOutput[key];
@@ -302,10 +280,7 @@ export type ObjectKeyType = {
 
 /* eslint-disable no-use-before-define */
 
-export function mergeRequiredFields(
-  oldSchema: JsonValueSchema,
-  newSchema: JsonValueSchema
-): string[] | undefined {
+export function mergeRequiredFields(oldSchema: JsonValueSchema, newSchema: JsonValueSchema): string[] | undefined {
   const oldRequired = ('required' in oldSchema && oldSchema.required) || [];
   const newRequired = ('required' in newSchema && newSchema.required) || [];
 
@@ -315,10 +290,7 @@ export function mergeRequiredFields(
   return mergedRequired.length > 0 ? mergedRequired : undefined;
 }
 
-export function mergeDefs(
-  oldSchema: JsonValueSchema,
-  newSchema: JsonValueSchema
-): JsonSchemaDefinitions | undefined {
+export function mergeDefs(oldSchema: JsonValueSchema, newSchema: JsonValueSchema): JsonSchemaDefinitions | undefined {
   const oldDefs = ('$defs' in oldSchema && oldSchema.$defs) || {};
   const newDefs = ('$defs' in newSchema && newSchema.$defs) || {};
 
@@ -334,12 +306,7 @@ export function mergeItems(
   oldSchema: JsonValueSchema,
   newSchema: JsonValueSchema
 ): JsonValueSchema | JsonValueSchema[] | undefined {
-  if (
-    !('items' in oldSchema) ||
-    !('items' in newSchema) ||
-    !oldSchema.items ||
-    !newSchema.items
-  ) {
+  if (!('items' in oldSchema) || !('items' in newSchema) || !oldSchema.items || !newSchema.items) {
     if ('items' in newSchema && newSchema.items) {
       return newSchema.items;
     }
@@ -352,8 +319,7 @@ export function mergeItems(
   if (Array.isArray(oldSchema.items) && Array.isArray(newSchema.items)) {
     return newSchema.items.map((item, index) =>
       index < (oldSchema.items as JsonValueSchema[]).length
-        ? mergeSchemas((oldSchema.items as JsonValueSchema[])[index], item) ??
-          item
+        ? mergeSchemas((oldSchema.items as JsonValueSchema[])[index], item) ?? item
         : item
     );
   }
@@ -369,12 +335,7 @@ export function mergeProperties(
   oldSchema: JsonValueSchema,
   newSchema: JsonValueSchema
 ): { [key: string]: JsonValueSchema } | undefined {
-  if (
-    !('properties' in oldSchema) ||
-    !('properties' in newSchema) ||
-    !oldSchema.properties ||
-    !newSchema.properties
-  ) {
+  if (!('properties' in oldSchema) || !('properties' in newSchema) || !oldSchema.properties || !newSchema.properties) {
     if ('properties' in newSchema && newSchema.properties) {
       return newSchema.properties;
     }

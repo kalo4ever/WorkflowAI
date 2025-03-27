@@ -24,8 +24,7 @@ export function CarouselCard(props: CarouselCardProps) {
       }}
     >
       <div className='text-slate-500 font-light text-lg sm:text-xl leading-[28px] sm:leading-[32px] whitespace-pre-wrap'>
-        <span className='text-slate-900 font-medium'>{entry.name}.</span>{' '}
-        {entry.text}
+        <span className='text-slate-900 font-medium'>{entry.name}.</span> {entry.text}
       </div>
 
       <VideoComponent

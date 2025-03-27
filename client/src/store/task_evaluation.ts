@@ -22,17 +22,9 @@ interface TaskEvaluationState {
   isLoadingEvaluationByScope: Map<string, boolean>;
   isInitializedEvaluationByScope: Map<string, boolean>;
 
-  fetchEvaluationInputs: (
-    tenant: TenantID | undefined,
-    taskId: TaskID,
-    taskSchemaId: TaskSchemaID
-  ) => Promise<void>;
+  fetchEvaluationInputs: (tenant: TenantID | undefined, taskId: TaskID, taskSchemaId: TaskSchemaID) => Promise<void>;
 
-  fetchEvaluation: (
-    tenant: TenantID | undefined,
-    taskId: TaskID,
-    taskSchemaId: TaskSchemaID
-  ) => Promise<void>;
+  fetchEvaluation: (tenant: TenantID | undefined, taskId: TaskID, taskSchemaId: TaskSchemaID) => Promise<void>;
 
   updateEvaluation: (
     tenant: TenantID | undefined,
@@ -73,12 +65,7 @@ export const useTaskEvaluation = create<TaskEvaluationState>((set, get) => ({
       })
     );
 
-    const path = taskSchemaSubPath(
-      tenant,
-      taskId,
-      taskSchemaId,
-      '/evaluation/inputs'
-    );
+    const path = taskSchemaSubPath(tenant, taskId, taskSchemaId, '/evaluation/inputs');
 
     try {
       const { items } = await client.get<Page_InputEvaluationData_>(path);
@@ -156,25 +143,11 @@ export const useTaskEvaluation = create<TaskEvaluationState>((set, get) => ({
     }
   },
 
-  updateEvaluationInputs: async (
-    tenant,
-    taskId,
-    taskSchemaId,
-    taskInputHash,
-    request
-  ) => {
-    const path = taskSchemaSubPath(
-      tenant,
-      taskId,
-      taskSchemaId,
-      `/evaluation/inputs/${taskInputHash}`
-    );
+  updateEvaluationInputs: async (tenant, taskId, taskSchemaId, taskInputHash, request) => {
+    const path = taskSchemaSubPath(tenant, taskId, taskSchemaId, `/evaluation/inputs/${taskInputHash}`);
 
     try {
-      await client.patch<InputEvaluationPatchRequest, InputEvaluationData>(
-        path,
-        request
-      );
+      await client.patch<InputEvaluationPatchRequest, InputEvaluationData>(path, request);
     } catch (error) {
       console.error('Failed to patch evaluation inputs', error);
     }

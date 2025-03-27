@@ -53,10 +53,7 @@ export function DynamicWidthInput(props: DynamicWidthInputProps) {
 
   return (
     <div className='relative'>
-      <span
-        className={cx('absolute invisible min-w-[40px]', inputFontClasses)}
-        ref={spanRef}
-      >
+      <span className={cx('absolute invisible min-w-[40px]', inputFontClasses)} ref={spanRef}>
         {localValue || ''}
       </span>
       <Input
@@ -64,11 +61,7 @@ export function DynamicWidthInput(props: DynamicWidthInputProps) {
         value={localValue}
         onChange={handleChange}
         placeholder={placeholder}
-        className={cx(
-          'h-8 bg-white border border-gray-200 rounded-[2px]',
-          inputFontClasses,
-          className
-        )}
+        className={cx('h-8 bg-white border border-gray-200 rounded-[2px]', inputFontClasses, className)}
         style={{ width: inputWidth }}
       />
     </div>

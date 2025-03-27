@@ -22,16 +22,10 @@ export function TaskRunReview(props: TaskRunReviewProps) {
 
   if (!!userReview) {
     mode = AIEvaluationReviewButtonMode.USER_SELECTED;
-    thumb =
-      userReview === 'positive'
-        ? AIEvaluationReviewButtonThumb.UP
-        : AIEvaluationReviewButtonThumb.DOWN;
+    thumb = userReview === 'positive' ? AIEvaluationReviewButtonThumb.UP : AIEvaluationReviewButtonThumb.DOWN;
   } else if (!!aiReview) {
     mode = AIEvaluationReviewButtonMode.AI_SELECTED;
-    thumb =
-      aiReview === 'positive'
-        ? AIEvaluationReviewButtonThumb.UP
-        : AIEvaluationReviewButtonThumb.DOWN;
+    thumb = aiReview === 'positive' ? AIEvaluationReviewButtonThumb.UP : AIEvaluationReviewButtonThumb.DOWN;
   }
 
   if (aiReview === 'in_progress' && !userReview) {
@@ -50,20 +44,12 @@ export function TaskRunReview(props: TaskRunReviewProps) {
     <div className='flex flex-row gap-1.5 py-0.5'>
       <AIEvaluationReviewButton
         mode={AIEvaluationReviewButtonMode.USER_SELECTED}
-        thumb={
-          userReview === 'positive'
-            ? AIEvaluationReviewButtonThumb.UP
-            : AIEvaluationReviewButtonThumb.DOWN
-        }
+        thumb={userReview === 'positive' ? AIEvaluationReviewButtonThumb.UP : AIEvaluationReviewButtonThumb.DOWN}
         disabled={false}
       />
       <AIEvaluationReviewButton
         mode={AIEvaluationReviewButtonMode.AI_SELECTED}
-        thumb={
-          aiReview === 'positive'
-            ? AIEvaluationReviewButtonThumb.UP
-            : AIEvaluationReviewButtonThumb.DOWN
-        }
+        thumb={aiReview === 'positive' ? AIEvaluationReviewButtonThumb.UP : AIEvaluationReviewButtonThumb.DOWN}
         disabled={false}
       />
     </div>

@@ -14,22 +14,17 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default:
-          'bg-primary text-white hover:bg-primary/90 disabled:bg-slate-300',
-        destructive:
-          'bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:bg-red-300',
+        default: 'bg-primary text-white hover:bg-primary/90 disabled:bg-slate-300',
+        destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:bg-red-300',
         destructiveBorderOnly:
           'bg-white text-red-600 hover:bg-destructive/90 hover:text-white border hover:border-red-600 border-red-200',
         outline:
           'border border-input bg-background hover:bg-accent hover:text-accent-foreground text-slate-700 disabled:bg-slate-100 disabled:text-slate-400',
-        subtle:
-          'bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:bg-slate-100 disabled:text-slate-400',
-        ghost:
-          'text-gray-900 hover:bg-accent hover:text-accent-foreground disabled:text-slate-400',
+        subtle: 'bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:bg-slate-100 disabled:text-slate-400',
+        ghost: 'text-gray-900 hover:bg-accent hover:text-accent-foreground disabled:text-slate-400',
         link: 'text-grey-800 underline-offset-[2px] underline disabled:text-grey-400',
         // TODO - remove this variant from the codebase as it is not part of the new design system
-        offwhite:
-          'bg-slate-50 text-slate-500 hover:bg-slate-200/60 border-slate-200 border',
+        offwhite: 'bg-slate-50 text-slate-500 hover:bg-slate-200/60 border-slate-200 border',
         text: 'text-slate-700 hover:text-slate-500',
         newDesign:
           'text-gray-900 border-gray-300 shadow-sm border border-input bg-background hover:bg-gray-100 disabled:bg-gray-100 disabled:text-gray-400',
@@ -37,8 +32,7 @@ const buttonVariants = cva(
           'text-white shadow-sm border-none bg-custom-indigo-gradient hover:bg-custom-indigo-gradient-hover disabled:bg-custom-indigo-gradient disabled:text-white disabled:opacity-50',
         newDesignGray:
           'text-gray-800 border-none bg-gray-100 hover:bg-gray-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:opacity-50',
-        newDesignText:
-          'text-gray-900 hover:text-gray-500 disabled:text-gray-400',
+        newDesignText: 'text-gray-900 hover:text-gray-500 disabled:text-gray-400',
         none: '',
       },
       size: {
@@ -77,9 +71,7 @@ function getLucideIconSize(size: VariantProps<typeof buttonVariants>['size']) {
   }
 }
 
-function getFluentIconClassName(
-  size: VariantProps<typeof buttonVariants>['size']
-) {
+function getFluentIconClassName(size: VariantProps<typeof buttonVariants>['size']) {
   switch (size) {
     case 'icon-lg':
     case 'lg':
@@ -102,12 +94,7 @@ type ButtonIconProps = {
 };
 
 function ButtonIcon(props: ButtonIconProps) {
-  const {
-    icon,
-    lucideIcon: LucideIconProp,
-    fluentIcon: FluentIconProp,
-    size,
-  } = props;
+  const { icon, lucideIcon: LucideIconProp, fluentIcon: FluentIconProp, size } = props;
   if (LucideIconProp) {
     return <LucideIconProp size={getLucideIconSize(size)} />;
   }
@@ -178,35 +165,18 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {loading && <Loader2 className='h-4 w-4 animate-spin' />}
-        {!loading && (
-          <ButtonIcon
-            icon={icon}
-            lucideIcon={lucideIcon}
-            fluentIcon={fluentIcon}
-            size={size}
-          />
-        )}
+        {!loading && <ButtonIcon icon={icon} lucideIcon={lucideIcon} fluentIcon={fluentIcon} size={size} />}
         {children}
       </Comp>
     );
 
     return toRoute ? (
       toRoute.startsWith('mailto:') ? (
-        <a
-          href={toRoute}
-          className={className}
-          target={target || (openInNewTab ? '_blank' : undefined)}
-          rel={rel}
-        >
+        <a href={toRoute} className={className} target={target || (openInNewTab ? '_blank' : undefined)} rel={rel}>
           {content}
         </a>
       ) : (
-        <Link
-          href={toRoute}
-          className={className}
-          target={target || (openInNewTab ? '_blank' : undefined)}
-          rel={rel}
-        >
+        <Link href={toRoute} className={className} target={target || (openInNewTab ? '_blank' : undefined)} rel={rel}>
           {content}
         </Link>
       )

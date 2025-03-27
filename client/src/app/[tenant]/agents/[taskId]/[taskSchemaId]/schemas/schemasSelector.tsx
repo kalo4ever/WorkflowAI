@@ -11,13 +11,7 @@ type SchemasSelectorProps = {
 };
 
 export function SchemasSelector(props: SchemasSelectorProps) {
-  const {
-    schemaIds,
-    archivedSchemasIds,
-    activeSchemasIds,
-    currentSchemaId,
-    onSelect,
-  } = props;
+  const { schemaIds, archivedSchemasIds, activeSchemasIds, currentSchemaId, onSelect } = props;
 
   return (
     <div className='flex flex-col shrink-0 w-[200px] h-full border-r border-gray-200 border-dashed'>

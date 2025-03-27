@@ -39,19 +39,10 @@ export type SelectableFieldType =
   | 'audio'
   | 'document';
 
-const FILE_SELECTABLE_FIELD_TYPES: SelectableFieldType[] = [
-  'image',
-  'audio',
-  'document',
-];
+const FILE_SELECTABLE_FIELD_TYPES: SelectableFieldType[] = ['image', 'audio', 'document'];
 
 function fieldFromValue(value: unknown): SelectableFieldType | undefined {
-  if (
-    !value ||
-    typeof value !== 'object' ||
-    !('content_type' in value) ||
-    typeof value.content_type !== 'string'
-  ) {
+  if (!value || typeof value !== 'object' || !('content_type' in value) || typeof value.content_type !== 'string') {
     return undefined;
   }
   const contentType = value.content_type;
@@ -67,10 +58,7 @@ function fieldFromValue(value: unknown): SelectableFieldType | undefined {
   return undefined;
 }
 
-export function extractFileFieldType(
-  schema: JsonValueSchema,
-  value?: unknown
-): SelectableFieldType {
+export function extractFileFieldType(schema: JsonValueSchema, value?: unknown): SelectableFieldType {
   const field = fieldFromValue(value);
   if (field) {
     return field;
@@ -89,9 +77,7 @@ export function extractFileFieldType(
   }
 }
 
-function extractFormatFromFieldType(
-  type: SelectableFieldType | undefined
-): string | undefined {
+function extractFormatFromFieldType(type: SelectableFieldType | undefined): string | undefined {
   switch (type) {
     case 'image':
       return 'image';
@@ -149,9 +135,7 @@ function fieldTypeToSelectableFieldType(
   }
 }
 
-export function extractStringFormats(
-  type: SelectableFieldType
-): string | undefined {
+export function extractStringFormats(type: SelectableFieldType): string | undefined {
   switch (type) {
     case 'date':
       return 'date';
@@ -181,9 +165,7 @@ export type SchemaEditorField = SchemaEditorSplattedCommonFields & {
   fields?: SchemaEditorField[];
 };
 
-function extractBaseFields(
-  data: JsonValueSchema | SchemaEditorField
-): BaseSchemaFieldsWithoutType {
+function extractBaseFields(data: JsonValueSchema | SchemaEditorField): BaseSchemaFieldsWithoutType {
   const result: BaseSchemaFieldsWithoutType = {};
   if (data.title) {
     result.title = data.title;
@@ -200,9 +182,7 @@ function extractBaseFields(
   return result;
 }
 
-function extractNumberFields(
-  data: JsonValueSchema | SchemaEditorField
-): JsonSchemaNumberExtraFields {
+function extractNumberFields(data: JsonValueSchema | SchemaEditorField): JsonSchemaNumberExtraFields {
   const result: JsonSchemaNumberExtraFields = {};
   if ('minimum' in data) {
     result.minimum = data.minimum;
@@ -213,9 +193,7 @@ function extractNumberFields(
   return result;
 }
 
-function extractStringFields(
-  data: JsonValueSchema | SchemaEditorField
-): JsonSchemaStringExtraFields {
+function extractStringFields(data: JsonValueSchema | SchemaEditorField): JsonSchemaStringExtraFields {
   const result: JsonSchemaStringExtraFields = {};
   if ('pattern' in data) {
     result.pattern = data.pattern;
@@ -240,9 +218,7 @@ export function fromSchemaToSplattedEditorFields(
       keyName,
       type: 'object',
       fields: Object.entries(schema.properties)
-        .map(([key, value]) =>
-          fromSchemaToSplattedEditorFields(value, key, definitions)
-        )
+        .map(([key, value]) => fromSchemaToSplattedEditorFields(value, key, definitions))
         .filter((x) => x !== undefined) as SchemaEditorField[],
     };
   } else if (schema.type === 'array' && !!schema.items) {
@@ -290,40 +266,26 @@ export function fromSchemaToSplattedEditorFields(
   } else if ('anyOf' in schema && schema.anyOf) {
     const firstNonNull = schema.anyOf.find((x) => x.type !== 'null');
     if (firstNonNull) {
-      return fromSchemaToSplattedEditorFields(
-        firstNonNull,
-        keyName,
-        definitions
-      );
+      return fromSchemaToSplattedEditorFields(firstNonNull, keyName, definitions);
     }
     return undefined;
   } else if ('oneOf' in schema && schema.oneOf) {
     const firstNonNull = schema.oneOf.find((x) => x.type !== 'null');
     if (firstNonNull) {
-      return fromSchemaToSplattedEditorFields(
-        firstNonNull,
-        keyName,
-        definitions
-      );
+      return fromSchemaToSplattedEditorFields(firstNonNull, keyName, definitions);
     }
     return undefined;
   } else if ('allOf' in schema && schema.allOf) {
     const firstNonNull = schema.allOf.find((x) => x.type !== 'null');
     if (firstNonNull) {
-      return fromSchemaToSplattedEditorFields(
-        firstNonNull,
-        keyName,
-        definitions
-      );
+      return fromSchemaToSplattedEditorFields(firstNonNull, keyName, definitions);
     }
     return undefined;
   } else if (schema.type === 'string') {
     result = {
       ...extractStringFields(schema),
       keyName,
-      type: !!schema.enum
-        ? 'enum'
-        : fieldTypeToSelectableFieldType(schema, definitions),
+      type: !!schema.enum ? 'enum' : fieldTypeToSelectableFieldType(schema, definitions),
     };
   } else if (schema.type === 'number') {
     result = {
@@ -361,8 +323,7 @@ export function fromSplattedEditorFieldsToSchema(
       };
     } else {
       const properties = splattedEditorFields.fields.reduce((acc, field) => {
-        const { schema: fieldSchema, definitions } =
-          fromSplattedEditorFieldsToSchema(field, definitionsCopy);
+        const { schema: fieldSchema, definitions } = fromSplattedEditorFieldsToSchema(field, definitionsCopy);
         definitionsCopy = definitions;
         return {
           ...acc,
@@ -406,8 +367,7 @@ export function fromSplattedEditorFieldsToSchema(
         items: {
           type: 'object',
           properties: splattedEditorFields.fields.reduce((acc, field) => {
-            const { schema: fieldSchema, definitions } =
-              fromSplattedEditorFieldsToSchema(field, definitionsCopy);
+            const { schema: fieldSchema, definitions } = fromSplattedEditorFieldsToSchema(field, definitionsCopy);
             definitionsCopy = definitions;
             return {
               ...acc,
@@ -427,17 +387,7 @@ export function fromSplattedEditorFieldsToSchema(
         items,
       };
     }
-  } else if (
-    [
-      'string',
-      'html',
-      'date',
-      'date-time',
-      'timezone',
-      'time',
-      'enum',
-    ].includes(splattedEditorFields.type)
-  ) {
+  } else if (['string', 'html', 'date', 'date-time', 'timezone', 'time', 'enum'].includes(splattedEditorFields.type)) {
     result = {
       ...extractStringFields(splattedEditorFields),
       type: 'string',
@@ -449,20 +399,14 @@ export function fromSplattedEditorFieldsToSchema(
     if (splattedEditorFields.type === 'enum') {
       result.enum = splattedEditorFields.enum;
     }
-  } else if (
-    splattedEditorFields.type === 'number' ||
-    splattedEditorFields.type === 'integer'
-  ) {
+  } else if (splattedEditorFields.type === 'number' || splattedEditorFields.type === 'integer') {
     result = {
       ...extractNumberFields(splattedEditorFields),
       type: splattedEditorFields.type,
     };
   } else if (splattedEditorFields.type === 'image') {
     result = IMAGE_REF;
-  } else if (
-    !!splattedEditorFields.type &&
-    FILE_SELECTABLE_FIELD_TYPES.includes(splattedEditorFields.type)
-  ) {
+  } else if (!!splattedEditorFields.type && FILE_SELECTABLE_FIELD_TYPES.includes(splattedEditorFields.type)) {
     result = {
       ...FILE_REF,
       format: extractFormatFromFieldType(splattedEditorFields.type),
@@ -488,17 +432,11 @@ export function fromSplattedEditorFieldsToSchema(
   };
 }
 
-export function shouldDisableRemove(
-  schema: SchemaEditorField | undefined
-): boolean {
+export function shouldDisableRemove(schema: SchemaEditorField | undefined): boolean {
   if (!schema) {
     return true;
   }
-  return (
-    (schema.type === 'object' || schema.arrayType === 'object') &&
-    !!schema.fields &&
-    schema.fields?.length < 2
-  );
+  return (schema.type === 'object' || schema.arrayType === 'object') && !!schema.fields && schema.fields?.length < 2;
 }
 
 const IGNORED_DEFS_FOR_COMPARISON = ['Image', 'File', 'Audio', 'DatetimeLocal'];
@@ -511,28 +449,22 @@ function sanitizeDefsForComparison(schema: JsonSchema) {
       $defs: {},
     };
   }
-  const sanitizedDefs = Object.entries(schema.$defs).reduce(
-    (acc, [key, value]) => {
-      if (IGNORED_DEFS_FOR_COMPARISON.includes(key)) {
-        return acc;
-      }
-      return {
-        ...acc,
-        [key]: value,
-      };
-    },
-    {}
-  );
+  const sanitizedDefs = Object.entries(schema.$defs).reduce((acc, [key, value]) => {
+    if (IGNORED_DEFS_FOR_COMPARISON.includes(key)) {
+      return acc;
+    }
+    return {
+      ...acc,
+      [key]: value,
+    };
+  }, {});
   return {
     ...schema,
     $defs: sanitizedDefs,
   };
 }
 
-export function areSchemasEquivalent(
-  schema1: JsonSchema | undefined,
-  schema2: JsonSchema | undefined
-) {
+export function areSchemasEquivalent(schema1: JsonSchema | undefined, schema2: JsonSchema | undefined) {
   if (!schema1 || !schema2) {
     return false;
   }

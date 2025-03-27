@@ -36,9 +36,7 @@ export function TableView(props: TableViewProps) {
     <div className='flex flex-col w-full border border-gray-200 rounded-[2px] bg-gradient-to-b from-white/50 to-white/0'>
       <div className='flex flex-col w-full overflow-x-auto'>
         <div className='flex w-full px-2'>
-          <div className='flex flex-row w-full border-b border-gray-200'>
-            {headers}
-          </div>
+          <div className='flex flex-row w-full border-b border-gray-200'>{headers}</div>
         </div>
 
         <div

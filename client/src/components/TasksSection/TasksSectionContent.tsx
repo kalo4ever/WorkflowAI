@@ -10,20 +10,11 @@ type TasksSectionContentProps = {
   recentTasksEntries: RecentTasksEntry[];
   isInitialized: boolean;
   searchText: string | undefined;
-  onTryInPlayground: (
-    task: SerializableTask,
-    taskSchemaId?: TaskSchemaID
-  ) => void;
+  onTryInPlayground: (task: SerializableTask, taskSchemaId?: TaskSchemaID) => void;
 };
 
 export function TasksSectionContent(props: TasksSectionContentProps) {
-  const {
-    tasks,
-    recentTasksEntries,
-    isInitialized,
-    searchText,
-    onTryInPlayground,
-  } = props;
+  const { tasks, recentTasksEntries, isInitialized, searchText, onTryInPlayground } = props;
 
   if (!isInitialized) {
     return (
@@ -35,9 +26,7 @@ export function TasksSectionContent(props: TasksSectionContentProps) {
 
   if (!tasks || tasks.length === 0) {
     return (
-      <div className='flex text-[12px] h-full w-full items-center justify-center text-gray-500'>
-        No AI Agents Yet
-      </div>
+      <div className='flex text-[12px] h-full w-full items-center justify-center text-gray-500'>No AI Agents Yet</div>
     );
   }
 
@@ -51,11 +40,5 @@ export function TasksSectionContent(props: TasksSectionContentProps) {
     );
   }
 
-  return (
-    <SearchTasksSectionContent
-      tasks={tasks}
-      searchText={searchText}
-      onTryInPlayground={onTryInPlayground}
-    />
-  );
+  return <SearchTasksSectionContent tasks={tasks} searchText={searchText} onTryInPlayground={onTryInPlayground} />;
 }

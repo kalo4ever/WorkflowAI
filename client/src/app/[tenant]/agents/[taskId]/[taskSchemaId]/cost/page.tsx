@@ -2,11 +2,7 @@ import { generateMetadataWithTitle } from '@/lib/metadata';
 import { TaskSchemaParams } from '@/lib/routeFormatter';
 import { CostContainer } from './CostContainer';
 
-export async function generateMetadata({
-  params,
-}: {
-  params: TaskSchemaParams;
-}) {
+export async function generateMetadata({ params }: { params: TaskSchemaParams }) {
   return generateMetadataWithTitle('Cost', params);
 }
 

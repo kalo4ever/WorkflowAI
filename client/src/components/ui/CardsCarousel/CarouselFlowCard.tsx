@@ -29,19 +29,14 @@ type CarouselFlowCardProps = {
 export function CarouselFlowCard(props: CarouselFlowCardProps) {
   const { entry, page, currentPage } = props;
   const isSelected = !!currentPage ? page === Math.floor(currentPage) : false;
-  const progress = Math.min(
-    Math.max(!!currentPage ? (currentPage - page) * 100 : 0, 0),
-    100
-  );
+  const progress = Math.min(Math.max(!!currentPage ? (currentPage - page) * 100 : 0, 0), 100);
 
   return (
     <div className={`flex flex-col`}>
       <div
         className={cx(
           ' font-medium text-xs px-2 py-1 rounded-full w-fit -ml-2',
-          isSelected
-            ? 'text-white bg-slate-900'
-            : 'text-slate-400 bg-white border'
+          isSelected ? 'text-white bg-slate-900' : 'text-slate-400 bg-white border'
         )}
       >
         {entry.name.toUpperCase()}
@@ -52,9 +47,7 @@ export function CarouselFlowCard(props: CarouselFlowCardProps) {
           <CarouselFlowCardProgress progress={progress} />
         </div>
         <div className='flex flex-col w-full h-full py-4 gap-4'>
-          <div className='text-slate-500 font-light text-base leading-1.5 whitespace-pre-wrap'>
-            {entry.text}
-          </div>
+          <div className='text-slate-500 font-light text-base leading-1.5 whitespace-pre-wrap'>{entry.text}</div>
 
           <VideoComponent
             id={entry.videoSrc}

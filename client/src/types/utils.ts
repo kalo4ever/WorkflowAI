@@ -9,8 +9,7 @@ import {
 } from './workflowAI/models';
 
 export type WithRequired<T, K extends keyof T> = T & Required<Pick<T, K>>;
-export type WithPartial<T, K extends keyof T> = Omit<T, K> &
-  Partial<Pick<T, K>>;
+export type WithPartial<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 // Branded aliases require an explicit type casting to be used. this is to avoid passing the wrong field by mistake
 
@@ -24,8 +23,7 @@ export function isNullish(value: unknown): value is null | undefined {
 
 export function toolCallsFromStreamOrRun(
   toolCalls: Array<
-    | api__routers__run__RunResponseStreamChunk__ToolCall
-    | api__routers__run__RunResponse__ToolCall
+    api__routers__run__RunResponseStreamChunk__ToolCall | api__routers__run__RunResponse__ToolCall
   > | null
 ): ToolCall[] | undefined {
   if (!toolCalls) return undefined;
@@ -47,9 +45,7 @@ export function toolCallsFromStreamOrRun(
   });
 }
 
-export function toolCallsFromRun(
-  run: TaskRun | undefined
-): ToolCallPreview[] | undefined {
+export function toolCallsFromRun(run: TaskRun | undefined): ToolCallPreview[] | undefined {
   if (!run) return undefined;
 
   const result: ToolCallPreview[] = [];

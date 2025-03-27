@@ -17,9 +17,7 @@ export function CreditsSection(props: CreditsSectionProps) {
   const { tenant, isSignedIn } = props;
   const { organizationSettings } = useOrFetchOrganizationSettings(30000);
 
-  const fetchOrganizationSettings = useOrganizationSettings(
-    (state) => state.fetchOrganizationSettings
-  );
+  const fetchOrganizationSettings = useOrganizationSettings((state) => state.fetchOrganizationSettings);
 
   const onHovering = useCallback(() => {
     fetchOrganizationSettings();
@@ -30,10 +28,7 @@ export function CreditsSection(props: CreditsSectionProps) {
 
   const lowCreditsMode = !!currentCredits && currentCredits <= 5;
 
-  const progress =
-    addedCredits === 0 || !currentCredits || !addedCredits
-      ? 0
-      : (currentCredits / addedCredits) * 100;
+  const progress = addedCredits === 0 || !currentCredits || !addedCredits ? 0 : (currentCredits / addedCredits) * 100;
 
   const content = (
     <div
@@ -41,9 +36,7 @@ export function CreditsSection(props: CreditsSectionProps) {
       onMouseEnter={onHovering}
     >
       <div className='flex flex-col'>
-        <div className='text-xs font-medium text-gray-800'>
-          {formatCurrency(currentCredits)}
-        </div>
+        <div className='text-xs font-medium text-gray-800'>{formatCurrency(currentCredits)}</div>
         <div className='text-xs font-normal text-gray-500'>Credits Left</div>
       </div>
       <div className='relative flex w-6 h-6 items-center'>

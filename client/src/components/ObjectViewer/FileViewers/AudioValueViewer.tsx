@@ -1,9 +1,4 @@
-import {
-  DeviceEqFilled,
-  DismissFilled,
-  PauseRegular,
-  PlayRegular,
-} from '@fluentui/react-icons';
+import { DeviceEqFilled, DismissFilled, PauseRegular, PlayRegular } from '@fluentui/react-icons';
 import { cx } from 'class-variance-authority';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/Button';
@@ -44,10 +39,7 @@ function AudioWaveform() {
   }, []);
 
   return (
-    <div
-      ref={containerRef}
-      className='flex-grow w-full h-9 overflow-hidden items-center justify-center'
-    >
+    <div ref={containerRef} className='flex-grow w-full h-9 overflow-hidden items-center justify-center'>
       {[...Array(barCount)].map((_, index) => (
         <div
           key={index}
@@ -62,9 +54,7 @@ function AudioWaveform() {
   );
 }
 
-export function AudioValueViewer(
-  props: ValueViewerProps<FileValueType | undefined>
-) {
+export function AudioValueViewer(props: ValueViewerProps<FileValueType | undefined>) {
   const {
     value,
     className,
@@ -81,9 +71,7 @@ export function AudioValueViewer(
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const [textTranscription, setTextTranscription] = useState<
-    string | undefined
-  >(undefined);
+  const [textTranscription, setTextTranscription] = useState<string | undefined>(undefined);
   const [transcriptionLoading, setTranscriptionLoading] = useState(false);
   const lockTranscription = useRef(false);
 
@@ -122,10 +110,7 @@ export function AudioValueViewer(
     (progress: number) => {
       setUploadProps((prev) => ({
         ...prev,
-        progress: Math.max(
-          progress * BROWSER_LOADING_TIME_PERCENT,
-          BROWSER_ON_BROWSER_PROGRESS_START
-        ),
+        progress: Math.max(progress * BROWSER_LOADING_TIME_PERCENT, BROWSER_ON_BROWSER_PROGRESS_START),
       }));
     },
     [setUploadProps]
@@ -134,9 +119,7 @@ export function AudioValueViewer(
     (progress: number) => {
       setUploadProps((prev) => ({
         ...prev,
-        progress:
-          BROWSER_LOADING_TIME_PERCENT +
-          progress * (1 - BROWSER_LOADING_TIME_PERCENT),
+        progress: BROWSER_LOADING_TIME_PERCENT + progress * (1 - BROWSER_LOADING_TIME_PERCENT),
       }));
     },
     [setUploadProps]
@@ -173,11 +156,7 @@ export function AudioValueViewer(
         const formData = new FormData();
         formData.append('file', file);
         try {
-          const storage_url = await handleUploadFile(
-            formData,
-            hash,
-            setUploadServerProgress
-          );
+          const storage_url = await handleUploadFile(formData, hash, setUploadServerProgress);
           if (!storage_url) {
             throw new Error('Failed to upload file');
           }
@@ -252,14 +231,7 @@ export function AudioValueViewer(
   const transcription = textTranscription || runTranscription;
 
   if (!editable && (showTypes || showTypesForFiles)) {
-    return (
-      <ReadonlyValue
-        {...props}
-        value='audio'
-        referenceValue={undefined}
-        icon={<DeviceEqFilled />}
-      />
-    );
+    return <ReadonlyValue {...props} value='audio' referenceValue={undefined} icon={<DeviceEqFilled />} />;
   }
 
   const src = extractFileSrc(castedValue);
@@ -307,10 +279,7 @@ export function AudioValueViewer(
           />
         )}
       </div>
-      <TranscriptionViewer
-        transcription={transcription}
-        transcriptionLoading={transcriptionLoading}
-      />
+      <TranscriptionViewer transcription={transcription} transcriptionLoading={transcriptionLoading} />
     </div>
   );
 }

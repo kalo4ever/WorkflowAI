@@ -1,9 +1,17 @@
 name: API Quality
 on:
   workflow_call:
+    inputs:
+      # Skipping needs to happen at the job level, otherwise
+      # Github will keep waiting for status checks
+      skip:
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   api-quality:
+    if: inputs.skip != true
     runs-on: ubuntu-latest
     services:
       mongodb:
@@ -66,6 +74,7 @@ jobs:
 
   # Run integration tests separately
   api-integration:
+    if: inputs.skip != true
     runs-on: ubuntu-latest
     services:
       mongodb:

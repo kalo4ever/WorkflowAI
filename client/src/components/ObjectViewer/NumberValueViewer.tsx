@@ -28,10 +28,7 @@ export function NumberValueViewer(props: NumberValueViewerProps) {
       type='number'
       value={value}
       onChange={onChange}
-      className={cx(
-        className,
-        'w-full mt-[-2px] rounded-[2px] border-gray-200'
-      )}
+      className={cx(className, 'w-full mt-[-2px] rounded-[2px] border-gray-200')}
       step={integer ? 1 : 0.1}
       min={integer ? 0 : undefined}
     />

@@ -21,9 +21,7 @@ export function TaskEnvironmentBadge(props: TaskEnvironmentBadgeProps) {
       <div className='flex items-center gap-1 max-w-[300px]'>
         <EnvironmentIcon environment={environment} />
         <div className='truncate font-mono font-normal'>
-          {useShorthandName
-            ? getEnvironmentShorthandName(environment)
-            : environment}
+          {useShorthandName ? getEnvironmentShorthandName(environment) : environment}
         </div>
       </div>
     </Badge>

@@ -1,19 +1,13 @@
 import { arrayObjectSchemaFixture } from '@/tests/fixtures/schemaEditor/arrayObject';
 import { defaultInputObjectSchemaFixture } from '@/tests/fixtures/schemaEditor/defaultInputObjects';
 import { defaultOutputObjectSchemaFixture } from '@/tests/fixtures/schemaEditor/defaultOutputObject';
-import {
-  fileSchemaDefinitionFixtures,
-  fileSchemaFixture,
-} from '@/tests/fixtures/schemaEditor/fileSchema';
+import { fileSchemaDefinitionFixtures, fileSchemaFixture } from '@/tests/fixtures/schemaEditor/fileSchema';
 import { productionObjectsSchemaFixture } from '@/tests/fixtures/schemaEditor/productionObject';
 import {
   refArrayObjectDefinitionFixtures,
   refArrayObjectsSchemaFixture,
 } from '@/tests/fixtures/schemaEditor/refArrayObject';
-import {
-  refObjectDefinitionFixtures,
-  refObjectsSchemaFixture,
-} from '@/tests/fixtures/schemaEditor/refObjects';
+import { refObjectDefinitionFixtures, refObjectsSchemaFixture } from '@/tests/fixtures/schemaEditor/refObjects';
 import { simpleObjectSchemaFixture } from '@/tests/fixtures/schemaEditor/simpleObject';
 import { unionObjectsSchemaFixture } from '@/tests/fixtures/schemaEditor/unionObjects';
 import { JsonSchema } from '@/types';
@@ -27,16 +21,12 @@ import {
 describe('schemaEditorUtils', () => {
   describe('fromSchemaToSplattedEditorFields', () => {
     it('should convert object schema to splatted editor fields | simple cases', () => {
-      const result = fromSchemaToSplattedEditorFields(
-        simpleObjectSchemaFixture.originalSchema
-      );
+      const result = fromSchemaToSplattedEditorFields(simpleObjectSchemaFixture.originalSchema);
       expect(result).toEqual(simpleObjectSchemaFixture.splattedEditorFields);
     });
 
     it('should convert object schema to splatted editor fields | union objects', () => {
-      const result = fromSchemaToSplattedEditorFields(
-        unionObjectsSchemaFixture.originalSchema
-      );
+      const result = fromSchemaToSplattedEditorFields(unionObjectsSchemaFixture.originalSchema);
       expect(result).toEqual(unionObjectsSchemaFixture.splattedEditorFields);
     });
 
@@ -59,43 +49,27 @@ describe('schemaEditorUtils', () => {
     });
 
     it('should convert object schema to splatted editor fields | array objects', () => {
-      const result = fromSchemaToSplattedEditorFields(
-        arrayObjectSchemaFixture.originalSchema
-      );
+      const result = fromSchemaToSplattedEditorFields(arrayObjectSchemaFixture.originalSchema);
       expect(result).toEqual(arrayObjectSchemaFixture.splattedEditorFields);
     });
 
     it('should convert object schema to splatted editor fields | production objects', () => {
-      const result = fromSchemaToSplattedEditorFields(
-        productionObjectsSchemaFixture.originalSchema
-      );
-      expect(result).toEqual(
-        productionObjectsSchemaFixture.splattedEditorFields
-      );
+      const result = fromSchemaToSplattedEditorFields(productionObjectsSchemaFixture.originalSchema);
+      expect(result).toEqual(productionObjectsSchemaFixture.splattedEditorFields);
     });
 
     it('should convert object schema to splatted editor fields | default input objects', () => {
-      const result = fromSchemaToSplattedEditorFields(
-        defaultInputObjectSchemaFixture.originalSchema
-      );
-      expect(result).toEqual(
-        defaultInputObjectSchemaFixture.splattedEditorFields
-      );
+      const result = fromSchemaToSplattedEditorFields(defaultInputObjectSchemaFixture.originalSchema);
+      expect(result).toEqual(defaultInputObjectSchemaFixture.splattedEditorFields);
     });
 
     it('should convert object schema to splatted editor fields | default output objects', () => {
-      const result = fromSchemaToSplattedEditorFields(
-        defaultOutputObjectSchemaFixture.originalSchema
-      );
-      expect(result).toEqual(
-        defaultOutputObjectSchemaFixture.splattedEditorFields
-      );
+      const result = fromSchemaToSplattedEditorFields(defaultOutputObjectSchemaFixture.originalSchema);
+      expect(result).toEqual(defaultOutputObjectSchemaFixture.splattedEditorFields);
     });
 
     it('should convert object schema to splatted editor fields | untyped objects', () => {
-      const result = fromSchemaToSplattedEditorFields(
-        untypedObjectSchemaFixture.originalSchema
-      );
+      const result = fromSchemaToSplattedEditorFields(untypedObjectSchemaFixture.originalSchema);
       expect(result).toEqual(untypedObjectSchemaFixture.splattedEditorFields);
     });
 
@@ -111,16 +85,12 @@ describe('schemaEditorUtils', () => {
 
   describe('fromSplattedEditorFieldsToSchema', () => {
     it('should convert splatted editor fields to object schema | simple cases', () => {
-      const { schema: result } = fromSplattedEditorFieldsToSchema(
-        simpleObjectSchemaFixture.splattedEditorFields
-      );
+      const { schema: result } = fromSplattedEditorFieldsToSchema(simpleObjectSchemaFixture.splattedEditorFields);
       expect(result).toEqual(simpleObjectSchemaFixture.finalSchema);
     });
 
     it('should convert splatted editor fields to object schema | union objects', () => {
-      const { schema: result } = fromSplattedEditorFieldsToSchema(
-        unionObjectsSchemaFixture.splattedEditorFields
-      );
+      const { schema: result } = fromSplattedEditorFieldsToSchema(unionObjectsSchemaFixture.splattedEditorFields);
       expect(result).toEqual(unionObjectsSchemaFixture.finalSchema);
     });
 
@@ -137,29 +107,21 @@ describe('schemaEditorUtils', () => {
         refArrayObjectsSchemaFixture.splattedEditorFields
       );
       expect(result).toEqual(refArrayObjectsSchemaFixture.finalSchema);
-      expect(definitions).toEqual(
-        refArrayObjectDefinitionFixtures.finalDefinitions
-      );
+      expect(definitions).toEqual(refArrayObjectDefinitionFixtures.finalDefinitions);
     });
 
     it('should convert splatted editor fields to object schema | array objects', () => {
-      const { schema: result } = fromSplattedEditorFieldsToSchema(
-        arrayObjectSchemaFixture.splattedEditorFields
-      );
+      const { schema: result } = fromSplattedEditorFieldsToSchema(arrayObjectSchemaFixture.splattedEditorFields);
       expect(result).toEqual(arrayObjectSchemaFixture.finalSchema);
     });
 
     it('should convert splatted editor fields to object schema | production objects', () => {
-      const { schema: result } = fromSplattedEditorFieldsToSchema(
-        productionObjectsSchemaFixture.splattedEditorFields
-      );
+      const { schema: result } = fromSplattedEditorFieldsToSchema(productionObjectsSchemaFixture.splattedEditorFields);
       expect(result).toEqual(productionObjectsSchemaFixture.finalSchema);
     });
 
     it('should convert splatted editor fields to object schema | default input objects', () => {
-      const { schema: result } = fromSplattedEditorFieldsToSchema(
-        defaultInputObjectSchemaFixture.splattedEditorFields
-      );
+      const { schema: result } = fromSplattedEditorFieldsToSchema(defaultInputObjectSchemaFixture.splattedEditorFields);
       expect(result).toEqual(defaultInputObjectSchemaFixture.finalSchema);
     });
 
@@ -171,20 +133,14 @@ describe('schemaEditorUtils', () => {
     });
 
     it('should convert splatted editor fields to object schema | untyped objects', () => {
-      const { schema: result } = fromSplattedEditorFieldsToSchema(
-        untypedObjectSchemaFixture.splattedEditorFields
-      );
+      const { schema: result } = fromSplattedEditorFieldsToSchema(untypedObjectSchemaFixture.splattedEditorFields);
       expect(result).toEqual(untypedObjectSchemaFixture.finalSchema);
     });
 
     it('should convert splatted editor fields to object schema | file schema', () => {
-      const { schema: result, definitions } = fromSplattedEditorFieldsToSchema(
-        fileSchemaFixture.splattedEditorFields
-      );
+      const { schema: result, definitions } = fromSplattedEditorFieldsToSchema(fileSchemaFixture.splattedEditorFields);
       expect(result).toEqual(fileSchemaFixture.finalSchema);
-      expect(definitions).toEqual(
-        fileSchemaDefinitionFixtures.finalDefinitions
-      );
+      expect(definitions).toEqual(fileSchemaDefinitionFixtures.finalDefinitions);
     });
 
     describe('areSchemasEquivalent', () => {

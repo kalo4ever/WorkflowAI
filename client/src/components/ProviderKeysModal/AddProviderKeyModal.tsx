@@ -1,33 +1,20 @@
 'use client';
 
-import {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Dialog, DialogContent } from '@/components/ui/Dialog';
 import { Input } from '@/components/ui/Input';
-import {
-  displayErrorToaster,
-  displaySuccessToaster,
-} from '@/components/ui/Sonner';
+import { displayErrorToaster, displaySuccessToaster } from '@/components/ui/Sonner';
 import { RequestError } from '@/lib/api/client';
 import { ProviderConfig } from '@/store/organization_settings';
 import { Provider, ProviderSettings } from '@/types/workflowAI';
-import { OrganizationSettings } from '@/types/workflowAI';
+import { TenantData } from '@/types/workflowAI';
 import { AI_PROVIDERS_METADATA } from '../AIModelsCombobox/utils';
 
 type SetProviderConfigProps = {
   providerSettings: ProviderSettings[] | undefined;
   currentProvider: string | undefined | null;
-  onSetProviderConfig(
-    provider: Provider,
-    value: Record<string, unknown>
-  ): Promise<void>;
+  onSetProviderConfig(provider: Provider, value: Record<string, unknown>): Promise<void>;
   onClose: (keyWasCreated: boolean) => void;
 };
 
@@ -42,34 +29,25 @@ function GoogleConfigForm(props: GoogleConfigFormProps) {
   const [location, setLocation] = useState<string>();
   const [credentials, setCredentials] = useState<string>();
 
-  const onProjectIdChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setProjectId(e.target.value);
-    },
-    []
-  );
+  const onProjectIdChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setProjectId(e.target.value);
+  }, []);
 
-  const onLocationChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setLocation(e.target.value);
-    },
-    []
-  );
+  const onLocationChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocation(e.target.value);
+  }, []);
 
-  const onCredentialsChange = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
+  const onCredentialsChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-      const reader = new FileReader();
-      reader.onload = () => {
-        const data = reader.result as string;
-        setCredentials(data);
-      };
-      reader.readAsDataURL(file);
-    },
-    []
-  );
+    const reader = new FileReader();
+    reader.onload = () => {
+      const data = reader.result as string;
+      setCredentials(data);
+    };
+    reader.readAsDataURL(file);
+  }, []);
 
   useEffect(() => {
     if (!projectId || !location || !credentials) {
@@ -87,10 +65,7 @@ function GoogleConfigForm(props: GoogleConfigFormProps) {
   return (
     <div className='flex flex-col items-start gap-6 w-full'>
       <div className='flex flex-col items-start gap-3 w-full max-w-[600px]'>
-        <label
-          htmlFor='project-id'
-          className='text-[14px] text-slate-600 font-medium'
-        >
+        <label htmlFor='project-id' className='text-[14px] text-slate-600 font-medium'>
           Project ID
         </label>
         <Input
@@ -103,10 +78,7 @@ function GoogleConfigForm(props: GoogleConfigFormProps) {
       </div>
 
       <div className='flex flex-col items-start gap-3 w-full max-w-[600px]'>
-        <label
-          htmlFor='location'
-          className='text-[14px] text-slate-600 font-medium'
-        >
+        <label htmlFor='location' className='text-[14px] text-slate-600 font-medium'>
           Location
         </label>
         <Input
@@ -119,10 +91,7 @@ function GoogleConfigForm(props: GoogleConfigFormProps) {
       </div>
 
       <div className='flex flex-col items-start gap-3 w-full max-w-[600px]'>
-        <label
-          htmlFor='credentials'
-          className='text-[14px] text-slate-600 font-medium'
-        >
+        <label htmlFor='credentials' className='text-[14px] text-slate-600 font-medium'>
           Credentials
         </label>
         <Input
@@ -185,10 +154,7 @@ function ProviderConfigForm(props: ProviderConfigFormProps) {
 
   return (
     <div className='flex flex-col items-start gap-3 w-full max-w-[600px]'>
-      <label
-        htmlFor='api-key'
-        className='text-[14px] text-slate-600 font-medium'
-      >
+      <label htmlFor='api-key' className='text-[14px] text-slate-600 font-medium'>
         API Key
       </label>
       <Input
@@ -229,17 +195,13 @@ export function AddProviderKeyModalContent(props: SetProviderConfigProps) {
     <>
       <div className='flex flex-col items-start px-6 py-5 gap-6'>
         <div className='flex flex-row justify-between items-center w-full'>
-          <div className='font-medium text-[20px] text-slate-900'>
-            Add Model Provider Keys
-          </div>
+          <div className='font-medium text-[20px] text-slate-900'>Add Model Provider Keys</div>
         </div>
         <div className='flex flex-row items-center gap-4 pt-3'>
           <div className='w-10 h-10 flex items-center justify-center bg-slate-50 rounded-[8px]'>
             {providerMetadata.icon}
           </div>
-          <div className='text-slate-700 text-[14px] font-medium'>
-            {providerMetadata.name ?? currentProvider}
-          </div>
+          <div className='text-slate-700 text-[14px] font-medium'>{providerMetadata.name ?? currentProvider}</div>
         </div>
         {providerMetadata.documentationUrl && (
           <div className='text-[14px] text-normal text-slate-600'>
@@ -257,10 +219,7 @@ export function AddProviderKeyModalContent(props: SetProviderConfigProps) {
         {currentProvider === 'google' ? (
           <GoogleConfigForm setConfig={setConfig} />
         ) : (
-          <ProviderConfigForm
-            current_provider={currentProvider as Provider}
-            setConfig={setConfig}
-          />
+          <ProviderConfigForm current_provider={currentProvider as Provider} setConfig={setConfig} />
         )}
       </div>
       <div className='flex gap-[8px] w-full justify-between px-[24px] py-[12px] bg-slate-50 border-t'>
@@ -277,20 +236,14 @@ export function AddProviderKeyModalContent(props: SetProviderConfigProps) {
 
 type AddProviderKeyModalProps = {
   currentProvider: string | null | undefined;
-  organizationSettings: OrganizationSettings | undefined;
+  organizationSettings: TenantData | undefined;
   open: boolean;
   onClose: (keyWasCreated: boolean) => void;
   addProviderConfig: (provider: ProviderConfig) => Promise<void>;
 };
 
 export function AddProviderKeyModal(props: AddProviderKeyModalProps) {
-  const {
-    currentProvider,
-    organizationSettings,
-    open,
-    onClose,
-    addProviderConfig,
-  } = props;
+  const { currentProvider, organizationSettings, open, onClose, addProviderConfig } = props;
 
   const onSetProviderConfig = useCallback(
     async (provider: Provider, value: Record<string, unknown>) => {

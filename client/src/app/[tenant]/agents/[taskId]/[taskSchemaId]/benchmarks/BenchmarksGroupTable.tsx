@@ -2,11 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { TableView, TableViewHeaderEntry } from '@/components/ui/TableView';
 import { VersionResult, VersionV1 } from '@/types/workflowAI';
 import { BenchmarkRow } from './BenchmarkRow';
-import {
-  BenchmarkBestPicks,
-  BenchmarkResultsSortKey,
-  sortBenchmarkResults,
-} from './utils';
+import { BenchmarkBestPicks, BenchmarkResultsSortKey, sortBenchmarkResults } from './utils';
 
 type BenchmarksGroupTableProps = {
   versionByIteration: Record<number, VersionV1>;
@@ -16,10 +12,7 @@ type BenchmarksGroupTableProps = {
   onTryInPlayground: (versionId: string) => void;
   onViewCode: (version: VersionV1) => void;
   onDeploy: (versionId: string | undefined) => void;
-  onOpenTaskRuns: (
-    version: string,
-    state: 'positive' | 'negative' | 'unsure'
-  ) => void;
+  onOpenTaskRuns: (version: string, state: 'positive' | 'negative' | 'unsure') => void;
   findIconURLForModel: (name?: string) => string | undefined;
   isInDemoMode: boolean;
 };
@@ -38,9 +31,7 @@ export function BenchmarksGroupTable(props: BenchmarksGroupTableProps) {
     isInDemoMode,
   } = props;
 
-  const [sortMode, setSortMode] = useState<BenchmarkResultsSortKey>(
-    BenchmarkResultsSortKey.Score
-  );
+  const [sortMode, setSortMode] = useState<BenchmarkResultsSortKey>(BenchmarkResultsSortKey.Score);
 
   const [revertSortOrder, setRevertSortOrder] = useState(false);
   const sortedBenchmarkResults = useMemo(() => {
@@ -109,24 +100,10 @@ export function BenchmarksGroupTable(props: BenchmarksGroupTableProps) {
               key={result.iteration}
               benchmarkResult={result}
               version={versionByIteration[result.iteration]}
-              iconURL={findIconURLForModel(
-                versionByIteration[result.iteration]?.model
-              )}
-              isBestPrice={
-                !!result.iteration
-                  ? bestOnes.bestPriceVersions.includes(result.iteration)
-                  : false
-              }
-              isBestDuration={
-                !!result.iteration
-                  ? bestOnes.bestDurationVersions.includes(result.iteration)
-                  : false
-              }
-              isBestScore={
-                !!result.iteration
-                  ? bestOnes.bestScoreVersions.includes(result.iteration)
-                  : false
-              }
+              iconURL={findIconURLForModel(versionByIteration[result.iteration]?.model)}
+              isBestPrice={!!result.iteration ? bestOnes.bestPriceVersions.includes(result.iteration) : false}
+              isBestDuration={!!result.iteration ? bestOnes.bestDurationVersions.includes(result.iteration) : false}
+              isBestScore={!!result.iteration ? bestOnes.bestScoreVersions.includes(result.iteration) : false}
               onClone={onClone}
               onTryInPlayground={onTryInPlayground}
               onViewCode={onViewCode}

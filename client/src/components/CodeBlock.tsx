@@ -26,19 +26,9 @@ export function CodeBlock(props: CodeBlockProps) {
       <div className='rounded-lg min-w-[200px] overflow-hidden flex-shrink-0'>
         <div className='w-full bg-slate-700 pl-4 pr-1 py-1 flex items-center justify-between text-slate-50 text-sm font-mono'>
           {language}
-          {showCopyButton && (
-            <Button
-              variant='ghost'
-              icon={<CopyIcon size={16} />}
-              onClick={onCopy}
-            />
-          )}
+          {showCopyButton && <Button variant='ghost' icon={<CopyIcon size={16} />} onClick={onCopy} />}
         </div>
-        <SyntaxHighlighter
-          className='!px-4 text-sm'
-          language={language}
-          style={nightOwl}
-        >
+        <SyntaxHighlighter className='!px-4 text-sm' language={language} style={nightOwl}>
           {snippet}
         </SyntaxHighlighter>
       </div>

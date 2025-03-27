@@ -7,9 +7,7 @@ export const ENVIRONMENT_IMPORTANCE: { [key in VersionEnvironment]: number } = {
   dev: 2,
 };
 
-export function getEnvironmentShorthandName(
-  environment: VersionEnvironment | undefined
-): string | undefined {
+export function getEnvironmentShorthandName(environment: VersionEnvironment | undefined): string | undefined {
   if (!environment) {
     return undefined;
   }
@@ -26,9 +24,7 @@ export function getEnvironmentShorthandName(
   }
 }
 
-export function formatSemverVersion(
-  version: VersionV1 | undefined
-): string | undefined {
+export function formatSemverVersion(version: VersionV1 | undefined): string | undefined {
   if (!version) {
     return undefined;
   }
@@ -52,9 +48,7 @@ export function sortVersions(versions: VersionV1[]): VersionV1[] {
 
 export function sortVersionsByEnvironment(
   versions: VersionV1[],
-  versionIdsAndEnvironmentsDict:
-    | Record<string, VersionEnvironment[]>
-    | undefined
+  versionIdsAndEnvironmentsDict: Record<string, VersionEnvironment[]> | undefined
 ): VersionV1[] {
   let enviromentVersions: VersionV1[] = [];
   let nonEnviromentVersions: VersionV1[] = [];
@@ -76,19 +70,14 @@ export function sortVersionsByEnvironment(
       return 0;
     }
 
-    const lhsMostImportantEnvironment =
-      versionIdsAndEnvironmentsDict?.[lhs.id]?.[0];
-    const rhsMostImportantEnvironment =
-      versionIdsAndEnvironmentsDict?.[rhs.id]?.[0];
+    const lhsMostImportantEnvironment = versionIdsAndEnvironmentsDict?.[lhs.id]?.[0];
+    const rhsMostImportantEnvironment = versionIdsAndEnvironmentsDict?.[rhs.id]?.[0];
 
     if (!lhsMostImportantEnvironment || !rhsMostImportantEnvironment) {
       return 0;
     }
 
-    return (
-      ENVIRONMENT_IMPORTANCE[lhsMostImportantEnvironment] -
-      ENVIRONMENT_IMPORTANCE[rhsMostImportantEnvironment]
-    );
+    return ENVIRONMENT_IMPORTANCE[lhsMostImportantEnvironment] - ENVIRONMENT_IMPORTANCE[rhsMostImportantEnvironment];
   });
 
   nonEnviromentVersions = sortVersions(nonEnviromentVersions);
@@ -96,17 +85,11 @@ export function sortVersionsByEnvironment(
   return [...enviromentVersions, ...nonEnviromentVersions];
 }
 
-export function sortEnvironmentsInOrderOfImportance(
-  environments: VersionEnvironment[]
-): VersionEnvironment[] {
-  return environments.sort(
-    (lhs, rhs) => ENVIRONMENT_IMPORTANCE[lhs] - ENVIRONMENT_IMPORTANCE[rhs]
-  );
+export function sortEnvironmentsInOrderOfImportance(environments: VersionEnvironment[]): VersionEnvironment[] {
+  return environments.sort((lhs, rhs) => ENVIRONMENT_IMPORTANCE[lhs] - ENVIRONMENT_IMPORTANCE[rhs]);
 }
 
-export function environmentsForVersion(
-  version: VersionV1 | undefined
-): VersionEnvironment[] | undefined {
+export function environmentsForVersion(version: VersionV1 | undefined): VersionEnvironment[] | undefined {
   if (!version) {
     return undefined;
   }
@@ -135,12 +118,8 @@ export function getVersionsDictionary(versions: VersionV1[]) {
   );
 }
 
-export function getEnvironmentsForMajorVersion(
-  majorVersion: MajorVersion
-): VersionEnvironment[] | undefined {
-  const allDeployments = majorVersion.minors.flatMap(
-    (minorVersion) => minorVersion.deployments ?? []
-  );
+export function getEnvironmentsForMajorVersion(majorVersion: MajorVersion): VersionEnvironment[] | undefined {
+  const allDeployments = majorVersion.minors.flatMap((minorVersion) => minorVersion.deployments ?? []);
 
   const environments = allDeployments
     .map((deployment) => deployment.environment)
@@ -148,7 +127,5 @@ export function getEnvironmentsForMajorVersion(
 
   const uniqueEnvironments = [...new Set(environments)];
 
-  return uniqueEnvironments.length > 0
-    ? sortEnvironmentsInOrderOfImportance(uniqueEnvironments)
-    : undefined;
+  return uniqueEnvironments.length > 0 ? sortEnvironmentsInOrderOfImportance(uniqueEnvironments) : undefined;
 }

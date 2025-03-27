@@ -3,18 +3,9 @@
 import { cookies } from 'next/headers';
 import { CookieStore } from '@/types/cookies';
 import { API_URL } from '../constants';
-import {
-  TokenData,
-  buildTokenData,
-  build_api_jwt_for_tenant,
-  check_jwt_for_tenant,
-} from '../token/token';
+import { TokenData, buildTokenData, build_api_jwt_for_tenant, check_jwt_for_tenant } from '../token/token';
 
-async function getOrSetToken(
-  data: TokenData,
-  cookieStore: CookieStore,
-  setCookie = false
-) {
+async function getOrSetToken(data: TokenData, cookieStore: CookieStore, setCookie = false) {
   const token = cookieStore.get('x-api-token');
   if (token && check_jwt_for_tenant(token.value, data)) {
     return token.value;
@@ -32,11 +23,7 @@ async function getOrSetToken(
   return newToken;
 }
 
-export async function serverFetch(
-  path: string,
-  inits: RequestInit,
-  setCookie: boolean
-) {
+export async function serverFetch(path: string, inits: RequestInit, setCookie: boolean) {
   const cookieStore = cookies();
 
   const tokenData = await buildTokenData(cookieStore);

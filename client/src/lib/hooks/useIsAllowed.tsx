@@ -37,10 +37,7 @@ export function useIsAllowed() {
 
       if (!isSameTenant) {
         if (displayToaster) {
-          displayErrorToaster(
-            'This AI agent does not belong to you',
-            'Action blocked:'
-          );
+          displayErrorToaster('This AI agent does not belong to you', 'Action blocked:');
         }
         return false;
       }

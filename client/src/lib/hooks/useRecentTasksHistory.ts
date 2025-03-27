@@ -4,8 +4,7 @@ import { rootTenantPath } from '@/store/utils';
 import { TaskID, TaskSchemaID, TenantID } from '@/types/aliases';
 
 export function useRecentTasksHistory(tenant: TenantID | undefined) {
-  const { recentTasksByScope, addRecentTask: addRecentTaskToHistory } =
-    useRecentTasksStore();
+  const { recentTasksByScope, addRecentTask: addRecentTaskToHistory } = useRecentTasksStore();
 
   const recentTasks = useMemo(() => {
     const scope = rootTenantPath(tenant);

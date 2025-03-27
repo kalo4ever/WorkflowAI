@@ -4,18 +4,9 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
 import { useIsMounted } from 'usehooks-ts';
 
-export type QueryParam =
-  | string
-  | number
-  | boolean
-  | string[]
-  | undefined
-  | null;
+export type QueryParam = string | number | boolean | string[] | undefined | null;
 
-export const parseQueryParam = (
-  search: string,
-  key: string
-): string | undefined => {
+export const parseQueryParam = (search: string, key: string): string | undefined => {
   const searchParams = new URLSearchParams(search);
   return searchParams.get(key) || undefined;
 };
@@ -29,9 +20,7 @@ export const parseQueryParams = (search: string): Record<string, string> => {
   return parsedParams;
 };
 
-export const stringifyQueryParams = (
-  params: Record<string, QueryParam> | null | undefined
-): string => {
+export const stringifyQueryParams = (params: Record<string, QueryParam> | null | undefined): string => {
   if (!params || size(params) === 0) {
     return '';
   }
@@ -63,21 +52,12 @@ export const stringifyQueryParams = (
   return stringifiedQueryParams ? `?${stringifiedQueryParams}` : '';
 };
 
-type ParsedParams<K extends string, V = string> = Record<
-  K[number],
-  V | undefined
->;
+type ParsedParams<K extends string, V = string> = Record<K[number], V | undefined>;
 
-export function useParsedSearchParams<K extends string>(
-  ...keys: ReadonlyArray<K>
-): ParsedParams<K> {
+export function useParsedSearchParams<K extends string>(...keys: ReadonlyArray<K>): ParsedParams<K> {
   const params = useSearchParams();
   const parsed = useMemo(
-    () =>
-      keys.reduce(
-        (m, k) => ({ ...m, [k]: params.get(k) ?? undefined }),
-        {} as ParsedParams<K>
-      ),
+    () => keys.reduce((m, k) => ({ ...m, [k]: params.get(k) ?? undefined }), {} as ParsedParams<K>),
     [keys, params]
   );
 
@@ -102,47 +82,64 @@ export function useRedirectWithParams() {
   // Create debounced function using useMemo
   const debouncedRedirect = useMemo(
     () =>
-      debounce(
-        (
-          params?: Record<string, QueryParam>,
-          path?: string,
-          scroll?: boolean
-        ) => {
-          const newParams = {
-            ...prevParams,
-            ...params,
-          };
-          const newParamsString = stringifyQueryParams(newParams);
-          const newPath = path || pathname;
+      debounce((params?: Record<string, QueryParam>, path?: string, scroll?: boolean) => {
+        const newParams = {
+          ...prevParams,
+          ...params,
+        };
+        const newParamsString = stringifyQueryParams(newParams);
+        const newPath = path || pathname;
 
-          if (!isMounted()) return;
+        if (!isMounted()) return;
 
-          if (path) {
-            router.push(`${newPath}${newParamsString}`, { scroll });
-          } else {
-            router.replace(`${newPath}${newParamsString}`, { scroll });
-          }
-        },
-        100
-      ),
+        if (path) {
+          router.push(`${newPath}${newParamsString}`, { scroll });
+        } else {
+          router.replace(`${newPath}${newParamsString}`, { scroll });
+        }
+      }, 100),
     [prevParams, pathname, router, isMounted]
   );
 
   // Wrap the debounced function in useCallback
   const redirectWithParams = useCallback(
-    ({
-      params,
-      path,
-      scroll,
-    }: {
-      params?: Record<string, QueryParam>;
-      path?: string;
-      scroll?: boolean;
-    }) => {
+    ({ params, path, scroll }: { params?: Record<string, QueryParam>; path?: string; scroll?: boolean }) => {
       debouncedRedirect(params, path, scroll);
     },
     [debouncedRedirect]
   );
 
   return redirectWithParams;
+}
+
+/**
+ * A specialized hook for updating a single URL parameter quickly.
+ * This is an optimized version that skips debouncing and unnecessary object operations.
+ */
+
+export function useFastRedirectWithParam() {
+  const search = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+  const isMounted = useIsMounted();
+
+  const fastRedirectWithParam = useCallback(
+    (key: string, value: QueryParam, scroll?: boolean) => {
+      if (!isMounted()) return;
+
+      const newParams: Record<string, QueryParam> = {};
+      search.forEach((v, k) => {
+        if (k !== key) newParams[k] = v;
+      });
+      if (value !== undefined && value !== null) {
+        newParams[key] = value;
+      }
+
+      const newParamsString = stringifyQueryParams(newParams);
+      router.replace(`${pathname}${newParamsString}`, { scroll });
+    },
+    [search, pathname, router, isMounted]
+  );
+
+  return fastRedirectWithParam;
 }

@@ -2,12 +2,7 @@
  * @jest-environment node
  */
 import { TenantID } from '@/types/aliases';
-import {
-  build_api_jwt,
-  build_api_jwt_for_tenant,
-  export_public_key,
-  parse_sign_key,
-} from './token';
+import { build_api_jwt, build_api_jwt_for_tenant, export_public_key, parse_sign_key } from './token';
 
 const raw_key =
   'LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JR0hBZ0VBTUJNR0J5cUdTTTQ5QWdFR0NDcUdTTTQ5QXdFSEJHMHdhd0lCQVFRZ3l0NC91U0VKQ09OUi9RZTIKWUQxZERMUTliNWhxSUhTb3BTTzZucjhnUU5paFJBTkNBQVRxY2RNa0tQakMzWFNFM21kMjlJVWxDekNsQ01iegpaRU5PdXpzUnVIdTNoVUg0YjF2TEw5N2d0UFo0bFdQdkFYcG8vcDJadHg3blZFa3k2aXJSVk5zNQotLS0tLUVORCBQUklWQVRFIEtFWS0tLS0tCg==';
@@ -22,11 +17,7 @@ describe('parse_sign_key', () => {
 describe('build_api_jwt', () => {
   it('builds a jwt', async () => {
     const sign_key = await parse_sign_key(raw_key);
-    const jwt = await build_api_jwt(
-      { tenant: 'test1' as TenantID, sub: 'test2' },
-      '60d',
-      sign_key
-    );
+    const jwt = await build_api_jwt({ tenant: 'test1' as TenantID, sub: 'test2' }, '60d', sign_key);
 
     const splits = jwt.split('.');
     expect(splits).toHaveLength(3);
@@ -66,9 +57,7 @@ describe('build_api_jwt_for_tenant', () => {
       '1d',
       sign_key
     );
-    const { iat, exp, ...rest } = JSON.parse(
-      Buffer.from(jwt.split('.')[1], 'base64').toString('utf-8')
-    );
+    const { iat, exp, ...rest } = JSON.parse(Buffer.from(jwt.split('.')[1], 'base64').toString('utf-8'));
     expect(iat).toBeDefined();
     expect(exp).toEqual(iat + 1 * 24 * 60 * 60);
     expect(rest).toEqual({

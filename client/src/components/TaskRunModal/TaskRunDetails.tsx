@@ -5,6 +5,7 @@ import { getContextWindowInformation } from '@/lib/taskRunUtils';
 import { TaskRun } from '@/types';
 import { TaskID, TenantID } from '@/types/aliases';
 import { VersionV1 } from '@/types/workflowAI';
+import { FeedbackBoxContainer } from './FeedbackBox';
 
 type TaskRunDetailsProps = {
   tenant: TenantID | undefined;
@@ -22,12 +23,9 @@ export function TaskRunDetails(props: TaskRunDetailsProps) {
   return (
     <div className='h-full flex flex-col bg-white border-l border-gray-200 border-dashed'>
       <div className='flex flex-col flex-1 overflow-auto p-4 gap-6'>
-        <AIEvaluationReview
-          taskRun={taskRun}
-          tenant={tenant}
-          taskId={taskRun.task_id as TaskID}
-          showFullBorder
-        />
+        <AIEvaluationReview taskRun={taskRun} tenant={tenant} taskId={taskRun.task_id as TaskID} showFullBorder />
+
+        <FeedbackBoxContainer taskRunId={taskRun.id} tenant={tenant} taskId={taskRun.task_id as TaskID} />
 
         {!!version && (
           <div className='border border-gray-200 rounded-[2px]'>

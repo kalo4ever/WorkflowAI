@@ -10,18 +10,11 @@ type Props = {
 };
 
 export function useMatchVersion(props: Props) {
-  const {
-    majorVersions,
-    temperature,
-    instructions,
-    variantId,
-    userSelectedMajor,
-  } = props;
+  const { majorVersions, temperature, instructions, variantId, userSelectedMajor } = props;
 
   const matchedVersion = useMemo(() => {
     const matchingVersions = majorVersions.filter((version) => {
-      const normalizedVersionInstructions =
-        version.properties.instructions?.toLowerCase().trim() || '';
+      const normalizedVersionInstructions = version.properties.instructions?.toLowerCase().trim() || '';
 
       const normalizedInstructions = instructions?.toLowerCase().trim() || '';
 
@@ -32,14 +25,10 @@ export function useMatchVersion(props: Props) {
       );
     });
 
-    const allMatchedVersions = matchingVersions.sort(
-      (a, b) => b.major - a.major
-    );
+    const allMatchedVersions = matchingVersions.sort((a, b) => b.major - a.major);
 
     if (userSelectedMajor !== undefined) {
-      const result = allMatchedVersions.find(
-        (version) => version.major === userSelectedMajor
-      );
+      const result = allMatchedVersions.find((version) => version.major === userSelectedMajor);
 
       if (result !== undefined) {
         return result;

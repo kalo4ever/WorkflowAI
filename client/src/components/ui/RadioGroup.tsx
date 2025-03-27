@@ -10,13 +10,7 @@ const RadioGroup = React.forwardRef<
   React.ElementRef<typeof RadioGroupPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Root>
 >(({ className, ...props }, ref) => {
-  return (
-    <RadioGroupPrimitive.Root
-      className={cn('grid gap-2', className)}
-      {...props}
-      ref={ref}
-    />
-  );
+  return <RadioGroupPrimitive.Root className={cn('grid gap-2', className)} {...props} ref={ref} />;
 });
 RadioGroup.displayName = RadioGroupPrimitive.Root.displayName;
 
@@ -32,9 +26,7 @@ const RadioGroupItem = React.forwardRef<
       className={cn(
         'aspect-square h-4 w-4 rounded-full border text-border-gray-400 ring-offset-background focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
         className,
-        isSelected
-          ? 'border-indigo-500 text-indigo-500'
-          : 'border-gray-400 text-gray-400'
+        isSelected ? 'border-indigo-500 text-indigo-500' : 'border-gray-400 text-gray-400'
       )}
       {...props}
     >
@@ -61,12 +53,7 @@ function SimpleRadioIndicator(props: SimpleRadioIndicatorProps) {
         isSelected ? 'border-indigo-500' : 'border-gray-400'
       )}
     >
-      <Circle
-        className={cx(
-          'h-2.5 w-2.5 fill-current',
-          isSelected ? 'text-indigo-500' : 'text-transparent'
-        )}
-      />
+      <Circle className={cx('h-2.5 w-2.5 fill-current', isSelected ? 'text-indigo-500' : 'text-transparent')} />
     </button>
   );
 }

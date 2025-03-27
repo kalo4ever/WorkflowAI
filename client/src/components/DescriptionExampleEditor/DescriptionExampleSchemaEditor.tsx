@@ -11,15 +11,8 @@ type DescriptionExampleSchemaEditorProps = {
   showExamples?: boolean;
 };
 
-export function DescriptionExampleSchemaEditor(
-  props: DescriptionExampleSchemaEditorProps
-) {
-  const {
-    splattedSchema,
-    setSplattedSchema,
-    isArrayItem = false,
-    showExamples = false,
-  } = props;
+export function DescriptionExampleSchemaEditor(props: DescriptionExampleSchemaEditorProps) {
+  const { splattedSchema, setSplattedSchema, isArrayItem = false, showExamples = false } = props;
   const { keyName, fields, description, examples, type } = splattedSchema;
   const isRoot = keyName === '';
 
@@ -49,9 +42,7 @@ export function DescriptionExampleSchemaEditor(
     <div className='w-full flex flex-col gap-2 text-sm font-medium text-slate-500'>
       {!isRoot && (
         <>
-          <div className='text-slate-700'>
-            {isArrayItem ? `[${keyName}] item` : `${keyName}:`}
-          </div>
+          <div className='text-slate-700'>{isArrayItem ? `[${keyName}] item` : `${keyName}:`}</div>
           <div className='w-full flex gap-2 items-center'>
             <div className='w-[100px]'>description:</div>
             <Input
@@ -85,9 +76,7 @@ export function DescriptionExampleSchemaEditor(
                 setSplattedSchema({
                   ...splattedSchema,
                   fields: splattedSchema.fields?.map((splattedField) =>
-                    splattedField.keyName === field.keyName
-                      ? newSplattedSchema
-                      : splattedField
+                    splattedField.keyName === field.keyName ? newSplattedSchema : splattedField
                   ),
                 });
               }}

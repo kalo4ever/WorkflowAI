@@ -1,7 +1,4 @@
-import {
-  CheckmarkCircle16Filled,
-  Question16Regular,
-} from '@fluentui/react-icons';
+import { CheckmarkCircle16Filled, Question16Regular } from '@fluentui/react-icons';
 import { Sparkle16Filled } from '@fluentui/react-icons';
 import { cx } from 'class-variance-authority';
 import { SimpleTooltip } from '@/components/ui/Tooltip';
@@ -17,9 +14,7 @@ function getStateClassName(state: 'positive' | 'negative' | 'unsure'): string {
   }
 }
 
-function getUserStateClassName(
-  state: 'positive' | 'negative' | 'unsure'
-): string {
+function getUserStateClassName(state: 'positive' | 'negative' | 'unsure'): string {
   switch (state) {
     case 'positive':
       return 'bg-green-200 text-green-600';
@@ -30,9 +25,7 @@ function getUserStateClassName(
   }
 }
 
-function getAIStateClassName(
-  state: 'positive' | 'negative' | 'unsure'
-): string {
+function getAIStateClassName(state: 'positive' | 'negative' | 'unsure'): string {
   switch (state) {
     case 'positive':
       return 'text-green-600 border border-green-500 border-dashed';
@@ -53,14 +46,7 @@ type BenchmarkReviewsEntryProps = {
 };
 
 export function BenchmarkReviewsEntry(props: BenchmarkReviewsEntryProps) {
-  const {
-    count,
-    state,
-    onClick,
-    userCount = 0,
-    aiCount = 0,
-    alwaysShowCount = false,
-  } = props;
+  const { count, state, onClick, userCount = 0, aiCount = 0, alwaysShowCount = false } = props;
 
   if (count === 0 && !alwaysShowCount) {
     return null;

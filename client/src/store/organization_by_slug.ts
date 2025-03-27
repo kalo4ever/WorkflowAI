@@ -13,62 +13,47 @@ interface OrganizationBySlugState {
   fetchOrganizationBySlug: (slug: string) => Promise<void>;
 }
 
-export const useOrganizationsBySlugStore = create<OrganizationBySlugState>(
-  (set, get) => ({
-    organizationsBySlug: new Map(),
-    isLoadingOrganizationBySlug: new Map(),
-    isInitializedOrganizationBySlug: new Map(),
-    fetchOrganizationBySlug: async (slug: string) => {
-      if (get().isLoadingOrganizationBySlug.get(slug)) return;
+export const useOrganizationsBySlugStore = create<OrganizationBySlugState>((set, get) => ({
+  organizationsBySlug: new Map(),
+  isLoadingOrganizationBySlug: new Map(),
+  isInitializedOrganizationBySlug: new Map(),
+  fetchOrganizationBySlug: async (slug: string) => {
+    if (get().isLoadingOrganizationBySlug.get(slug)) return;
+    set(
+      produce((state) => {
+        state.isLoadingOrganizationBySlug.set(slug, true);
+      })
+    );
+    try {
+      // Public API that is not prefixed by the tenant ID
+      const response = await client.get<PublicOrganizationData>(`/api/data/organizations/${slug}`);
       set(
         produce((state) => {
-          state.isLoadingOrganizationBySlug.set(slug, true);
+          state.organizationsBySlug.set(slug, response);
         })
       );
-      try {
-        // Public API that is not prefixed by the tenant ID
-        const response = await client.get<PublicOrganizationData>(
-          `/api/data/organizations/${slug}`
-        );
-        set(
-          produce((state) => {
-            state.organizationsBySlug.set(slug, response);
-          })
-        );
-      } catch (error) {
-        captureException(error);
-        console.error('Error fetching organization:', error);
-      } finally {
-        set(
-          produce((state) => {
-            state.isLoadingOrganizationBySlug.set(slug, false);
-            state.isInitializedOrganizationBySlug.set(slug, true);
-          })
-        );
-      }
-    },
-  })
-);
+    } catch (error) {
+      captureException(error);
+      console.error('Error fetching organization:', error);
+    } finally {
+      set(
+        produce((state) => {
+          state.isLoadingOrganizationBySlug.set(slug, false);
+          state.isInitializedOrganizationBySlug.set(slug, true);
+        })
+      );
+    }
+  },
+}));
 
 export function useOrganizationBySlug(slug: TenantID) {
-  const isInitialized = useOrganizationsBySlugStore((state) =>
-    state.isInitializedOrganizationBySlug.get(slug)
-  );
-  const isLoading = useOrganizationsBySlugStore((state) =>
-    state.isLoadingOrganizationBySlug.get(slug)
-  );
-  const organization = useOrganizationsBySlugStore((state) =>
-    state.organizationsBySlug.get(slug)
-  );
+  const isInitialized = useOrganizationsBySlugStore((state) => state.isInitializedOrganizationBySlug.get(slug));
+  const isLoading = useOrganizationsBySlugStore((state) => state.isLoadingOrganizationBySlug.get(slug));
+  const organization = useOrganizationsBySlugStore((state) => state.organizationsBySlug.get(slug));
 
-  const fetchOrganizationBySlug = useOrganizationsBySlugStore(
-    (state) => state.fetchOrganizationBySlug
-  );
+  const fetchOrganizationBySlug = useOrganizationsBySlugStore((state) => state.fetchOrganizationBySlug);
 
-  const refetch = useCallback(
-    () => fetchOrganizationBySlug(slug),
-    [fetchOrganizationBySlug, slug]
-  );
+  const refetch = useCallback(() => fetchOrganizationBySlug(slug), [fetchOrganizationBySlug, slug]);
 
   useEffect(() => {
     if (!isInitialized) {

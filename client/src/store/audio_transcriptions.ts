@@ -14,9 +14,7 @@ interface AudioTranscriptionsState {
   audioTranscriptionsById: Record<string, string>;
   isLoadingById: Record<string, boolean>;
   isInitializedById: Record<string, boolean>;
-  fetchAudioTranscription: (
-    payload: FileInputRequest
-  ) => Promise<string | undefined>;
+  fetchAudioTranscription: (payload: FileInputRequest) => Promise<string | undefined>;
 }
 
 export const useAudioTranscriptions = create<AudioTranscriptionsState>()(
@@ -37,21 +35,18 @@ export const useAudioTranscriptions = create<AudioTranscriptionsState>()(
             state.isLoadingById[fileId] = true;
           })
         );
-        let transcription:
-          | api__routers__transcriptions__TranscriptionResponse
-          | undefined;
+        let transcription: api__routers__transcriptions__TranscriptionResponse | undefined;
         try {
-          transcription =
-            await client.get<api__routers__transcriptions__TranscriptionResponse>(
-              `${rootTenantPath()}/transcriptions/${fileId}`
-            );
+          transcription = await client.get<api__routers__transcriptions__TranscriptionResponse>(
+            `${rootTenantPath()}/transcriptions/${fileId}`
+          );
         } catch (error) {
           if ((error as RequestError)?.status === 404) {
             try {
-              transcription = await client.post<
-                FileInputRequest,
-                api__routers__transcriptions__TranscriptionResponse
-              >(`${rootTenantPath()}/transcriptions`, payload);
+              transcription = await client.post<FileInputRequest, api__routers__transcriptions__TranscriptionResponse>(
+                `${rootTenantPath()}/transcriptions`,
+                payload
+              );
             } catch (error) {
               set(
                 produce((state) => {
@@ -69,8 +64,7 @@ export const useAudioTranscriptions = create<AudioTranscriptionsState>()(
         if (!!transcription) {
           set(
             produce((state) => {
-              state.audioTranscriptionsById[fileId] =
-                transcription?.transcription;
+              state.audioTranscriptionsById[fileId] = transcription?.transcription;
             })
           );
         }

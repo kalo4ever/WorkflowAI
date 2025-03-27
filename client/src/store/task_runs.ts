@@ -5,19 +5,8 @@ import { client } from '@/lib/api';
 import { TaskRun } from '@/types';
 import { TaskID, TaskSchemaID, TenantID } from '@/types/aliases';
 import { Page } from '@/types/page';
-import {
-  FieldQuery,
-  Page_RunItemV1_,
-  RunItemV1,
-  RunV1,
-  SearchTaskRunsRequest,
-} from '@/types/workflowAI';
-import {
-  buildScopeKey,
-  buildSearchTaskRunsScopeKey,
-  taskSchemaSubPath,
-  taskSubPath,
-} from './utils';
+import { FieldQuery, Page_RunItemV1_, RunItemV1, RunV1, SearchTaskRunsRequest } from '@/types/workflowAI';
+import { buildScopeKey, buildSearchTaskRunsScopeKey, taskSchemaSubPath, taskSubPath } from './utils';
 
 enableMapSet();
 
@@ -48,16 +37,8 @@ export interface TaskRunsState {
     offset: number;
     fieldQueries: Array<FieldQuery> | undefined;
   }): Promise<void>;
-  fetchTaskRun(
-    tenant: TenantID | undefined,
-    taskId: TaskID,
-    taskRunId: string
-  ): Promise<TaskRun | undefined>;
-  fetchRunV1(
-    tenant: TenantID | undefined,
-    taskId: TaskID,
-    runId: string
-  ): Promise<RunV1 | undefined>;
+  fetchTaskRun(tenant: TenantID | undefined, taskId: TaskID, taskRunId: string): Promise<TaskRun | undefined>;
+  fetchRunV1(tenant: TenantID | undefined, taskId: TaskID, runId: string): Promise<RunV1 | undefined>;
 }
 
 export const useTaskRuns = create<TaskRunsState>((set, get) => ({
@@ -92,19 +73,11 @@ export const useTaskRuns = create<TaskRunsState>((set, get) => ({
 
     try {
       const { items: taskRuns, count } = await client.get<Page<TaskRun>>(
-        taskSchemaSubPath(
-          tenant,
-          taskId,
-          taskSchemaId,
-          `/runs${searchParams ? `?${searchParams}` : ''}`
-        )
+        taskSchemaSubPath(tenant, taskId, taskSchemaId, `/runs${searchParams ? `?${searchParams}` : ''}`)
       );
       set(
         produce((state) => {
-          state.taskRunsByScope.set(
-            scope,
-            orderBy(taskRuns, 'start_time', 'desc')
-          );
+          state.taskRunsByScope.set(scope, orderBy(taskRuns, 'start_time', 'desc'));
           state.countByScope.set(scope, count);
         })
       );
@@ -143,21 +116,18 @@ export const useTaskRuns = create<TaskRunsState>((set, get) => ({
     );
 
     try {
-      const { items: runItems, count } = await client.post<
-        SearchTaskRunsRequest,
-        Page_RunItemV1_
-      >(taskSubPath(tenant, taskId, `/runs/search`, true), {
-        field_queries: fieldQueries ?? [],
-        limit,
-        offset,
-      });
+      const { items: runItems, count } = await client.post<SearchTaskRunsRequest, Page_RunItemV1_>(
+        taskSubPath(tenant, taskId, `/runs/search`, true),
+        {
+          field_queries: fieldQueries ?? [],
+          limit,
+          offset,
+        }
+      );
 
       set(
         produce((state) => {
-          state.taskRunItemsV1ByScope.set(
-            scope,
-            orderBy(runItems, 'start_time', 'desc')
-          );
+          state.taskRunItemsV1ByScope.set(scope, orderBy(runItems, 'start_time', 'desc'));
           state.countByScope.set(scope, count);
         })
       );
@@ -181,16 +151,11 @@ export const useTaskRuns = create<TaskRunsState>((set, get) => ({
         state.isLoadingById.set(taskRunId, true);
       })
     );
-    const taskRun = await client
-      .get<TaskRun>(taskSubPath(tenant, taskId, `/runs/${taskRunId}`))
-      .catch(() => undefined);
+    const taskRun = await client.get<TaskRun>(taskSubPath(tenant, taskId, `/runs/${taskRunId}`)).catch(() => undefined);
 
     // When we poll the task run, we need to check if the task run has changed
     // Otherwise, it can trigger some useEffects that are not necessary
-    if (
-      taskRun !== undefined &&
-      !isEqual(get().taskRunsById.get(taskRunId), taskRun)
-    ) {
+    if (taskRun !== undefined && !isEqual(get().taskRunsById.get(taskRunId), taskRun)) {
       set(
         produce((state: TaskRunsState) => {
           state.taskRunsById.set(taskRunId, taskRun);
@@ -215,9 +180,7 @@ export const useTaskRuns = create<TaskRunsState>((set, get) => ({
         state.isRunV1LoadingById.set(runId, true);
       })
     );
-    const runV1 = await client
-      .get<RunV1>(taskSubPath(tenant, taskId, `/runs/${runId}`, true))
-      .catch(() => undefined);
+    const runV1 = await client.get<RunV1>(taskSubPath(tenant, taskId, `/runs/${runId}`, true)).catch(() => undefined);
 
     // When we poll the task run, we need to check if the task run has changed
     // Otherwise, it can trigger some useEffects that are not necessary

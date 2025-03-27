@@ -34,10 +34,5 @@ export function TaskVersionAvatar(props: TaskVersionAvatarProps) {
     return null;
   }
 
-  return (
-    <UserAvatar
-      tooltipText={`${capitalize(avatarType)} by ${user.firstName} ${user.lastName}`}
-      user={user}
-    />
-  );
+  return <UserAvatar tooltipText={`${capitalize(avatarType)} by ${user.firstName} ${user.lastName}`} user={user} />;
 }

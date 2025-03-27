@@ -23,14 +23,7 @@ type ModelLabelProps = {
 };
 
 export function ModelLabel(props: ModelLabelProps) {
-  const {
-    isSelected,
-    showCheck = true,
-    model,
-    dropdownOpen,
-    information,
-    allIntelligenceScores,
-  } = props;
+  const { isSelected, showCheck = true, model, dropdownOpen, information, allIntelligenceScores } = props;
   const disabled = !!model.is_not_supported_reason;
 
   const autoScrollRef = useAutoScrollRef({
@@ -42,18 +35,11 @@ export function ModelLabel(props: ModelLabelProps) {
   const releaseDate = formatDate(model.metadata?.release_date, 'MMM DD');
   const intelligence = model.metadata?.quality_index;
 
-  const notSupportedText =
-    'is_not_supported_reason' in model
-      ? model.is_not_supported_reason
-      : undefined;
+  const notSupportedText = 'is_not_supported_reason' in model ? model.is_not_supported_reason : undefined;
 
   return (
     <SimpleTooltip
-      content={
-        !!notSupportedText
-          ? notSupportedText
-          : showCheck && <ModelDetailsTooltip model={model} />
-      }
+      content={!!notSupportedText ? notSupportedText : showCheck && <ModelDetailsTooltip model={model} />}
       side={!notSupportedText ? 'right' : undefined}
       align={!notSupportedText ? 'center' : undefined}
       tooltipDelay={0}
@@ -67,22 +53,9 @@ export function ModelLabel(props: ModelLabelProps) {
         )}
         ref={autoScrollRef}
       >
-        {showCheck && (
-          <Check
-            className={cn(
-              'h-4 w-4 text-indigo-600 flex-shrink-0',
-              !isSelected && 'opacity-0'
-            )}
-          />
-        )}
+        {showCheck && <Check className={cn('h-4 w-4 text-indigo-600 flex-shrink-0', !isSelected && 'opacity-0')} />}
         <div className='w-6 h-6 rounded-[2px] bg-white flex items-center justify-center border border-gray-100'>
-          <Image
-            src={model.icon_url}
-            alt=''
-            width={20}
-            height={20}
-            className='w-4 h-4 flex-shrink-0'
-          />
+          <Image src={model.icon_url} alt='' width={20} height={20} className='w-4 h-4 flex-shrink-0' />
         </div>
         <div className='overflow-hidden text-ellipsis truncate whitespace-nowrap text-gray-900 text-[13px] font-normal flex-1'>
           {model.name}
@@ -104,10 +77,7 @@ export function ModelLabel(props: ModelLabelProps) {
             </Badge>
           )}
           {information === 'intelligence' && !!intelligence && (
-            <IntelliganceProgress
-              intelligence={intelligence}
-              allIntelligenceScores={allIntelligenceScores}
-            />
+            <IntelliganceProgress intelligence={intelligence} allIntelligenceScores={allIntelligenceScores} />
           )}
         </div>
       </div>

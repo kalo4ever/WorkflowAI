@@ -4,19 +4,11 @@ import { cx } from 'class-variance-authority';
 import { useMemo } from 'react';
 import { Button } from '@/components/ui/Button';
 
-function TitleAndSteps(props: {
-  title: string;
-  step: number | undefined;
-  numberOfSteps: number | undefined;
-}) {
+function TitleAndSteps(props: { title: string; step: number | undefined; numberOfSteps: number | undefined }) {
   const { title, step, numberOfSteps } = props;
 
   const textForSteps = useMemo(() => {
-    if (
-      step === undefined ||
-      numberOfSteps === undefined ||
-      (numberOfSteps === 1 && step === 1)
-    ) {
+    if (step === undefined || numberOfSteps === undefined || (numberOfSteps === 1 && step === 1)) {
       return undefined;
     }
 
@@ -24,16 +16,12 @@ function TitleAndSteps(props: {
   }, [step, numberOfSteps]);
 
   if (textForSteps === undefined) {
-    return (
-      <div className='text-[14px] font-medium text-slate-500'>{title}</div>
-    );
+    return <div className='text-[14px] font-medium text-slate-500'>{title}</div>;
   }
 
   return (
     <div className='flex flex-col gap-[2px]'>
-      <div className='text-slate-500 text-[14px] font-light'>
-        {textForSteps}
-      </div>
+      <div className='text-slate-500 text-[14px] font-light'>{textForSteps}</div>
       <div className='text-[18px] font-medium'>{title}</div>
     </div>
   );
@@ -116,12 +104,7 @@ export function MultipleStepsGroupEntry(props: MultipleStepsGroupEntryProps) {
   }, [itemNames, itemSuffix, itemsSuffix, defaultNumberOfItemsForDisplay]);
 
   return (
-    <div
-      className={cx(
-        'flex flex-col w-full',
-        floatingLook && 'bg-white rounded-[16px] shadow-modal'
-      )}
-    >
+    <div className={cx('flex flex-col w-full', floatingLook && 'bg-white rounded-[16px] shadow-modal')}>
       <div
         className={cx(
           'flex flex-row w-full justify-between items-center overflow-hidden',
@@ -152,19 +135,11 @@ export function MultipleStepsGroupEntry(props: MultipleStepsGroupEntryProps) {
             </div>
           </div>
         ) : (
-          <TitleAndSteps
-            title={title}
-            step={step}
-            numberOfSteps={numberOfSteps}
-          />
+          <TitleAndSteps title={title} step={step} numberOfSteps={numberOfSteps} />
         )}
 
         {isCompleted && !isInProgress && (
-          <Button
-            variant='outline'
-            onClick={onEdit}
-            className='text-slate-700 mb-2.5'
-          >
+          <Button variant='outline' onClick={onEdit} className='text-slate-700 mb-2.5'>
             Edit
           </Button>
         )}
@@ -172,37 +147,22 @@ export function MultipleStepsGroupEntry(props: MultipleStepsGroupEntryProps) {
         {isInProgress && (
           <div className='flex flex-row items-center'>
             {!!numberOfIterationText && (
-              <div className='border-r pr-[8px] font-normal text-slate-500 text-[14px]'>
-                {numberOfIterationText}
-              </div>
+              <div className='border-r pr-[8px] font-normal text-slate-500 text-[14px]'>{numberOfIterationText}</div>
             )}
             {!!onClear && (
-              <Button
-                variant='text'
-                disabled={!isCompleted}
-                onClick={onClear}
-                className='pl-[8px] pr-[16px]'
-              >
+              <Button variant='text' disabled={!isCompleted} onClick={onClear} className='pl-[8px] pr-[16px]'>
                 Clear Selection
               </Button>
             )}
             {!!continueTitle && (
-              <Button
-                disabled={!isCompleted}
-                onClick={onContinue}
-                toRoute={continueRoute}
-              >
+              <Button disabled={!isCompleted} onClick={onContinue} toRoute={continueRoute}>
                 {continueTitle}
               </Button>
             )}
           </div>
         )}
       </div>
-      {isInProgress && (
-        <div className={cx(floatingLook ? 'py-4 px-4' : 'pr-4')}>
-          {children}
-        </div>
-      )}
+      {isInProgress && <div className={cx(floatingLook ? 'py-4 px-4' : 'pr-4')}>{children}</div>}
     </div>
   );
 }

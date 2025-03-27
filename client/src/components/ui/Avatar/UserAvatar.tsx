@@ -1,8 +1,4 @@
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from '@/components/ui/Avatar/Avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar/Avatar';
 import { SimpleTooltip } from '@/components/ui/Tooltip';
 import { User } from '@/types/user';
 
@@ -18,9 +14,7 @@ export function UserAvatar(props: UserAvatarProps) {
     <SimpleTooltip content={tooltipText}>
       <Avatar className='w-6 h-6 bg-purple-300'>
         <AvatarImage src={user.imageUrl ?? undefined} />
-        <AvatarFallback className='bg-purple-100'>
-          {`${user.firstName?.[0]?.toUpperCase() ?? ''}`}
-        </AvatarFallback>
+        <AvatarFallback className='bg-purple-100'>{`${user.firstName?.[0]?.toUpperCase() ?? ''}`}</AvatarFallback>
       </Avatar>
     </SimpleTooltip>
   );

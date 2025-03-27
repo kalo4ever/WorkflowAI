@@ -2,18 +2,10 @@ import { Checkmark16Filled, ChevronUpDownFilled } from '@fluentui/react-icons';
 import { cx } from 'class-variance-authority';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useMemo } from 'react';
-import {
-  CommandGroup,
-  CommandItem,
-  CustomCommandInput,
-} from '@/components/ui/Command';
+import { CommandGroup, CommandItem, CustomCommandInput } from '@/components/ui/Command';
 import { CommandList } from '@/components/ui/Command';
 import { Command } from '@/components/ui/Command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/Popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover';
 import { ScrollArea } from '@/components/ui/ScrollArea';
 import { SimpleTooltip } from '@/components/ui/Tooltip';
 import { getEnvironmentsForMajorVersion } from '@/lib/versionUtils';
@@ -24,15 +16,10 @@ import { MajorVersionDetails } from './MajorVersionDetails';
 type MajorVersionComboboxProps = {
   majorVersions: MajorVersion[];
   matchedMajorVersion: MajorVersion | undefined;
-  useInstructionsAndTemperatureFromMajorVersion: (
-    version: MajorVersion
-  ) => void;
+  useInstructionsAndTemperatureFromMajorVersion: (version: MajorVersion) => void;
 };
 
-function searchValueForVersion(
-  version: MajorVersion | undefined,
-  newestMajorVersion: number | undefined
-) {
+function searchValueForVersion(version: MajorVersion | undefined, newestMajorVersion: number | undefined) {
   if (!version) {
     return undefined;
   }
@@ -62,9 +49,7 @@ function MajorVersionDoubleBadge(props: MajorVersionDoubleBadgeProps) {
         Version {version.major}
       </div>
       {version.major === newestMajorVersion && (
-        <div className='text-gray-50 text-[13px] font-medium px-1.5 py-0.5 rounded-[2px] bg-gray-700'>
-          Latest
-        </div>
+        <div className='text-gray-50 text-[13px] font-medium px-1.5 py-0.5 rounded-[2px] bg-gray-700'>Latest</div>
       )}
       {!!environments && <TaskRunEnvironments environments={environments} />}
     </div>
@@ -93,10 +78,7 @@ function MajorVersionComboboxEntry(props: MajorVersionComboboxEntryProps) {
     return (
       <div className='flex flex-row gap-2 items-center cursor-pointer'>
         <div className='text-gray-800 text-[14px] font-medium'>From</div>
-        <MajorVersionDoubleBadge
-          version={version}
-          newestMajorVersion={newestMajorVersion}
-        />
+        <MajorVersionDoubleBadge version={version} newestMajorVersion={newestMajorVersion} />
       </div>
     );
   }
@@ -112,15 +94,9 @@ function MajorVersionComboboxEntry(props: MajorVersionComboboxEntryProps) {
       >
         <div className='flex flex-row gap-2 items-center w-full'>
           <Checkmark16Filled
-            className={cx(
-              'h-4 w-4 shrink-0 text-indigo-600',
-              isSelected ? 'opacity-100' : 'opacity-0'
-            )}
+            className={cx('h-4 w-4 shrink-0 text-indigo-600', isSelected ? 'opacity-100' : 'opacity-0')}
           />
-          <MajorVersionDoubleBadge
-            version={version}
-            newestMajorVersion={newestMajorVersion}
-          />
+          <MajorVersionDoubleBadge version={version} newestMajorVersion={newestMajorVersion} />
         </div>
       </SimpleTooltip>
     </div>
@@ -131,8 +107,7 @@ export function MajorVersionCombobox(props: MajorVersionComboboxProps) {
   const {
     majorVersions,
     matchedMajorVersion,
-    useInstructionsAndTemperatureFromMajorVersion:
-      setInstructionsAndTemperature,
+    useInstructionsAndTemperatureFromMajorVersion: setInstructionsAndTemperature,
   } = props;
   const [search, setSearch] = useState('');
 
@@ -160,9 +135,7 @@ export function MajorVersionCombobox(props: MajorVersionComboboxProps) {
 
   useEffect(() => {
     if (open && currentSearchValue && commandListRef.current) {
-      const item = commandListRef.current.querySelector(
-        `[cmdk-item][data-value="${currentSearchValue}"]`
-      );
+      const item = commandListRef.current.querySelector(`[cmdk-item][data-value="${currentSearchValue}"]`);
       if (item) {
         item.scrollIntoView({ block: 'center' });
       }
@@ -198,18 +171,9 @@ export function MajorVersionCombobox(props: MajorVersionComboboxProps) {
         </div>
       </PopoverTrigger>
 
-      <PopoverContent
-        className='w-[auto] p-0 overflow-clip rounded-[2px]'
-        align='end'
-        side='bottom'
-        sideOffset={5}
-      >
+      <PopoverContent className='w-[auto] p-0 overflow-clip rounded-[2px]' align='end' side='bottom' sideOffset={5}>
         <Command>
-          <CustomCommandInput
-            placeholder={'Search...'}
-            search={search}
-            onSearchChange={setSearch}
-          />
+          <CustomCommandInput placeholder={'Search...'} search={search} onSearchChange={setSearch} />
           {filteredMajorVersions.length === 0 && (
             <div className='flex w-full h-[80px] items-center justify-center text-gray-500 text-[13px] font-medium'>
               No versions found

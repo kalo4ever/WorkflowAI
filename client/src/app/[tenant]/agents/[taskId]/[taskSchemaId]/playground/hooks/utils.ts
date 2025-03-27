@@ -6,11 +6,7 @@ export function formatTaskRunIdParam(index: number) {
   return `taskRunId${index + 1}`;
 }
 
-export type PlaygroundModels = [
-  Model | null | undefined,
-  Model | null | undefined,
-  Model | null | undefined,
-];
+export type PlaygroundModels = [Model | null | undefined, Model | null | undefined, Model | null | undefined];
 
 /**
  * Calculates the difference between two texts by finding where the new text
@@ -30,10 +26,7 @@ export type PlaygroundModels = [
  * @param newText - The new text to merge
  * @returns The merged text preserving as much of both strings as possible
  */
-export function calculateTextDiff(
-  oldText: string | undefined,
-  newText: string | undefined
-): string {
+export function calculateTextDiff(oldText: string | undefined, newText: string | undefined): string {
   if (!newText?.length) {
     return oldText ?? '';
   }
@@ -94,20 +87,14 @@ function pickFinalTemperature(
   return state.temperature;
 }
 
-function pickFinalVariantId(
-  options: Pick<RunTaskOptions, 'externalVersion'>,
-  state: Pick<RunState, 'variantId'>
-) {
+function pickFinalVariantId(options: Pick<RunTaskOptions, 'externalVersion'>, state: Pick<RunState, 'variantId'>) {
   if (!isNullish(options.externalVersion)) {
     return options.externalVersion.properties.task_variant_id;
   }
   return state.variantId;
 }
 
-export function pickFinalRunProperties(
-  options: RunTaskOptions,
-  state: RunState
-) {
+export function pickFinalRunProperties(options: RunTaskOptions, state: RunState) {
   return {
     finalGeneratedInput: pickFinalGeneratedInput(options, state),
     finalInstructions: pickFinalInstructions(options, state),

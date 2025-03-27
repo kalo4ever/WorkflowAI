@@ -17,9 +17,7 @@ type ProviderKeyManagementItemActionsProps = {
   settingsProvider: ProviderSettings | undefined;
 };
 
-function ProviderKeyManagementItemActions(
-  props: ProviderKeyManagementItemActionsProps
-) {
+function ProviderKeyManagementItemActions(props: ProviderKeyManagementItemActionsProps) {
   const { supported, settingsProvider, onAddProviderKey, onDeleteKey } = props;
 
   if (!supported) {
@@ -40,16 +38,8 @@ function ProviderKeyManagementItemActions(
 
   return (
     <div className='flex gap-3 items-center'>
-      <div className='text-[13px] text-gray-700'>
-        {`Added ${dayjs(settingsProvider.created_at).fromNow()}`}
-      </div>
-      <Button
-        variant='destructive'
-        size='none'
-        onClick={onDeleteKey}
-        fluentIcon={DeleteFilled}
-        className='w-8 h-8'
-      />
+      <div className='text-[13px] text-gray-700'>{`Added ${dayjs(settingsProvider.created_at).fromNow()}`}</div>
+      <Button variant='destructive' size='none' onClick={onDeleteKey} fluentIcon={DeleteFilled} className='w-8 h-8' />
     </div>
   );
 }
@@ -62,16 +52,8 @@ type ProviderKeyManagementItemProps = {
   deleteProviderConfig: (providerId: string) => Promise<void>;
 };
 
-export function ProviderKeyManagementItem(
-  props: ProviderKeyManagementItemProps
-) {
-  const {
-    provider,
-    providerMetadata,
-    settingsProviders,
-    setCurrentProvider,
-    deleteProviderConfig,
-  } = props;
+export function ProviderKeyManagementItem(props: ProviderKeyManagementItemProps) {
+  const { provider, providerMetadata, settingsProviders, setCurrentProvider, deleteProviderConfig } = props;
 
   const settingsProvider = useMemo(
     () => settingsProviders?.find((p) => p.provider === provider),
@@ -93,9 +75,7 @@ export function ProviderKeyManagementItem(
         <div className='w-10 h-10 rounded-[2px] bg-white border border-gray-100 flex items-center justify-center'>
           {providerMetadata.icon}
         </div>
-        <div className='text-[13px] text-gray-900 font-semibold'>
-          {providerMetadata.name}
-        </div>
+        <div className='text-[13px] text-gray-900 font-semibold'>{providerMetadata.name}</div>
       </div>
       <ProviderKeyManagementItemActions
         supported={providerMetadata.providerSupported}

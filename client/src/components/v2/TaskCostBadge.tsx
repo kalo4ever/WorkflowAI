@@ -23,11 +23,7 @@ export function TaskCostBadge(props: TaskCostBadgeProps) {
   );
 
   if (supportTooltip) {
-    return (
-      <SimpleTooltip content='Estimated cost per 1k runs'>
-        {content}
-      </SimpleTooltip>
-    );
+    return <SimpleTooltip content='Estimated cost per 1k runs'>{content}</SimpleTooltip>;
   }
 
   return content;
@@ -42,11 +38,7 @@ export function TaskCostView(props: TaskCostBadgeProps) {
 
   return (
     <SimpleTooltip content='Estimated cost per 1k runs'>
-      <div
-        className={cx('w-fit text-gray-500 text-[13px] font-normal', className)}
-      >
-        {formatCurrency(cost * 1000)}
-      </div>
+      <div className={cx('w-fit text-gray-500 text-[13px] font-normal', className)}>{formatCurrency(cost * 1000)}</div>
     </SimpleTooltip>
   );
 }

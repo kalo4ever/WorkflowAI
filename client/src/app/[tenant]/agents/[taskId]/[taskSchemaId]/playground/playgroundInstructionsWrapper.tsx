@@ -1,10 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/Button';
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from '@/components/ui/HoverCard';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/HoverCard';
 
 type PlaygroundInstructionsWrapperProps = {
   children: React.ReactNode;
@@ -12,20 +8,14 @@ type PlaygroundInstructionsWrapperProps = {
   resetImproveVersionChangelog: () => void;
 };
 
-export function PlaygroundInstructionsWrapper(
-  props: PlaygroundInstructionsWrapperProps
-) {
-  const { children, improveVersionChangelog, resetImproveVersionChangelog } =
-    props;
+export function PlaygroundInstructionsWrapper(props: PlaygroundInstructionsWrapperProps) {
+  const { children, improveVersionChangelog, resetImproveVersionChangelog } = props;
 
   const hoverCardRef = useRef<HTMLDivElement>(null);
 
   const handleClickOutside = useCallback(
     (event: MouseEvent) => {
-      if (
-        !!hoverCardRef.current &&
-        !hoverCardRef.current.contains(event.target as Node)
-      ) {
+      if (!!hoverCardRef.current && !hoverCardRef.current.contains(event.target as Node)) {
         resetImproveVersionChangelog();
       }
     },

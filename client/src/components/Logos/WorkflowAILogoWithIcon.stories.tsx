@@ -1,8 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import {
-  WorkflowAILogoWithIcon,
-  WorkflowAILogoWithIconProps,
-} from './WorkflowAILogoWithIcon';
+import { WorkflowAILogoWithIcon, WorkflowAILogoWithIconProps } from './WorkflowAILogoWithIcon';
 
 function Wrapper(props: WorkflowAILogoWithIconProps) {
   return (

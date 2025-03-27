@@ -6,11 +6,7 @@ type Refs = {
   inputPreviewRef: React.RefObject<HTMLElement>;
 };
 
-export function useResizeHeight({
-  containerRef,
-  inputSchemaRef,
-  inputPreviewRef,
-}: Refs) {
+export function useResizeHeight({ containerRef, inputSchemaRef, inputPreviewRef }: Refs) {
   const sizesRef = useRef({
     containerHeight: 0,
     inputSchemaHeight: 0,
@@ -24,11 +20,7 @@ export function useResizeHeight({
     if (areRefsReady) return;
 
     const checkRefs = () => {
-      if (
-        containerRef.current &&
-        inputSchemaRef.current &&
-        inputPreviewRef.current
-      ) {
+      if (containerRef.current && inputSchemaRef.current && inputPreviewRef.current) {
         setAreRefsReady(true);
         return true;
       }
@@ -82,13 +74,7 @@ export function useResizeHeight({
     }
 
     return () => resizeObserver.disconnect();
-  }, [
-    areRefsReady,
-    containerRef,
-    inputSchemaRef,
-    inputPreviewRef,
-    inputHeight,
-  ]);
+  }, [areRefsReady, containerRef, inputSchemaRef, inputPreviewRef, inputHeight]);
 
   return inputHeight;
 }

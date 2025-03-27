@@ -16,8 +16,7 @@ const INPUT_PREVIEWS: { input: GeneralizedTaskInput; preview: string }[] = [
   {
     input: {
       score: 0,
-      reason:
-        "The value 'flour' is a vegetarian ingredient, so the category should be 'B'.",
+      reason: "The value 'flour' is a vegetarian ingredient, so the category should be 'B'.",
     },
     preview: `score: 0, reason: \"The value 'flour' is a vegetarian ingredient, so the category should be 'B'.\"`,
   },

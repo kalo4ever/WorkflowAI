@@ -2,12 +2,10 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useTasks } from '@/store';
+import { ToolCallName, usePlaygroundChatStore } from '@/store/playgroundChatStore';
 import { GeneralizedTaskInput } from '@/types';
 import { TaskID, TaskSchemaID, TenantID } from '@/types/aliases';
-import {
-  GeneratePlaygroundInputParams,
-  RunTaskOptions,
-} from './usePlaygroundPersistedState';
+import { GeneratePlaygroundInputParams, RunTaskOptions } from './usePlaygroundPersistedState';
 
 type InputGenerationIteration = {
   iteration: number;
@@ -47,12 +45,8 @@ export function useInputGenerator(props: UseInputGeneratorProps) {
     token,
     voidInput,
   } = props;
-  const generatePlaygroundInput = useTasks(
-    (state) => state.generatePlaygroundInput
-  );
-  const generatePlaygroundInputWithText = useTasks(
-    (state) => state.generatePlaygroundInputWithText
-  );
+  const generatePlaygroundInput = useTasks((state) => state.generatePlaygroundInput);
+  const generatePlaygroundInputWithText = useTasks((state) => state.generatePlaygroundInputWithText);
   const [inputLoading, setInputLoading] = useState(false);
   const abortController = useRef<AbortController | null>(null);
 
@@ -74,17 +68,8 @@ export function useInputGenerator(props: UseInputGeneratorProps) {
       type: 'background',
       pending: true,
     };
-    const input = await generatePlaygroundInput(
-      tenant,
-      taskId,
-      taskSchemaId,
-      {},
-      token
-    );
-    if (
-      currentIteration.current.type !== 'background' ||
-      currentIteration.current.iteration !== iteration
-    ) {
+    const input = await generatePlaygroundInput(tenant, taskId, taskSchemaId, {}, token);
+    if (currentIteration.current.type !== 'background' || currentIteration.current.iteration !== iteration) {
       return;
     }
     setPreGeneratedInput(input);
@@ -93,25 +78,16 @@ export function useInputGenerator(props: UseInputGeneratorProps) {
       type: 'background',
       pending: false,
     };
-  }, [
-    isInputGenerationSupported,
-    generatePlaygroundInput,
-    setPreGeneratedInput,
-    taskId,
-    taskSchemaId,
-    tenant,
-    token,
-  ]);
+  }, [isInputGenerationSupported, generatePlaygroundInput, setPreGeneratedInput, taskId, taskSchemaId, tenant, token]);
 
   useEffect(() => {
     if (!preGeneratedInput && isInputGenerationSupported) {
       generateInputInBackground();
     }
-  }, [
-    preGeneratedInput,
-    generateInputInBackground,
-    isInputGenerationSupported,
-  ]);
+  }, [preGeneratedInput, generateInputInBackground, isInputGenerationSupported]);
+
+  const cancelToolCall = usePlaygroundChatStore((state) => state.cancelToolCall);
+  const markToolCallAsDone = usePlaygroundChatStore((state) => state.markToolCallAsDone);
 
   const handleGeneratePlaygroundInput = useCallback(
     async (params?: GeneratePlaygroundInputParams) => {
@@ -138,6 +114,7 @@ export function useInputGenerator(props: UseInputGeneratorProps) {
 
       const onSuccess = (input: GeneralizedTaskInput | undefined) => {
         if (currentAbortController.signal.aborted) {
+          cancelToolCall(ToolCallName.GENERATE_AGENT_INPUT);
           setInputLoading(false);
           setGeneratedInput(undefined);
           toast.dismiss(toastId);
@@ -151,6 +128,8 @@ export function useInputGenerator(props: UseInputGeneratorProps) {
           saveToHistoryForInput(input);
         }
 
+        markToolCallAsDone(taskId, ToolCallName.GENERATE_AGENT_INPUT);
+
         if (launchRuns === true) {
           handleRunTasks({
             externalGeneratedInput: input,
@@ -163,6 +142,8 @@ export function useInputGenerator(props: UseInputGeneratorProps) {
       };
 
       const onError = () => {
+        cancelToolCall(ToolCallName.GENERATE_AGENT_INPUT);
+
         if (currentAbortController.signal.aborted) {
           setInputLoading(false);
           setGeneratedInput(undefined);
@@ -200,11 +181,7 @@ export function useInputGenerator(props: UseInputGeneratorProps) {
       }
 
       // Input Generation with Pre-Generated Input
-      if (
-        instructions === undefined &&
-        temperature === undefined &&
-        !!preGeneratedInput
-      ) {
+      if (instructions === undefined && temperature === undefined && !!preGeneratedInput) {
         setPreGeneratedInput(undefined);
         onSuccess(preGeneratedInput);
         return;
@@ -214,8 +191,7 @@ export function useInputGenerator(props: UseInputGeneratorProps) {
       let message: GeneralizedTaskInput;
 
       const shouldGenerateInBackground =
-        currentIteration.current.type === 'background' &&
-        currentIteration.current.pending;
+        currentIteration.current.type === 'background' && currentIteration.current.pending;
 
       currentIteration.current = {
         iteration: shouldGenerateInBackground
@@ -278,6 +254,8 @@ export function useInputGenerator(props: UseInputGeneratorProps) {
       generateInputInBackground,
       saveToHistoryForInput,
       handleRunTasks,
+      cancelToolCall,
+      markToolCallAsDone,
     ]
   );
 

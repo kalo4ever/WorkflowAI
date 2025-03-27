@@ -13,13 +13,7 @@ export type TooltipButtonProps = {
 function TooltipButton(props: TooltipButtonProps) {
   const { icon, text, onClick, disabled = false } = props;
   return (
-    <Button
-      variant='ghost'
-      size='sm'
-      onClick={onClick}
-      icon={icon}
-      disabled={disabled}
-    >
+    <Button variant='ghost' size='sm' onClick={onClick} icon={icon} disabled={disabled}>
       {text}
     </Button>
   );
@@ -48,9 +42,7 @@ export function TooltipButtonGroup(props: TooltipButtonGroupProps) {
         <div className='flex items-center gap-0.5'>
           {items.map((item, index) => (
             <Fragment key={item.text}>
-              {index > 0 && (
-                <Separator orientation='vertical' className='h-4' />
-              )}
+              {index > 0 && <Separator orientation='vertical' className='h-4' />}
               <TooltipButton {...item} />
             </Fragment>
           ))}

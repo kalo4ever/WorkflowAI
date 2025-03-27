@@ -16,15 +16,7 @@ type TaskVersionTooltipProps = {
 };
 
 export function TaskVersionTooltip(props: TaskVersionTooltipProps) {
-  const {
-    children,
-    onClone,
-    onTryInPlayground,
-    onViewCode,
-    onDeploy,
-    showGroupActions = true,
-    isInDemoMode,
-  } = props;
+  const { children, onClone, onTryInPlayground, onViewCode, onDeploy, showGroupActions = true, isInDemoMode } = props;
 
   const versionActions = useMemo(() => {
     if (!showGroupActions) {
@@ -54,16 +46,7 @@ export function TaskVersionTooltip(props: TaskVersionTooltipProps) {
         disabled: isInDemoMode,
       },
     ];
-  }, [
-    showGroupActions,
-    onClone,
-    onTryInPlayground,
-    onViewCode,
-    onDeploy,
-    isInDemoMode,
-  ]);
+  }, [showGroupActions, onClone, onTryInPlayground, onViewCode, onDeploy, isInDemoMode]);
 
-  return (
-    <TooltipButtonGroup items={versionActions}>{children}</TooltipButtonGroup>
-  );
+  return <TooltipButtonGroup items={versionActions}>{children}</TooltipButtonGroup>;
 }

@@ -14,12 +14,9 @@ export function PlaygroundImportModal(props: PlaygroundImportModalProps) {
   const { open, onClose, onImport } = props;
   const [importedInput, setImportedInput] = useState('');
 
-  const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      setImportedInput(e.target.value);
-    },
-    []
-  );
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setImportedInput(e.target.value);
+  }, []);
 
   const handleImport = useCallback(async () => {
     onClose();
@@ -40,11 +37,7 @@ export function PlaygroundImportModal(props: PlaygroundImportModalProps) {
             />
             <div className='text-sm font-medium'>Import Input</div>
             <div className='flex justify-end gap-2 w-full'>
-              <Button
-                onClick={handleImport}
-                variant='newDesignIndigo'
-                disabled={!importedInput}
-              >
+              <Button onClick={handleImport} variant='newDesignIndigo' disabled={!importedInput}>
                 Import
               </Button>
             </div>

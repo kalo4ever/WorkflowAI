@@ -1,27 +1,8 @@
-import {
-  Building,
-  ChevronsUpDown,
-  LogOut,
-  LucideIcon,
-  Settings,
-} from 'lucide-react';
+import { Building, ChevronsUpDown, LogOut, LucideIcon, Settings } from 'lucide-react';
 import { useState } from 'react';
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from '@/components/ui/Avatar/Avatar';
-import {
-  Command,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-} from '@/components/ui/Command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/Popover';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar/Avatar';
+import { Command, CommandItem, CommandList, CommandSeparator } from '@/components/ui/Command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover';
 import { SimpleTooltip } from '@/components/ui/Tooltip';
 import { DISABLE_AUTHENTICATION } from '@/lib/constants';
 import { User } from '@/types/user';
@@ -37,10 +18,7 @@ function UserMenuCommand(props: UserMenuCommandProps) {
   const { lucideIcon: Icon, label, onSelect, tooltip } = props;
 
   return (
-    <CommandItem
-      onSelect={onSelect}
-      className='cursor-pointer flex items-center gap-3 text-gray-700 font-lato'
-    >
+    <CommandItem onSelect={onSelect} className='cursor-pointer flex items-center gap-3 text-gray-700 font-lato'>
       <SimpleTooltip
         content={tooltip}
         asChild
@@ -60,20 +38,14 @@ function UserMenuCommand(props: UserMenuCommandProps) {
 
 type UserMenuProps = {
   user: User | null | undefined;
-  hasOrganization: boolean;
+  orgState: 'selected' | 'available' | 'unavailable' | undefined;
   openUserProfile?: () => void;
   openOrganizationProfile?: () => void;
   signOut?: () => void;
 };
 
 export function UserMenu(props: UserMenuProps) {
-  const {
-    user,
-    hasOrganization,
-    openUserProfile,
-    openOrganizationProfile,
-    signOut,
-  } = props;
+  const { user, orgState, openUserProfile, openOrganizationProfile, signOut } = props;
   const [open, setOpen] = useState(false);
   const email = user?.email;
 
@@ -86,9 +58,7 @@ export function UserMenu(props: UserMenuProps) {
           <div className='flex flex-row items-center w-full'>
             <Avatar className='w-5 h-5 shrink-0 mr-3'>
               <AvatarImage src={user.imageUrl} />
-              <AvatarFallback>
-                {user.fullName?.[0].toUpperCase()}
-              </AvatarFallback>
+              <AvatarFallback>{user.fullName?.[0].toUpperCase()}</AvatarFallback>
             </Avatar>
             <div className='flex flex-row items-center justify-between overflow-hidden w-full'>
               <div className='max-w-[150px] whitespace-nowrap overflow-hidden text-ellipsis font-medium text-[13px] text-gray-800'>
@@ -102,41 +72,37 @@ export function UserMenu(props: UserMenuProps) {
       <PopoverContent className='w-[auto] min-w-[220px] p-1 rounded-[2px]'>
         <Command>
           <CommandList>
-            {!hasOrganization && openOrganizationProfile && (
+            {orgState === 'unavailable' && openOrganizationProfile && (
               <>
                 <UserMenuCommand
                   lucideIcon={Building}
                   label='Create an Organization'
                   onSelect={openOrganizationProfile}
-                  tooltip={
-                    'Create an organization to start\ncollaborating with your team.'
-                  }
+                  tooltip={'Create an organization to start\ncollaborating with your team.'}
+                />
+                <CommandSeparator />
+              </>
+            )}
+
+            {orgState === 'available' && openOrganizationProfile && (
+              <>
+                <UserMenuCommand
+                  lucideIcon={Building}
+                  label='Select an organization'
+                  onSelect={openOrganizationProfile}
+                  tooltip={'Join an organization to start\ncollaborating with your team.'}
                 />
                 <CommandSeparator />
               </>
             )}
 
             {openUserProfile && (
-              <UserMenuCommand
-                lucideIcon={Settings}
-                label='Manage account'
-                onSelect={openUserProfile}
-              />
+              <UserMenuCommand lucideIcon={Settings} label='Manage account' onSelect={openUserProfile} />
             )}
-            {openOrganizationProfile && hasOrganization && (
-              <UserMenuCommand
-                lucideIcon={Building}
-                label='Organization settings'
-                onSelect={openOrganizationProfile}
-              />
+            {openOrganizationProfile && orgState === 'selected' && (
+              <UserMenuCommand lucideIcon={Building} label='Organization settings' onSelect={openOrganizationProfile} />
             )}
-            {signOut && (
-              <UserMenuCommand
-                lucideIcon={LogOut}
-                label='Sign out'
-                onSelect={signOut}
-              />
-            )}
+            {signOut && <UserMenuCommand lucideIcon={LogOut} label='Sign out' onSelect={signOut} />}
           </CommandList>
         </Command>
       </PopoverContent>

@@ -22,12 +22,7 @@ export function LoginSignUpPlaceholder(props: LoginSignUpPlaceholderProps) {
   }
 
   return (
-    <div
-      className={cn(
-        'flex w-full h-full items-center justify-center',
-        className
-      )}
-    >
+    <div className={cn('flex w-full h-full items-center justify-center', className)}>
       <div className='flex flex-wrap gap-2'>
         <Button variant='newDesign' toRoute={routeForSignIn}>
           Login

@@ -2,10 +2,7 @@ import { enableMapSet, produce } from 'immer';
 import { create } from 'zustand';
 import { client } from '@/lib/api';
 import { TaskID, TenantID } from '@/types/aliases';
-import {
-  LLMCompletionTypedMessages,
-  LLMCompletionsResponse,
-} from '@/types/workflowAI';
+import { LLMCompletionTypedMessages, LLMCompletionsResponse } from '@/types/workflowAI';
 import { taskSubPath } from './utils';
 
 enableMapSet();
@@ -15,11 +12,7 @@ interface RunCompletionsState {
   isInitializedById: Map<string, boolean>;
   isLoadingById: Map<string, boolean>;
 
-  fetchRunCompletion(
-    tenant: TenantID | undefined,
-    taskId: TaskID,
-    taskRunId: string
-  ): Promise<void>;
+  fetchRunCompletion(tenant: TenantID | undefined, taskId: TaskID, taskRunId: string): Promise<void>;
 }
 
 export const useRunCompletions = create<RunCompletionsState>((set, get) => ({
@@ -27,11 +20,7 @@ export const useRunCompletions = create<RunCompletionsState>((set, get) => ({
   isInitializedById: new Map<string, boolean>(),
   isLoadingById: new Map<string, boolean>(),
 
-  fetchRunCompletion: async (
-    tenant: TenantID | undefined,
-    taskId: TaskID,
-    taskRunId: string
-  ) => {
+  fetchRunCompletion: async (tenant: TenantID | undefined, taskId: TaskID, taskRunId: string) => {
     if (get().isLoadingById.get(taskRunId)) {
       return;
     }

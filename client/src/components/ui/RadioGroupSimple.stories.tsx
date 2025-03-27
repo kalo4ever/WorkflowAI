@@ -8,10 +8,7 @@ function Wrapper() {
   return (
     <div className='flex flex-col gap-2'>
       <SimpleRadioIndicator isSelected={value === true} onClick={toggleValue} />
-      <SimpleRadioIndicator
-        isSelected={value === false}
-        onClick={toggleValue}
-      />
+      <SimpleRadioIndicator isSelected={value === false} onClick={toggleValue} />
     </div>
   );
 }

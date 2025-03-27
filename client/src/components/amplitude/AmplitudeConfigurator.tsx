@@ -19,9 +19,7 @@ export function AmplitudeConfigurator(props: AmplitudeConfiguratorProps) {
     const apiKey = process.env.NEXT_PUBLIC_AMPLITUDE_API_KEY;
 
     if (typeof window === 'undefined' || !apiKey) {
-      const message = !apiKey
-        ? `Amplitude API key not found`
-        : `Window object not found`;
+      const message = !apiKey ? `Amplitude API key not found` : `Window object not found`;
       captureException(`Amplitude not initialized: ${message}`);
       return;
     }

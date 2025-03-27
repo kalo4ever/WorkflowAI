@@ -1,9 +1,5 @@
 import { Save16Regular } from '@fluentui/react-icons';
-import {
-  HoverCard,
-  HoverCardContentProps,
-  HoverCardTrigger,
-} from '@radix-ui/react-hover-card';
+import { HoverCard, HoverCardContentProps, HoverCardTrigger } from '@radix-ui/react-hover-card';
 import { useCallback, useMemo, useState } from 'react';
 import { useDemoMode } from '@/lib/hooks/useDemoMode';
 import { useFavoriteToggle } from '@/lib/hooks/useFavoriteToggle';
@@ -42,9 +38,7 @@ type TaskVersionBadgeContainerProps = {
   height?: number;
 };
 
-export function TaskVersionBadgeContainer(
-  props: TaskVersionBadgeContainerProps
-) {
+export function TaskVersionBadgeContainer(props: TaskVersionBadgeContainerProps) {
   const {
     version,
     showHoverState = true,
@@ -113,8 +107,7 @@ export function TaskVersionBadgeContainer(
     return lastActiveDate >= fortyEightHoursAgo;
   }, [version?.last_active_at]);
 
-  const shouldShowActiveIndicator =
-    showActiveIndicator && isActive && version.id !== undefined;
+  const shouldShowActiveIndicator = showActiveIndicator && isActive && version.id !== undefined;
 
   const isSaving = useIsSavingVersion(version?.id);
 
@@ -154,20 +147,13 @@ export function TaskVersionBadgeContainer(
   }
 
   return (
-    <div
-      className={cn(
-        'flex flex-row items-center',
-        !!height && `h-[${height}px]`
-      )}
-    >
+    <div className={cn('flex flex-row items-center', !!height && `h-[${height}px]`)}>
       <HoverCard
         open={noteHoverCardOpen || undefined}
         key={noteHoverCardOpen ? 'open' : 'closed'}
         openDelay={300}
         onOpenChange={(open) => {
-          const tooltips = document.querySelectorAll(
-            '[data-radix-popper-content-wrapper]'
-          );
+          const tooltips = document.querySelectorAll('[data-radix-popper-content-wrapper]');
 
           tooltips.forEach((tooltip) => {
             if (tooltip instanceof HTMLElement) {
@@ -192,12 +178,7 @@ export function TaskVersionBadgeContainer(
           </div>
         </HoverCardTrigger>
         {showDetails && !noteHoverCardOpen && (
-          <HoverTaskVersionDetails
-            side={side}
-            align={align}
-            version={version}
-            handleUpdateNotes={handleUpdateNotes}
-          />
+          <HoverTaskVersionDetails side={side} align={align} version={version} handleUpdateNotes={handleUpdateNotes} />
         )}
         {showNotes && noteHoverCardOpen && (
           <AddNoteCard
@@ -211,12 +192,7 @@ export function TaskVersionBadgeContainer(
       {shouldShowActiveIndicator && (
         <SimpleTooltip
           content={
-            <TaskStats
-              tenant={tenant}
-              taskSchemaId={taskSchemaId}
-              taskId={taskId}
-              iteration={version?.iteration}
-            />
+            <TaskStats tenant={tenant} taskSchemaId={taskSchemaId} taskId={taskId} iteration={version?.iteration} />
           }
           side='top'
         >

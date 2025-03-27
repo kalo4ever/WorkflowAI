@@ -30,13 +30,7 @@ export function CopyContentButton(props: CopyContentButtonProps) {
       onClick={handleCopy}
       className={cx('h-5 w-5 p-0', className)}
       data-testid='copy-button-inside'
-      icon={
-        copied ? (
-          <Check size={12} strokeWidth={2} />
-        ) : (
-          <Copy size={12} strokeWidth={2} />
-        )
-      }
+      icon={copied ? <Check size={12} strokeWidth={2} /> : <Copy size={12} strokeWidth={2} />}
     />
   );
 }
@@ -47,11 +41,7 @@ type CopyButtonWrapperProps = {
   showCopyButton?: boolean;
 };
 
-export function CopyButtonWrapper({
-  children,
-  text,
-  showCopyButton = true,
-}: CopyButtonWrapperProps) {
+export function CopyButtonWrapper({ children, text, showCopyButton = true }: CopyButtonWrapperProps) {
   const isShortText = text.length < SHORT_TEXT_THRESHOLD;
   return (
     <div className='group flex items-center relative gap-1'>
@@ -59,10 +49,7 @@ export function CopyButtonWrapper({
       {showCopyButton && (
         <CopyContentButton
           text={text}
-          className={cx(
-            'opacity-0 group-hover:opacity-90',
-            !isShortText && 'absolute top-1 right-1'
-          )}
+          className={cx('opacity-0 group-hover:opacity-90', !isShortText && 'absolute top-1 right-1')}
         />
       )}
     </div>

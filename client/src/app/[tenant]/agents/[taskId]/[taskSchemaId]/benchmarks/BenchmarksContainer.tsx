@@ -17,19 +17,9 @@ import { useCompatibleAIModels } from '@/lib/hooks/useCompatibleAIModels';
 import { useDemoMode } from '@/lib/hooks/useDemoMode';
 import { useTaskSchemaParams } from '@/lib/hooks/useTaskParams';
 import { useRedirectWithParams } from '@/lib/queryString';
-import {
-  Params,
-  taskApiRoute,
-  taskRunsRoute,
-  taskSchemaRoute,
-} from '@/lib/routeFormatter';
+import { Params, taskApiRoute, taskRunsRoute, taskSchemaRoute } from '@/lib/routeFormatter';
 import { environmentsForVersion } from '@/lib/versionUtils';
-import {
-  useOrFetchAllAiModels,
-  useOrFetchReviewBenchmark,
-  useOrFetchTask,
-  useOrFetchVersions,
-} from '@/store';
+import { useOrFetchAllAiModels, useOrFetchReviewBenchmark, useOrFetchTask, useOrFetchVersions } from '@/store';
 import { useReviewBenchmark } from '@/store/task_review_benchmark';
 import { useVersions } from '@/store/versions';
 import { UNDEFINED_MODEL } from '@/types/aliases';
@@ -42,26 +32,15 @@ import { findBestOnes } from './utils';
 export function BenchmarksContainer() {
   const { tenant, taskId, taskSchemaId } = useTaskSchemaParams();
 
-  const { benchmark, isInitialized } = useOrFetchReviewBenchmark(
-    tenant,
-    taskId,
-    taskSchemaId
-  );
+  const { benchmark, isInitialized } = useOrFetchReviewBenchmark(tenant, taskId, taskSchemaId);
 
   const fetchBenchmark = useReviewBenchmark((state) => state.fetchBenchmark);
   const updateBenchmark = useReviewBenchmark((state) => state.updateBenchmark);
 
-  const { versions, versionsPerEnvironment } = useOrFetchVersions(
-    tenant,
-    taskId,
-    taskSchemaId
-  );
+  const { versions, versionsPerEnvironment } = useOrFetchVersions(tenant, taskId, taskSchemaId);
 
   const versionById = useMemo(() => keyBy(versions, 'id'), [versions]);
-  const versionByIteration = useMemo(
-    () => keyBy(versions, 'iteration'),
-    [versions]
-  );
+  const versionByIteration = useMemo(() => keyBy(versions, 'iteration'), [versions]);
 
   const bestOnes = useMemo(() => {
     return findBestOnes(benchmark?.results ?? []);
@@ -82,21 +61,11 @@ export function BenchmarksContainer() {
       const oldSet = benchmarkIterations || new Set<number>();
       const newSet = iterations || new Set<number>();
 
-      iterationsToAdd = Array.from(newSet).filter(
-        (iteration) => !oldSet.has(iteration)
-      );
+      iterationsToAdd = Array.from(newSet).filter((iteration) => !oldSet.has(iteration));
 
-      iterationsToRemove = Array.from(oldSet).filter(
-        (iteration) => !newSet.has(iteration)
-      );
+      iterationsToRemove = Array.from(oldSet).filter((iteration) => !newSet.has(iteration));
 
-      await updateBenchmark(
-        tenant,
-        taskId,
-        taskSchemaId,
-        iterationsToAdd,
-        iterationsToRemove
-      );
+      await updateBenchmark(tenant, taskId, taskSchemaId, iterationsToAdd, iterationsToRemove);
     },
     [benchmarkIterations, updateBenchmark, tenant, taskId, taskSchemaId]
   );
@@ -151,10 +120,9 @@ export function BenchmarksContainer() {
 
   const [newGroupModalOpen, setNewGroupModalOpen] = useState(false);
 
-  const [editableProperties, setEditableProperties] =
-    useState<TaskVersionEditableProperties>(
-      DEFAULT_TASK_VERSION_EDITABLE_PROPERTIES
-    );
+  const [editableProperties, setEditableProperties] = useState<TaskVersionEditableProperties>(
+    DEFAULT_TASK_VERSION_EDITABLE_PROPERTIES
+  );
 
   const onClone = useCallback(
     (versionId: string) => {
@@ -205,15 +173,7 @@ export function BenchmarksContainer() {
 
       return true;
     },
-    [
-      createVersion,
-      saveVersion,
-      tenant,
-      taskId,
-      taskSchemaId,
-      benchmarkIterations,
-      updateBenchmarkIterations,
-    ]
+    [createVersion, saveVersion, tenant, taskId, taskSchemaId, benchmarkIterations, updateBenchmarkIterations]
   );
 
   const onOpenTaskRuns = useCallback(

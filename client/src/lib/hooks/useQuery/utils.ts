@@ -121,10 +121,7 @@ export function mapQuery<T>(val: T, mapper: QueryMapper<T>): URLSearchParams {
   return params;
 }
 
-export function parseQuery<T>(
-  params: URLSearchParams,
-  mapper: QueryMapper<T>
-): T {
+export function parseQuery<T>(params: URLSearchParams, mapper: QueryMapper<T>): T {
   const parsed = {} as Record<string, unknown>;
   for (const key in mapper) {
     const fieldMapper = mapper[key];

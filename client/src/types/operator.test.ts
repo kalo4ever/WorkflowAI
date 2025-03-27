@@ -1,9 +1,4 @@
-import {
-  FieldFilter,
-  Operator,
-  deserializeFieldFilter,
-  serializeFieldFilter,
-} from './operator';
+import { FieldFilter, Operator, deserializeFieldFilter, serializeFieldFilter } from './operator';
 
 describe('field filters', () => {
   const cases: [FieldFilter, string][] = [

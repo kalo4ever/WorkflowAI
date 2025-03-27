@@ -1,7 +1,4 @@
-import {
-  ArrowSortDown16Filled,
-  ArrowSortUp16Filled,
-} from '@fluentui/react-icons';
+import { ArrowSortDown16Filled, ArrowSortUp16Filled } from '@fluentui/react-icons';
 import { cx } from 'class-variance-authority';
 
 type SortButtonProps = {
@@ -16,9 +13,7 @@ type SortButtonProps = {
 export function SortButton(props: SortButtonProps) {
   const { icon, text, isOn, defaultOrder, revert, onSortChange } = props;
 
-  const arrowDown =
-    (defaultOrder === 'ascending' && !revert) ||
-    (defaultOrder === 'descending' && revert);
+  const arrowDown = (defaultOrder === 'ascending' && !revert) || (defaultOrder === 'descending' && revert);
 
   const orderIcon = arrowDown ? (
     <ArrowSortDown16Filled className='w-4 h-4 text-indigo-700' />
@@ -36,22 +31,10 @@ export function SortButton(props: SortButtonProps) {
       )}
       onClick={() => onSortChange()}
     >
-      <div
-        className={cx(
-          'w-4 h-4 flex items-center justify-center',
-          isOn ? 'text-indigo-700' : 'text-gray-900'
-        )}
-      >
+      <div className={cx('w-4 h-4 flex items-center justify-center', isOn ? 'text-indigo-700' : 'text-gray-900')}>
         {icon}
       </div>
-      <div
-        className={cx(
-          'text-[12px] font-normal font-lato',
-          isOn ? 'text-indigo-700' : 'text-gray-700'
-        )}
-      >
-        {text}
-      </div>
+      <div className={cx('text-[12px] font-normal font-lato', isOn ? 'text-indigo-700' : 'text-gray-700')}>{text}</div>
       {isOn && orderIcon}
     </div>
   );

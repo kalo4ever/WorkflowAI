@@ -1,9 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useCallback, useState } from 'react';
-import {
-  SliderWithInput,
-  SliderWithInputProps,
-} from '@/components/ui/SliderWithInput';
+import { SliderWithInput, SliderWithInputProps } from '@/components/ui/SliderWithInput';
 
 type WrapperProps = Omit<SliderWithInputProps, 'value' | 'onChange'>;
 

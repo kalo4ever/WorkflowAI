@@ -9,9 +9,7 @@ type SearchTasksSectionContentProps = {
   onTryInPlayground: (task: SerializableTask) => void;
 };
 
-export function SearchTasksSectionContent(
-  props: SearchTasksSectionContentProps
-) {
+export function SearchTasksSectionContent(props: SearchTasksSectionContentProps) {
   const { tasks, searchText, onTryInPlayground } = props;
 
   const filteredTasks = useMemo(() => {
@@ -23,11 +21,7 @@ export function SearchTasksSectionContent(
   return (
     <div className='flex flex-col h-full w-full pt-3 overflow-y-auto'>
       {filteredTasks.map((task) => (
-        <TaskRow
-          key={task.id}
-          task={task}
-          onTryInPlayground={onTryInPlayground}
-        />
+        <TaskRow key={task.id} task={task} onTryInPlayground={onTryInPlayground} />
       ))}
     </div>
   );

@@ -47,10 +47,7 @@ export function buildSearchTaskRunsScopeKey({
   let result = `${tenant}-${taskId}-${limit}-${offset}`;
   if (fieldQueries) {
     result += `-${fieldQueries
-      .map(
-        (query) =>
-          `${query.field_name}-${query.operator}-${query.values.join(',')}`
-      )
+      .map((query) => `${query.field_name}-${query.operator}-${query.values.join(',')}`)
       .join(',')}`;
   }
   return result;
@@ -76,27 +73,16 @@ export function buildTaskStatsScopeKey({
   return `${tenant}-${taskId}-${createdAfter}-${createdBefore}-${taskSchemaId}-${version}-${isActive}`;
 }
 
-export function rootTenantPath(
-  tenant?: TenantID | undefined,
-  v1: boolean = false
-) {
+export function rootTenantPath(tenant?: TenantID | undefined, v1: boolean = false) {
   return `/api/data/${v1 ? 'v1/' : ''}${tenant ?? '_'}`;
 }
 
 // "_" is a special tenant that is equivalent to the tenant provided in the JWT
-export function rootTaskPath(
-  tenant?: TenantID | undefined,
-  v1: boolean = false
-) {
+export function rootTaskPath(tenant?: TenantID | undefined, v1: boolean = false) {
   return `${rootTenantPath(tenant, v1)}/agents`;
 }
 
-export function taskSubPath(
-  tenant: TenantID | undefined,
-  taskId: TaskID,
-  subpath: string,
-  v1: boolean = false
-) {
+export function taskSubPath(tenant: TenantID | undefined, taskId: TaskID, subpath: string, v1: boolean = false) {
   return `${rootTaskPath(tenant, v1)}/${taskId}${subpath}`;
 }
 

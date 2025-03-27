@@ -14,12 +14,5 @@ type TimezoneSelectProps = {
 export function TimezoneSelect(props: TimezoneSelectProps) {
   const { value, onChange, disabled } = props;
 
-  return (
-    <Combobox
-      value={value}
-      onChange={onChange}
-      options={TIMEZONES}
-      disabled={disabled}
-    />
-  );
+  return <Combobox value={value} onChange={onChange} options={TIMEZONES} disabled={disabled} />;
 }

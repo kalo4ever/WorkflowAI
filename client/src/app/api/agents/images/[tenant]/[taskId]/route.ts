@@ -7,14 +7,9 @@ import { RunV1 } from '@/types/workflowAI';
 
 export const runtime = 'edge';
 
-const lato = fetch(
-  new URL('@/app/fonts/Lato/Lato-Regular.ttf', import.meta.url)
-).then((res) => res.arrayBuffer());
+const lato = fetch(new URL('@/app/fonts/Lato/Lato-Regular.ttf', import.meta.url)).then((res) => res.arrayBuffer());
 
-function getEntriesFromOutput(
-  output: JsonSchema,
-  parentKey = ''
-): { key: string; value: string }[] {
+function getEntriesFromOutput(output: JsonSchema, parentKey = ''): { key: string; value: string }[] {
   const entries: { key: string; value: string }[] = [];
 
   if (!output || typeof output !== 'object') {
@@ -31,11 +26,7 @@ function getEntriesFromOutput(
   Object.entries(output).forEach(([key, value]) => {
     const currentKey = parentKey ? `${parentKey}.${key}` : key;
 
-    if (
-      typeof value === 'string' ||
-      typeof value === 'number' ||
-      typeof value === 'boolean'
-    ) {
+    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
       entries.push({
         key: key + ':',
         value: String(value),
@@ -48,10 +39,7 @@ function getEntriesFromOutput(
   return entries;
 }
 
-export async function GET(
-  request: Request,
-  { params }: { params: { tenant: string; taskId: string } }
-) {
+export async function GET(request: Request, { params }: { params: { tenant: string; taskId: string } }) {
   const { tenant, taskId } = params;
 
   const urlForLatestRun = `${API_URL}/v1/${tenant}/agents/${taskId}/runs/latest?is_success=true`;

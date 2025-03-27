@@ -58,21 +58,13 @@ type Props = {
 };
 
 export function usePlaygroundPersistedState(props: Props) {
-  const {
-    taskId,
-    taskSchemaId,
-    tenant,
-    showDiffModeParam,
-    show2ColumnLayoutParam,
-  } = props;
+  const { taskId, taskSchemaId, tenant, showDiffModeParam, show2ColumnLayoutParam } = props;
 
-  const [persistedState, setPersistedState] =
-    useLocalStorage<PlaygroundPersistedState>('playgroundPersistedState', {});
-  const [sessionPersistedState, setSessionPersistedState] =
-    useSessionStorage<PlaygroundSessionPersistedState>(
-      'playgroundSessionPersistedState',
-      {}
-    );
+  const [persistedState, setPersistedState] = useLocalStorage<PlaygroundPersistedState>('playgroundPersistedState', {});
+  const [sessionPersistedState, setSessionPersistedState] = useSessionStorage<PlaygroundSessionPersistedState>(
+    'playgroundSessionPersistedState',
+    {}
+  );
 
   const schemaScopeKey = buildScopeKey({ tenant, taskId, taskSchemaId });
   const taskScopeKey = buildScopeKey({
@@ -81,40 +73,23 @@ export function usePlaygroundPersistedState(props: Props) {
     taskSchemaId: 'allTaskSchemas',
   });
   // We persist the generated input in session storage to keep it until the user closes the tab
-  const persistedGeneratedInput =
-    sessionPersistedState[schemaScopeKey]?.generatedInput;
-  const persistedPreGeneratedInput =
-    sessionPersistedState[schemaScopeKey]?.preGeneratedInput;
-  const persistedSchemaModels = persistedState[schemaScopeKey]?.models ?? [
-    null,
-    null,
-    null,
-  ];
-  const persistedTaskModels = persistedState[taskScopeKey]?.models ?? [
-    null,
-    null,
-    null,
-  ];
-  const persistedShowDiffMode =
-    persistedState[taskScopeKey]?.showDiffMode ?? false;
-  const persistedShow2ColumnLayout =
-    persistedState[taskScopeKey]?.show2ColumnLayout ?? false;
+  const persistedGeneratedInput = sessionPersistedState[schemaScopeKey]?.generatedInput;
+  const persistedPreGeneratedInput = sessionPersistedState[schemaScopeKey]?.preGeneratedInput;
+  const persistedSchemaModels = persistedState[schemaScopeKey]?.models ?? [null, null, null];
+  const persistedTaskModels = persistedState[taskScopeKey]?.models ?? [null, null, null];
+  const persistedShowDiffMode = persistedState[taskScopeKey]?.showDiffMode ?? false;
+  const persistedShow2ColumnLayout = persistedState[taskScopeKey]?.show2ColumnLayout ?? false;
   const persistedTaskRunId1 = persistedState[schemaScopeKey]?.taskRunId1;
   const persistedTaskRunId2 = persistedState[schemaScopeKey]?.taskRunId2;
   const persistedTaskRunId3 = persistedState[schemaScopeKey]?.taskRunId3;
   const persistedVersionId = persistedState[schemaScopeKey]?.versionId;
 
-  const [schemaModels, setSchemaModels] = useState<PlaygroundModels>(
-    persistedSchemaModels
+  const [schemaModels, setSchemaModels] = useState<PlaygroundModels>(persistedSchemaModels);
+  const [taskModels, setTaskModels] = useState<PlaygroundModels>(persistedTaskModels);
+  const [generatedInput, setGeneratedInput] = useState<GeneralizedTaskInput | undefined>(persistedGeneratedInput);
+  const [preGeneratedInput, setPreGeneratedInput] = useState<GeneralizedTaskInput | undefined>(
+    persistedPreGeneratedInput
   );
-  const [taskModels, setTaskModels] =
-    useState<PlaygroundModels>(persistedTaskModels);
-  const [generatedInput, setGeneratedInput] = useState<
-    GeneralizedTaskInput | undefined
-  >(persistedGeneratedInput);
-  const [preGeneratedInput, setPreGeneratedInput] = useState<
-    GeneralizedTaskInput | undefined
-  >(persistedPreGeneratedInput);
 
   const handleSetModels = useCallback(
     (index: number, newModel: ModelOptional) => {
@@ -178,10 +153,7 @@ export function usePlaygroundPersistedState(props: Props) {
 
   // We need to set the showDiffMode and show2ColumnLayout from the query params if they are not defined
   useEffect(() => {
-    if (
-      showDiffModeParam === undefined &&
-      show2ColumnLayoutParam === undefined
-    ) {
+    if (showDiffModeParam === undefined && show2ColumnLayoutParam === undefined) {
       redirectWithParams({
         params: {
           showDiffMode: persistedShowDiffMode ? 'true' : 'false',

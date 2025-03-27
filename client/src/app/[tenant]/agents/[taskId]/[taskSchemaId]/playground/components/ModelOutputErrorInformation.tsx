@@ -7,19 +7,13 @@ type ModelOutputErrorInformationProps = {
   onOpenChangeModalPopover?: () => void;
 };
 
-export function ModelOutputErrorInformation(
-  props: ModelOutputErrorInformationProps
-) {
+export function ModelOutputErrorInformation(props: ModelOutputErrorInformationProps) {
   const { errorForModel, onOpenChangeModalPopover } = props;
   return (
     <div className='flex flex-col w-full items-center pt-10 mb-10 sm:mb-0'>
       <AlertTriangle size={20} className='text-gray-400' />
-      <div className='pt-4 mx-2 text-gray-700 text-[14px] font-medium'>
-        {errorForModel.name}
-      </div>
-      <div className='pt-0.5 mx-2 text-gray-500 text-[12px] text-center'>
-        {errorForModel.message}
-      </div>
+      <div className='pt-4 mx-2 text-gray-700 text-[14px] font-medium'>{errorForModel.name}</div>
+      <div className='pt-0.5 mx-2 text-gray-500 text-[12px] text-center'>{errorForModel.message}</div>
       {!!onOpenChangeModalPopover && (
         <Button
           variant='newDesign'

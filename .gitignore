@@ -240,7 +240,7 @@ poetry.toml
 # ruff
 .ruff_cache/
 
-# LSP config files
+# LSP config filesw
 pyrightconfig.json
 
 # End of https://www.toptal.com/developers/gitignore/api/python,nextjs,macos,dotenv
@@ -258,3 +258,4 @@ pyrightconfig.json
 
 **/.next
 junit
+openapi_fixed.json

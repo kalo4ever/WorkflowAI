@@ -11,7 +11,6 @@ function buildMiddleware(): NextMiddleware {
   }
   return clerkMiddleware((auth, req) => {
     if (!auth().userId && isProtectedRoute(req)) {
-      // Add custom logic to run before redirecting
       return auth().redirectToSignIn();
     }
   });

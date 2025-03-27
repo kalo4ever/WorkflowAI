@@ -5,9 +5,7 @@ type BenchmarkVersionEnvironmentsProps = {
   environments?: VersionEnvironment[];
 };
 
-export function BenchmarkVersionEnvironments(
-  props: BenchmarkVersionEnvironmentsProps
-) {
+export function BenchmarkVersionEnvironments(props: BenchmarkVersionEnvironmentsProps) {
   const { environments } = props;
 
   return (
@@ -15,10 +13,7 @@ export function BenchmarkVersionEnvironments(
       {!!environments &&
         environments.map((environment) => (
           <div className='w-fit' key={environment}>
-            <TaskEnvironmentBadge
-              environment={environment}
-              showIconOnly={environments.length > 1}
-            />
+            <TaskEnvironmentBadge environment={environment} showIconOnly={environments.length > 1} />
           </div>
         ))}
     </div>

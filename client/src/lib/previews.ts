@@ -44,12 +44,7 @@ class Agg {
 }
 
 function anyPreview(value: SchemaNodeType, agg: Agg): void {
-  if (
-    typeof value === 'object' &&
-    !Array.isArray(value) &&
-    value !== null &&
-    !(value instanceof Date)
-  ) {
+  if (typeof value === 'object' && !Array.isArray(value) && value !== null && !(value instanceof Date)) {
     agg.append('{');
     // eslint-disable-next-line no-use-before-define -- recursive call
     dictPreview(value, agg);
@@ -91,10 +86,7 @@ function listPreview(arr: SchemaNodeType[], agg: Agg): void {
   }
 }
 
-export function computePreview(
-  input: GeneralizedTaskInput | null | undefined,
-  maxLen: number = 200
-): string {
+export function computePreview(input: GeneralizedTaskInput | null | undefined, maxLen: number = 200): string {
   if (!input) {
     return '-';
   }

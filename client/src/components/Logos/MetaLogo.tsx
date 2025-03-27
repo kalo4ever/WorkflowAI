@@ -36,12 +36,7 @@ export function MetaLogo(props: MetaLogoProps) {
       </g>
       <defs>
         <clipPath id='clip0_3479_8359'>
-          <rect
-            width='119.12'
-            height='24'
-            fill='white'
-            transform='translate(0.703125)'
-          />
+          <rect width='119.12' height='24' fill='white' transform='translate(0.703125)' />
         </clipPath>
       </defs>
     </svg>

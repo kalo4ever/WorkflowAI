@@ -67,11 +67,7 @@ export function CardsFlow(props: CardsFlowProps) {
     <div className='flex flex-col'>
       {entryContent.map((entry, index) => (
         <div key={index} ref={(element) => (cardRefs.current[index] = element)}>
-          <CarouselFlowCard
-            entry={entry}
-            page={index}
-            currentPage={currentPage}
-          />
+          <CarouselFlowCard entry={entry} page={index} currentPage={currentPage} />
         </div>
       ))}
     </div>

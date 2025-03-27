@@ -29,15 +29,11 @@ type PlaygroundParametersSelectorProps = {
   moveToNext: () => void;
   matchedMajorVersion: MajorVersion | undefined;
   majorVersions: MajorVersion[];
-  useInstructionsAndTemperatureFromMajorVersion: (
-    version: MajorVersion
-  ) => void;
+  useInstructionsAndTemperatureFromMajorVersion: (version: MajorVersion) => void;
   onToolsChange: (tools: ToolKind[]) => Promise<void>;
 };
 
-export function PlagroundParametersSelector(
-  props: PlaygroundParametersSelectorProps
-) {
+export function PlagroundParametersSelector(props: PlaygroundParametersSelectorProps) {
   const {
     isImproveVersionLoading,
     oldInstructions,
@@ -88,9 +84,7 @@ export function PlagroundParametersSelector(
         <MajorVersionCombobox
           majorVersions={majorVersions}
           matchedMajorVersion={matchedMajorVersion}
-          useInstructionsAndTemperatureFromMajorVersion={
-            useInstructionsAndTemperatureFromMajorVersion
-          }
+          useInstructionsAndTemperatureFromMajorVersion={useInstructionsAndTemperatureFromMajorVersion}
         />
       </div>
       <div className='flex flex-col gap-3 px-4 py-2 text-gray-900 text-[13px] font-medium h-full overflow-hidden'>

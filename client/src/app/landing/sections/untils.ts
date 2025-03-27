@@ -1,6 +1,5 @@
 export function isCompanyURL(str: string) {
-  const domainPattern =
-    /^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9](\.[a-zA-Z]{2,})+$/;
+  const domainPattern = /^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9](\.[a-zA-Z]{2,})+$/;
 
   let urlToTest = str.trim().toLowerCase();
 

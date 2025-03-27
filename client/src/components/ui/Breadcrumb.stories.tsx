@@ -1,9 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-} from '@/components/ui/Breadcrumb';
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from '@/components/ui/Breadcrumb';
 
 /**
  * Fast, composable, unstyled Breadcrumb for React.
@@ -23,9 +19,7 @@ const meta = {
         <BreadcrumbLink href='/components'>Components</BreadcrumbLink>
       </BreadcrumbItem>
       <BreadcrumbItem isCurrentPage>
-        <BreadcrumbLink href='/components/breadcrumb'>
-          Breadcrumb
-        </BreadcrumbLink>
+        <BreadcrumbLink href='/components/breadcrumb'>Breadcrumb</BreadcrumbLink>
       </BreadcrumbItem>
     </Breadcrumb>
   ),

@@ -29,11 +29,7 @@ export function GenerateInputControls(props: GenerateInputControlsProps) {
   const text = inputLoading ? 'Generating Input...' : 'Generate Input';
 
   return (
-    <div
-      className='flex flex-row'
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => setIsHovering(false)}
-    >
+    <div className='flex flex-row' onMouseEnter={() => setIsHovering(true)} onMouseLeave={() => setIsHovering(false)}>
       {shouldShowStopGenerating ? (
         <Button
           variant='newDesign'

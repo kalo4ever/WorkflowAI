@@ -12,9 +12,7 @@ type Props = {
 
 export function useSequentialTaskRunIdUpdates(props: Props) {
   const { taskRunId1, taskRunId2, taskRunId3, setPersistedTaskRunId } = props;
-  const [tempTaskRunIdParams, setTempTaskRunIdParams] = useState<
-    Record<string, string | undefined>
-  >({
+  const [tempTaskRunIdParams, setTempTaskRunIdParams] = useState<Record<string, string | undefined>>({
     taskRunId1,
     taskRunId2,
     taskRunId3,
@@ -29,13 +27,7 @@ export function useSequentialTaskRunIdUpdates(props: Props) {
         scroll: false,
       });
     }
-  }, [
-    tempTaskRunIdParams,
-    redirectWithParams,
-    taskRunId1,
-    taskRunId2,
-    taskRunId3,
-  ]);
+  }, [tempTaskRunIdParams, redirectWithParams, taskRunId1, taskRunId2, taskRunId3]);
 
   const onTaskRunIdUpdate = useCallback(
     (index: number, runId: string | undefined) => {

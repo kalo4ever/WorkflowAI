@@ -1,9 +1,5 @@
 import { XCircle } from 'lucide-react';
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from '@/components/ui/HoverCard';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/HoverCard';
 
 type EvaluationResultViewProps = {
   error?: string;

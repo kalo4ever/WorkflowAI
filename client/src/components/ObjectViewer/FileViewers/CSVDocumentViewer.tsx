@@ -1,14 +1,7 @@
 import { cx } from 'class-variance-authority';
 import { maxBy } from 'lodash';
 import { useMemo } from 'react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/Table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 
 const COMMON_DELIMITERS = [',', ';', '\t', '|'];
 
@@ -40,12 +33,7 @@ export function CSVDocumentViewer(props: CSVDocumentViewerProps) {
   if (!delimiter) return decodedText;
 
   return (
-    <div
-      className={cx(
-        'rounded-md border max-h-inherit [&>div]:border-0 [&>div]:max-h-inherit',
-        className
-      )}
-    >
+    <div className={cx('rounded-md border max-h-inherit [&>div]:border-0 [&>div]:max-h-inherit', className)}>
       <Table>
         <TableHeader>
           <TableRow>

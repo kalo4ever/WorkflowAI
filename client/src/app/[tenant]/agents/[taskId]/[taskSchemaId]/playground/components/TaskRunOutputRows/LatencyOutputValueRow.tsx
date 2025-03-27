@@ -1,9 +1,6 @@
 import { TaskRun } from '@/types/task_run';
 import { ModelResponse } from '@/types/workflowAI';
-import {
-  BaseOutputValueRow,
-  TBaseOutputValueRowVariant,
-} from './BaseOutputValueRow';
+import { BaseOutputValueRow, TBaseOutputValueRowVariant } from './BaseOutputValueRow';
 
 type LatencyOutputValueRowProps = {
   currentAIModel: ModelResponse | undefined;

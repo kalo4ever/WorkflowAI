@@ -14,17 +14,13 @@ export function findHints(
 
   if (!fieldName) return undefined;
 
-  const searchField = searchFields.fields.find(
-    (field) => field.field_name === fieldName
-  );
+  const searchField = searchFields.fields.find((field) => field.field_name === fieldName);
 
   switch (param) {
     case SearchFieldParam.Operators:
       return searchField?.operators;
     case SearchFieldParam.Values:
-      return !!searchField?.suggestions
-        ? searchField.suggestions.map(String)
-        : undefined;
+      return !!searchField?.suggestions ? searchField.suggestions.map(String) : undefined;
   }
 }
 
@@ -37,9 +33,7 @@ export function findAndFilterHints(
   const hints = findHints(param, fieldName, searchFields);
 
   if (!hints) return [];
-  return hints.filter((hint) =>
-    hint.toLowerCase().includes(text.toLowerCase())
-  );
+  return hints.filter((hint) => hint.toLowerCase().includes(text.toLowerCase()));
 }
 
 function areAllFieldsSet(
@@ -50,15 +44,10 @@ function areAllFieldsSet(
   if (!fieldNames || !operators || !values) return false;
   if (fieldNames.length === 0) return false;
 
-  return (
-    fieldNames.length === operators.length &&
-    fieldNames.length === values.length
-  );
+  return fieldNames.length === operators.length && fieldNames.length === values.length;
 }
 
-export function areAllFieldsSetInParams(
-  params: Record<string, string | undefined>
-): boolean {
+export function areAllFieldsSetInParams(params: Record<string, string | undefined>): boolean {
   return areAllFieldsSet(
     params[SearchFieldParam.FieldNames]?.split(','),
     params[SearchFieldParam.Operators]?.split(','),
@@ -78,15 +67,8 @@ export function add(
   let operators = newParams[SearchFieldParam.Operators]?.split(',') ?? [];
   let values = newParams[SearchFieldParam.Values]?.split(',') ?? [];
 
-  if (
-    !areAllFieldsSet(fieldNames, operators, values) &&
-    fieldNames.length > 0
-  ) {
-    const smallestLength = Math.min(
-      fieldNames.length,
-      operators.length,
-      values.length
-    );
+  if (!areAllFieldsSet(fieldNames, operators, values) && fieldNames.length > 0) {
+    const smallestLength = Math.min(fieldNames.length, operators.length, values.length);
     fieldNames = fieldNames.slice(0, smallestLength);
     operators = operators.slice(0, smallestLength);
     values = values.slice(0, smallestLength);
@@ -96,20 +78,14 @@ export function add(
   if (operator) operators.push(operator);
   if (value) values.push(value);
 
-  newParams[SearchFieldParam.FieldNames] =
-    fieldNames.length > 0 ? fieldNames.join(',') : undefined;
-  newParams[SearchFieldParam.Operators] =
-    operators.length > 0 ? operators.join(',') : undefined;
-  newParams[SearchFieldParam.Values] =
-    values.length > 0 ? values.join(',') : undefined;
+  newParams[SearchFieldParam.FieldNames] = fieldNames.length > 0 ? fieldNames.join(',') : undefined;
+  newParams[SearchFieldParam.Operators] = operators.length > 0 ? operators.join(',') : undefined;
+  newParams[SearchFieldParam.Values] = values.length > 0 ? values.join(',') : undefined;
 
   return newParams;
 }
 
-export function remove(
-  index: number,
-  params: Record<string, string | undefined>
-): Record<string, string | undefined> {
+export function remove(index: number, params: Record<string, string | undefined>): Record<string, string | undefined> {
   const newParams = { ...params };
 
   const fieldNames = newParams[SearchFieldParam.FieldNames]?.split(',');
@@ -120,14 +96,11 @@ export function remove(
   operators?.splice(index, 1);
   values?.splice(index, 1);
 
-  newParams[SearchFieldParam.FieldNames] =
-    !!fieldNames && fieldNames.length > 0 ? fieldNames.join(',') : undefined;
+  newParams[SearchFieldParam.FieldNames] = !!fieldNames && fieldNames.length > 0 ? fieldNames.join(',') : undefined;
 
-  newParams[SearchFieldParam.Operators] =
-    !!operators && operators.length > 0 ? operators.join(',') : undefined;
+  newParams[SearchFieldParam.Operators] = !!operators && operators.length > 0 ? operators.join(',') : undefined;
 
-  newParams[SearchFieldParam.Values] =
-    !!values && values.length > 0 ? values.join(',') : undefined;
+  newParams[SearchFieldParam.Values] = !!values && values.length > 0 ? values.join(',') : undefined;
 
   return newParams;
 }
@@ -227,9 +200,7 @@ export function findLastDefinedKey(
   }
 }
 
-export function findLastFieldName(
-  fieldNames: string[] | undefined
-): string | undefined {
+export function findLastFieldName(fieldNames: string[] | undefined): string | undefined {
   if (!fieldNames || fieldNames.length === 0) return undefined;
   return fieldNames[fieldNames.length - 1];
 }

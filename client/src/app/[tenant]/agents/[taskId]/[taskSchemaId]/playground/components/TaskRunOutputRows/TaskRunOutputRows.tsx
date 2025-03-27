@@ -2,10 +2,7 @@ import { HoverCardContentProps } from '@radix-ui/react-hover-card';
 import { useMemo } from 'react';
 import { TaskModelBadge } from '@/components/TaskModelBadge';
 import { TaskTemperatureBadge } from '@/components/v2/TaskTemperatureBadge';
-import {
-  LEGACY_TASK_RUN_RUN_BY_METADATA_KEY,
-  WORKFLOW_AI_METADATA_PREFIX,
-} from '@/lib/constants';
+import { LEGACY_TASK_RUN_RUN_BY_METADATA_KEY, WORKFLOW_AI_METADATA_PREFIX } from '@/lib/constants';
 import { ContextWindowInformation } from '@/lib/taskRunUtils';
 import { TaskRun } from '@/types/task_run';
 import { ModelResponse, VersionV1 } from '@/types/workflowAI';
@@ -44,10 +41,7 @@ function AdditionalFields({
 
       {temperature !== undefined && temperature !== null && (
         <div className='flex h-10'>
-          <BaseOutputValueRow
-            label='Temperature'
-            value={<TaskTemperatureBadge temperature={temperature} />}
-          />
+          <BaseOutputValueRow label='Temperature' value={<TaskTemperatureBadge temperature={temperature} />} />
         </div>
       )}
 
@@ -98,9 +92,7 @@ export function TaskRunOutputRows({
       return undefined;
     }
     const filtered = Object.entries(taskRun.metadata).filter(
-      ([key]) =>
-        !key.startsWith(WORKFLOW_AI_METADATA_PREFIX) &&
-        !key.startsWith(LEGACY_TASK_RUN_RUN_BY_METADATA_KEY)
+      ([key]) => !key.startsWith(WORKFLOW_AI_METADATA_PREFIX) && !key.startsWith(LEGACY_TASK_RUN_RUN_BY_METADATA_KEY)
     );
     return filtered.length > 0 ? filtered : undefined;
   }, [taskRun?.metadata]);
@@ -113,11 +105,7 @@ export function TaskRunOutputRows({
       <div className='grid grid-cols-2 [&>*]:border-gray-100 [&>*]:border-b [&>*:nth-child(odd)]:border-r'>
         {showVersion && (
           <div className='flex h-10'>
-            <VersionOutputValueRow
-              version={version}
-              side={side}
-              showTaskIterationDetails={showTaskIterationDetails}
-            />
+            <VersionOutputValueRow version={version} side={side} showTaskIterationDetails={showTaskIterationDetails} />
           </div>
         )}
         <div className='flex h-10'>
@@ -137,10 +125,7 @@ export function TaskRunOutputRows({
           />
         </div>
         <div className='flex h-10'>
-          <ContextWindowOutputValueRow
-            isInitialized={!!taskRun}
-            contextWindowInformation={contextWindowInformation}
-          />
+          <ContextWindowOutputValueRow isInitialized={!!taskRun} contextWindowInformation={contextWindowInformation} />
         </div>
         <AdditionalFields
           showAllFields={showAllFields}
@@ -154,9 +139,7 @@ export function TaskRunOutputRows({
 
       {showAllFields && !!instructions && (
         <div className='flex flex-col w-full items-top px-4 py-2 gap-2'>
-          <div className='text-[13px] font-normal text-gray-500'>
-            Instructions
-          </div>
+          <div className='text-[13px] font-normal text-gray-500'>Instructions</div>
           <div className='flex flex-col'>
             <div
               className={`flex flex-1 text-gray-700 bg-white p-2 border border-gray-200 rounded-[2px] font-lato font-normal text-[13px]`}
@@ -164,11 +147,7 @@ export function TaskRunOutputRows({
                 maxHeight: '200px',
               }}
             >
-              <div
-                className={'flex whitespace-pre-line overflow-y-auto w-full'}
-              >
-                {instructions}
-              </div>
+              <div className={'flex whitespace-pre-line overflow-y-auto w-full'}>{instructions}</div>
             </div>
           </div>
         </div>

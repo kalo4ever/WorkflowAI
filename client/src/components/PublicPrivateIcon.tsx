@@ -9,9 +9,5 @@ type PublicPrivateIconProps = {
 export function PublicPrivateIcon(props: PublicPrivateIconProps) {
   const { isPublic, className } = props;
   const commonClassName = cx('h-4 w-4 text-gray-700 shrink-0', className);
-  return isPublic ? (
-    <LockOpenRegular className={commonClassName} />
-  ) : (
-    <LockClosedRegular className={commonClassName} />
-  );
+  return isPublic ? <LockOpenRegular className={commonClassName} /> : <LockClosedRegular className={commonClassName} />;
 }

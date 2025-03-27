@@ -1,25 +1,14 @@
-import {
-  ArrowSync16Regular,
-  Code16Regular,
-  Key16Regular,
-} from '@fluentui/react-icons';
+import { ArrowSync16Regular, Code16Regular, Key16Regular } from '@fluentui/react-icons';
 import dayjs from 'dayjs';
 import { useRouter } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
 import { PlainModelBadge } from '@/components/ModelBadge/ModelBadge';
 import { TaskVersionBadgeContainer } from '@/components/TaskIterationBadge/TaskVersionBadgeContainer';
 import { TaskSchemaBadgeContainer } from '@/components/TaskSchemaBadge/TaskSchemaBadgeContainer';
+import { VersionRunCountContainer } from '@/components/VersionRunCountContainer';
 import { TooltipButtonGroup } from '@/components/buttons/TooltipButtonGroup';
 import { UserAvatar } from '@/components/ui/Avatar/UserAvatar';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/Table';
-import { TaskRunCountButton } from '@/components/v2/TaskRunCountBadge/TaskRunCountBadge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { useViewRuns } from '@/components/v2/TaskRunCountBadge/useViewRuns';
 import { taskApiRoute } from '@/lib/routeFormatter';
 import { useOrFetchClerkUsers } from '@/store/fetchers';
@@ -33,9 +22,7 @@ const rowClassNames = 'grid grid-cols-[60px_75px_210px_1fr_125px_130px]';
 type DeploymentGroupRowProps = {
   environment: VersionEnvironment;
   version: VersionV1;
-  setEnvSchemaIteration: (
-    envSchemaIteration: EditEnvSchemaIterationParams
-  ) => void;
+  setEnvSchemaIteration: (envSchemaIteration: EditEnvSchemaIterationParams) => void;
   setSelectedVersion: (version: VersionV1 | undefined) => void;
   tenant: TenantID;
   taskId: TaskID;
@@ -44,16 +31,8 @@ type DeploymentGroupRowProps = {
 };
 
 function DeploymentGroupRow(props: DeploymentGroupRowProps) {
-  const {
-    environment,
-    version,
-    tenant,
-    taskId,
-    setEnvSchemaIteration,
-    setSelectedVersion,
-    isInDemoMode,
-    usersByID,
-  } = props;
+  const { environment, version, tenant, taskId, setEnvSchemaIteration, setSelectedVersion, isInDemoMode, usersByID } =
+    props;
   const router = useRouter();
   const taskSchemaId = `${version.schema_id}` as TaskSchemaID;
 
@@ -78,12 +57,7 @@ function DeploymentGroupRow(props: DeploymentGroupRowProps) {
       currentIteration: version.iteration.toString() ?? null,
       iteration: version.iteration.toString() ?? null,
     });
-  }, [
-    setEnvSchemaIteration,
-    version.schema_id,
-    environment,
-    version.iteration,
-  ]);
+  }, [setEnvSchemaIteration, version.schema_id, environment, version.iteration]);
 
   const onUpdateProvider = useCallback(() => {
     setSelectedVersion(version);
@@ -100,9 +74,7 @@ function DeploymentGroupRow(props: DeploymentGroupRowProps) {
   }, [deployment?.deployed_at]);
 
   const user = useMemo(() => {
-    const deployment = version.deployments?.find(
-      (deployment) => deployment.environment === environment
-    );
+    const deployment = version.deployments?.find((deployment) => deployment.environment === environment);
 
     const userId = deployment?.deployed_by?.user_id;
 
@@ -144,9 +116,7 @@ function DeploymentGroupRow(props: DeploymentGroupRowProps) {
     >
       <TableRow className={rowClassNames}>
         <TableCell>
-          <TaskSchemaBadgeContainer
-            schemaId={`${version.schema_id}` as TaskSchemaID}
-          />
+          <TaskSchemaBadgeContainer schemaId={`${version.schema_id}` as TaskSchemaID} />
         </TableCell>
         <TableCell>
           <TaskVersionBadgeContainer version={version} side='right' />
@@ -161,14 +131,9 @@ function DeploymentGroupRow(props: DeploymentGroupRowProps) {
           </div>
         </TableCell>
         <TableCell>
-          <TaskRunCountButton
-            runsCount={version.run_count ?? undefined}
-            onClick={onViewRuns}
-          />
+          <VersionRunCountContainer tenant={tenant} taskId={taskId} version_id={version.id} onClick={onViewRuns} />
         </TableCell>
-        <TableCell>
-          {providerConfigID ? 'User Key' : 'WorkflowAI Key'}
-        </TableCell>
+        <TableCell>{providerConfigID ? 'User Key' : 'WorkflowAI Key'}</TableCell>
       </TableRow>
     </TooltipButtonGroup>
   );
@@ -177,27 +142,15 @@ function DeploymentGroupRow(props: DeploymentGroupRowProps) {
 type DeploymentWithGroupsTableProps = {
   environment: VersionEnvironment;
   versions: VersionV1[] | undefined;
-  setEnvSchemaIteration: (
-    envSchemaIteration: EditEnvSchemaIterationParams
-  ) => void;
+  setEnvSchemaIteration: (envSchemaIteration: EditEnvSchemaIterationParams) => void;
   setSelectedVersion: (version: VersionV1 | undefined) => void;
   tenant: TenantID;
   taskId: TaskID;
   isInDemoMode: boolean;
 };
 
-export function DeploymentWithGroupsTable(
-  props: DeploymentWithGroupsTableProps
-) {
-  const {
-    environment,
-    versions,
-    tenant,
-    taskId,
-    setEnvSchemaIteration,
-    setSelectedVersion,
-    isInDemoMode,
-  } = props;
+export function DeploymentWithGroupsTable(props: DeploymentWithGroupsTableProps) {
+  const { environment, versions, tenant, taskId, setEnvSchemaIteration, setSelectedVersion, isInDemoMode } = props;
 
   const userIds = useMemo(() => {
     if (!versions) {

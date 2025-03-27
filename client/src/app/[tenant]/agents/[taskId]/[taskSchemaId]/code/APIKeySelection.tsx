@@ -1,11 +1,7 @@
 import { Key16Regular, KeyMultiple16Regular } from '@fluentui/react-icons';
 import { Button } from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from '@/components/ui/HoverCard';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/HoverCard';
 import { APIKeyOption } from './ApiContent';
 
 type APIKeySelectionProps = {
@@ -36,11 +32,7 @@ export function APIKeySelection(props: APIKeySelectionProps) {
     }
     return (
       <div>
-        <Button
-          variant='outline'
-          onClick={() => setShowApiKeyModal?.(true)}
-          className='text-slate-700'
-        >
+        <Button variant='outline' onClick={() => setShowApiKeyModal?.(true)} className='text-slate-700'>
           Edit API Key
         </Button>
       </div>
@@ -74,9 +66,7 @@ export function APIKeySelection(props: APIKeySelectionProps) {
         <div className='flex items-center justify-center bg-slate-100 w-10 h-10 rounded-full'>
           <KeyMultiple16Regular />
         </div>
-        <div className='text-[14px] font-medium text-slate-700'>
-          I’d like to use WorkflowAI’s keys (recommended).
-        </div>
+        <div className='text-[14px] font-medium text-slate-700'>I’d like to use WorkflowAI’s keys (recommended).</div>
       </div>
       <div className='flex flex-row gap-4 rounded-[12px] border px-4 py-3 items-center'>
         <HoverCard>

@@ -16,7 +16,7 @@ export function NoAuthProvider({ children }: { children: ReactNode }) {
         user: {
           id: '1',
         },
-        hasOrganization: true,
+        orgState: 'available',
       }}
     >
       {children}

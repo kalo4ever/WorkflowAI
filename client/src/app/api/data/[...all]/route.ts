@@ -16,12 +16,7 @@ const proxyHandler = async (req: NextRequest) => {
         body: null as string | null,
       };
 
-      if (
-        req.method === 'POST' ||
-        req.method === 'PUT' ||
-        req.method === 'PATCH' ||
-        req.method === 'DELETE'
-      ) {
+      if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH' || req.method === 'DELETE') {
         const bodyData = await req.text();
         if (bodyData) {
           options.body = bodyData;
@@ -40,12 +35,9 @@ const proxyHandler = async (req: NextRequest) => {
       return new NextResponse(data, { status: apiResponse.status });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      return new NextResponse(
-        `An error occurred while forwarding the request: ${error?.message}`,
-        {
-          status: error?.status || 500,
-        }
-      );
+      return new NextResponse(`An error occurred while forwarding the request: ${error?.message}`, {
+        status: error?.status || 500,
+      });
     }
   } catch (error) {
     console.error('Unknown error', error);

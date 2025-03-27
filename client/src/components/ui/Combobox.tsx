@@ -3,19 +3,8 @@
 import { ChevronUpDownFilled } from '@fluentui/react-icons';
 import { Check } from 'lucide-react';
 import * as React from 'react';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/Command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/Popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/Command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover';
 import { cn } from '@/lib/utils';
 import { Button } from './Button';
 import { ScrollArea } from './ScrollArea';
@@ -69,10 +58,7 @@ export function Combobox(props: ComboboxProps) {
       </PopoverTrigger>
       <PopoverContent className='w-[auto] p-0 overflow-clip rounded-[2px] border-gray-300 font-lato'>
         <Command>
-          <CommandInput
-            placeholder={placeholder}
-            className='text-[13px] font-normal font-lato'
-          />
+          <CommandInput placeholder={placeholder} className='text-[13px] font-normal font-lato' />
           <CommandEmpty>{emptyMessage}</CommandEmpty>
           <ScrollArea>
             <CommandList>

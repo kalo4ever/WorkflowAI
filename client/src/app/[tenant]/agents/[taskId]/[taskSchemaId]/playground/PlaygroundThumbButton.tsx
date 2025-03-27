@@ -1,14 +1,7 @@
-import {
-  ThumbDislike16Regular,
-  ThumbLike16Regular,
-} from '@fluentui/react-icons';
+import { ThumbDislike16Regular, ThumbLike16Regular } from '@fluentui/react-icons';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/Button';
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from '@/components/ui/HoverCard';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/HoverCard';
 import { Textarea } from '@/components/ui/Textarea';
 import { SimpleTooltip } from '@/components/ui/Tooltip';
 import { cn } from '@/lib/utils';
@@ -24,15 +17,11 @@ type PlaygroundThumbButtonProps = {
 
   disabled: boolean;
   tooltipContent?: string;
-  onSubmitUserEvaluation: (
-    rating: boolean,
-    userEvaluation: string | undefined
-  ) => Promise<void>;
+  onSubmitUserEvaluation: (rating: boolean, userEvaluation: string | undefined) => Promise<void>;
 };
 
 export function PlaygroundThumbButton(props: PlaygroundThumbButtonProps) {
-  const { mode, isOn, disabled, onSubmitUserEvaluation, tooltipContent } =
-    props;
+  const { mode, isOn, disabled, onSubmitUserEvaluation, tooltipContent } = props;
   const [userEvaluation, setUserEvaluation] = useState<string>('');
   const [hoverCardVisible, setHoverCardVisible] = useState(false);
   const hideHoverCard = useCallback(() => {
@@ -45,11 +34,7 @@ export function PlaygroundThumbButton(props: PlaygroundThumbButtonProps) {
 
   const handleClickOutside = useCallback(
     (event: MouseEvent) => {
-      if (
-        !loading &&
-        !!hoverCardRef.current &&
-        !hoverCardRef.current.contains(event.target as Node)
-      ) {
+      if (!loading && !!hoverCardRef.current && !hoverCardRef.current.contains(event.target as Node)) {
         setHoverCardVisible(false);
       }
     },
@@ -63,12 +48,9 @@ export function PlaygroundThumbButton(props: PlaygroundThumbButtonProps) {
     };
   }, [handleClickOutside]);
 
-  const onInstructionsChange = useCallback(
-    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      setUserEvaluation(e.target.value);
-    },
-    []
-  );
+  const onInstructionsChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setUserEvaluation(e.target.value);
+  }, []);
 
   const onSubmit = useCallback(async () => {
     if (isOn) {
@@ -79,10 +61,7 @@ export function PlaygroundThumbButton(props: PlaygroundThumbButtonProps) {
 
     setLoading(true);
     try {
-      await onSubmitUserEvaluation(
-        rating,
-        !!userEvaluation ? userEvaluation : undefined
-      );
+      await onSubmitUserEvaluation(rating, !!userEvaluation ? userEvaluation : undefined);
       hideHoverCard();
     } finally {
       setLoading(false);
@@ -133,11 +112,7 @@ export function PlaygroundThumbButton(props: PlaygroundThumbButtonProps) {
   return hoverCardVisible ? (
     <HoverCard open>
       <HoverCardTrigger asChild>{button}</HoverCardTrigger>
-      <HoverCardContent
-        side='top'
-        className='w-[450px] p-0 rounded-[2px] border-gray-200'
-        ref={hoverCardRef}
-      >
+      <HoverCardContent side='top' className='w-[450px] p-0 rounded-[2px] border-gray-200' ref={hoverCardRef}>
         <div>
           <div className='px-4 py-3 border-b text-gray-500 text-medium font-lato'>
             <div className='flex items-center justify-between pb-2 text-sm'>
@@ -146,11 +121,7 @@ export function PlaygroundThumbButton(props: PlaygroundThumbButtonProps) {
                   ? 'What was wrong with this output?'
                   : 'Why is this output correct?'}
               </div>
-              <Button
-                disabled={!userEvaluation}
-                variant='newDesign'
-                onClick={onSubmit}
-              >
+              <Button disabled={!userEvaluation} variant='newDesign' onClick={onSubmit}>
                 Submit
               </Button>
             </div>
@@ -178,13 +149,7 @@ export function PlaygroundThumbButton(props: PlaygroundThumbButtonProps) {
     </HoverCard>
   ) : (
     <SimpleTooltip
-      content={
-        !!tooltipContent ? (
-          <div className='whitespace-break-spaces max-w-[450px]'>
-            {tooltipContent}
-          </div>
-        ) : null
-      }
+      content={!!tooltipContent ? <div className='whitespace-break-spaces max-w-[450px]'>{tooltipContent}</div> : null}
     >
       {button}
     </SimpleTooltip>

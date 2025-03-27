@@ -1,8 +1,4 @@
-import {
-  CheckmarkRegular,
-  GlobeSearchRegular,
-  WindowAdRegular,
-} from '@fluentui/react-icons';
+import { CheckmarkRegular, GlobeSearchRegular, WindowAdRegular } from '@fluentui/react-icons';
 import { useCallback, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { SimpleTooltip } from '@/components/ui/Tooltip';
@@ -15,9 +11,7 @@ type PlagroundParametersToolboxProps = {
   isLoading: boolean;
 };
 
-export function PlagroundParametersToolbox(
-  props: PlagroundParametersToolboxProps
-) {
+export function PlagroundParametersToolbox(props: PlagroundParametersToolboxProps) {
   const { instructions, onToolsChange, isLoading } = props;
 
   const [isSearchRequested, setIsSearchRequested] = useState(false);
@@ -77,10 +71,7 @@ export function PlagroundParametersToolbox(
 
   return (
     <div className='flex flex-row gap-2 px-3 py-2 w-full rounded-b-[2px] border-l border-r border-b border-gray-300 bg-gradient-to-b from-[#F8FAFC] to-transparent'>
-      <SimpleTooltip
-        content={searchTooltipText}
-        tooltipClassName='whitespace-pre-line text-center'
-      >
+      <SimpleTooltip content={searchTooltipText} tooltipClassName='whitespace-pre-line text-center'>
         <Button
           variant='newDesignGray'
           size='none'
@@ -93,18 +84,14 @@ export function PlagroundParametersToolbox(
           }
           className={cn(
             'px-2 py-1.5 rounded-[2px]',
-            isSearchSelected &&
-              'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'
+            isSearchSelected && 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'
           )}
           onClick={handleSearchClick}
         >
           Search
         </Button>
       </SimpleTooltip>
-      <SimpleTooltip
-        content={browserTooltipText}
-        tooltipClassName='whitespace-pre-line text-center'
-      >
+      <SimpleTooltip content={browserTooltipText} tooltipClassName='whitespace-pre-line text-center'>
         <Button
           variant='newDesignGray'
           size='none'
@@ -117,8 +104,7 @@ export function PlagroundParametersToolbox(
           }
           className={cn(
             'px-2 py-1.5 rounded-[2px]',
-            isBrowserSelected &&
-              'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'
+            isBrowserSelected && 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'
           )}
           onClick={handleBrowserClick}
         >

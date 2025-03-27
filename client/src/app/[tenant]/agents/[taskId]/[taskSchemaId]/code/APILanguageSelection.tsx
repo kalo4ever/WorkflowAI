@@ -44,19 +44,10 @@ export function APILanguageSelection(props: APILanguageSelectionProps) {
     <RadioGroup value={selectedLanguage} onValueChange={onValueChange}>
       {languages.map((language) => (
         <div className='flex items-center gap-2' key={language}>
-          <RadioGroupItem
-            value={language}
-            id={radioIdBuilder(language)}
-            isSelected={selectedLanguage === language}
-          />
-          <label
-            className='flex flex-row items-center gap-2 cursor-pointer'
-            htmlFor={radioIdBuilder(language)}
-          >
+          <RadioGroupItem value={language} id={radioIdBuilder(language)} isSelected={selectedLanguage === language} />
+          <label className='flex flex-row items-center gap-2 cursor-pointer' htmlFor={radioIdBuilder(language)}>
             <LanguageIcon language={language} />
-            <div className='text-xs font-medium text-gray-700'>
-              {displayName(language)}
-            </div>
+            <div className='text-xs font-medium text-gray-700'>{displayName(language)}</div>
           </label>
         </div>
       ))}

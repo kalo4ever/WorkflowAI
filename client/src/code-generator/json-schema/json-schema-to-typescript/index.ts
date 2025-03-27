@@ -26,10 +26,7 @@ export interface Options {
   /**
    * Custom function to provide a type name for a given schema
    */
-  customName?: (
-    schema: LinkedJSONSchema,
-    keyNameFromDefinition: string | undefined
-  ) => string | undefined;
+  customName?: (schema: LinkedJSONSchema, keyNameFromDefinition: string | undefined) => string | undefined;
   /**
    * Root directory for resolving [`$ref`](https://tools.ietf.org/id/draft-pbryan-zyp-json-ref-03.html)s.
    */
@@ -111,11 +108,7 @@ export const DEFAULT_OPTIONS: Options = {
   unknownAny: true,
 };
 
-export async function compile(
-  schema: JSONSchema4,
-  name: string,
-  options: Partial<Options> = {}
-): Promise<string> {
+export async function compile(schema: JSONSchema4, name: string, options: Partial<Options> = {}): Promise<string> {
   const _options = merge({}, DEFAULT_OPTIONS, options);
 
   // normalize options

@@ -4,8 +4,7 @@ import { schemaToTS } from './schemaToTS';
 const DEFS = {
   DatetimeLocal: {
     additionalProperties: false,
-    description:
-      'This class represents a local datetime, with a datetime and a timezone.',
+    description: 'This class represents a local datetime, with a datetime and a timezone.',
     properties: {
       date: {
         description: 'The date of the local datetime.',
@@ -30,14 +29,7 @@ const DEFS = {
     properties: {
       content_type: {
         description: 'The content type of the image',
-        enum: [
-          'image/png',
-          'image/jpg',
-          'image/jpeg',
-          'image/webp',
-          'image/tiff',
-          'image/gif',
-        ],
+        enum: ['image/png', 'image/jpg', 'image/jpeg', 'image/webp', 'image/tiff', 'image/gif'],
         type: 'string',
       },
       data: {
@@ -101,10 +93,7 @@ describe('schemaToTS', () => {
       },
     };
 
-    const { compiled: ts, existingWAIRefs } = await schemaToTS(
-      'PersonTaskInput',
-      mockJsonSchema
-    );
+    const { compiled: ts, existingWAIRefs } = await schemaToTS('PersonTaskInput', mockJsonSchema);
     expect(existingWAIRefs).toEqual(new Set());
     expect(ts).toBe(`export interface PersonTaskInput {
 p?: Person
@@ -139,10 +128,7 @@ state: string
         },
       },
     };
-    const { compiled: ts, existingWAIRefs } = await schemaToTS(
-      'EventTaskInput',
-      mockJsonSchema as JsonSchema
-    );
+    const { compiled: ts, existingWAIRefs } = await schemaToTS('EventTaskInput', mockJsonSchema as JsonSchema);
     expect(existingWAIRefs).toEqual(new Set(['DatetimeLocal']));
     expect(ts).toBe(`export interface EventTaskInput {
 e?: Event
@@ -164,10 +150,7 @@ date: DatetimeLocal
         Image: DEFS.Image,
       },
     };
-    const { compiled: ts, existingWAIRefs } = await schemaToTS(
-      'EventTaskInput',
-      mockJsonSchema as JsonSchema
-    );
+    const { compiled: ts, existingWAIRefs } = await schemaToTS('EventTaskInput', mockJsonSchema as JsonSchema);
     expect(existingWAIRefs).toEqual(new Set(['Image']));
     expect(ts).toBe(`export interface EventTaskInput {
 i?: Image

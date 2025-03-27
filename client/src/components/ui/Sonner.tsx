@@ -31,20 +31,10 @@ export const Toaster = ({ ...props }: ToasterProps) => {
   );
 };
 
-export function displaySuccessToaster(
-  message: string | ReactNode,
-  title?: string | ReactNode
-) {
-  toast.success(
-    <SonnerToastContent type='success' title={title} description={message} />
-  );
+export function displaySuccessToaster(message: string | ReactNode, title?: string | ReactNode) {
+  toast.success(<SonnerToastContent type='success' title={title} description={message} />);
 }
 
-export function displayErrorToaster(
-  message: string | ReactNode,
-  title?: string | ReactNode
-) {
-  toast.error(
-    <SonnerToastContent type='error' title={title} description={message} />
-  );
+export function displayErrorToaster(message: string | ReactNode, title?: string | ReactNode) {
+  toast.error(<SonnerToastContent type='error' title={title} description={message} />);
 }

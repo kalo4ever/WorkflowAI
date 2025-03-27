@@ -11,10 +11,7 @@ const userCache = new LRUCache<string, User>({
   ttl: 1000 * 60 * 60 * 24, // 24 hours
 });
 
-export const GET = async (
-  req: NextRequest,
-  { params }: { params: { userId: string } }
-) => {
+export const GET = async (req: NextRequest, { params }: { params: { userId: string } }) => {
   const { userId } = params;
 
   if (!userId) {

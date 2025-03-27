@@ -81,18 +81,11 @@ function SimpleTooltip({
 
   return (
     <TooltipProvider delayDuration={tooltipDelay}>
-      <Tooltip
-        open={isOpen || isOpenFromClick || forceShowing}
-        onOpenChange={internalOnOpenChange}
-      >
+      <Tooltip open={isOpen || isOpenFromClick || forceShowing} onOpenChange={internalOnOpenChange}>
         <TooltipTrigger
           data-testid='tooltip-trigger'
           asChild={asChild}
-          onClick={
-            supportClick
-              ? () => setIsOpenFromClick(!isOpenFromClick)
-              : undefined
-          }
+          onClick={supportClick ? () => setIsOpenFromClick(!isOpenFromClick) : undefined}
         >
           {children}
         </TooltipTrigger>
@@ -110,10 +103,4 @@ function SimpleTooltip({
   );
 }
 
-export {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-  TooltipProvider,
-  SimpleTooltip,
-};
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider, SimpleTooltip };

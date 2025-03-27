@@ -1,17 +1,9 @@
-import {
-  DismissFilled,
-  ErrorCircle24Filled,
-  List16Regular,
-} from '@fluentui/react-icons';
+import { DismissFilled, ErrorCircle24Filled, List16Regular } from '@fluentui/react-icons';
 import { cx } from 'class-variance-authority';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useRef } from 'react';
 import { Badge } from '@/components/ui/Badge';
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from '@/components/ui/HoverCard';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/HoverCard';
 import { SimpleTooltip } from '@/components/ui/Tooltip';
 import { FieldType } from '@/lib/schemaUtils';
 import { cn } from '@/lib/utils';
@@ -82,25 +74,14 @@ export function FieldViewerLabel(props: FieldViewerLabelProps) {
     }
   }, [handleFieldKeyPositionChange, fieldKeyPath]);
 
-  const onlyShowDescriptionsAndExamplesAndHideTypes =
-    !showTypes && !!showDescriptionExamples;
+  const onlyShowDescriptionsAndExamplesAndHideTypes = !showTypes && !!showDescriptionExamples;
 
   const labelKey = useMemo(() => {
     if (isArrayObject) {
-      return showTypes ||
-        onlyShowDescriptionsAndExamplesAndHideTypes ||
-        editable
-        ? 'Object'
-        : '';
+      return showTypes || onlyShowDescriptionsAndExamplesAndHideTypes || editable ? 'Object' : '';
     }
     return fieldKey;
-  }, [
-    isArrayObject,
-    showTypes,
-    editable,
-    fieldKey,
-    onlyShowDescriptionsAndExamplesAndHideTypes,
-  ]);
+  }, [isArrayObject, showTypes, editable, fieldKey, onlyShowDescriptionsAndExamplesAndHideTypes]);
   const NullToggleIcon = isNull ? PlusCircle : Trash2;
 
   const content = (
@@ -143,9 +124,7 @@ export function FieldViewerLabel(props: FieldViewerLabelProps) {
                     <FieldViewerLabelExampleHints
                       onClick={onShowEditDescriptionModal}
                       description={subSchema?.description}
-                      examples={
-                        showExamplesHints ? subSchema?.examples : undefined
-                      }
+                      examples={showExamplesHints ? subSchema?.examples : undefined}
                     />
                   ) : undefined
                 }
@@ -157,8 +136,7 @@ export function FieldViewerLabel(props: FieldViewerLabelProps) {
                   onClick={onShowEditSchemaModal}
                   className={cn(
                     {
-                      'h-8 pr-3 text-[13px] flex items-center font-medium':
-                        subSchemaFieldType === 'object',
+                      'h-8 pr-3 text-[13px] flex items-center font-medium': subSchemaFieldType === 'object',
                       'text-gray-600': !isError && isArrayObject,
                       'text-gray-900': !isError && !isArrayObject,
                       'text-red-600': isError,
@@ -198,30 +176,18 @@ export function FieldViewerLabel(props: FieldViewerLabelProps) {
           />
         )}
       </div>
-      {!!onRemove && (
-        <DismissFilled
-          onClick={onRemove}
-          className='cursor-pointer text-gray-600 h-[18px] w-[18px]'
-        />
-      )}
+      {!!onRemove && <DismissFilled onClick={onRemove} className='cursor-pointer text-gray-600 h-[18px] w-[18px]' />}
     </div>
   );
 
-  if (
-    isArrayObject &&
-    !showTypes &&
-    !onlyShowDescriptionsAndExamplesAndHideTypes &&
-    !editable
-  ) {
+  if (isArrayObject && !showTypes && !onlyShowDescriptionsAndExamplesAndHideTypes && !editable) {
     return null;
   }
 
   if (subSchemaFieldType === 'object') {
     return (
       <div className='w-full rounded-t-[2px] overflow-hidden bg-gray-50 text-gray-400 flex items-center font-medium border border-b-0 border-gray-200'>
-        <div className='w-full h-full flex border-b border-gray-200 border-dashed px-3'>
-          {content}
-        </div>
+        <div className='w-full h-full flex border-b border-gray-200 border-dashed px-3'>{content}</div>
       </div>
     );
   }

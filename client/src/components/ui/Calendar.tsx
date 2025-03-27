@@ -10,12 +10,7 @@ export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
 // This component uses date-fns under the hood
 
-function Calendar({
-  className,
-  classNames,
-  showOutsideDays = true,
-  ...props
-}: CalendarProps) {
+function Calendar({ className, classNames, showOutsideDays = true, ...props }: CalendarProps) {
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
@@ -48,8 +43,7 @@ function Calendar({
         day_outside:
           'day-outside text-gray-400 opacity-50 aria-selected:bg-gray-100 aria-selected:text-gray-900 rounded-[2px]',
         day_disabled: 'text-muted-foreground opacity-50',
-        day_range_middle:
-          'aria-selected:bg-accent aria-selected:text-accent-foreground',
+        day_range_middle: 'aria-selected:bg-accent aria-selected:text-accent-foreground',
         day_hidden: 'invisible',
         ...classNames,
       }}

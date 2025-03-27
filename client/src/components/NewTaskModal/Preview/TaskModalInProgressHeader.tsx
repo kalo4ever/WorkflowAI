@@ -6,9 +6,7 @@ type TaskModalInProgressHeaderProps = {
   inProgressText: string;
 };
 
-export function TaskModalInProgressHeader(
-  props: TaskModalInProgressHeaderProps
-) {
+export function TaskModalInProgressHeader(props: TaskModalInProgressHeaderProps) {
   const { title, inProgress, inProgressText } = props;
 
   return (
@@ -17,9 +15,7 @@ export function TaskModalInProgressHeader(
       {inProgress && (
         <div className='flex flex-row gap-2 items-center'>
           <Loader2 className='w-4 h-4 animate-spin text-gray-400' />
-          <div className='text-gray-400 text-[13px] font-medium'>
-            {inProgressText}
-          </div>
+          <div className='text-gray-400 text-[13px] font-medium'>{inProgressText}</div>
         </div>
       )}
     </div>

@@ -8,10 +8,7 @@ export function usePlaygroundParametersHistory(
   taskId: TaskID,
   taskSchemaId: TaskSchemaID
 ) {
-  const {
-    parametersHistoryByScope,
-    addParametersHistoryEntry: addHistoryEntry,
-  } = usePlaygroundHistoryStore();
+  const { parametersHistoryByScope, addParametersHistoryEntry: addHistoryEntry } = usePlaygroundHistoryStore();
 
   const history = useMemo(() => {
     const scope = buildScopeKey({
@@ -22,9 +19,7 @@ export function usePlaygroundParametersHistory(
     return parametersHistoryByScope[scope] || [];
   }, [parametersHistoryByScope, tenant, taskId, taskSchemaId]);
 
-  const [historyIndex, setHistoryIndex] = useState<number | undefined>(
-    undefined
-  );
+  const [historyIndex, setHistoryIndex] = useState<number | undefined>(undefined);
 
   const [instructionsInternal, setInstructionsInternal] = useState<string>('');
   const [temperatureInternal, setTemperatureInternal] = useState<number>(0);
@@ -144,10 +139,7 @@ export function usePlaygroundParametersHistory(
       return;
     }
 
-    if (
-      isNewestInHistoryIdenticalToInternal &&
-      historyIndex === history.length - 2
-    ) {
+    if (isNewestInHistoryIdenticalToInternal && historyIndex === history.length - 2) {
       setHistoryIndex(undefined);
       return;
     }

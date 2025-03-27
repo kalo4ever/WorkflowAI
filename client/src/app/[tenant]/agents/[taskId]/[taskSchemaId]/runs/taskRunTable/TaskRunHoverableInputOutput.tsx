@@ -13,23 +13,16 @@ type TaskRunHoverableInputOutputContentProps = {
   runItem: RunItemV1;
 };
 
-function TaskRunHoverableInputOutputContent(
-  props: TaskRunHoverableInputOutputContentProps
-) {
+function TaskRunHoverableInputOutputContent(props: TaskRunHoverableInputOutputContentProps) {
   const { runItem } = props;
 
-  const { taskSchema, isInitialized: isTaskSchemaInitialized } =
-    useOrFetchCurrentTaskSchema(
-      undefined,
-      runItem.task_id as TaskID,
-      `${runItem.task_schema_id}` as TaskSchemaID
-    );
-
-  const { run, isInitialized: isRunInitialized } = useOrFetchRunV1(
+  const { taskSchema, isInitialized: isTaskSchemaInitialized } = useOrFetchCurrentTaskSchema(
     undefined,
     runItem.task_id as TaskID,
-    runItem.id
+    `${runItem.task_schema_id}` as TaskSchemaID
   );
+
+  const { run, isInitialized: isRunInitialized } = useOrFetchRunV1(undefined, runItem.task_id as TaskID, runItem.id);
 
   const input = run?.task_input;
   const output = run?.task_output;
@@ -52,19 +45,12 @@ function TaskRunHoverableInputOutputContent(
       return true;
     }
 
-    const otherKeys = Object.keys(output).filter(
-      (key) => key !== 'internal_agent_run_result'
-    );
+    const otherKeys = Object.keys(output).filter((key) => key !== 'internal_agent_run_result');
 
     return otherKeys.length === 0;
   }, [output]);
 
-  if (
-    !inputSchema ||
-    !outputSchema ||
-    !isTaskSchemaInitialized ||
-    !isRunInitialized
-  ) {
+  if (!inputSchema || !outputSchema || !isTaskSchemaInitialized || !isRunInitialized) {
     return <Loader centered className='my-10 mx-20' />;
   }
 
@@ -113,9 +99,7 @@ type TaskRunHoverableInputOutputProps = {
   runItem: RunItemV1;
 };
 
-export function TaskRunHoverableInputOutput(
-  props: TaskRunHoverableInputOutputProps
-) {
+export function TaskRunHoverableInputOutput(props: TaskRunHoverableInputOutputProps) {
   const { runItem } = props;
 
   const inputPreview = runItem.task_input_preview;
@@ -127,9 +111,7 @@ export function TaskRunHoverableInputOutput(
       content={<TaskRunHoverableInputOutputContent runItem={runItem} />}
     >
       <div className='flex flex-row gap-4 ml-2 mr-6 py-3.5'>
-        <div className='flex-1 overflow-hidden text-ellipsis whitespace-nowrap'>
-          {inputPreview}
-        </div>
+        <div className='flex-1 overflow-hidden text-ellipsis whitespace-nowrap'>{inputPreview}</div>
         <div className='flex-1 overflow-hidden text-ellipsis whitespace-nowrap'>
           {runItem.error?.message ?? outputPreview}
         </div>

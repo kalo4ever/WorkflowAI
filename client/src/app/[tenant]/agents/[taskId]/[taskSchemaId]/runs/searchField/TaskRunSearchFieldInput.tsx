@@ -13,16 +13,7 @@ type TaskRunSearchFieldInputProps = {
 };
 
 export function TaskRunSearchFieldInput(props: TaskRunSearchFieldInputProps) {
-  const {
-    inputRef,
-    text,
-    handleInputChange,
-    handleKeyDown,
-    handleFocus,
-    handleBlur,
-    isEmpty,
-    showBorder,
-  } = props;
+  const { inputRef, text, handleInputChange, handleKeyDown, handleFocus, handleBlur, isEmpty, showBorder } = props;
 
   const [textWidth, setTextWidth] = useState(0);
   const textMeasureRef = useRef<HTMLSpanElement>(null);
@@ -49,11 +40,7 @@ export function TaskRunSearchFieldInput(props: TaskRunSearchFieldInputProps) {
         onFocus={handleFocus}
         onBlur={handleBlur}
         className='flex-grow outline-none font-normal text-[13px] bg-transparent z-10 relative placeholder:text-gray-400 text-gray-900'
-        placeholder={
-          isEmpty
-            ? 'Filter run by version, input, output, model and more...'
-            : undefined
-        }
+        placeholder={isEmpty ? 'Filter run by version, input, output, model and more...' : undefined}
         autoComplete='off'
         spellCheck={false}
         autoCapitalize='off'
@@ -67,10 +54,7 @@ export function TaskRunSearchFieldInput(props: TaskRunSearchFieldInputProps) {
           width: `${textWidth + rightBorderMargin}px`,
         }}
       />
-      <span
-        ref={textMeasureRef}
-        className='absolute left-0 top-0 invisible whitespace-pre'
-      >
+      <span ref={textMeasureRef} className='absolute left-0 top-0 invisible whitespace-pre'>
         {text}
       </span>
     </div>

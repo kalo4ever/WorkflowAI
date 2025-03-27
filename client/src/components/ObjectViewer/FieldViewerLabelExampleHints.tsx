@@ -7,9 +7,7 @@ type FieldViewerLabelExampleHintsProps = {
   onClick?: () => void;
 };
 
-export function FieldViewerLabelExampleHints(
-  props: FieldViewerLabelExampleHintsProps
-) {
+export function FieldViewerLabelExampleHints(props: FieldViewerLabelExampleHintsProps) {
   const { description, examples, onClick } = props;
 
   const supportedExamples = useMemo(() => {
@@ -17,9 +15,7 @@ export function FieldViewerLabelExampleHints(
       return undefined;
     }
 
-    const filteredExamples = examples.filter(
-      (example) => typeof example === 'string'
-    ) as string[];
+    const filteredExamples = examples.filter((example) => typeof example === 'string') as string[];
 
     return filteredExamples.length ? filteredExamples : undefined;
   }, [examples]);
@@ -29,36 +25,27 @@ export function FieldViewerLabelExampleHints(
 
   return (
     <div
-      className={cx(
-        'flex flex-col gap-3 py-3 bg-white relative',
-        !!onClick && 'cursor-pointer'
-      )}
+      className={cx('flex flex-col gap-3 py-3 bg-white relative', !!onClick && 'cursor-pointer')}
       onClick={onClick}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
       {!!description ? (
         <div className='flex flex-row px-3'>
-          <div className='text-[13px] text-gray-600 font-medium pt-[5px] min-w-[100px]'>
-            description:
-          </div>
+          <div className='text-[13px] text-gray-600 font-medium pt-[5px] min-w-[100px]'>description:</div>
           <div className='text-[13px] text-gray-900 font-normal bg-gray-100 rounded-[2px] border border-gray-200 px-2 py-1 max-w-[350px]'>
             {description}
           </div>
         </div>
       ) : (
         <div className='flex flex-row px-3'>
-          <div className='text-[13px] text-gray-600 font-medium min-w-[90px]'>
-            No Description
-          </div>
+          <div className='text-[13px] text-gray-600 font-medium min-w-[90px]'>No Description</div>
         </div>
       )}
 
       {!!supportedExamples && (
         <div className='flex flex-row px-3'>
-          <div className='text-[13px] text-gray-600 font-medium pt-1.5 min-w-[100px] max-w-[300px]'>
-            examples:
-          </div>
+          <div className='text-[13px] text-gray-600 font-medium pt-1.5 min-w-[100px] max-w-[300px]'>examples:</div>
           <div className='flex flex-wrap gap-1 px-1 py-1 bg-white border border-gray-200 rounded-[2px]'>
             {supportedExamples.map((example) => (
               <div

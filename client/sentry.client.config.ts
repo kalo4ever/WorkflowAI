@@ -11,8 +11,7 @@ Sentry.init({
     // We don't rely on the presence of the DSN to make disabling explicit
     process.env.SENTRY_DISABLED !== 'true',
 
-  environment:
-    process.env.NEXT_PUBLIC_ENV_NAME || process.env.ENV_NAME || 'unknown',
+  environment: process.env.NEXT_PUBLIC_ENV_NAME || process.env.ENV_NAME || 'unknown',
 
   // Adjust this value in production, or use tracesSampler for greater control
   tracesSampleRate: 0.1,

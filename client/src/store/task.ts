@@ -21,13 +21,7 @@ import {
   UpdateTaskInstructionsRequest,
   UpdateTaskRequest,
 } from '@/types/workflowAI';
-import {
-  buildScopeKey,
-  rootTaskPath,
-  rootTaskPathNoProxy,
-  rootTaskPathNoProxyV1,
-  runTaskPathNoProxy,
-} from './utils';
+import { buildScopeKey, rootTaskPath, rootTaskPathNoProxy, rootTaskPathNoProxyV1, runTaskPathNoProxy } from './utils';
 
 enableMapSet();
 
@@ -58,7 +52,8 @@ interface TasksState {
     taskId: TaskID,
     payload: ImproveVersionRequest,
     token: string | undefined,
-    onMessage: (message: ImproveVersionResponse) => void
+    onMessage: (message: ImproveVersionResponse) => void,
+    signal?: AbortSignal
   ): Promise<ImproveVersionResponse>;
   generatePlaygroundInput(
     tenant: TenantID | undefined,
@@ -101,15 +96,8 @@ interface TasksState {
     tools: ToolKind[],
     onMessage: (message: string) => void
   ): Promise<string>;
-  createTask(
-    tenant: TenantID | undefined,
-    payload: Omit<CreateAgentRequest, 'id'>
-  ): Promise<CreateAgentResponse>;
-  updateTask(
-    tenant: TenantID | undefined,
-    taskId: TaskID,
-    payload: UpdateTaskRequest
-  ): Promise<SerializableTask>;
+  createTask(tenant: TenantID | undefined, payload: Omit<CreateAgentRequest, 'id'>): Promise<CreateAgentResponse>;
+  updateTask(tenant: TenantID | undefined, taskId: TaskID, payload: UpdateTaskRequest): Promise<SerializableTask>;
   deleteTask(tenant: TenantID, taskId: TaskID): Promise<void>;
   updateTaskSchema(
     tenant: TenantID | undefined,
@@ -144,9 +132,7 @@ export const useTasks = create<TasksState>((set, get) => ({
     try {
       // We always fetch task with a _ tenant which is equivalent to using the tenant provided
       // in the JWT
-      const { items } = await client.get<Page_SerializableTask_>(
-        rootTaskPath(tenant)
-      );
+      const { items } = await client.get<Page_SerializableTask_>(rootTaskPath(tenant));
 
       const sortedTasksByName = sortBy(items, 'name');
       const sortedTasksWithSortedVersions = sortedTasksByName.map((task) => ({
@@ -191,9 +177,7 @@ export const useTasks = create<TasksState>((set, get) => ({
       })
     );
     try {
-      const task = await client.get<SerializableTask>(
-        `${rootTaskPath(tenant)}/${taskId}`
-      );
+      const task = await client.get<SerializableTask>(`${rootTaskPath(tenant)}/${taskId}`);
       set(
         produce((state: TasksState) => {
           state.tasksByScope.set(scopeKey, task);
@@ -209,16 +193,14 @@ export const useTasks = create<TasksState>((set, get) => ({
       })
     );
   },
-  improveVersion: async (tenant, taskId, payload, token, onMessage) => {
-    const lastMessage = await SSEClient<
-      ImproveVersionRequest,
-      ImproveVersionResponse
-    >(
+  improveVersion: async (tenant, taskId, payload, token, onMessage, signal) => {
+    const lastMessage = await SSEClient<ImproveVersionRequest, ImproveVersionResponse>(
       `${rootTaskPathNoProxyV1(tenant)}/${taskId}/versions/improve`,
       Method.POST,
       token,
       payload,
-      onMessage
+      onMessage,
+      signal
     );
     return lastMessage;
   },
@@ -231,10 +213,7 @@ export const useTasks = create<TasksState>((set, get) => ({
     onMessage?: (message: GenerateInputMessage) => void,
     signal?: AbortSignal
   ) => {
-    const lastMessage = await SSEClient<
-      GenerateInputRequest,
-      GenerateInputMessage
-    >(
+    const lastMessage = await SSEClient<GenerateInputRequest, GenerateInputMessage>(
       `${rootTaskPathNoProxy(tenant)}/${taskId}/schemas/${taskSchemaId}/input`,
       Method.POST,
       token,
@@ -256,10 +235,7 @@ export const useTasks = create<TasksState>((set, get) => ({
     const handleOnMessage = (message: ImportedInputMessage) => {
       onMessage(message.imported_input);
     };
-    const lastMessage = await SSEClient<
-      ImportInputsRequest,
-      ImportedInputMessage
-    >(
+    const lastMessage = await SSEClient<ImportInputsRequest, ImportedInputMessage>(
       `${rootTaskPathNoProxy(tenant)}/${taskId}/schemas/${taskSchemaId}/inputs/import`,
       Method.POST,
       token,
@@ -334,14 +310,8 @@ export const useTasks = create<TasksState>((set, get) => ({
     return lastInstructions.updated_task_instructions ?? '';
   },
 
-  createTask: async (
-    tenant: TenantID | undefined,
-    payload: CreateAgentRequest
-  ): Promise<CreateAgentResponse> => {
-    const task = await client.post<CreateAgentRequest, CreateAgentResponse>(
-      rootTaskPath(tenant, true),
-      payload
-    );
+  createTask: async (tenant: TenantID | undefined, payload: CreateAgentRequest): Promise<CreateAgentResponse> => {
+    const task = await client.post<CreateAgentRequest, CreateAgentResponse>(rootTaskPath(tenant, true), payload);
     // Refetch tasks to get the updated list of schemas in the task switcher
     if (!!tenant) {
       await get().fetchTasks(tenant);
@@ -353,10 +323,7 @@ export const useTasks = create<TasksState>((set, get) => ({
     taskId: TaskID,
     payload: UpdateTaskRequest
   ): Promise<SerializableTask> => {
-    const task = await client.patch<UpdateTaskRequest, SerializableTask>(
-      `${rootTaskPath(tenant)}/${taskId}`,
-      payload
-    );
+    const task = await client.patch<UpdateTaskRequest, SerializableTask>(`${rootTaskPath(tenant)}/${taskId}`, payload);
     // Refetch tasks to get the updated list of schemas in the task switcher
     if (!!tenant) {
       await get().fetchTasks(tenant);
@@ -375,23 +342,12 @@ export const useTasks = create<TasksState>((set, get) => ({
     taskId: TaskID,
     payload: Omit<CreateAgentRequest, 'id'>
   ): Promise<CreateAgentResponse> => {
-    return await client.post<CreateAgentRequest, CreateAgentResponse>(
-      rootTaskPath(tenant, true),
-      {
-        ...payload,
-        id: taskId,
-      }
-    );
+    return await client.post<CreateAgentRequest, CreateAgentResponse>(rootTaskPath(tenant, true), {
+      ...payload,
+      id: taskId,
+    });
   },
-  runTask: async ({
-    tenant,
-    taskId,
-    taskSchemaId,
-    body,
-    token,
-    onMessage,
-    signal,
-  }) => {
+  runTask: async ({ tenant, taskId, taskSchemaId, body, token, onMessage, signal }) => {
     const lastMessage = await SSEClient<RunRequest, RunResponseStreamChunk>(
       `${runTaskPathNoProxy(tenant)}/${taskId}/schemas/${taskSchemaId}/run`,
       Method.POST,

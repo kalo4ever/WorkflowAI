@@ -3,10 +3,7 @@ import { ObjectKeyType } from '@/lib/schemaUtils';
 import { JsonSchemaDefinitions, JsonValueSchema } from '@/types';
 import { FileInputRequest } from '@/types/workflowAI';
 
-export interface ValueViewerProps<
-  T,
-  S extends JsonValueSchema = JsonValueSchema,
-> {
+export interface ValueViewerProps<T, S extends JsonValueSchema = JsonValueSchema> {
   value: T;
   referenceValue?: T;
   originalVal?: T;
@@ -22,6 +19,7 @@ export interface ValueViewerProps<
   defaultExpanded?: boolean;
   voidValue?: Record<string, unknown> | SchemaNodeType[] | undefined;
   textColor?: string;
+  truncateText?: number;
   flatFieldBasedConfigDict?: Record<string, ObjectKeyType>;
   errorsByKeypath?: Map<string, string>;
   flatFieldBasedConfigMode?: 'editable' | 'readonly' | 'evaluation';
@@ -36,9 +34,7 @@ export interface ValueViewerProps<
   showDescriptionPopover?: boolean;
   onShowEditSchemaModal?: () => void;
   onShowEditDescriptionModal?: () => void;
-  fetchAudioTranscription?: (
-    payload: FileInputRequest
-  ) => Promise<string | undefined>;
+  fetchAudioTranscription?: (payload: FileInputRequest) => Promise<string | undefined>;
   handleUploadFile?: (
     formData: FormData,
     hash: string,
@@ -47,9 +43,7 @@ export interface ValueViewerProps<
   hideCopyValue?: boolean;
 }
 
-export function stringifyNil(
-  value: string | number | boolean | null | undefined
-) {
+export function stringifyNil(value: string | number | boolean | null | undefined) {
   if (value === null || value === undefined || value === '') {
     return 'Empty';
   }

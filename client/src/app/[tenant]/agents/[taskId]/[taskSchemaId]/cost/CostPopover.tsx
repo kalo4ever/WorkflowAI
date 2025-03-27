@@ -2,11 +2,7 @@
 
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { useCallback, useState } from 'react';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/Popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover';
 import { cn } from '@/lib/utils';
 import { TimeFrame } from './utils';
 
@@ -53,10 +49,7 @@ export function CostPopover(props: CostPopoverProps) {
           >
             <Check
               size={16}
-              className={cn(
-                'text-indigo-600 shrink-0',
-                element === timeFrame ? 'opacity-100' : 'opacity-0'
-              )}
+              className={cn('text-indigo-600 shrink-0', element === timeFrame ? 'opacity-100' : 'opacity-0')}
             />
             <div className='overflow-hidden text-ellipsis whitespace-nowrap max-w-full text-gray-700 text-[13px] truncate shrink-1'>
               {element}

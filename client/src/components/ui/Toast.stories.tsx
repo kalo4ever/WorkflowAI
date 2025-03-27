@@ -1,10 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import {
-  Toast,
-  ToastAction,
-  ToastActionElement,
-  ToastProps,
-} from '@/components/ui/Toast';
+import { Toast, ToastAction, ToastActionElement, ToastProps } from '@/components/ui/Toast';
 import { Toaster } from '@/components/ui/Toaster';
 import { useToast } from '@/components/ui/use-toast';
 

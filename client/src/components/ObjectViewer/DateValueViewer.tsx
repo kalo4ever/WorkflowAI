@@ -22,13 +22,7 @@ export function DateValueViewer(
   );
 
   if (!editable) {
-    return (
-      <ReadonlyValue
-        {...props}
-        referenceValue={undefined}
-        value={formatDatePickerDate(value, withTimePicker)}
-      />
-    );
+    return <ReadonlyValue {...props} referenceValue={undefined} value={formatDatePickerDate(value, withTimePicker)} />;
   }
 
   // We use dayjs to parse the Date because the Date constructor is not timezone agnostic

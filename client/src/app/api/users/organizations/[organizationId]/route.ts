@@ -15,10 +15,7 @@ const organizationCache = new LRUCache<string, OrganizationInformation>({
   ttl: 1000 * 60 * 60 * 24, // 24 hours
 });
 
-export const GET = async (
-  req: NextRequest,
-  { params }: { params: { organizationId: string } }
-) => {
+export const GET = async (req: NextRequest, { params }: { params: { organizationId: string } }) => {
   const { organizationId } = params;
 
   if (!organizationId) {

@@ -1,14 +1,5 @@
-import {
-  QueryFieldMapper,
-  QueryMapper,
-  mappers,
-} from '@/lib/hooks/useQuery/utils';
-import {
-  type FieldFilter,
-  type TaskRunQuery,
-  deserializeFieldFilter,
-  serializeFieldFilter,
-} from '@/types';
+import { QueryFieldMapper, QueryMapper, mappers } from '@/lib/hooks/useQuery/utils';
+import { type FieldFilter, type TaskRunQuery, deserializeFieldFilter, serializeFieldFilter } from '@/types';
 
 export interface PageTokenQuery {
   page_token?: Date;

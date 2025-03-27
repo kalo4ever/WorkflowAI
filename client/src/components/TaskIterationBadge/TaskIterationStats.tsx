@@ -26,15 +26,7 @@ export function TaskStats(props: TaskStatsProps) {
     async function fetchStats() {
       if (!isMounted()) return;
 
-      const stats = await fetchTaskStats(
-        tenant,
-        taskId,
-        fortyEightHoursAgo,
-        undefined,
-        taskSchemaId,
-        iteration,
-        true
-      );
+      const stats = await fetchTaskStats(tenant, taskId, fortyEightHoursAgo, undefined, taskSchemaId, iteration, true);
 
       if (!stats) {
         return;

@@ -41,17 +41,11 @@ export function TaskModalDoublePreview(props: TaskModalDoublePreviewProps) {
 
   // We cannot use memos instead of states here since the we want the value to be updated after each loading but NOT be undefined while loading.
 
-  const [chatMessages, setChatMessages] = useState<ChatMessage[] | undefined>(
-    undefined
-  );
+  const [chatMessages, setChatMessages] = useState<ChatMessage[] | undefined>(undefined);
 
-  const [computedInputSchemaToUse, setComputedInputSchemaToUse] = useState<
-    JsonSchema | undefined
-  >(undefined);
+  const [computedInputSchemaToUse, setComputedInputSchemaToUse] = useState<JsonSchema | undefined>(undefined);
 
-  const [computedOutputSchemaToUse, setComputedOutputSchemaToUse] = useState<
-    JsonSchema | undefined
-  >(undefined);
+  const [computedOutputSchemaToUse, setComputedOutputSchemaToUse] = useState<JsonSchema | undefined>(undefined);
 
   useEffect(() => {
     if (loading) {
@@ -84,13 +78,9 @@ export function TaskModalDoublePreview(props: TaskModalDoublePreviewProps) {
     setChatMessages(chatMessages);
   }, [messages, loading]);
 
-  const [previousInputPreview, setPreviousInputPreview] = useState<
-    Record<string, unknown> | undefined
-  >(undefined);
+  const [previousInputPreview, setPreviousInputPreview] = useState<Record<string, unknown> | undefined>(undefined);
 
-  const [previousOutputPreview, setPreviousOutputPreview] = useState<
-    Record<string, unknown> | undefined
-  >(undefined);
+  const [previousOutputPreview, setPreviousOutputPreview] = useState<Record<string, unknown> | undefined>(undefined);
 
   const {
     generatedInput: previewInput,
@@ -113,20 +103,11 @@ export function TaskModalDoublePreview(props: TaskModalDoublePreviewProps) {
   );
 
   const shouldShowIsLoadingPreviews = useMemo(() => {
-    if (
-      noChangesDetected &&
-      !!previewInputBySchemaId &&
-      !!previewOutputBySchemaId
-    ) {
+    if (noChangesDetected && !!previewInputBySchemaId && !!previewOutputBySchemaId) {
       return false;
     }
     return isLoadingPreviews;
-  }, [
-    isLoadingPreviews,
-    noChangesDetected,
-    previewInputBySchemaId,
-    previewOutputBySchemaId,
-  ]);
+  }, [isLoadingPreviews, noChangesDetected, previewInputBySchemaId, previewOutputBySchemaId]);
 
   useEffect(() => {
     if (loading) {
@@ -173,24 +154,14 @@ export function TaskModalDoublePreview(props: TaskModalDoublePreviewProps) {
       return previewInputBySchemaId ?? finalPreviewInput ?? previewInput;
     }
     return previewInput;
-  }, [
-    previewInputBySchemaId,
-    previewInput,
-    finalPreviewInput,
-    noChangesDetected,
-  ]);
+  }, [previewInputBySchemaId, previewInput, finalPreviewInput, noChangesDetected]);
 
   const previewOutputToShow = useMemo(() => {
     if (noChangesDetected) {
       return previewOutputBySchemaId ?? finalPreviewOutput ?? previewOutput;
     }
     return previewOutput;
-  }, [
-    previewOutputBySchemaId,
-    previewOutput,
-    finalPreviewOutput,
-    noChangesDetected,
-  ]);
+  }, [previewOutputBySchemaId, previewOutput, finalPreviewOutput, noChangesDetected]);
 
   return (
     <div className={className}>

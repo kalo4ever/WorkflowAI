@@ -11,6 +11,8 @@ import {
   DataUsageRegular,
   ListBarTreeFilled,
   ListBarTreeRegular,
+  PersonFeedbackFilled,
+  PersonFeedbackRegular,
   PlayCircleFilled,
   PlayCircleRegular,
   SettingsFilled,
@@ -24,16 +26,14 @@ import { useCallback, useMemo } from 'react';
 import { TaskRunsActivityIndicator } from '@/components/TaskIterationBadge/TaskRunsActivityIndicator';
 import { Button } from '@/components/ui/Button';
 import { SimpleTooltip } from '@/components/ui/Tooltip';
-import {
-  TASK_SETTINGS_MODAL_OPEN,
-  useQueryParamModal,
-} from '@/lib/globalModal';
+import { TASK_SETTINGS_MODAL_OPEN, useQueryParamModal } from '@/lib/globalModal';
 import { Page, pageRegexMap } from '@/lib/pageDetection';
 import {
   taskApiRoute,
   taskBenchmarksRoute,
   taskCostRoute,
   taskDeploymentsRoute,
+  taskFeedbackRoute,
   taskReviewsRoute,
   taskRunsRoute,
   taskSchemaRoute,
@@ -71,10 +71,7 @@ type Section = {
 const iconClassName =
   'w-5 h-5 text-gray-500 group-hover:text-indigo-700 transition group-[.selected]:text-indigo-700 shrink-0';
 
-export function generateSections(
-  showActivityIndicator: boolean,
-  isInDemoMode: boolean
-): Section[] {
+export function generateSections(showActivityIndicator: boolean, isInDemoMode: boolean): Section[] {
   return [
     {
       title: 'ITERATE',
@@ -196,6 +193,16 @@ export function generateSections(
       showActivityIndicator: showActivityIndicator,
       items: [
         {
+          title: 'User Feedback',
+          icon: <PersonFeedbackRegular className={iconClassName} />,
+          iconSelected: <PersonFeedbackFilled className={iconClassName} />,
+          routeBuilder: taskFeedbackRoute,
+          matchRegex: pageRegexMap[Page.Feedback],
+          isEnabled: true,
+          isHidden: false,
+          style: SectionItemStyle.Link,
+        },
+        {
           title: 'Runs',
           icon: <ListBarTreeRegular className={iconClassName} />,
           iconSelected: <ListBarTreeFilled className={iconClassName} />,
@@ -211,9 +218,7 @@ export function generateSections(
           routeBuilder: taskCostRoute,
           matchRegex: pageRegexMap[Page.Cost],
           icon: <ClipboardTaskListLtr20Regular className={iconClassName} />,
-          iconSelected: (
-            <ClipboardTaskListLtr20Filled className={iconClassName} />
-          ),
+          iconSelected: <ClipboardTaskListLtr20Filled className={iconClassName} />,
           isEnabled: true,
           isHidden: false,
           style: SectionItemStyle.Link,
@@ -243,8 +248,7 @@ function SectionButton(props: SectionItem & SectionCommonProps) {
   } = props;
   const { openModal } = useQueryParamModal(globalModal ?? '');
 
-  const isDisabled =
-    ((!routeBuilder || !matchRegex) && !globalModal) || !isEnabled;
+  const isDisabled = ((!routeBuilder || !matchRegex) && !globalModal) || !isEnabled;
 
   const link = useMemo(() => {
     if (isDisabled || !!globalModal) {
@@ -259,21 +263,12 @@ function SectionButton(props: SectionItem & SectionCommonProps) {
     }
   }, [globalModal, openModal]);
 
-  const selected = useMemo(
-    () => !!matchRegex?.exec(pathname),
-    [matchRegex, pathname]
-  );
+  const selected = useMemo(() => !!matchRegex?.exec(pathname), [matchRegex, pathname]);
 
   if (style === 'button') {
     return (
       <div className='flex px-2 py-1'>
-        <Button
-          disabled={isDisabled}
-          toRoute={link}
-          onClick={onClick}
-          variant='newDesign'
-          className='w-full text-xs'
-        >
+        <Button disabled={isDisabled} toRoute={link} onClick={onClick} variant='newDesign' className='w-full text-xs'>
           {title}
           {globalModal}
         </Button>
@@ -282,9 +277,7 @@ function SectionButton(props: SectionItem & SectionCommonProps) {
   }
 
   return (
-    <SimpleTooltip
-      content={isDisabled ? 'Log in to unlock all features' : undefined}
-    >
+    <SimpleTooltip content={isDisabled ? 'Log in to unlock all features' : undefined}>
       <div
         className={cx(
           'border-l-[2px] transition-colors duration-200 ease-in-out pl-1.5 z-10 hover:bg-indigo-50 hover:bg-opacity-50',
@@ -321,8 +314,7 @@ function SectionButton(props: SectionItem & SectionCommonProps) {
 }
 
 export function SectionBlock(props: Section & SectionCommonProps) {
-  const { title, items, routeBuilderWrapper, pathname, showActivityIndicator } =
-    props;
+  const { title, items, routeBuilderWrapper, pathname, showActivityIndicator } = props;
 
   const filteredItems = useMemo(() => {
     return items.filter((item) => !item.isHidden);
@@ -336,12 +328,7 @@ export function SectionBlock(props: Section & SectionCommonProps) {
       </div>
       <div className='flex flex-col'>
         {filteredItems.map((item) => (
-          <SectionButton
-            key={item.title}
-            routeBuilderWrapper={routeBuilderWrapper}
-            pathname={pathname}
-            {...item}
-          />
+          <SectionButton key={item.title} routeBuilderWrapper={routeBuilderWrapper} pathname={pathname} {...item} />
         ))}
       </div>
     </div>

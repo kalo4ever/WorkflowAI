@@ -1,8 +1,4 @@
-export function getWithDefault<K, V>(
-  map: Map<K, V>,
-  key: K,
-  defaultValue: () => V
-): V {
+export function getWithDefault<K, V>(map: Map<K, V>, key: K, defaultValue: () => V): V {
   const current = map.get(key);
   if (current !== undefined) {
     return current;

@@ -9,10 +9,7 @@ describe('Sanitize JSON schema', () => {
           rephrased_comment: {
             description: 'The rephrased comment',
             type: 'string',
-            examples: [
-              'This is a rephrased example comment.',
-              'Another rephrased example tweet.',
-            ],
+            examples: ['This is a rephrased example comment.', 'Another rephrased example tweet.'],
           },
         },
         required: ['rephrased_comment'],
@@ -23,10 +20,7 @@ describe('Sanitize JSON schema', () => {
         properties: {
           rephrased_comment: {
             type: 'string',
-            examples: [
-              'This is a rephrased example comment.',
-              'Another rephrased example tweet.',
-            ],
+            examples: ['This is a rephrased example comment.', 'Another rephrased example tweet.'],
           },
         },
         required: ['rephrased_comment'],

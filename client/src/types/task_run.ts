@@ -12,10 +12,9 @@ export type GeneralizedTaskInput = Record<string, unknown> | SchemaNodeType[];
 // There are 2 `TranscriptionResponse` types backend side.
 // The old one returns transcriptions by keypath for a given run, we should switch to the
 // pure transcription call -> api__routers__transcriptions__TranscriptionResponse
-export type RunTranscriptionResponse =
-  api__routers__runs_by_id__TranscriptionResponse;
+export type RunTranscriptionResponse = api__routers__runs_by_id__TranscriptionResponse;
 
-export interface TaskOutput extends Record<string, unknown> {}
+export type TaskOutput = Record<string, unknown>;
 
 // An interface that merges both ToolCall from streamed chunks and final runs
 export interface ToolCallPreview {

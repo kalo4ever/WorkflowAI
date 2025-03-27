@@ -58,18 +58,10 @@ export function InstructionsDiffViewer(props: InstructionsDiffViewerProps) {
           </div>
         ))}
         <div className='flex flex-row gap-1 pt-2'>
-          <Button
-            variant='newDesign'
-            size='sm'
-            onClick={approveImprovedInstructions}
-          >
+          <Button variant='newDesign' size='sm' onClick={approveImprovedInstructions}>
             Okay
           </Button>
-          <Button
-            variant='destructive'
-            size='sm'
-            onClick={() => setShowUndoConfirmation(true)}
-          >
+          <Button variant='destructive' size='sm' onClick={() => setShowUndoConfirmation(true)}>
             Undo
           </Button>
         </div>
@@ -97,9 +89,7 @@ export function InstructionsDiffViewer(props: InstructionsDiffViewerProps) {
       <AlertDialog
         open={showUndoConfirmation}
         title={'Undo Changes'}
-        text={
-          'Are you sure you want to undo these changes to the instructions?'
-        }
+        text={'Are you sure you want to undo these changes to the instructions?'}
         confrimationText='Undo'
         destructive={true}
         onCancel={() => setShowUndoConfirmation(false)}

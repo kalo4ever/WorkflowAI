@@ -4,14 +4,10 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { serverFetch } from '@/lib/api/serverAPIClient';
 import { auth } from '@/lib/auth';
+import { TASK_RUN_ID_PARAM } from '@/lib/constants';
 import { RunV1 } from '@/types/workflowAI';
 
-async function fetchSchemaId(
-  tenant: string | undefined,
-  schemaId: number | undefined,
-  taskId: string,
-  runId: string
-) {
+async function fetchSchemaId(tenant: string | undefined, schemaId: number | undefined, taskId: string, runId: string) {
   if (schemaId !== undefined) {
     return schemaId;
   }
@@ -32,20 +28,15 @@ type RunRedirectPageProps = {
   taskId: string;
   tenant?: string;
   schemaId?: number;
+  path?: string;
 };
 
-export default async function RunRedirect({
-  runId,
-  taskId,
-  tenant,
-  schemaId,
-}: RunRedirectPageProps) {
+export default async function RunRedirect({ runId, taskId, tenant, schemaId, path = 'runs' }: RunRedirectPageProps) {
   const { orgSlug, redirectToSignIn } = auth();
 
   if (!orgSlug) {
     const headersList = headers();
-    const fullUrl =
-      headersList.get('x-url') || headersList.get('referer') || '';
+    const fullUrl = headersList.get('x-url') || headersList.get('referer') || '';
 
     return redirectToSignIn({
       returnBackUrl: fullUrl,
@@ -55,7 +46,5 @@ export default async function RunRedirect({
   const finalSchemaId = await fetchSchemaId(tenant, schemaId, taskId, runId);
 
   const tenantURL = tenant === '_' ? orgSlug : tenant;
-  return redirect(
-    `/${tenantURL}/agents/${taskId}/${finalSchemaId}/runs?taskRunId=${runId}`
-  );
+  return redirect(`/${tenantURL}/agents/${taskId}/${finalSchemaId}/${path}?${TASK_RUN_ID_PARAM}=${runId}`);
 }

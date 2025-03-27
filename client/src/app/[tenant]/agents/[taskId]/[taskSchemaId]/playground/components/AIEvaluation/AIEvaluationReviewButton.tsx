@@ -37,10 +37,7 @@ function getTextColor(props: GetTextColorProps): string {
     return 'text-gray-400';
   }
 
-  const isInteractiveHoverState =
-    isHovering &&
-    isHoveringSupported &&
-    mode === AIEvaluationReviewButtonMode.NORMAL;
+  const isInteractiveHoverState = isHovering && isHoveringSupported && mode === AIEvaluationReviewButtonMode.NORMAL;
 
   if (thumb === AIEvaluationReviewButtonThumb.UP) {
     return isInteractiveHoverState ? 'text-green-600/80' : 'text-green-600';
@@ -60,9 +57,7 @@ function getBorderColor(props: GetBorderColorProps): string {
     return 'border-transparent';
   }
 
-  return thumb === AIEvaluationReviewButtonThumb.UP
-    ? 'border-green-500'
-    : 'border-red-500';
+  return thumb === AIEvaluationReviewButtonThumb.UP ? 'border-green-500' : 'border-red-500';
 }
 
 type GetBackgroundColorProps = {
@@ -74,21 +69,14 @@ type GetBackgroundColorProps = {
 
 function getBackgroundColor(props: GetBackgroundColorProps): string {
   const { isHovering, isHoveringSupported, mode, thumb } = props;
-  const isInteractiveHoverState =
-    isHovering &&
-    isHoveringSupported &&
-    mode === AIEvaluationReviewButtonMode.NORMAL;
+  const isInteractiveHoverState = isHovering && isHoveringSupported && mode === AIEvaluationReviewButtonMode.NORMAL;
 
   if (isInteractiveHoverState) {
-    return thumb === AIEvaluationReviewButtonThumb.UP
-      ? 'bg-green-200/80'
-      : 'bg-red-200/80';
+    return thumb === AIEvaluationReviewButtonThumb.UP ? 'bg-green-200/80' : 'bg-red-200/80';
   }
 
   if (mode === AIEvaluationReviewButtonMode.USER_SELECTED) {
-    return thumb === AIEvaluationReviewButtonThumb.UP
-      ? 'bg-green-200'
-      : 'bg-red-200';
+    return thumb === AIEvaluationReviewButtonThumb.UP ? 'bg-green-200' : 'bg-red-200';
   }
 
   return 'bg-transparent';
@@ -106,10 +94,7 @@ export function AIEvaluationReviewButton(props: AIEvaluationReviewButtonProps) {
   const [isHovering, setIsHovering] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const isHoveringSupported =
-    mode !== AIEvaluationReviewButtonMode.USER_SELECTED &&
-    !!onClick &&
-    !disabled;
+  const isHoveringSupported = mode !== AIEvaluationReviewButtonMode.USER_SELECTED && !!onClick && !disabled;
 
   // Icon selection
   const icons = {
@@ -123,16 +108,10 @@ export function AIEvaluationReviewButton(props: AIEvaluationReviewButtonProps) {
     },
   };
 
-  const Icon =
-    mode === AIEvaluationReviewButtonMode.USER_SELECTED
-      ? icons[thumb].filled
-      : icons[thumb].regular;
+  const Icon = mode === AIEvaluationReviewButtonMode.USER_SELECTED ? icons[thumb].filled : icons[thumb].regular;
 
   // Mini icon selection
-  const miniIcons: Record<
-    AIEvaluationReviewButtonMode,
-    React.ElementType | null
-  > = {
+  const miniIcons: Record<AIEvaluationReviewButtonMode, React.ElementType | null> = {
     [AIEvaluationReviewButtonMode.AI_SELECTED]: Sparkle16Filled,
     [AIEvaluationReviewButtonMode.USER_SELECTED]: CheckmarkCircle16Filled,
     [AIEvaluationReviewButtonMode.NORMAL]: null,
@@ -156,13 +135,9 @@ export function AIEvaluationReviewButton(props: AIEvaluationReviewButtonProps) {
     thumb,
   });
 
-  const tooltipContent =
-    thumb === AIEvaluationReviewButtonThumb.UP
-      ? 'Mark output as Good'
-      : 'Mark output as Bad';
+  const tooltipContent = thumb === AIEvaluationReviewButtonThumb.UP ? 'Mark output as Good' : 'Mark output as Bad';
 
-  const showBackgroundForMiniIcon =
-    mode === AIEvaluationReviewButtonMode.AI_SELECTED;
+  const showBackgroundForMiniIcon = mode === AIEvaluationReviewButtonMode.AI_SELECTED;
 
   const handleClick = async () => {
     if (!onClick || disabled) return;
@@ -193,11 +168,7 @@ export function AIEvaluationReviewButton(props: AIEvaluationReviewButtonProps) {
         onMouseLeave={() => setIsHovering(false)}
         onClick={handleClick}
       >
-        {isLoading ? (
-          <Loader2 className='w-4 h-4 animate-spin' />
-        ) : (
-          <Icon className='w-4 h-4' />
-        )}
+        {isLoading ? <Loader2 className='w-4 h-4 animate-spin' /> : <Icon className='w-4 h-4' />}
         {MiniIcon && (
           <div
             className={cn(

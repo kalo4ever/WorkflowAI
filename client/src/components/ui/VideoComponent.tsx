@@ -97,11 +97,7 @@ export function VideoComponent(props: VideoComponentProps) {
         <div className='absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-50 text-white rounded-[12px]'>
           <div className='text-2xl font-semibold mb-1'>{title}</div>
           <div className='font-normal mb-10 text-slate-200'>{subtitle}</div>
-          <Button
-            variant='outline'
-            className='rounded-full text-medium text-black text-sm'
-            onClick={handlePlay}
-          >
+          <Button variant='outline' className='rounded-full text-medium text-black text-sm' onClick={handlePlay}>
             {buttonTitle} <PlayCircle20Regular />
           </Button>
         </div>

@@ -4,11 +4,9 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 import TaskRunModal from '@/components/TaskRunModal/TaskRunModal';
 import { Paging } from '@/components/ui/Paging';
 import { PageContainer } from '@/components/v2/PageContainer';
+import { TASK_RUN_ID_PARAM } from '@/lib/constants';
 import { useTaskSchemaParams } from '@/lib/hooks/useTaskParams';
-import {
-  useParsedSearchParams,
-  useRedirectWithParams,
-} from '@/lib/queryString';
+import { useParsedSearchParams, useRedirectWithParams } from '@/lib/queryString';
 import { getVersionsDictionary } from '@/lib/versionUtils';
 import {
   useOrFetchCurrentTaskSchema,
@@ -27,11 +25,7 @@ import { TaskRunTableHeader } from './taskRunTable/TaskRunTableHeader';
 const TASK_RUNS_PER_PAGE = 30;
 
 export function TaskRunsContainer() {
-  const {
-    tenant,
-    taskId,
-    taskSchemaId: taskSchemaIdFromParams,
-  } = useTaskSchemaParams();
+  const { tenant, taskId, taskSchemaId: taskSchemaIdFromParams } = useTaskSchemaParams();
 
   const {
     page,
@@ -42,11 +36,7 @@ export function TaskRunsContainer() {
 
   const currentPage = page !== undefined ? Number(page) ?? 0 : 0;
 
-  const { searchFields } = useOrFetchTaskRunsSearchFields(
-    tenant,
-    taskId,
-    taskSchemaIdFromParams
-  );
+  const { searchFields } = useOrFetchTaskRunsSearchFields(tenant, taskId, taskSchemaIdFromParams);
 
   const fieldParamsArray: Array<{
     fieldName: string;
@@ -83,9 +73,7 @@ export function TaskRunsContainer() {
 
     const result: Array<FieldQuery> = [];
     fieldParamsArray.forEach((fieldParam) => {
-      const searchFieldsEntry = searchFields?.fields.find(
-        (candidate) => candidate.field_name === fieldParam.fieldName
-      );
+      const searchFieldsEntry = searchFields?.fields.find((candidate) => candidate.field_name === fieldParam.fieldName);
 
       if (!searchFieldsEntry) return undefined;
       const type = searchFieldsEntry.type;
@@ -118,18 +106,15 @@ export function TaskRunsContainer() {
     taskRunItems = [],
     isInitialized: areTaskRunsInitialized,
     count = 0,
-  } = useOrSearchTaskRuns(
-    tenant,
-    taskId,
-    TASK_RUNS_PER_PAGE,
-    currentPage * TASK_RUNS_PER_PAGE,
-    fieldQueries
-  );
+  } = useOrSearchTaskRuns(tenant, taskId, TASK_RUNS_PER_PAGE, currentPage * TASK_RUNS_PER_PAGE, fieldQueries);
 
   const taskRunIds = taskRunItems.map((taskRun) => taskRun.id);
 
-  const { taskSchema, isInitialized: isTaskSchemaInitialized } =
-    useOrFetchCurrentTaskSchema(tenant, taskId, taskSchemaIdFromParams);
+  const { taskSchema, isInitialized: isTaskSchemaInitialized } = useOrFetchCurrentTaskSchema(
+    tenant,
+    taskId,
+    taskSchemaIdFromParams
+  );
 
   const searchTaskRuns = useTaskRuns((state) => state.searchTaskRuns);
 
@@ -150,7 +135,7 @@ export function TaskRunsContainer() {
     return result;
   }, [searchFields]);
 
-  const { taskRunId } = useParsedSearchParams('taskRunId');
+  const { taskRunId } = useParsedSearchParams(TASK_RUN_ID_PARAM);
 
   const { versions } = useOrFetchVersions(tenant, taskId);
 
@@ -167,14 +152,7 @@ export function TaskRunsContainer() {
       offset: currentPage * TASK_RUNS_PER_PAGE,
       fieldQueries: fieldQueries,
     });
-  }, [
-    redirectWithParams,
-    searchTaskRuns,
-    tenant,
-    taskId,
-    fieldQueries,
-    currentPage,
-  ]);
+  }, [redirectWithParams, searchTaskRuns, tenant, taskId, fieldQueries, currentPage]);
 
   const numberOfPages = Math.ceil(count / TASK_RUNS_PER_PAGE);
 
@@ -192,11 +170,7 @@ export function TaskRunsContainer() {
   useEffect(() => {
     let newPageZeroingParams = 'none';
     fieldParamsArray.forEach((fieldParam) => {
-      if (
-        !!fieldParam.fieldName &&
-        !!fieldParam.operator &&
-        !!fieldParam.value
-      ) {
+      if (!!fieldParam.fieldName && !!fieldParam.operator && !!fieldParam.value) {
         newPageZeroingParams += `&field_name=${fieldParam.fieldName}&operator=${fieldParam.operator}&value=${fieldParam.value}`;
       }
     });
@@ -214,11 +188,7 @@ export function TaskRunsContainer() {
   }, [versions]);
 
   if (!taskSchema) {
-    return (
-      <div className='h-full w-full flex items-center justify-center'>
-        No task schema found
-      </div>
-    );
+    return <div className='h-full w-full flex items-center justify-center'>No task schema found</div>;
   }
 
   return (
@@ -251,11 +221,7 @@ export function TaskRunsContainer() {
 
         {!taskRunItems.length && areTaskRunsInitialized && (
           <TaskRunEmptyView
-            title={
-              !!fieldQueries && fieldQueries.length > 0
-                ? 'No runs match your search'
-                : 'No runs yet'
-            }
+            title={!!fieldQueries && fieldQueries.length > 0 ? 'No runs match your search' : 'No runs yet'}
             subtitle={
               !!fieldQueries && fieldQueries.length > 0
                 ? 'Try again with another search criteria'

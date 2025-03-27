@@ -1,8 +1,4 @@
-import {
-  DeleteRegular,
-  MoreVerticalRegular,
-  PaymentRegular,
-} from '@fluentui/react-icons';
+import { DeleteRegular, MoreVerticalRegular, PaymentRegular } from '@fluentui/react-icons';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AlertDialog } from '@/components/ui/AlertDialog';
 import { Button } from '@/components/ui/Button';
@@ -51,29 +47,20 @@ export function PaymentMethodSection(props: PaymentMethodSectionProps) {
 
   return (
     <div className='flex flex-col gap-2 px-4 pt-1 pb-2'>
-      <div className='text-[13px] font-medium text-gray-900'>
-        Payment Method
-      </div>
+      <div className='text-[13px] font-medium text-gray-900'>Payment Method</div>
       {paymentMethod?.payment_method_id ? (
         <div className='flex flex-row gap-4 py-3 px-4 border border-gray-200 items-center relative'>
           <div className='flex rounded-full bg-gray-100 w-10 h-10 items-center justify-center'>
             <PaymentRegular className='w-5 h-5 text-gray-900' />
           </div>
           <div className='flex flex-col gap-0.5 h-fit flex-grow'>
-            <div className='text-[13px] font-semibold text-gray-700'>
-              ••••{paymentMethod.last4}
-            </div>
+            <div className='text-[13px] font-semibold text-gray-700'>••••{paymentMethod.last4}</div>
             <div className='text-[12px] font-normal text-gray-500'>
               Expires {paymentMethod.exp_month}/{paymentMethod.exp_year}
             </div>
           </div>
           <div className='relative' ref={menuRef}>
-            <Button
-              variant='newDesignGray'
-              size='none'
-              className='w-7 h-7'
-              onClick={toggleMenu}
-            >
+            <Button variant='newDesignGray' size='none' className='w-7 h-7' onClick={toggleMenu}>
               <MoreVerticalRegular className='w-4 h-4 text-gray-800 flex-shrink-0' />
             </Button>
             {showMenu && (
