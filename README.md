@@ -38,6 +38,8 @@ The [client](./client/README.md) is a NextJS app that serves as a frontend
   of different message broker.
 - **Azure Blob Storage** is used to store files.
 
+<!-- TODO: switch to S3 when  -->
+
 ### Setting up providers
 
 This project supports a variety of LLM providers.

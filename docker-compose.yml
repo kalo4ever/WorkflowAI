@@ -33,7 +33,8 @@ services:
       CLICKHOUSE_USER: default
     volumes:
       # Execude migration on startup
-      - /docker-entrypoint-initdb.d/:api/core/storage/clickhouse/migrations
+      - ./api/core/storage/clickhouse/migrations:/docker-entrypoint-initdb.d/
+
   # API service
   api: &api
     platform: linux/x86_64
@@ -123,7 +124,7 @@ services:
         - sentry_auth_token
     # Start the app in development mode
     # Comment out when use the full optimized build
-    command: yarn dev
+    command: yarn workspace workflowai dev
     ports:
       - '3000:3000'
     env_file:
