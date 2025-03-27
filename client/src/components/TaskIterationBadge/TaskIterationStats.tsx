@@ -8,11 +8,11 @@ type TaskStatsProps = {
   tenant: TenantID | undefined;
   taskSchemaId: TaskSchemaID;
   taskId: TaskID;
-  iteration?: number;
+  versionID?: string;
 };
 
 export function TaskStats(props: TaskStatsProps) {
-  const { tenant, taskSchemaId, taskId, iteration } = props;
+  const { tenant, taskSchemaId, taskId, versionID } = props;
 
   const fetchTaskStats = useTaskStats((state) => state.fetchTaskStats);
 
@@ -26,7 +26,7 @@ export function TaskStats(props: TaskStatsProps) {
     async function fetchStats() {
       if (!isMounted()) return;
 
-      const stats = await fetchTaskStats(tenant, taskId, fortyEightHoursAgo, undefined, taskSchemaId, iteration, true);
+      const stats = await fetchTaskStats(tenant, taskId, fortyEightHoursAgo, undefined, taskSchemaId, versionID, true);
 
       if (!stats) {
         return;
@@ -41,7 +41,7 @@ export function TaskStats(props: TaskStatsProps) {
     }
 
     fetchStats();
-  }, [fetchTaskStats, taskId, taskSchemaId, iteration, tenant, isMounted]);
+  }, [fetchTaskStats, taskId, taskSchemaId, versionID, tenant, isMounted]);
 
   const text = useMemo(() => {
     if (totalCount === undefined) {

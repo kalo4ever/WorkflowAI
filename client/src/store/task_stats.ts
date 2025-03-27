@@ -19,7 +19,7 @@ interface TaskStatsState {
     createdAfter?: Date,
     createdBefore?: Date,
     taskSchemaId?: TaskSchemaID,
-    version?: number,
+    version?: string,
     isActive?: boolean
   ): Promise<TaskStats[] | undefined>;
 }
@@ -35,7 +35,7 @@ export const useTaskStats = create<TaskStatsState>((set, get) => ({
     createdAfter?: Date,
     createdBefore?: Date,
     taskSchemaId?: TaskSchemaID,
-    version?: number,
+    versionID?: string,
     isActive?: boolean
   ) => {
     const scope = buildTaskStatsScopeKey({
@@ -44,7 +44,7 @@ export const useTaskStats = create<TaskStatsState>((set, get) => ({
       createdAfter,
       createdBefore,
       taskSchemaId,
-      version,
+      versionID,
       isActive,
     });
     if (get().isLoadingByScope.get(scope)) {
@@ -73,8 +73,8 @@ export const useTaskStats = create<TaskStatsState>((set, get) => ({
         queryParams.append('task_schema_id', taskSchemaId);
       }
 
-      if (version) {
-        queryParams.append('version', version.toString());
+      if (versionID) {
+        queryParams.append('version_id', versionID);
       }
 
       if (isActive) {
