@@ -7,9 +7,26 @@
 The docker compose file is provided as a quick way to spin up a local instance of WorkflowAI.
 It is configured to be self contained viable from the start.
 
-```
+```sh
+# Create a base environment file that will be used by the docker compose
+# You should likely update the .env file to include some provider keys
 cp .env.sample .env
-docker-compose build && docker-compose up
+# Build the client and api docker image
+# By default the docker compose builds development images, see the `target` keys
+docker-compose build
+# [Optional] Start the dependencies in the background, this way we can shut down the app while
+# keeping the dependencies running
+docker-compose up -d clickhouse azurite redis mongo
+# Start the docker images
+docker-compose up
+# The WorkflowAI api is also a WorkflowAI user
+# Since all the agents the api uses are hosted in WorkflowAI
+# So you'll need to create a Workflow AI api key
+# Open http://localhost:3000/organization/settings/api-keys and create an api key
+# Then update the WORKFLOWAI_API_KEY in your .env file
+open http://localhost:3000/organization/settings/api-keys
+# The kill the containers (ctrl c) and restart them
+docker-compose up
 ```
 
 > Although it is configured for local development via hot reloads and volumes, Docker introduces significant

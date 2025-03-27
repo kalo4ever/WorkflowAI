@@ -1,5 +1,7 @@
 export const API_URL = process.env.NEXT_PUBLIC_WORKFLOWAI_API_URL ?? 'https://api.workflowai.com';
 
+export const BACKEND_API_URL = process.env.WORKFLOWAI_API_URL ?? API_URL;
+
 export const PROD_RUN_URL = 'https://run.workflowai.com';
 
 export const RUN_URL = process.env.NEXT_PUBLIC_WORKFLOWAI_RUN_URL ?? API_URL.replace('https://api.', 'https://run.');

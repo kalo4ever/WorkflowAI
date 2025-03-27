@@ -62,7 +62,7 @@ services:
       context: .
       dockerfile: api.Dockerfile
       # Dev is the second to last stage in the Dockerfile
-      # It contains all sources and all dependencies
+      # It contains all sources and all dependencies, use for local development in docker
       target: dev
     ports:
       - '8000:8000'
@@ -107,7 +107,7 @@ services:
       # Comment target line to build full image and be close to production
       # The Sources image contains the non optimized Next project
       # If you wish to use the optimized build, you'll need to remove the `command` override
-      target: sources
+      # target: sources
       args:
         - ENV_NAME=${ENV_NAME}
         # API URL used at runtime and during build
@@ -124,18 +124,19 @@ services:
         - sentry_auth_token
     # Start the app in development mode
     # Comment out when use the full optimized build
-    command: yarn workspace workflowai dev
+    # command: yarn workspace workflowai dev
     ports:
       - '3000:3000'
     env_file:
       - .env
-    # Override the API URL to point to the API container inside the network
     environment:
-      - NEXT_PUBLIC_WORKFLOWAI_API_URL=http://api:8000
-    volumes:
-      - ./client:/app/client
-      - ./yarn.lock:/app/yarn.lock
-      - ./package.json:/app/package.json
+      # Override the API URL to point to the API container inside the network
+      # This endpoint will be used by the proxy route
+      - WORKFLOWAI_API_URL=http://api:8000
+    # volumes:
+    #   - ./client:/app/client
+    #   - ./yarn.lock:/app/yarn.lock
+    #   - ./package.json:/app/package.json
 
 networks:
   default:

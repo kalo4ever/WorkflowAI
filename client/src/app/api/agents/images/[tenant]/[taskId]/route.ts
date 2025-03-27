@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 import { NextResponse } from 'next/server';
 import React from 'react';
-import { API_URL } from '@/lib/constants';
+import { BACKEND_API_URL } from '@/lib/constants';
 import { JsonSchema } from '@/types/json_schema';
 import { RunV1 } from '@/types/workflowAI';
 
@@ -42,7 +42,7 @@ function getEntriesFromOutput(output: JsonSchema, parentKey = ''): { key: string
 export async function GET(request: Request, { params }: { params: { tenant: string; taskId: string } }) {
   const { tenant, taskId } = params;
 
-  const urlForLatestRun = `${API_URL}/v1/${tenant}/agents/${taskId}/runs/latest?is_success=true`;
+  const urlForLatestRun = `${BACKEND_API_URL}/v1/${tenant}/agents/${taskId}/runs/latest?is_success=true`;
 
   try {
     const run: RunV1 = await fetch(urlForLatestRun).then((res) => res.json());
