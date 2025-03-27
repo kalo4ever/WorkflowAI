@@ -11,7 +11,7 @@ RUN corepack prepare yarn@stable --activate
 
 # CVEs
 RUN apk upgrade libssl3 libcrypto3 libxml2
-RUN npm install -g npm@10.9.2 && npm cache clean
+RUN npm install -g npm@10.9.2 && npm cache clean --force
 
 
 FROM base AS deps
