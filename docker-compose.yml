@@ -131,16 +131,11 @@ services:
       - .env
     # Override the API URL to point to the API container inside the network
     environment:
-      - NEXT_PUBLIC_WORKFLOWAI_API_URL=http://api:3000
+      - NEXT_PUBLIC_WORKFLOWAI_API_URL=http://api:8000
     volumes:
-      - ./public:/app/public
-      - ./src:/app/src
-      - ./tsconfig.json:/app/tsconfig.json
-      - ./next.config.mjs:/app/next.config.mjs
-      - ./postcss.config.js:/app/postcss.config.js
-      - ./tailwind.config.ts:/app/tailwind.config.ts
-      - ./package.json:/app/package.json
+      - ./client:/app/client
       - ./yarn.lock:/app/yarn.lock
+      - ./package.json:/app/package.json
 
 networks:
   default:
