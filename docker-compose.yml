@@ -114,10 +114,19 @@ services:
         - API_URL=${NEXT_PUBLIC_WORKFLOWAI_API_URL}
         # Add a release name to the build, used for analytics and sentry
         - RELEASE_NAME=${RELEASE_NAME}
-        # Disable sentry during the build phase
+        # Strny setup
         - SENTRY_DISABLED=${SENTRY_DISABLED}
-        # Sentry DSN used at runtime
         - NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN}
+        # Optionally disable authentication for a quick start
+        - NEXT_PUBLIC_DISABLE_AUTHENTICATION=${NEXT_PUBLIC_DISABLE_AUTHENTICATION}
+        - NEXT_PUBLIC_HARDCODED_TENANT=${NEXT_PUBLIC_HARDCODED_TENANT}
+        # Stripe
+        - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+        # Amplitude
+        - NEXT_PUBLIC_AMPLITUDE_API_KEY=${NEXT_PUBLIC_AMPLITUDE_API_KEY}
+        # Clerk
+        - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+
       secrets:
         # Sentry auth token, used during build phase to upload sourcemaps and create
         # the release required if SENTRY_DISABLED is not set to true

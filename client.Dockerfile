@@ -9,6 +9,9 @@ ENV NODE_ENV=production
 RUN corepack enable
 RUN corepack prepare yarn@stable --activate
 
+# CVEs
+RUN apk upgrade libssl3 libcrypto3 libxml2
+
 
 FROM base AS deps
 
