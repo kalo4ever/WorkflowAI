@@ -16,6 +16,7 @@ from api.services.slack_notifications import SlackNotificationDestination, get_u
 from api.services.tasks import list_agent_summaries
 from api.tasks.extract_company_info_from_domain_task import safe_generate_company_description_from_email
 from api.tasks.meta_agent import (
+    META_AGENT_INSTRUCTIONS,
     EditSchemaToolCallResult,
     GenerateAgentInputToolCallResult,
     ImprovePromptToolCallResult,
@@ -448,7 +449,7 @@ class MetaAgentService:
             workflowai_sections=STATIC_WORKFLOWAI_PAGES,
             relevant_workflowai_documentation_sections=await DocumentationService().get_relevant_doc_sections(
                 chat_messages=[message.to_domain() for message in messages],
-                agent_instructions=meta_agent.__doc__ or "",  # The __doc__ contain the 'meta_agent' instructions
+                agent_instructions=META_AGENT_INSTRUCTIONS or "",
             ),
             available_tools_description=internal_tools_description(
                 include={ToolKind.WEB_BROWSER_TEXT, ToolKind.WEB_SEARCH_PERPLEXITY_SONAR_PRO},

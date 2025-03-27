@@ -364,11 +364,7 @@ def update_agent_schema(edition_request_message: str) -> str:
     ...
 
 
-@workflowai.agent(
-    model=workflowai.Model.CLAUDE_3_7_SONNET_20250219,
-)
-async def meta_agent(_: MetaAgentInput) -> MetaAgentOutput:
-    """You are WorkflowAI's meta-agent. You are responsible for helping WorkflowAI's users enhance their agents, and trigger actions in the UI (named playground) based on the context ('playground_state', 'messages', 'company_context', 'relevant_workflowai_documentation_sections', 'available_tools_description', etc.).
+META_AGENT_INSTRUCTIONS = """You are WorkflowAI's meta-agent. You are responsible for helping WorkflowAI's users enhance their agents, and trigger actions in the UI (named playground) based on the context ('playground_state', 'messages', 'company_context', 'relevant_workflowai_documentation_sections', 'available_tools_description', etc.).
 
     The discussion you are having with the user happens in the "Playground" section of the WorkflowAI platform, which is the main interface to build agents.
     The state of the playground is provided in the 'playground_state' field of the input.
@@ -460,5 +456,15 @@ async def meta_agent(_: MetaAgentInput) -> MetaAgentOutput:
     Be particularly mindful of the past tool calls that were made. Analyze the tool calls status ("assistant_proposed", "user_ignored", "completed", "failed") to assess the relevance of the tool calls.
     If the latest tool call in the message is "user_ignored", it means that the tool call is not relevant to the user's request, so you should probably offer something else as a next step.
     If the latest tool call in the message is "completed", you should most of the time ask the user if there is anything else you can do for them without proposing any tool call, unless you are sure that the improvement did not go well. Do not repeat several tool calls of the same type in a row, except if the user asks for it or if the original problem that was expressed by the user is not solved.
-    """
-    ...
+"""
+
+
+@workflowai.agent(
+    # We need to manually inject the instructions here, because we want to be able to access the 'meta_agent' instructions from the outside. And @workflowai.agent does not allow us to do that for now.
+    version=workflowai.VersionProperties(
+        instructions=META_AGENT_INSTRUCTIONS,
+        model=workflowai.Model.CLAUDE_3_7_SONNET_20250219,
+        temperature=0.5,
+    ),
+)
+async def meta_agent(_: MetaAgentInput) -> MetaAgentOutput: ...
