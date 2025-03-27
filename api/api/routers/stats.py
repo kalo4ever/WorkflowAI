@@ -39,6 +39,7 @@ async def get_tenant_stats(
     created_after: datetime | None = None,
     created_before: datetime | None = None,
     is_active: bool | None = None,
+    version_id: str | None = None,
 ) -> TaskStatsResponse:
     query = SerializableTaskRunQuery(
         task_id=None,
@@ -46,6 +47,7 @@ async def get_tenant_stats(
         created_after=created_after,
         created_before=created_before,
         is_active=is_active,
+        group_ids=set(version_id) if version_id else None,
     )
     data: list[TaskStats] = []
     async for item in storage.task_runs.aggregate_task_run_costs(None, query):
