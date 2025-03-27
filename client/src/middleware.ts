@@ -3,12 +3,12 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextMiddleware } from 'next/server';
 import { DISABLE_AUTHENTICATION } from './lib/constants';
 
-const isProtectedRoute = createRouteMatcher(['/api/clerk(.*)']);
-
 function buildMiddleware(): NextMiddleware {
   if (DISABLE_AUTHENTICATION) {
     return () => {};
   }
+
+  const isProtectedRoute = createRouteMatcher(['/api/clerk(.*)']);
   return clerkMiddleware((auth, req) => {
     if (!auth().userId && isProtectedRoute(req)) {
       return auth().redirectToSignIn();

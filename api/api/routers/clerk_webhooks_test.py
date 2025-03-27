@@ -6,7 +6,9 @@ from freezegun import freeze_time
 from httpx import AsyncClient
 from pydantic import BaseModel
 
-from api.routers.clerk_webhooks import _decoded_secret, _verify_signature  # pyright: ignore [reportPrivateUsage]
+from api.routers.clerk_webhooks import (  # pyright: ignore [reportPrivateUsage]
+    _ClerkWebhookSigner,  # pyright: ignore [reportPrivateUsage]
+)
 from tests.utils import fixtures_json
 
 
@@ -16,7 +18,7 @@ class _TestModel(BaseModel):
 
 class TestVerifySignature:
     def test_success(self):
-        secret = _decoded_secret("whsec_MfKQ9r8GKYqrTwjUPD8ILPZIo2LaLaSw")
+        signer = _ClerkWebhookSigner("whsec_MfKQ9r8GKYqrTwjUPD8ILPZIo2LaLaSw")
 
         svix_id = "msg_p5jXN8AQM9LWM0D4loKWxJek"
         svix_timestamp = "1614265330"
@@ -24,7 +26,7 @@ class TestVerifySignature:
 
         payload = '{"test": 2432232314}'
 
-        verified = _verify_signature(svix_id, svix_timestamp, payload, secret, svix_signature, _TestModel)
+        verified = signer.verify_signature(svix_id, svix_timestamp, payload, svix_signature, _TestModel)
         assert verified.test == 2432232314
 
 
