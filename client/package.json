@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
-    "build": "next build",
-    "start": "next start",
+    "build": "next build && cp -r .next/static .next/standalone/client/.next && cp -r public .next/standalone/client/",
+    "start": "node .next/standalone/client/server.js",
     "lint": "next lint",
     "format": "prettier --write .",
     "prettier-check": "prettier --check .",
