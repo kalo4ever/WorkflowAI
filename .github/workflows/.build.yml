@@ -20,6 +20,10 @@ on:
       service:
         required: true
         type: string
+      tag_suffix:
+        required: false
+        type: string
+        default: ''
     secrets:
       AZURE_CLIENT_ID:
         required: true
@@ -57,6 +61,7 @@ jobs:
     env:
       REGISTRY_NAME: workflowai${{ inputs.registry_suffix }}
       APP_NAME: ${{ inputs.app_name }}
+      TAG_SUFFIX: ${{ inputs.tag_suffix }}
     outputs:
       image_name: ${{ steps.set_image_name.outputs.image_name }}
     steps:
@@ -85,7 +90,7 @@ jobs:
           file: ${{ inputs.service }}.Dockerfile
           push: false
           load: true
-          tags: ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME}}:latest,${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME}}:${{ github.sha }}
+          tags: ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME}}:latest${{ inputs.tag_suffix }},${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME}}:${{ github.sha }}${{ inputs.tag_suffix }}
           build-args: |
             RELEASE_NAME=${{ inputs.release_name }}
             ${{ secrets.build_args }}
@@ -96,7 +101,7 @@ jobs:
       - name: Scan image for vulnerabilities
         uses: aquasecurity/trivy-action@0.29.0
         with:
-          image-ref: ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME}}:${{ github.sha }}
+          image-ref: ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}${{ inputs.tag_suffix }}
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
@@ -111,7 +116,7 @@ jobs:
         with:
           file: ${{ inputs.service }}.Dockerfile
           push: true
-          tags: ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME}}:latest,${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME}}:${{ github.sha }}
+          tags: ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME}}:latest${{ inputs.tag_suffix }},${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME}}:${{ github.sha }}${{ inputs.tag_suffix }}
           build-args: |
             RELEASE_NAME=${{ inputs.release_name }}
             ${{ secrets.build_args }}
@@ -119,4 +124,4 @@ jobs:
             "sentry_auth_token=${{ secrets.SENTRY_AUTH_TOKEN }}"
       - id: set_image_name
         name: Set image name
-        run: echo "image_name=${REGISTRY_NAME}.azurecr.io/${APP_NAME}:${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+        run: echo "image_name=${REGISTRY_NAME}.azurecr.io/${APP_NAME}:${GITHUB_SHA}${TAG_SUFFIX}" >> "$GITHUB_OUTPUT"
