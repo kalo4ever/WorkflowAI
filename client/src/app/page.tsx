@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { tenantSlug } from '@/lib/auth';
-import { LandingPage } from './landing/page';
+import { LandingPage } from './landing/LandingPage';
 
 export async function generateMetadata() {
   return {

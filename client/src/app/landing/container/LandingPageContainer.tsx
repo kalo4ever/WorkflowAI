@@ -1,3 +1,5 @@
+'use client';
+
 import { WorkflowAIIcon } from '@/components/Logos/WorkflowAIIcon';
 import { Button } from '@/components/ui/Button';
 import { ExtendedBordersContainer } from '@/components/v2/ExtendedBordersContainer';

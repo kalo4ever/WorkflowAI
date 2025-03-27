@@ -5,7 +5,9 @@
   ],
   "scripts": {
     "format": "prettier --write client",
-    "prettier-check": "prettier --check client"
+    "prettier-check": "prettier --check client",
+    "build": "yarn workspace workflowai build",
+    "dev": "yarn workspace workflowai dev"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
@@ -37,5 +39,8 @@
     "vite-tsconfig-paths": "^4.3.1",
     "webpack": "^5.90.1"
   },
-  "packageManager": "yarn@4.1.0"
+  "packageManager": "yarn@4.1.0",
+  "resolutions": {
+    "cross-spawn": "7.0.6"
+  }
 }
