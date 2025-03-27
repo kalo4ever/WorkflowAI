@@ -75,10 +75,13 @@ export function SuggestedFeaturesList(props: SuggestedFeaturesListProps) {
   }, [companyURL]);
 
   return (
-    <div ref={scrollContainerRef} className='flex flex-col gap-4 w-full h-full pt-8 px-16 overflow-y-auto'>
+    <div
+      ref={scrollContainerRef}
+      className='flex flex-col gap-4 w-full h-full sm:pt-8 pt-3 pb-4 sm:pb-0 sm:px-16 px-6 overflow-y-auto'
+    >
       <div className='flex flex-col gap-2 w-full'>
         <div className='flex flex-row gap-2 w-full items-center justify-between'>
-          <div className='text-gray-400 text-[13px] font-medium'>{tag?.name}</div>
+          <div className='text-gray-400 text-[13px] font-medium hidden sm:block'>{tag?.name}</div>
           {isCompanySpecific && (
             <Button variant='newDesign' icon={<ShareRegular className='w-4 h-4' />} size='sm' onClick={copyUrl}>
               Share Features
