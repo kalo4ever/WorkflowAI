@@ -21,6 +21,7 @@ import {
   UpdateTaskInstructionsRequest,
   UpdateTaskRequest,
 } from '@/types/workflowAI';
+import { useMetaAgentChat } from './meta_agent_messages';
 import { buildScopeKey, rootTaskPath, rootTaskPathNoProxy, rootTaskPathNoProxyV1, runTaskPathNoProxy } from './utils';
 
 enableMapSet();
@@ -336,6 +337,7 @@ export const useTasks = create<TasksState>((set, get) => ({
     if (!!tenant) {
       await get().fetchTasks(tenant);
     }
+    useMetaAgentChat.getState().remove(taskId);
   },
   updateTaskSchema: async (
     tenant: TenantID | undefined,
