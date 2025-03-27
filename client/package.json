@@ -51,6 +51,7 @@
     "allotment": "^1.20.0",
     "class-variance-authority": "^0.7.0",
     "cmdk": "^0.2.1",
+    "cross-spawn": "^7.0.6",
     "date-fns": "^3.3.1",
     "dayjs": "^1.11.11",
     "diff": "^7.0.0",
@@ -137,13 +138,5 @@
     "vite-tsconfig-paths": "^4.3.1",
     "webpack": "^5.90.1"
   },
-  "packageManager": "yarn@4.1.0",
-  "lint-staged": {
-    "**/*.{js,jsx,ts,tsx}": [
-      "eslint"
-    ],
-    "**/*.{json,md,yml,yaml,css,scss,html,js,jsx,ts,tsx}": [
-      "prettier --check"
-    ]
-  }
+  "packageManager": "yarn@4.1.0"
 }
