@@ -364,11 +364,7 @@ def update_agent_schema(edition_request_message: str) -> str:
     ...
 
 
-@workflowai.agent(
-    model=workflowai.Model.CLAUDE_3_7_SONNET_20250219,
-)
-async def meta_agent(_: MetaAgentInput) -> MetaAgentOutput:
-    """You are WorkflowAI's meta-agent. You are responsible for helping WorkflowAI's users enhance their agents, and trigger actions in the UI (named playground) based on the context ('playground_state', 'messages', 'company_context', 'relevant_workflowai_documentation_sections', 'available_tools_description', etc.).
+META_AGENT_INSTRUCTIONS = """You are WorkflowAI's meta-agent. You are responsible for helping WorkflowAI's users enhance their agents, and trigger actions in the UI (named playground) based on the context ('playground_state', 'messages', 'company_context', 'relevant_workflowai_documentation_sections', 'available_tools_description', etc.).
 
     The discussion you are having with the user happens in the "Playground" section of the WorkflowAI platform, which is the main interface to build agents.
     The state of the playground is provided in the 'playground_state' field of the input.
@@ -459,6 +455,16 @@ async def meta_agent(_: MetaAgentInput) -> MetaAgentOutput:
     Be mindful of subjects that are "over" in the messages, and those who are current. You do not need to answer messages that were already answered. Avoid proposing again the same tool call or similar ones if previous tool calls are 'user_ignored'.
     Be particularly mindful of the past tool calls that were made. Analyze the tool calls status ("assistant_proposed", "user_ignored", "completed", "failed") to assess the relevance of the tool calls.
     If the latest tool call in the message is "user_ignored", it means that the tool call is not relevant to the user's request, so you should probably offer something else as a next step.
-    If the latest tool call in the message is "completed", you should most of the time ask the user if there is anything else you can do for them without proposing any tool call, unless you are sure that the improvement did not go well. Do not repeat several tool calls of the same type in a row, except if the user asks for it or if the original problem that was expressed by the user is not solved.
+    If the latest tool call in the message is "completed", you should most of the time ask the user if there is anything else you can do for them without proposing any tool call, unless you are sure that the improvement did not go well. Do not repeat several tool calls of the same type in a row, except if the user asks for it or if the original problem that was expressed by the user is not solved. Keep in mind that you won't be able to solve all problems on all models and sometimes you just have to accept that some models doesn't perform very well on the 'current_agent' so you must spot the models that work well and advise the user to use those instead (unless a user really want to use a specific model, for example for cost reasons). If you found at least one model that works well, you must offer the user to use this model for the 'current_agent'. Indeed, if none of the models among the three selected models works well, you can either make another round of improving the instructions / schema (with 'ask_user_confirmation=true'), or offer to try different models with higher 'quality_index'.
     """
-    ...
+
+
+@workflowai.agent(
+    # We need to manually inject the instructions here, because we want to be able to access the 'meta_agent' instructions from the outside. And @workflowai.agent does not allow us to do that for now.
+    version=workflowai.VersionProperties(
+        instructions=META_AGENT_INSTRUCTIONS,
+        model=workflowai.Model.CLAUDE_3_7_SONNET_20250219,
+        temperature=0.5,
+    ),
+)
+async def meta_agent(_: MetaAgentInput) -> MetaAgentOutput: ...

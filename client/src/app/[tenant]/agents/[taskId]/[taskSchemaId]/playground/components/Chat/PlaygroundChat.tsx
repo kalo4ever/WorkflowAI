@@ -148,8 +148,7 @@ export function PlaygroundChat(props: Props) {
             if ('run_feedback_message' in toolCall) {
               component = (
                 <UniversalToolCallMessage
-                  title='Improve Instructions'
-                  actionTitle='Improve'
+                  title='Improve Instructions?'
                   titleInProgress='Improving instructions...'
                   titleArchived='Instructions were not improved'
                   titleUsed='Instructions were improved'
@@ -167,8 +166,7 @@ export function PlaygroundChat(props: Props) {
             if ('edition_request_message' in toolCall) {
               component = (
                 <UniversalToolCallMessage
-                  title='Update Schema'
-                  actionTitle='Update Schema'
+                  title='Update Schema?'
                   titleInProgress='Updating schema...'
                   titleArchived='Schema was not updated'
                   titleUsed='Schema was updated'
@@ -184,8 +182,7 @@ export function PlaygroundChat(props: Props) {
           case ToolCallName.RUN_CURRENT_AGENT_ON_MODELS:
             component = (
               <UniversalToolCallMessage
-                title='Update Models'
-                actionTitle='Update Models'
+                title='Update Models?'
                 titleInProgress='Updating models...'
                 titleArchived='Models were not updated'
                 titleUsed='Models were updated'
@@ -201,8 +198,7 @@ export function PlaygroundChat(props: Props) {
           case ToolCallName.GENERATE_AGENT_INPUT:
             component = (
               <UniversalToolCallMessage
-                title='Update Input'
-                actionTitle='Update Input'
+                title='Update Input?'
                 titleInProgress='Updating input...'
                 titleArchived='Input was not updated'
                 titleUsed='Input was updated'
