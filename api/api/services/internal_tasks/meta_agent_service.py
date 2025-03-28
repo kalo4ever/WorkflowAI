@@ -491,11 +491,17 @@ class MetaAgentService:
         ), agent_runs
 
     def dispatch_new_user_messages_event(self, messages: list[MetaAgentChatMessage]):
-        # Extract the last message from the list since the latest "ASSISTANT" message
-        latest_user_messages = [message for message in reversed(messages) if message.role == "USER"]
+        # Get all consecutive USER messages at the end of the conversation
+        latest_user_messages: list[MetaAgentChatMessage] = []
+        for message in reversed(messages):
+            if message.role == "USER":
+                latest_user_messages.insert(0, message)
+            else:
+                break
+
         if latest_user_messages:
             self.event_router(
-                MetaAgentChatMessagesSent(messages=[message.to_domain() for message in reversed(latest_user_messages)]),
+                MetaAgentChatMessagesSent(messages=[message.to_domain() for message in latest_user_messages]),
             )
         else:
             self._logger.warning("No user message found in the list of messages")
