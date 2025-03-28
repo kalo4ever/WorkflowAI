@@ -6,7 +6,6 @@ from typing_extensions import override
 
 from core.domain.errors import (
     MissingEnvVariablesError,
-    NoProviderSupportingModelError,
 )
 from core.domain.models import Model, Provider
 from core.domain.models.utils import get_model_data, is_model_available_at_provider
@@ -55,7 +54,7 @@ class LocalProviderFactory(AbstractProviderFactory):
                 provider_type = self.PROVIDER_TYPES[provider]
             except KeyError:
                 raise ValueError(f"Provider {provider} not supported")
-            self._providers[provider] = provider_type.from_env()
+            self._providers[provider] = provider_type()
         return self._providers[provider]
 
     def prepare_all_providers(self):
@@ -100,18 +99,6 @@ class LocalProviderFactory(AbstractProviderFactory):
                     yield provider_type
 
     @override
-    def provider_types_supporting_model(self, model: Model) -> Iterator[type[AbstractProvider[Any, Any]]]:
-        """Iterate over providers that support the given model.
-        Optionally filter out providers that are not configured."""
-
-        for provider_type in self.PROVIDER_TYPES.values():
-            try:
-                if provider_type().supports_model(model):
-                    yield provider_type
-            except MissingEnvVariablesError:  # Catch cases where the provider is not configured
-                pass
-
-    @override
     def provider_type(self, config: ProviderConfigVar) -> type[AbstractProvider[ProviderConfigVar, Any]]:
         """Return the provider type for the given provider."""
         return self.PROVIDER_TYPES[config.provider]
@@ -120,23 +107,6 @@ class LocalProviderFactory(AbstractProviderFactory):
     def build_provider(self, config: ProviderConfig, config_id: str) -> AbstractProvider[Any, Any]:
         """Build a provider from a configuration dictionary."""
         return self.provider_type(config)(config=config, config_id=config_id)
-
-    @override
-    def list_provider_x_models(self) -> Iterator[tuple[AbstractProvider[Any, Any], Model]]:
-        """Returns all available provider-model pairs."""
-
-        for model in Model:
-            for provider in self.providers_supporting_model(model):
-                yield provider, model
-
-    def preferred_provider(self, model: Model) -> AbstractProvider[Any, Any]:
-        try:
-            return next(self.providers_supporting_model(model))
-        except StopIteration:
-            raise NoProviderSupportingModelError(
-                model=model,
-                available_providers=list(self._providers.keys()),
-            )
 
 
 _shared_provider_factory = LocalProviderFactory()

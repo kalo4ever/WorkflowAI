@@ -4,7 +4,7 @@ import os
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator, Iterator
 from contextlib import asynccontextmanager
-from typing import Any, AsyncGenerator, Callable, Generic, Optional, Protocol, Self, Sequence, TypeVar
+from typing import Any, AsyncGenerator, Callable, Generic, Optional, Protocol, Sequence, TypeVar
 
 from pydantic import ValidationError
 
@@ -106,10 +106,6 @@ class AbstractProvider(ABC, Generic[ProviderConfigVar, ProviderRequestVar]):
             if var not in os.environ:
                 return False
         return True
-
-    @classmethod
-    def from_env(cls) -> Self:
-        return cls()
 
     @classmethod
     @abstractmethod

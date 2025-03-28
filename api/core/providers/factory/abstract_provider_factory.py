@@ -22,18 +22,5 @@ class AbstractProviderFactory(ABC):
         yield
 
     @abstractmethod
-    def provider_types_supporting_model(self, model: Model) -> Iterator[type[AbstractProvider[Any, Any]]]:
-        """Iterate over provider types that support the given model."""
-        return
-        yield
-
-    @abstractmethod
-    def list_provider_x_models(self) -> Iterator[tuple[AbstractProvider[Any, Any], Model]]:
-        """Returns all available provider-model pairs."""
-
-        return
-        yield
-
-    @abstractmethod
     def provider_type(self, config: ProviderConfigVar) -> type[AbstractProvider[ProviderConfigVar, Any]]:
         pass

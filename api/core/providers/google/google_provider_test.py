@@ -31,7 +31,6 @@ from core.domain.models.model_provider_datas_mapping import GOOGLE_PROVIDER_DATA
 from core.domain.structured_output import StructuredOutput
 from core.providers.base.abstract_provider import RawCompletion
 from core.providers.base.provider_options import ProviderOptions
-from core.providers.factory.local_provider_factory import LocalProviderFactory
 from core.providers.google.google_provider import (
     _MIXED_REGION_MODELS,  # pyright: ignore [reportPrivateUsage]
     _VERTEX_API_EXCLUDED_REGIONS_METADATA_KEY,  # pyright: ignore [reportPrivateUsage]
@@ -137,12 +136,6 @@ class TestGoogleProvider(unittest.TestCase):
         assert config.vertex_credentials == "k"
         assert config.vertex_project == "p"
         assert config.vertex_location == ["l"]
-
-
-def list_google_vertex_ai_provider_x_models():
-    for provider, model in LocalProviderFactory().list_provider_x_models():
-        if type(provider) in [GoogleProvider]:
-            yield provider, model
 
 
 class PerCharPricing(BaseModel):
