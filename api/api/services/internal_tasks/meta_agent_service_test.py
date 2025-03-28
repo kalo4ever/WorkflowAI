@@ -397,6 +397,7 @@ class TestMetaAgentService:
         [
             (
                 [
+                    MetaAgentChatMessage(role="USER", content="User0"),
                     MetaAgentChatMessage(role="ASSISTANT", content="A"),
                     MetaAgentChatMessage(role="USER", content="User1"),
                     MetaAgentChatMessage(role="USER", content="User2"),
