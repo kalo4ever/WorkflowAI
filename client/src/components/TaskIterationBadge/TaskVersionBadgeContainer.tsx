@@ -191,9 +191,7 @@ export function TaskVersionBadgeContainer(props: TaskVersionBadgeContainerProps)
       </HoverCard>
       {shouldShowActiveIndicator && (
         <SimpleTooltip
-          content={
-            <TaskStats tenant={tenant} taskSchemaId={taskSchemaId} taskId={taskId} iteration={version?.iteration} />
-          }
+          content={<TaskStats tenant={tenant} taskSchemaId={taskSchemaId} taskId={taskId} versionID={version?.id} />}
           side='top'
         >
           <div>
