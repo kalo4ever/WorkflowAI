@@ -1024,11 +1024,11 @@ async def test_run_audio_openai(test_client: IntegrationTestClient):
         "content_type": "audio/mpeg",
         "url": test_client.storage_url(
             task,
-            "aba2c61cc31bc5cbd4b3499997e2eca79dd2eee2c125cb830df4a962d0c88c9f.mp3",
+            "7f1d285a8d5bda9b6c3af1cbec3cef932204877a4bd7223fc7281c7706877905.mp3",
         ),
         "storage_url": test_client.storage_url(
             task,
-            "aba2c61cc31bc5cbd4b3499997e2eca79dd2eee2c125cb830df4a962d0c88c9f.mp3",
+            "7f1d285a8d5bda9b6c3af1cbec3cef932204877a4bd7223fc7281c7706877905.mp3",
         ),
     }
     assert fetched_run["task_output"] == {"greeting": "Hello James!"}
@@ -1838,7 +1838,7 @@ async def test_cache_with_image_url(test_client: IntegrationTestClient):
             "content_type": "image/gif",
             "storage_url": test_client.storage_url(
                 task,
-                "b42185f145ca9603ed7f63beb59f2c1f8308e6fd65ccb44c726a8717c3a41c89.gif",
+                "2801434f08433a71b4f618414724c5be7bda2bbb55b3c85f83b7c008585a61d8.gif",
             ),
         },
     }
