@@ -92,7 +92,7 @@ class TestGeminiAPIProvider(unittest.TestCase):
     async def test_default_config(self):
         """Test the _default_config method returns the correct configuration."""
         provider = GoogleGeminiAPIProvider()
-        config = provider._default_config()  # pyright: ignore [reportPrivateUsage]
+        config = provider._default_config(0)  # pyright: ignore [reportPrivateUsage]
 
         self.assertIsInstance(config, GoogleGeminiAPIProviderConfig)
         self.assertEqual(config.api_key, "worfklowai")

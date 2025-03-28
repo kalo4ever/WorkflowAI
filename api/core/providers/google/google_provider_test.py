@@ -109,7 +109,7 @@ class TestGoogleProvider(unittest.TestCase):
     async def test_default_config(self):
         """Test the _default_config method returns the correct configuration."""
         provider = GoogleProvider()
-        config = provider._default_config()  # pyright: ignore [reportPrivateUsage]
+        config = provider._default_config(0)  # pyright: ignore [reportPrivateUsage]
 
         self.assertIsInstance(config, GoogleProviderConfig)
         self.assertEqual(config.vertex_project, "test_project_id")

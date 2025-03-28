@@ -49,7 +49,7 @@ class LocalProviderFactory(AbstractProviderFactory):
         self._logger = logging.getLogger(self.__class__.__name__)
 
     @override
-    def get_provider(self, provider: Provider) -> AbstractProvider[Any, Any]:
+    def get_provider(self, provider: Provider, index: int = 0) -> AbstractProvider[Any, Any]:
         if provider not in self._providers:
             try:
                 provider_type = self.PROVIDER_TYPES[provider]
