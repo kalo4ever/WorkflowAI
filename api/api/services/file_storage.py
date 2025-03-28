@@ -14,7 +14,7 @@ def _default_file_storage() -> FileStorage:
 
         return AzureBlobFileStorage(
             os.getenv("WORKFLOWAI_STORAGE_CONNECTION_STRING", ""),
-            os.getenv("WORKFLOWAI_STORAGE_TASK_RUNS_CONTAINER", ""),
+            os.getenv("WORKFLOWAI_STORAGE_TASK_RUNS_CONTAINER", "workflowai-task-runs"),
         )
 
     if connection_string.startswith("s3://"):

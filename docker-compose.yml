@@ -78,7 +78,7 @@ services:
       - JOBS_BROKER_URL=redis://redis:6379
       # Use when connecting to Azure Storage Emulator
       # - WORKFLOWAI_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;
-      - WORKFLOWAI_STORAGE_CONNECTION_STRING=s3://minio:miniosecret@minio:9000/workflowai-task-runs
+      - WORKFLOWAI_STORAGE_CONNECTION_STRING=s3://minio:miniosecret@minio:9000/workflowai-task-runs?secure=false
     depends_on:
       - mongo
       - redis
@@ -157,7 +157,7 @@ services:
       - '9000:9000'
       - '9001:9001'
     # Create the task_runs bucket before starting minio
-    command: -c 'mkdir -p /data/workflowai-task-runs && minio server --address ":9000" --console-address ":9001" /data'
+    command: -c 'mkdir -p /data/workflowai-task-runs && mkdir -p /data/workflowai-test-task-runs && minio server --address ":9000" --console-address ":9001" /data'
     environment:
       MINIO_ACCESS_KEY: minio
       MINIO_SECRET_KEY: miniosecret

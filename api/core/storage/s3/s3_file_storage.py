@@ -12,14 +12,15 @@ from core.storage.file_storage import CouldNotStoreFileError, FileData, FileStor
 
 
 class S3FileStorage(FileStorage):
-    def __init__(self, connection_string: str, bucket_name: str, secure: bool = True):
+    def __init__(self, connection_string: str, bucket_name: str | None = None):
         parsed = urlparse(connection_string)
         host = parsed.hostname
         port = parsed.port
-        self.host = f"{'https' if secure else 'http'}://{host}"
+        insecure = "secure=false" in parsed.query.lower()
+        self.host = f"{'http' if insecure else 'https'}://{host}"
         if port:
             self.host += f":{port}"
-        self.bucket_name = bucket_name
+        self.bucket_name = bucket_name or parsed.path.lstrip("/")
         self._logger = logging.getLogger(__name__)
         self._s3_client = boto3.client(
             "s3",

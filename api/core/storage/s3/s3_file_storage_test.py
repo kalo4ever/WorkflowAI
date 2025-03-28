@@ -14,10 +14,8 @@ def s3_file_storage():
     store = S3FileStorage(
         connection_string=os.getenv(
             "TEST_S3_CONNECTION_STRING",
-            "s3://minio:miniosecret@localhost:9000",
+            "s3://minio:miniosecret@localhost:9000/workflowai-test-task-runs?secure=false",
         ),
-        bucket_name="workflowai-test-task-runs",
-        secure=False,
     )
     clt: Any = store._s3_client  # pyright: ignore[reportPrivateUsage]
 
