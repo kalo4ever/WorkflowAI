@@ -8,7 +8,7 @@
       "name": "Frontend",
       "type": "node",
       "request": "launch",
-      "cwd": "${workspaceFolder}/client",
+      "cwd": "${workspaceFolder}",
       "runtimeExecutable": "yarn",
       "runtimeArgs": ["dev"],
       "console": "integratedTerminal",
