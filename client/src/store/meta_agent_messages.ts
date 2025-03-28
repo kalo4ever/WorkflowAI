@@ -37,6 +37,8 @@ interface MetaAgentChatState {
   isInitializedByTaskId: Record<TaskID, boolean>;
   messagesByTaskId: Record<TaskID, MetaAgentChatMessage[] | undefined>;
 
+  remove: (taskId: TaskID) => void;
+
   reset: (
     tenant: TenantID | undefined,
     taskId: TaskID,
@@ -89,13 +91,7 @@ export const useMetaAgentChat = create<MetaAgentChatState>((set, get) => ({
   isInitializedByTaskId: loadMetaAgentChatFromStorage().isInitializedByTaskId || {},
   messagesByTaskId: loadMetaAgentChatFromStorage().messagesByTaskId || {},
 
-  reset: (
-    tenant: TenantID | undefined,
-    taskId: TaskID,
-    schemaId: TaskSchemaID,
-    token: string | undefined,
-    playgroundState: PlaygroundState
-  ) => {
+  remove: (taskId: TaskID) => {
     set(
       produce((state: MetaAgentChatState) => {
         state.isInitializedByTaskId[taskId] = false;
@@ -111,6 +107,16 @@ export const useMetaAgentChat = create<MetaAgentChatState>((set, get) => ({
         localStorage.setItem('persistedMetaAgentMessages', item);
       })
     );
+  },
+
+  reset: (
+    tenant: TenantID | undefined,
+    taskId: TaskID,
+    schemaId: TaskSchemaID,
+    token: string | undefined,
+    playgroundState: PlaygroundState
+  ) => {
+    get().remove(taskId);
     get().sendMessage(tenant, taskId, schemaId, token, undefined, 'USER', playgroundState);
   },
 
