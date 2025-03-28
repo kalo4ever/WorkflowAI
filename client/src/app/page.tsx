@@ -1,15 +1,24 @@
 import { redirect } from 'next/navigation';
 import { tenantSlug } from '@/lib/auth';
-import { LandingPage } from './landing/page';
+import { LandingPage } from './landing/LandingPage';
 
 export async function generateMetadata() {
   return {
-    title: 'WorkflowAI',
-    description: 'An open-source platform for product and development teams to design, deploy and optimize AI agents.',
+    title: 'WorkflowAI | Build AI features your users will love.',
+    description:
+      'WorkflowAI is an open-source platform where product and engineering teams collaborate to build and iterate on AI features.',
     openGraph: {
-      title: 'WorkflowAI',
+      title: 'WorkflowAI | Build AI features your users will love.',
       description:
-        'An open-source platform for product and development teams to design, deploy and optimize AI agents.',
+        'WorkflowAI is an open-source platform where product and engineering teams collaborate to build and iterate on AI features.',
+      images: [
+        {
+          url: 'https://workflowai.blob.core.windows.net/workflowai-public/preview.jpg',
+          width: 720,
+          height: 438,
+          alt: 'WorkflowAI',
+        },
+      ],
     },
   };
 }

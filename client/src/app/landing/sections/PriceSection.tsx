@@ -17,14 +17,18 @@ function PriceSectionBarGraph(props: PriceSectionBarGraphProps) {
   const { percentage, price, color, providerName, subtitle } = props;
 
   return (
-    <div className='flex flex-row gap-4 w-full items-center'>
-      <div className='w-[112px] items-end text-right text-gray-500 text-[16px] font-medium'>{providerName}</div>
-      <div className='flex flex-1 h-full'>
-        <div className={cn('flex h-full', color)} style={{ width: `${percentage}%` }} />
+    <div className='flex sm:flex-row flex-col sm:gap-4 gap-1 w-full sm:items-center items-start'>
+      <div className='sm:w-[112px] w-fit items-end text-right text-gray-500 text-[16px] font-medium'>
+        {providerName}
       </div>
-      <div className='w-[112px] flex flex-col justify-center rounded-[2px]'>
-        <div className='text-gray-700 text-[16px] font-medium'>${price}</div>
-        <div className='text-gray-400 text-[12px] font-normal'>{subtitle}</div>
+      <div className='flex flex-row gap-4 w-full h-full items-center'>
+        <div className='flex flex-1 h-full'>
+          <div className={cn('flex h-full', color)} style={{ width: `${percentage}%` }} />
+        </div>
+        <div className='w-[112px] flex flex-col justify-center sm:text-left text-right rounded-[2px]'>
+          <div className='text-gray-700 text-[16px] font-medium'>${price}</div>
+          <div className='text-gray-400 text-[12px] font-normal'>{subtitle}</div>
+        </div>
       </div>
     </div>
   );
@@ -48,7 +52,7 @@ function PriceSectionGraph(props: PriceSectionGraphProps) {
   const maxPrice = Math.max(pricePerInputToken, pricePerOutputToken);
 
   return (
-    <div className='flex flex-col w-full gap-8 bg-gray-100 rounded-[8px] p-11'>
+    <div className='flex flex-col w-full sm:gap-8 gap-4 bg-gray-100 rounded-[8px] sm:p-11 p-6'>
       <PriceSectionBarGraph
         percentage={90 * (pricePerInputToken / maxPrice)}
         price={pricePerInputToken}
@@ -93,7 +97,7 @@ function PriceSectionModelSelectorItem(props: PriceSectionModelSelectorItemProps
   return (
     <div
       className={cn(
-        'flex flex-col items-center justify-center w-[188px] py-3 cursor-pointer border-b-2',
+        'flex flex-col items-center justify-center sm:w-[188px] h-full w-[115px] py-3 cursor-pointer border-b-2 shrink-0',
         isSelected
           ? 'text-gray-700 border-gray-700'
           : 'text-gray-500 border-gray-200 hover:border-gray-400 hover:text-gray-600'
@@ -104,7 +108,7 @@ function PriceSectionModelSelectorItem(props: PriceSectionModelSelectorItemProps
         <AIProviderIcon name={model.metadata.provider_name} sizeClassName='w-[14px] h-[14px]' />
         <div className='text-[16px] font-semibold'>{model.metadata.provider_name}</div>
       </div>
-      <div className='text-[12px] font-normal'>{model.name}</div>
+      <div className='text-[12px] font-normal text-center px-1'>{model.name}</div>
     </div>
   );
 }
@@ -119,7 +123,7 @@ function PriceSectionModelSelector(props: PriceSectionModelSelectorProps) {
   const { models, selectedModelIndex, setSelectedModelIndex } = props;
 
   return (
-    <div className='flex flex-wrap items-center justify-center'>
+    <div className='flex flex-row items-center justify-center overflow-x-auto w-full scrollbar-hide'>
       {models?.map((model, index) => (
         <PriceSectionModelSelectorItem
           key={model.id}
@@ -144,7 +148,7 @@ export function PriceSection(props: PriceSectionProps) {
   const [selectedModelIndex, setSelectedModelIndex] = useState<number>(0);
 
   return (
-    <div className={cn('flex flex-col gap-6 items-center px-16 w-full max-w-[1260px]', className)}>
+    <div className={cn('flex flex-col gap-6 items-center sm:px-16 px-4 w-full max-w-[1260px]', className)}>
       <div className='flex flex-col gap-2 items-center justify-center'>
         <div className='flex flex-row gap-2 items-center justify-center'>
           <Tag24Regular className='text-gray-500' />
@@ -162,13 +166,11 @@ export function PriceSection(props: PriceSectionProps) {
           </a>
         </div>
       </div>
-      <div className='flex flex-col gap-6 items-center justify-center'>
-        <PriceSectionModelSelector
-          models={threeFirstModels}
-          selectedModelIndex={selectedModelIndex}
-          setSelectedModelIndex={setSelectedModelIndex}
-        />
-      </div>
+      <PriceSectionModelSelector
+        models={threeFirstModels}
+        selectedModelIndex={selectedModelIndex}
+        setSelectedModelIndex={setSelectedModelIndex}
+      />
       <PriceSectionGraph model={threeFirstModels?.[selectedModelIndex]} />
     </div>
   );

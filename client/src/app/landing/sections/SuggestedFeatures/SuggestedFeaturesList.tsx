@@ -1,8 +1,5 @@
-import { ShareRegular } from '@fluentui/react-icons';
 import { cx } from 'class-variance-authority';
 import { useEffect, useMemo, useRef } from 'react';
-import { Button } from '@/components/ui/Button';
-import { useCopyCurrentUrl } from '@/lib/hooks/useCopy';
 import { useFeaturePreview, useFeatureSchemas } from '@/store/features';
 import { useOrFetchFeaturesByDomain, useOrFetchFeaturesByTag } from '@/store/fetchers';
 import { useOrFetchToken } from '@/store/fetchers';
@@ -66,8 +63,6 @@ export function SuggestedFeaturesList(props: SuggestedFeaturesListProps) {
     });
   }, [completedFeatures, companyContext, token, fetchFeaturePreviewIfNeeded, fetchFeatureSchemasIfNeeded]);
 
-  const copyUrl = useCopyCurrentUrl();
-
   useEffect(() => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = 0;
@@ -75,15 +70,13 @@ export function SuggestedFeaturesList(props: SuggestedFeaturesListProps) {
   }, [companyURL]);
 
   return (
-    <div ref={scrollContainerRef} className='flex flex-col gap-4 w-full h-full pt-8 px-16 overflow-y-auto'>
+    <div
+      ref={scrollContainerRef}
+      className='flex flex-col gap-4 w-full h-full sm:pt-8 pt-3 pb-4 sm:pb-0 sm:px-16 px-6 overflow-y-auto'
+    >
       <div className='flex flex-col gap-2 w-full'>
         <div className='flex flex-row gap-2 w-full items-center justify-between'>
-          <div className='text-gray-400 text-[13px] font-medium'>{tag?.name}</div>
-          {isCompanySpecific && (
-            <Button variant='newDesign' icon={<ShareRegular className='w-4 h-4' />} size='sm' onClick={copyUrl}>
-              Share Features
-            </Button>
-          )}
+          <div className='text-gray-400 text-[13px] font-medium hidden sm:block'>{tag?.name}</div>
         </div>
         {isCompanySpecific && <SuggestedFeaturesCompanyContext companyContext={companyContext} isLoading={isLoading} />}
       </div>

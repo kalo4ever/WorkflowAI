@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { LandingPageContainer } from './LandingPageContainer';
+import { LandingPageContainer } from './container/LandingPageContainer';
 import { CompliantInformationSection } from './sections/CompliantInformationSection';
 import { HeaderSection } from './sections/HeaderSection';
 import { InvestorLogosSection } from './sections/InvestorLogosSection';
@@ -107,17 +107,11 @@ export function LandingPage() {
 
   return (
     <LandingPageContainer scrollToPricing={scrollToPricing} scrollRef={scrollRef}>
-      <div className='w-full mt-28'>
-        <StickyHeader
-          firstOption='Build my first AI feature'
-          secondOption='Improve existing AI features'
-          showBackground={false}
-          makeTransparent={false}
-        />
-      </div>
-      <HeaderSection className='mt-16' scrollToPricing={scrollToPricing} />
+      <HeaderSection className='sm:mt-28 mt-24' scrollToPricing={scrollToPricing} />
       <SuggestedFeaturesSection className='mt-16 mb-32' />
-      <div className='text-center text-gray-900 text-[36px] font-medium'>Explore WorkflowAI as a...</div>
+      <div className='text-center text-gray-900 sm:text-[36px] text-[32px] sm:font-medium font-semibold'>
+        Explore WorkflowAI as a...
+      </div>
       <div className='h-[1px] w-[1px]' ref={secondStickyHeaderRef} />
       <div className='sticky top-0 z-10 w-full'>
         <StickyHeader
@@ -127,9 +121,9 @@ export function LandingPage() {
           makeTransparent={false}
         />
       </div>
-      <VideosSection videos={videos} className='mt-[80px] mb-[144px]' />
+      <VideosSection videos={videos} className='mt-[80px] sm:mb-[144px] mb-[64px]' />
       <SectionSeparator id='pricing' />
-      <PriceSection className='mt-[104px]' />
+      <PriceSection className='sm:mt-[104px] mt-[64px]' />
       <CompliantInformationSection className='mt-10 mb-16' />
       <SectionSeparator />
       <InvestorLogosSection className='mt-16 mb-28 py-10' />
