@@ -28,7 +28,6 @@ services:
       - 8123:8123
       - 9000:9000
     environment:
-      CLICKHOUSE_DB: db
       CLICKHOUSE_PASSWORD: admin
       CLICKHOUSE_USER: default
     volumes:
