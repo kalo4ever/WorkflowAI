@@ -82,15 +82,14 @@ async def fresh_clickhouse_client(dsn: str | None = None):
 
     setup_commands = read_sql_commands()
     # Skipping settings for default user since it breaks in local dev
-    assert setup_commands[0] == "ALTER USER default SETTINGS async_insert = 1;", "sanity check"
 
-    assert setup_commands[1].startswith("CREATE TABLE runs"), "sanity check"
-    await client.command(setup_commands[1])
+    assert setup_commands[0].startswith("CREATE TABLE runs"), "sanity check"
+    await client.command(setup_commands[0])
 
-    assert setup_commands[2].startswith(
+    assert setup_commands[1].startswith(
         "ALTER TABLE runs ADD INDEX cache_hash_index cache_hash TYPE bloom_filter(0.01);",
     ), "sanity check"
-    await client.command(setup_commands[2])
+    await client.command(setup_commands[1])
 
     return client
 

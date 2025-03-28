@@ -28,7 +28,6 @@ services:
       - 8123:8123
       - 9000:9000
     environment:
-      CLICKHOUSE_DB: db
       CLICKHOUSE_PASSWORD: admin
       CLICKHOUSE_USER: default
     volumes:
@@ -62,7 +61,7 @@ services:
       context: .
       dockerfile: api.Dockerfile
       # Dev is the second to last stage in the Dockerfile
-      # It contains all sources and all dependencies
+      # It contains all sources and all dependencies, use for local development in docker
       target: dev
     ports:
       - '8000:8000'
@@ -81,6 +80,7 @@ services:
       - mongo
       - redis
       - azurite
+      - clickhouse
   worker:
     <<: *api
     # No ports needed
@@ -107,40 +107,45 @@ services:
       # Comment target line to build full image and be close to production
       # The Sources image contains the non optimized Next project
       # If you wish to use the optimized build, you'll need to remove the `command` override
-      target: sources
+      # target: sources
       args:
         - ENV_NAME=${ENV_NAME}
         # API URL used at runtime and during build
         - API_URL=${NEXT_PUBLIC_WORKFLOWAI_API_URL}
         # Add a release name to the build, used for analytics and sentry
         - RELEASE_NAME=${RELEASE_NAME}
-        # Disable sentry during the build phase
+        # Strny setup
         - SENTRY_DISABLED=${SENTRY_DISABLED}
-        # Sentry DSN used at runtime
         - NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN}
+        # Optionally disable authentication for a quick start
+        - NEXT_PUBLIC_DISABLE_AUTHENTICATION=${NEXT_PUBLIC_DISABLE_AUTHENTICATION}
+        - NEXT_PUBLIC_HARDCODED_TENANT=${NEXT_PUBLIC_HARDCODED_TENANT}
+        # Stripe
+        - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+        # Amplitude
+        - NEXT_PUBLIC_AMPLITUDE_API_KEY=${NEXT_PUBLIC_AMPLITUDE_API_KEY}
+        # Clerk
+        - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+
       secrets:
         # Sentry auth token, used during build phase to upload sourcemaps and create
         # the release required if SENTRY_DISABLED is not set to true
         - sentry_auth_token
     # Start the app in development mode
     # Comment out when use the full optimized build
-    command: yarn workspace workflowai dev
+    # command: yarn workspace workflowai dev
     ports:
       - '3000:3000'
     env_file:
       - .env
-    # Override the API URL to point to the API container inside the network
     environment:
-      - NEXT_PUBLIC_WORKFLOWAI_API_URL=http://api:3000
-    volumes:
-      - ./public:/app/public
-      - ./src:/app/src
-      - ./tsconfig.json:/app/tsconfig.json
-      - ./next.config.mjs:/app/next.config.mjs
-      - ./postcss.config.js:/app/postcss.config.js
-      - ./tailwind.config.ts:/app/tailwind.config.ts
-      - ./package.json:/app/package.json
-      - ./yarn.lock:/app/yarn.lock
+      # Override the API URL to point to the API container inside the network
+      # This endpoint will be used by the proxy route
+      - WORKFLOWAI_API_URL=http://api:8000
+    # volumes:
+    #   - ./client:/app/client
+    #   - ./yarn.lock:/app/yarn.lock
+    #   - ./package.json:/app/package.json
 
 networks:
   default:

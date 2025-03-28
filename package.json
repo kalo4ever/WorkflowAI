@@ -5,7 +5,10 @@
   ],
   "scripts": {
     "format": "prettier --write client",
-    "prettier-check": "prettier --check client"
+    "prettier-check": "prettier --check client",
+    "build": "yarn workspace workflowai build",
+    "dev": "yarn workspace workflowai dev",
+    "start": "yarn workspace workflowai start"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
@@ -19,6 +22,8 @@
     "@typescript-eslint/parser": "^7.0.1",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.17",
+    "cross-spawn": "^7.0.6",
+    "dotenv-cli": "^8.0.0",
     "eslint": "^8.57.0",
     "eslint-config-next": "14.2.25",
     "eslint-config-prettier": "^9.1.0",
@@ -37,5 +42,8 @@
     "vite-tsconfig-paths": "^4.3.1",
     "webpack": "^5.90.1"
   },
-  "packageManager": "yarn@4.1.0"
+  "packageManager": "yarn@4.1.0",
+  "resolutions": {
+    "cross-spawn": "7.0.6"
+  }
 }

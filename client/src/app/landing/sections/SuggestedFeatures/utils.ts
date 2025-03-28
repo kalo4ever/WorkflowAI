@@ -4,9 +4,18 @@ export function looksLikeURL(input: string): boolean {
   return !input.includes(' ') && /^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}$/.test(withoutProtocol);
 }
 
+export function looksLikeEmail(input: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input);
+}
+
 export function cleanURL(url: string): string {
   // Remove leading/trailing whitespace
-  const trimmedUrl = url.trim().toLowerCase();
+  let trimmedUrl = url.trim().toLowerCase();
+
+  if (looksLikeEmail(trimmedUrl)) {
+    const [, domain] = trimmedUrl.split('@');
+    trimmedUrl = domain;
+  }
 
   if (!looksLikeURL(trimmedUrl)) {
     return url;

@@ -1,13 +1,13 @@
 import { captureException } from '@sentry/nextjs';
 import { NextResponse } from 'next/server';
 import { RequestError } from '@/lib/api/client';
-import { API_URL } from '@/lib/constants';
+import { BACKEND_API_URL } from '@/lib/constants';
 
 export const GET = async () => {
   // Try and contact the API client
 
   try {
-    const res = await fetch(`${API_URL}/probes/readiness`, {
+    const res = await fetch(`${BACKEND_API_URL}/probes/readiness`, {
       cache: 'no-cache',
     });
     if (!res.ok && res.status !== 503) {

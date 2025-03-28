@@ -9,6 +9,10 @@ ENV NODE_ENV=production
 RUN corepack enable
 RUN corepack prepare yarn@stable --activate
 
+# CVEs
+RUN apk upgrade libssl3 libcrypto3 libxml2
+RUN npm install -g npm@10.9.2 && npm cache clean --force
+
 
 FROM base AS deps
 
@@ -67,9 +71,6 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder --chown=nextjs:nodejs /app/client/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/client/.next/static ./.next/static/
-COPY client/public ./public/
-
 
 FROM runner AS production
 

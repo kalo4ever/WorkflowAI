@@ -2,7 +2,7 @@
 
 -- Enable async inserts to allow Clickhouse to buffer writes to disk
 -- Since we will send writes 1 by 1 when a run is created
-ALTER USER default SETTINGS async_insert = 1;
+-- ALTER USER default SETTINGS async_insert = 1;
 
 -- Main Run Table
 CREATE TABLE runs (
