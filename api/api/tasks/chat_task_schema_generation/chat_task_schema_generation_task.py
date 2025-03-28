@@ -274,12 +274,5 @@ async def agent_builder(
 
 
     For schema update (existing_agent_schema is not None), acknowledge the update of the schema.
-    Since 'answer_to_user' is displayed in a chat interface, make sure that 'answer_to_user' includes line breaks, if needed, to enhance readability.
-
-    Additionally, in cases that are not obvious if the agent will use a tool, the ' answer_to_user' must prompt the user to decide if they want to activate a tool to assist with the task or not.  Always refer to tools by their exact handle ('@...').
-
-    - non-obvious examples include requests like "make travel planning recommendations"
-    - obvious cases where tool must be used without asking are: "check the latest price of a stock"
-
-    This tools selection is only indicative as the real selection of tools happens on the Playground, the next screen the user will encounter."""
+    Since 'answer_to_user' is displayed in a chat interface, make sure that 'answer_to_user' includes line breaks, if needed, to enhance readability."""
     ...
