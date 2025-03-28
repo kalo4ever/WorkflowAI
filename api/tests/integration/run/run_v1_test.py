@@ -1872,3 +1872,27 @@ async def test_image_not_found(test_client: IntegrationTestClient):
 
     assert e.value.response.status_code == 400
     assert e.value.response.json()["error"]["code"] == "invalid_file"
+
+
+async def test_invalid_base64_data(test_client: IntegrationTestClient):
+    """Check that we handle invalid base64 data correctly by returning an error immediately"""
+    task = await test_client.create_task(
+        input_schema={
+            "properties": {
+                "image": {
+                    "$ref": "#/$defs/Image",
+                },
+            },
+        },
+    )
+
+    with pytest.raises(HTTPStatusError) as e:
+        # Sending an image URL without a content type will force the runner to download the file
+        await test_client.run_task_v1(
+            task,
+            model=Model.GEMINI_1_5_FLASH_LATEST,
+            task_input={"image": {"data": "iamnotbase64"}},
+        )
+
+    assert e.value.response.status_code == 400
+    assert e.value.response.json()["error"]["code"] == "invalid_file"
