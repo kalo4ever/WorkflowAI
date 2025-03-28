@@ -2,7 +2,7 @@
 
 import { cookies } from 'next/headers';
 import { CookieStore } from '@/types/cookies';
-import { API_URL } from '../constants';
+import { BACKEND_API_URL } from '../constants';
 import { TokenData, buildTokenData, build_api_jwt_for_tenant, check_jwt_for_tenant } from '../token/token';
 
 async function getOrSetToken(data: TokenData, cookieStore: CookieStore, setCookie = false) {
@@ -37,6 +37,6 @@ export async function serverFetch(path: string, inits: RequestInit, setCookie: b
     ...(inits.headers ?? {}),
   };
 
-  const response = await fetch(`${API_URL}${path}`, inits);
+  const response = await fetch(`${BACKEND_API_URL}${path}`, inits);
   return response;
 }

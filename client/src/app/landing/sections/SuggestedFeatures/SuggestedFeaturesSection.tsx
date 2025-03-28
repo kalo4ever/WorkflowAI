@@ -8,8 +8,8 @@ type Props = {
 export function SuggestedFeaturesSection(props: Props) {
   const { className } = props;
   return (
-    <div className={cx('flex items-center justify-center w-full h-full px-16', className)}>
-      <div className='flex w-full max-w-[1132px] h-[820px] max-h-[820px] bg-white rounded-[4px] border border-gray-200 shadow-md overflow-hidden'>
+    <div className={cx('flex items-center justify-center w-full h-max px-4 sm:px-16', className)}>
+      <div className='flex w-full max-w-[1132px] sm:h-[820px] h-max sm:max-h-[820px] max-h-max bg-white rounded-[4px] border border-gray-200 shadow-md overflow-hidden'>
         <SuggestedFeatures />
       </div>
     </div>

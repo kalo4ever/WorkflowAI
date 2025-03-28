@@ -4,38 +4,38 @@ import { cn } from '@/lib/utils';
 const investorLogos = [
   {
     src: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/InvestorLogo1.png',
-    width: 100,
-    height: 100,
+    width: 150,
+    height: 64,
   },
   {
     src: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/InvestorLogo2.png',
-    width: 100,
-    height: 100,
+    width: 181,
+    height: 64,
   },
   {
     src: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/InvestorLogo3.png',
-    width: 100,
-    height: 100,
+    width: 286,
+    height: 64,
   },
   {
     src: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/InvestorLogo4.png',
-    width: 100,
-    height: 100,
+    width: 311,
+    height: 64,
   },
   {
     src: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/InvestorLogo5.png',
-    width: 100,
-    height: 100,
+    width: 157,
+    height: 64,
   },
   {
     src: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/InvestorLogo6.png',
-    width: 100,
-    height: 100,
+    width: 241,
+    height: 64,
   },
   {
     src: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/InvestorLogo7.png',
-    width: 100,
-    height: 100,
+    width: 192,
+    height: 64,
   },
 ];
 

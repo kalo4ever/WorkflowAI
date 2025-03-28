@@ -16,6 +16,7 @@ from api.services.slack_notifications import SlackNotificationDestination, get_u
 from api.services.tasks import list_agent_summaries
 from api.tasks.extract_company_info_from_domain_task import safe_generate_company_description_from_email
 from api.tasks.meta_agent import (
+    META_AGENT_INSTRUCTIONS,
     EditSchemaToolCallResult,
     GenerateAgentInputToolCallResult,
     ImprovePromptToolCallResult,
@@ -448,7 +449,7 @@ class MetaAgentService:
             workflowai_sections=STATIC_WORKFLOWAI_PAGES,
             relevant_workflowai_documentation_sections=await DocumentationService().get_relevant_doc_sections(
                 chat_messages=[message.to_domain() for message in messages],
-                agent_instructions=meta_agent.__doc__ or "",  # The __doc__ contain the 'meta_agent' instructions
+                agent_instructions=META_AGENT_INSTRUCTIONS or "",
             ),
             available_tools_description=internal_tools_description(
                 include={ToolKind.WEB_BROWSER_TEXT, ToolKind.WEB_SEARCH_PERPLEXITY_SONAR_PRO},
@@ -491,11 +492,17 @@ class MetaAgentService:
         ), agent_runs
 
     def dispatch_new_user_messages_event(self, messages: list[MetaAgentChatMessage]):
-        # Extract the last message from the list since the latest "ASSISTANT" message
-        latest_user_messages = [message for message in reversed(messages) if message.role == "USER"]
+        # Get all consecutive USER messages at the end of the conversation
+        latest_user_messages: list[MetaAgentChatMessage] = []
+        for message in reversed(messages):
+            if message.role == "USER":
+                latest_user_messages.insert(0, message)
+            else:
+                break
+
         if latest_user_messages:
             self.event_router(
-                MetaAgentChatMessagesSent(messages=[message.to_domain() for message in reversed(latest_user_messages)]),
+                MetaAgentChatMessagesSent(messages=[message.to_domain() for message in latest_user_messages]),
             )
         else:
             self._logger.warning("No user message found in the list of messages")

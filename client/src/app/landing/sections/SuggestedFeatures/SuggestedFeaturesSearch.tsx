@@ -1,8 +1,9 @@
-import { ArrowUpFilled } from '@fluentui/react-icons';
+import { ArrowUpFilled, LinkRegular } from '@fluentui/react-icons';
 import { cx } from 'class-variance-authority';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { useCopyCurrentUrl } from '@/lib/hooks/useCopy';
 import { useFastRedirectWithParam } from '@/lib/queryString';
 import { cleanURL, isValidURL } from './utils';
 
@@ -30,9 +31,14 @@ export function SuggestedFeaturesSearch(props: Props) {
     onSetEntryField(companyURL ?? '');
   }, [companyURL, onSetEntryField]);
 
+  const entryFieldRef = useRef(entryField);
+  entryFieldRef.current = entryField;
+
   useEffect(() => {
-    if (!companyURL && inputRef.current) {
+    if (!companyURL && inputRef.current && entryFieldRef.current.toLowerCase() !== companyURL?.toLowerCase()) {
       inputRef.current.focus({ preventScroll: true });
+    } else {
+      inputRef.current?.blur();
     }
   }, [companyURL]);
 
@@ -45,6 +51,7 @@ export function SuggestedFeaturesSearch(props: Props) {
         return;
       }
 
+      inputRef.current?.blur();
       setInProgress(true);
       setEntryField(cleanedURL);
       setErrorToShow(undefined);
@@ -58,6 +65,8 @@ export function SuggestedFeaturesSearch(props: Props) {
     [fastRedirectWithParam]
   );
 
+  const copyUrl = useCopyCurrentUrl();
+
   const errorMode = errorToShow !== undefined;
 
   const isGenerateButtonActive = !inProgress && entryField.length > 0;
@@ -66,6 +75,9 @@ export function SuggestedFeaturesSearch(props: Props) {
   const showGradientBorder = !inProgress && isFocused && !errorMode;
 
   const showSendButton = entryField.toLowerCase() !== companyURL?.toLowerCase() || isFocused;
+
+  const shouldShowShareButton =
+    companyURL?.toLowerCase() === entryField.toLowerCase() && entryField.length > 0 && !isFocused;
 
   return (
     <div className='flex flex-col gap-2 w-full'>
@@ -116,6 +128,11 @@ export function SuggestedFeaturesSearch(props: Props) {
               onClick={() => onCompanyURLSelected(entryField)}
               loading={inProgress}
             />
+          )}
+          {shouldShowShareButton && (
+            <Button variant='newDesign' icon={<LinkRegular className='w-4 h-4' />} size='sm' onClick={copyUrl}>
+              Share With Your Team
+            </Button>
           )}
         </div>
       </div>
