@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/Button';
 
 type UniversalToolCallMessageProps = {
   title: string;
-  actionTitle: string;
   titleInProgress: string;
   titleArchived: string;
   titleUsed: string;
@@ -21,7 +20,6 @@ type UniversalToolCallMessageProps = {
 export function UniversalToolCallMessage(props: UniversalToolCallMessageProps) {
   const {
     title,
-    actionTitle,
     titleInProgress,
     titleArchived,
     titleUsed,
@@ -112,13 +110,13 @@ export function UniversalToolCallMessage(props: UniversalToolCallMessageProps) {
       </div>
       <div className='flex flex-row items-center gap-2 w-full justify-end'>
         <Button variant='newDesignGray' size='sm' onClick={onIgnore}>
-          Ignore
+          No
           <div className='text-[10px] text-gray-800 bg-white rounded-[2px] px-1 py-[2px] font-bold'>
             <span className='font-light'>⌃</span>N
           </div>
         </Button>
         <Button variant='newDesignIndigo' size='sm' onClick={onAction}>
-          {actionTitle}
+          Yes
           <div className='text-[10px] text-indigo-700 bg-white/70 rounded-[2px] px-1 py-[2px] font-bold'>
             <span className='font-light'>⌃</span>Y
           </div>
