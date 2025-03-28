@@ -33,7 +33,7 @@ docker-compose up
 > latencies for development. Detailed setup for both the [client](./client/README.md) and [api](./api/README.md)
 > are provided in their respective READMEs.
 
-> For now, we rely on public read access to the storage in the frontend.
+> For now, we rely on public read access to the storage in the frontend. The URLs are not discoverable though so it should be ok until we implement temporary leases for files.
 > On minio that's possible with the following commands
 
 ```sh
