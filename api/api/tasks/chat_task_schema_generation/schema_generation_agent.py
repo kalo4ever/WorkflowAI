@@ -42,7 +42,7 @@ class SchemaBuilderOutput(BaseModel):
 
 
 # TODO: switch back to Claude 3.7 when we'll have more token quotas
-@workflowai.agent(id="agent-schema-generation", model=workflowai.Model.CLAUDE_3_5_HAIKU_20241022)
+@workflowai.agent(id="agent-schema-generation", model=workflowai.Model.CLAUDE_3_5_SONNET_20241022)
 async def run_agent_schema_generation(
     input: SchemaBuilderInput,
 ) -> SchemaBuilderOutput:
