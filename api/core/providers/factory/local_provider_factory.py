@@ -33,6 +33,8 @@ _provider_cls: list[type[AbstractProvider[Any, Any]]] = [
     FireworksAIProvider,
 ]
 
+_logger = logging.getLogger("LocalProviderFactory")
+
 
 class LocalProviderFactory(AbstractProviderFactory):
     """A provider factory that uses locally defined providers.
@@ -43,53 +45,52 @@ class LocalProviderFactory(AbstractProviderFactory):
     }
 
     def __init__(self) -> None:
-        self._providers: dict[Provider, dict[int, AbstractProvider[Any, Any]]] = {}
-        self._logger = logging.getLogger(self.__class__.__name__)
+        self._providers = self.build_available_providers()
 
     @override
     def get_provider(self, provider: Provider, index: int = 0) -> AbstractProvider[Any, Any]:
-        if provider not in self._providers or index not in self._providers[provider]:
-            try:
-                provider_type = self.PROVIDER_TYPES[provider]
-            except KeyError:
-                raise ValueError(f"Provider {provider} index {index} not supported")
-
-            self._providers.setdefault(provider, {})[index] = provider_type(index=index)
-
         return self._providers[provider][index]
 
     @override
     def get_providers(self, provider: Provider) -> Iterable[AbstractProvider[Any, Any]]:
         # We return the providers in the order they were inserted
         # If prepare_all_providers was called first, it should be the same order
-        return self._providers[provider].values()
+        return self._providers[provider]
 
-    def _prepare_provider_for_type(self, provider: Provider):
+    @classmethod
+    def _build_providers_for_type(cls, provider: Provider, index: int):
+        providers: list[AbstractProvider[Any, Any]] = []
+        try:
+            provider_type = cls.PROVIDER_TYPES[provider]
+        except KeyError:
+            raise ValueError(f"Provider {provider} index {index} not supported")
+
         for i in range(10):
             try:
-                self.get_provider(provider, i)
-                self._logger.info(
+                providers.append(provider_type(index=i))
+                _logger.info(
                     "Successfully prepared provider",
                     extra={"provider_name": provider, "index": i},
                 )
             except MissingEnvVariablesError:
                 if i == 0:
-                    self._logger.warning(
+                    _logger.warning(
                         "Skipping provider",
                         extra={"provider_name": provider},
                         exc_info=True,
                     )
                 # We end at the first missing env variable
-                return
+                break
             except Exception:
-                self._logger.exception("Failed to prepare provider", extra={"provider_name": provider, "index": i})
+                _logger.exception("Failed to prepare provider", extra={"provider_name": provider, "index": i})
+        return providers
 
-    def prepare_all_providers(self):
-        for provider_name in LocalProviderFactory.PROVIDER_TYPES.keys():
-            self._prepare_provider_for_type(provider_name)
-
-        provider_names = ", ".join(list(self._providers.keys()))
-        self._logger.info(f"Prepared providers {provider_names}")  # noqa: G004
+    @classmethod
+    def build_available_providers(cls) -> dict[Provider, list[AbstractProvider[Any, Any]]]:
+        return {
+            provider: cls._build_providers_for_type(provider, 0)
+            for provider in LocalProviderFactory.PROVIDER_TYPES.keys()
+        }
 
     @override
     def provider_type(self, config: ProviderConfigVar) -> type[AbstractProvider[ProviderConfigVar, Any]]:
@@ -100,6 +101,9 @@ class LocalProviderFactory(AbstractProviderFactory):
     def build_provider(self, config: ProviderConfig, config_id: str) -> AbstractProvider[Any, Any]:
         """Build a provider from a configuration dictionary."""
         return self.provider_type(config)(config=config, config_id=config_id)
+
+    def available_providers(self) -> Iterable[Provider]:
+        return self._providers.keys()
 
 
 _shared_provider_factory = LocalProviderFactory()

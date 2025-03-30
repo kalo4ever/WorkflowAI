@@ -1,10 +1,10 @@
-from enum import Enum
+from enum import StrEnum
 
 
 # Providers are ordered by priority, meaning
 # that the higher the provider is in the enum the more
 # changes it will get to be selected
-class Provider(str, Enum):
+class Provider(StrEnum):
     FIREWORKS = "fireworks"
     # Anthropic is the default provider for Anthropic models
     # Bedrock is ok but it throttles instead of returning 429s

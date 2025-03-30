@@ -2,8 +2,10 @@ from unittest.mock import Mock, patch
 
 import pytest
 
+from core.domain.errors import ProviderRateLimitError
 from core.domain.models import Model, Provider
 from core.providers.factory.abstract_provider_factory import AbstractProviderFactory
+from core.providers.factory.local_provider_factory import LocalProviderFactory
 from core.runners.workflowai.provider_pipeline import ProviderPipeline, ProviderPipelineBuilder
 from core.runners.workflowai.workflowai_options import WorkflowAIRunnerOptions
 
@@ -18,7 +20,7 @@ def provider_builder():
 
 # TODO: The tests are based on the real model data, we should patch
 class TestProviderIterator:
-    def test_claude_ordering_and_support(self, provider_builder: Mock, mock_provider_factory: Mock):
+    def test_claude_ordering_and_support(self, provider_builder: Mock):
         pipeline = ProviderPipeline(
             options=WorkflowAIRunnerOptions(
                 model=Model.CLAUDE_3_5_SONNET_20241022,
@@ -28,7 +30,7 @@ class TestProviderIterator:
             ),
             provider_config=None,
             builder=provider_builder,
-            factory=mock_provider_factory,
+            factory=LocalProviderFactory(),
         )
 
         # List all providers
@@ -38,13 +40,13 @@ class TestProviderIterator:
         assert provider_builder.call_count == 2
 
         provider_1 = provider_builder.call_args_list[0].args[0]
-        assert provider_1.name() == Provider.AMAZON_BEDROCK
+        assert provider_1.name() == Provider.ANTHROPIC
         # Testing the override
-        assert not providers[0][-1].supports_input_pdf
+        assert providers[0][-1].supports_input_pdf
 
         provider_2 = provider_builder.call_args_list[1].args[0]
-        assert provider_2.name() == Provider.ANTHROPIC
-        assert providers[1][-1].supports_input_pdf
+        assert provider_2.name() == Provider.AMAZON_BEDROCK
+        assert not providers[1][-1].supports_input_pdf
 
     def test_multiple_providers_forced_provider(self, provider_builder: Mock):
         mock_provider_factory = Mock(spec=AbstractProviderFactory)
@@ -70,6 +72,8 @@ class TestProviderIterator:
         )
 
         # List all providers
+        # By setting the errors we force the pipeline to try all providers
+        pipeline.errors = [ProviderRateLimitError()]
         providers = list(pipeline.provider_iterator())
         mock_provider_factory.get_providers.assert_called_once_with(Provider.OPEN_AI)
         assert len(providers) == 2
@@ -112,6 +116,8 @@ class TestProviderIterator:
         )
 
         # List all providers
+        # By setting the errors we force the pipeline to try all providers
+        pipeline.errors = [ProviderRateLimitError()]
         providers = list(pipeline.provider_iterator())
         assert len(providers) == 3
         mock_provider_factory.get_providers.assert_called_once_with(Provider.FIREWORKS)
@@ -158,6 +164,8 @@ class TestProviderIterator:
         mock_provider_factory.get_providers.side_effect = get_providers
 
         # List all providers
+        # By setting the errors we force the pipeline to try all providers
+        pipeline.errors = [ProviderRateLimitError()]
         providers = list(pipeline.provider_iterator())
         assert len(providers) == 4
 

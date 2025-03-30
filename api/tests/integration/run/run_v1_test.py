@@ -1893,7 +1893,6 @@ class TestMultiProviderConfigs:
             },
         ):
             factory = LocalProviderFactory()
-            factory.prepare_all_providers()
             assert len(list(factory.get_providers(Provider.FIREWORKS))) == 3, "sanity fireworks"
             assert len(list(factory.get_providers(Provider.ANTHROPIC))) == 3, "sanity anthropic"
             with patch("core.runners.workflowai.workflowai_runner.WorkflowAIRunner.provider_factory", new=factory):

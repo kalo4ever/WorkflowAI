@@ -26,7 +26,6 @@ from core.domain.errors import (
     ProviderError,
 )
 from core.domain.models import Model
-from core.providers.factory.local_provider_factory import shared_provider_factory
 from core.storage import ObjectNotFoundException
 from core.storage.mongo.migrations.migrate import check_migrations, migrate
 from core.utils import no_op
@@ -80,7 +79,10 @@ async def lifespan(app: FastAPI):
 
     logger.info("Preparing providers")
 
-    shared_provider_factory().prepare_all_providers()
+    from core.providers.factory.local_provider_factory import shared_provider_factory
+
+    factory = shared_provider_factory()
+    logger.info(f"Prepared providers {', '.join(list(factory.available_providers()))}")  # noqa: G004
 
     logger.info("Starting services")
     yield
