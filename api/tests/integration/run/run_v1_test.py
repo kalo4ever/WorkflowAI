@@ -1,5 +1,7 @@
 import asyncio
+import contextlib
 import json
+import os
 import re
 from base64 import b64encode
 from typing import Any
@@ -15,6 +17,7 @@ from core.domain.consts import METADATA_KEY_USED_MODEL
 from core.domain.models import Model, Provider
 from core.domain.models.model_datas_mapping import MODEL_DATAS
 from core.domain.models.model_provider_datas_mapping import OPENAI_PROVIDER_DATA
+from core.providers.factory.local_provider_factory import LocalProviderFactory
 from core.providers.google.google_provider_domain import (
     Candidate,
     CompletionResponse,
@@ -1872,3 +1875,205 @@ async def test_image_not_found(test_client: IntegrationTestClient):
 
     assert e.value.response.status_code == 400
     assert e.value.response.json()["error"]["code"] == "invalid_file"
+
+
+class TestMultiProviderConfigs:
+    # Patch a factory that has multiple providers for anthropic and fireworks
+    @pytest.fixture(autouse=True)
+    def multi_provider_factory(self):
+        with patch.dict(
+            os.environ,
+            {
+                "FIREWORKS_API_KEY": "fw_api_key_0",
+                "FIREWORKS_API_KEY_1": "fw_api_key_1",
+                "FIREWORKS_API_KEY_2": "fw_api_key_2",
+                "ANTHROPIC_API_KEY": "anthropic_api_key_0",
+                "ANTHROPIC_API_KEY_1": "anthropic_api_key_1",
+                "ANTHROPIC_API_KEY_2": "anthropic_api_key_2",
+            },
+        ):
+            factory = LocalProviderFactory()
+            factory.prepare_all_providers()
+            assert len(list(factory.get_providers(Provider.FIREWORKS))) == 3, "sanity fireworks"
+            assert len(list(factory.get_providers(Provider.ANTHROPIC))) == 3, "sanity anthropic"
+            with patch("core.runners.workflowai.workflowai_runner.WorkflowAIRunner.provider_factory", new=factory):
+                yield factory
+
+    @pytest.fixture()
+    def patched_shuffle(self):
+        idx = 0
+
+        # Patch the shuffle with a deterministic round robin for the first item
+        def _shuffle(iterable: list[Any]):
+            if not iterable:
+                return
+            nonlocal idx
+            val = iterable[0]
+            iterable[0] = iterable[idx % len(iterable)]
+            iterable[idx % len(iterable)] = val
+            idx += 1
+
+        with patch("random.shuffle", side_effect=_shuffle) as mock_shuffle:
+            yield mock_shuffle
+
+    async def test_multi_fireworks_providers(
+        self,
+        test_client: IntegrationTestClient,
+        httpx_mock: HTTPXMock,
+        patched_shuffle: Mock,
+    ):
+        """Check that the provider keys are correctly round robin-ed for fireworks"""
+        task = await test_client.create_task(output_schema={"properties": {"city": {"type": "string"}}})
+
+        count_by_api_key: dict[str, int] = {}
+
+        def _callback(request: httpx.Request):
+            assert request.headers["Authorization"].startswith("Bearer fw_api_key_")
+            key = request.headers["Authorization"].removeprefix("Bearer fw_api_key_")
+            count = count_by_api_key.get(key, 0)
+            count_by_api_key[key] = count + 1
+            return httpx.Response(status_code=200, json=fixtures_json("fireworks", "completion.json"))
+
+        httpx_mock.add_callback(
+            url="https://api.fireworks.ai/inference/v1/chat/completions",
+            method="POST",
+            callback=_callback,
+        )
+
+        for _ in range(10):
+            await test_client.run_task_v1(task, model=Model.DEEPSEEK_R1_2501, use_cache="never", autowait=False)
+
+        assert len(count_by_api_key) == 3, "sanity"
+        keys = list(count_by_api_key.keys())
+        assert keys == ["0", "1", "2"]
+        assert [count_by_api_key[key] for key in keys] == [4, 3, 3]
+
+    async def test_multi_fireworks_providers_with_errors(
+        self,
+        test_client: IntegrationTestClient,
+        httpx_mock: HTTPXMock,
+        patched_shuffle: Mock,
+    ):
+        """Check that the provider keys are correctly round robin-ed for fireworks
+        and falls through whenever we hit a rate limit"""
+        task = await test_client.create_task(output_schema={"properties": {"city": {"type": "string"}}})
+
+        used_api_key: list[int] = []
+        # We return a 429 every other call for each api key
+
+        def _callback(request: httpx.Request):
+            assert request.headers["Authorization"].startswith("Bearer fw_api_key_")
+            key = request.headers["Authorization"].removeprefix("Bearer fw_api_key_")
+            used_api_key.append(int(key))
+
+            # Provider 1 returns a 429
+            if key == "1":
+                return httpx.Response(status_code=429)
+
+            # Provider 2 returns a 500
+            if key == "2":
+                return httpx.Response(status_code=500)
+
+            return httpx.Response(status_code=200, json=fixtures_json("fireworks", "completion.json"))
+
+        httpx_mock.add_callback(
+            url="https://api.fireworks.ai/inference/v1/chat/completions",
+            method="POST",
+            callback=_callback,
+        )
+
+        for _ in range(3):
+            with contextlib.suppress(HTTPStatusError):
+                await test_client.run_task_v1(task, model=Model.DEEPSEEK_R1_2501, use_cache="never", autowait=False)
+
+        assert used_api_key == [
+            # 1
+            0,  # Call to provider 0 succeeds
+            # 2
+            1,  # Provider 1 so 429, second one in line is Provider 0
+            0,
+            # 3
+            2,  # Provider 2 so 500, no fallback
+        ]
+
+    async def test_multi_anthropic_providers(
+        self,
+        test_client: IntegrationTestClient,
+        multi_provider_factory: LocalProviderFactory,
+        httpx_mock: HTTPXMock,
+        patched_shuffle: Mock,
+    ):
+        """Anthropic we only shuffle the subsequent calls if the first call returns a 429"""
+        task = await test_client.create_task(output_schema={"properties": {}})
+        used_api_key: list[int] = []
+        return_429 = False
+
+        def _callback(request: httpx.Request):
+            assert request.headers["x-api-key"].startswith("anthropic_api_key_")
+            key = request.headers["x-api-key"].removeprefix("anthropic_api_key_")
+            used_api_key.append(int(key))
+
+            # Provider 0 returns a 429 every other call
+            if key == "0":
+                nonlocal return_429
+                should_return_429 = return_429
+                return_429 = not return_429
+                if should_return_429:
+                    return httpx.Response(status_code=429)
+
+            return httpx.Response(status_code=200, json=fixtures_json("anthropic", "completion.json"))
+
+        httpx_mock.add_callback(
+            url="https://api.anthropic.com/v1/messages",
+            method="POST",
+            callback=_callback,
+        )
+
+        for _ in range(4):
+            await test_client.run_task_v1(task, model=Model.CLAUDE_3_5_SONNET_LATEST, use_cache="never", autowait=False)
+
+        assert used_api_key == [
+            # 0
+            0,  # First call to provider succeeds
+            # 1
+            0,  # Provider 0 so 429, second one in line is Provider 1
+            1,
+            # 2
+            0,
+            # 3
+            0,
+            2,
+        ]
+
+    async def test_fallback_to_other_provider(
+        self,
+        test_client: IntegrationTestClient,
+        multi_provider_factory: LocalProviderFactory,
+        httpx_mock: HTTPXMock,
+    ):
+        # Anthropic returns a 503
+        httpx_mock.add_response(
+            url="https://api.anthropic.com/v1/messages",
+            method="POST",
+            status_code=503,
+        )
+
+        # But we fallback to bedrock
+        httpx_mock.add_response(
+            url="https://bedrock-runtime.us-west-2.amazonaws.com/model/us.anthropic.claude-3-5-sonnet-20241022-v2:0/converse",
+            method="POST",
+            json=fixtures_json("bedrock", "completion.json"),
+        )
+
+        task = await test_client.create_task()
+
+        res = await test_client.run_task_v1(
+            task,
+            model=Model.CLAUDE_3_5_SONNET_20241022,
+            use_cache="never",
+            autowait=False,
+        )
+        assert res
+
+        # We only called anthropic once
+        assert len(httpx_mock.get_requests(url="https://api.anthropic.com/v1/messages")) == 1

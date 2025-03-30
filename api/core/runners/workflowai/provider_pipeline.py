@@ -4,6 +4,7 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from typing import Any, NoReturn, Protocol
 
+from core.domain.error_response import ProviderErrorCode
 from core.domain.errors import InternalError, NoProviderSupportingModelError, ProviderError, StructuredGenerationError
 from core.domain.models.model_data import FinalModelData, ModelData
 from core.domain.models.providers import Provider
@@ -59,6 +60,12 @@ class ProviderPipeline:
         self._force_structured_generation = options.is_structured_generation_enabled
         self._last_error_was_structured_generation = False
         self._logger = logging.getLogger(self.__class__.__name__)
+
+    @property
+    def last_error_code(self) -> ProviderErrorCode | None:
+        if not self.errors:
+            return None
+        return self.errors[-1].code
 
     def raise_on_end(self, task_id: str) -> NoReturn:
         # TODO: metric
@@ -134,6 +141,10 @@ class ProviderPipeline:
                 raise NoProviderSupportingModelError(model=self._options.model)
             yield from _iter_with_structured_gen(provider)
 
+            # No point in retrying on the same provider if the last error code was not a rate limit
+            if self.last_error_code != "rate_limit":
+                return
+
         # Then we shuffle the rest
         shuffled = list(providers)
         if not shuffled:
@@ -146,6 +157,10 @@ class ProviderPipeline:
             # if the structured generation fails the first time, the retries
             # Without the structured gen will not happen
             yield from _iter_with_structured_gen(provider)
+
+            # No point in retrying on the same provider if the last error code was not a rate limit
+            if self.last_error_code != "rate_limit":
+                return
 
     def provider_iterator(self) -> Iterator[PipelineProviderData]:
         if self.provider_config:
