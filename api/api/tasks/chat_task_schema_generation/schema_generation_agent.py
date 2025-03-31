@@ -105,11 +105,10 @@ INSTRUCTIONS = """You are an expert in generating schemas for AI agents, based o
     - For cases where the agent requires static or infrequently updated context that does not vary from agent run to agent run, you do not need to include this context in the input schema. Instead, explain in the 'answer_to_user' that the agent instructions are the best place this context. Task instructions are outside of your scope and are generated afterwards by another agent, do not offer to update the instructions. Non-exhaustive examples of large and static content: FAQ knowledge base for customer service agents, Company policies or guidelines for compliance checking agents, Style guides for content creation agents, Standard operating procedures for process analysis agents, reference documentation for technical support agents, etc. As a rule of thumbs, input data that  is supposed to change every time the agent is run can go in the 'input_json_schema', input data that varies way rarely can go in the instructions."""
 
 
-# TODO: switch back to Claude 3.7 when we'll have more token quotas
 @workflowai.agent(
     id="agent-schema-generation",
     version=workflowai.VersionProperties(
-        model=workflowai.Model.CLAUDE_3_5_SONNET_20241022,
+        model=workflowai.Model.CLAUDE_3_7_SONNET_20250219,
         max_tokens=2500,  # Generated schema can be lengthy, so 2500 instead of 1000 of most Claude agents
         instructions=INSTRUCTIONS,
     ),
