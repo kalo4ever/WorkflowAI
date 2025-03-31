@@ -113,7 +113,7 @@ class _NoTitleJsonSchemaGenerator(GenerateJsonSchema):
         return generated
 
 
-def _add_missing_defs(schema: dict[str, Any]) -> dict[str, Any]:
+def add_missing_defs(schema: dict[str, Any]) -> dict[str, Any]:
     schema_defs = _build_internal_defs(streamline=False)
 
     refs: set[str] = set()
@@ -149,7 +149,7 @@ def _normalize_json_schema(schema: dict[str, Any]) -> dict[str, Any]:
     # The cleanup is lighter than sanitation to avoid overriding user preferences
     _check_for_protected_keys(schema)
 
-    schema = _add_missing_defs(schema)
+    schema = add_missing_defs(schema)
     schema = _remove_empty_defs(schema)
     schema, _ = fix_non_object_root(schema)
 
