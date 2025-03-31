@@ -1,6 +1,5 @@
 import { capitalize } from 'lodash';
 import { useEffect, useMemo, useState } from 'react';
-import { useParsedSearchParams, useRedirectWithParams } from '@/lib/queryString';
 import { useOrFetchFeatureSections } from '@/store/fetchers';
 import { TagPreview } from '@/types/workflowAI/models';
 import { SuggestedFeaturesHorizontalSections } from './SuggestedFeaturesHorizontalSections';
@@ -8,32 +7,16 @@ import { SuggestedFeaturesList } from './SuggestedFeaturesList';
 import { SuggestedFeaturesSearch } from './SuggestedFeaturesSearch';
 import { SuggestedFeaturesSections } from './SuggestedFeaturesSections';
 
-export function SuggestedFeatures() {
-  const { companyURL } = useParsedSearchParams('companyURL');
+type SuggestedFeaturesProps = {
+  companyURL?: string;
+};
+
+export function SuggestedFeatures(props: SuggestedFeaturesProps) {
+  const { companyURL } = props;
 
   const [selectedTag, setSelectedTag] = useState<TagPreview | undefined>(undefined);
 
   const { featureSections, isLoading: featureSectionsAreLoading } = useOrFetchFeatureSections();
-
-  const redirectWithParams = useRedirectWithParams();
-
-  useEffect(() => {
-    if (!!featureSections && !companyURL) {
-      const companySpecificTag: TagPreview | undefined = featureSections
-        .find((section) => section.tags.some((tag) => tag.kind === 'company_specific'))
-        ?.tags.find((tag) => tag.kind === 'company_specific');
-
-      const lowerCaseURL = companySpecificTag?.name.toLowerCase();
-
-      if (!!lowerCaseURL) {
-        redirectWithParams({
-          params: {
-            companyURL: lowerCaseURL,
-          },
-        });
-      }
-    }
-  }, [featureSections, companyURL, redirectWithParams]);
 
   const modifiedFeatureSections = useMemo(() => {
     if (!featureSections) {
