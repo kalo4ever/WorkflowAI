@@ -95,6 +95,22 @@ export function NewTaskModalContent(props: NewTaskModalContentProps) {
     );
   }
 
+  if (!isEditMode && !inputSplattedSchema && !outputSplattedSchema) {
+    return (
+      <div className={cx('flex flex-col h-full w-full overflow-hidden', !open && 'invisible')}>
+        <TaskConversation
+          userMessage={userMessage}
+          messages={messages}
+          setUserMessage={setUserMessage}
+          onSendIteration={onSendIteration}
+          loading={loading}
+          showRetry={showRetry}
+          retry={retry}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className='flex flex-row w-full h-[calc(100%-60px)]' ref={containerRef}>
       <div

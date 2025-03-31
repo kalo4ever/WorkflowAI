@@ -600,8 +600,10 @@ export function NewTaskModal() {
         });
       }
 
+      const assistantMessage = `I've created a schema for your ${title}. The schema defines the input variables and outlines how the AI feature should format its output. However, it doesn't dictate its reasoning or behavior. Review the schema to ensure it looks good. You'll be able to adjust the instructions in the Playground after saving.`;
+
       messages.push({
-        message: INITIAL_ASSISTANT_MESSAGE,
+        message: assistantMessage,
         username: WORKFLOW_AI_USERNAME,
         date: new Date(),
       });

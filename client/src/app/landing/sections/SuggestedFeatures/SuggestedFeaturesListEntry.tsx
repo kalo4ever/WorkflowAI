@@ -68,8 +68,10 @@ export function SuggestedFeaturesListEntry(props: SuggestedFeaturesListEntryProp
     const input_schema = schemas.input_schema as Record<string, unknown>;
     const output_schema = schemas.output_schema as Record<string, unknown>;
 
+    const message = !!feature.specifications ? feature.specifications : feature.description;
+
     if (!!featureWasSelected) {
-      featureWasSelected(name, input_schema, output_schema, feature.specifications ?? undefined);
+      featureWasSelected(name, input_schema, output_schema, message ?? undefined);
       setTimeout(() => {
         setCreatingTaskInProgress(false);
       }, 4000);

@@ -1,8 +1,8 @@
 import { ArrowUpFilled } from '@fluentui/react-icons';
 import { cx } from 'class-variance-authority';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import { Textarea } from '../ui/Textarea';
 
 type NewTaskSuggestedFeaturesHeaderProps = {
   userMessage: string;
@@ -13,16 +13,8 @@ type NewTaskSuggestedFeaturesHeaderProps = {
 
 export function NewTaskSuggestedFeaturesHeader(props: NewTaskSuggestedFeaturesHeaderProps) {
   const { userMessage, setUserMessage, onSendIteration, loading } = props;
-  const inputRef = useRef<HTMLInputElement>(null);
-
   const [inProgress, setInProgress] = useState(false);
   const isLoading = loading || inProgress;
-
-  useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus({ preventScroll: true });
-    }
-  }, []);
 
   const onSendMessage = useCallback(async () => {
     setInProgress(true);
@@ -56,22 +48,23 @@ export function NewTaskSuggestedFeaturesHeader(props: NewTaskSuggestedFeaturesHe
             showGradientBorder ? 'm-[2px] px-2 py-1' : 'm-[1px] px-[9px] py-[5px]'
           )}
         >
-          <Input
-            ref={inputRef}
-            placeholder='Write a description of the feature you want to build.'
-            className={cx(
-              'w-full text-[16px] font-normal py-0 pr-0 pl-1 focus-visible:ring-0 border-none bg-transparent',
-              isLoading ? 'text-gray-400' : 'text-gray-900'
-            )}
+          <Textarea
             value={userMessage}
             onChange={(event) => setUserMessage(event.target.value)}
+            placeholder='Write a description of the feature you want to build.'
+            className={cx(
+              'w-full text-[16px] font-normal pt-2 pb-[6px] pr-0 pl-1 focus-visible:ring-0 border-none bg-transparent max-h-[300px] scrollbar-hide',
+              isLoading ? 'text-gray-400' : 'text-gray-900'
+            )}
             onKeyDown={(event) => {
               if (event.key === 'Enter' && isGenerateButtonActive) {
+                event.preventDefault();
                 onSendMessage();
               }
             }}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
+            autoFocus={true}
           />
           {showSendButton && (
             <Button
