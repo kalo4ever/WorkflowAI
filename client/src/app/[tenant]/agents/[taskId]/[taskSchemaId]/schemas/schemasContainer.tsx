@@ -113,6 +113,7 @@ export function SchemasContainer() {
       showCopyLink={false}
       showBottomBorder={true}
       showSchema={false}
+      documentationLink='https://docs.workflowai.com/concepts/schemas'
       rightBarChildren={
         <div className='flex flex-row items-center gap-2 font-lato'>
           <Button

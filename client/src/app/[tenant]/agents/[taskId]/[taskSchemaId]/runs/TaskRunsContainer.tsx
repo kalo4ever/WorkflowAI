@@ -197,6 +197,7 @@ export function TaskRunsContainer() {
       name='Runs'
       showCopyLink={true}
       showSchema={false}
+      documentationLink='https://docs.workflowai.com/concepts/runs'
       isInitialized={isTaskSchemaInitialized && !!task}
     >
       <div className='flex flex-col h-full w-full p-4'>
