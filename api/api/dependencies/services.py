@@ -11,7 +11,7 @@ from api.dependencies.analytics import (
 from api.dependencies.encryption import EncryptionDep
 from api.dependencies.event_router import EventRouterDep
 from api.dependencies.provider_factory import ProviderFactoryDep
-from api.dependencies.security import TenantUIDDep, UserDep
+from api.dependencies.security import SystemStorageDep, TenantUIDDep, UserDep
 from api.dependencies.storage import (
     OrganizationStorageDep,
     StorageDep,
@@ -26,7 +26,7 @@ from api.services.groups import GroupService
 from api.services.internal_tasks.agent_suggestions_service import TaskSuggestionsService
 from api.services.internal_tasks.internal_tasks_service import InternalTasksService
 from api.services.models import ModelsService
-from api.services.payments import PaymentService
+from api.services.payments_service import PaymentService, PaymentSystemService
 from api.services.reviews import ReviewsService
 from api.services.run import RunService
 from api.services.runs import RunsService
@@ -36,6 +36,7 @@ from api.services.transcriptions import TranscriptionService
 from api.services.versions import VersionsService
 from core.deprecated.workflowai import WorkflowAI
 from core.domain.users import UserIdentifier
+from core.services.email_service import EmailService
 from core.storage.file_storage import FileStorage
 
 
@@ -228,16 +229,8 @@ def versions_service(storage: StorageDep, event_router: EventRouterDep):
 VersionsServiceDep = Annotated[VersionsService, Depends(versions_service)]
 
 
-def payment_service(
-    storage: StorageDep,
-    event_router: EventRouterDep,
-    analytics_service: AnalyticsServiceDep,
-) -> PaymentService:
-    return PaymentService(
-        storage=storage,
-        event_router=event_router,
-        analytics_service=analytics_service,
-    )
+def payment_service(storage: StorageDep) -> PaymentService:
+    return PaymentService(org_storage=storage.organizations)
 
 
 PaymentServiceDep = Annotated[PaymentService, Depends(payment_service)]
@@ -275,3 +268,22 @@ def run_feedback_generator(
 
 
 RunFeedbackGeneratorDep = Annotated[Callable[[str], str], Depends(run_feedback_generator)]
+
+
+def email_service_dep() -> EmailService:
+    from api.services.postmark_service import PostmarkService
+
+    return PostmarkService()
+
+
+EmailServiceDep = Annotated[EmailService, Depends(email_service_dep)]
+
+
+def payment_system_service(
+    storage: SystemStorageDep,
+    email_service: EmailServiceDep,
+) -> PaymentSystemService:
+    return PaymentSystemService(storage.organizations, email_service)
+
+
+PaymentSystemServiceDep = Annotated[PaymentSystemService, Depends(payment_system_service)]

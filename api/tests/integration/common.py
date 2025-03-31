@@ -19,6 +19,7 @@ from tests.utils import fixtures_json, request_json_body
 
 # 03832ff71a03e47e372479593879ad2e is the input hash of `{"name": "John", "age": 30}`
 DEFAULT_INPUT_HASH = "03832ff71a03e47e372479593879ad2e"
+INT_TEST_TENANT = "chiefofstaff.ai"
 
 
 async def create_task(
@@ -342,7 +343,7 @@ def result_or_raise(res: Response) -> Any:
         print(e.response.text)  # noqa: T201
         raise e
 
-    if res.status_code != 204:
+    if res.text:
         return res.json()
     return None
 

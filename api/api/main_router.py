@@ -9,7 +9,7 @@ from api.routers import (
 )
 from api.routers.agents import home_agent, meta_agent, new_task_agent, new_tool_agent
 from api.tags import RouteTags
-from core.domain.organization_settings import PublicOrganizationData
+from core.domain.tenant_data import PublicOrganizationData
 
 main_router = APIRouter()
 main_router.include_router(clerk_webhooks.router)

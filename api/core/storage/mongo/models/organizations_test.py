@@ -4,11 +4,11 @@ from datetime import datetime
 import pytest
 
 from core.domain.models import Provider
-from core.domain.organization_settings import ProviderConfig
+from core.domain.tenant_data import ProviderConfig
 from core.providers.google.google_provider import GoogleProviderConfig
 from core.providers.groq.groq_provider import GroqConfig
 from core.providers.openai.openai_provider import OpenAIConfig
-from core.storage.mongo.models.organizations import (
+from core.storage.mongo.models.organization_document import (
     DecryptableProviderSettings,
     OrganizationDocument,
     ProviderSettingsSchema,

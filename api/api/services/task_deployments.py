@@ -9,9 +9,9 @@ from api.services.groups import GroupService
 from api.services.run import RunService
 from core.domain.analytics_events.analytics_events import DeployedTaskVersionProperties, VersionProperties
 from core.domain.errors import BadRequestError, ProviderError
-from core.domain.organization_settings import ProviderSettings
 from core.domain.task_group import TaskGroup, TaskGroupQuery
 from core.domain.task_run_query import SerializableTaskRunQuery
+from core.domain.tenant_data import ProviderSettings
 from core.domain.users import UserIdentifier
 from core.domain.version_environment import VersionEnvironment
 from core.domain.version_reference import VersionReference

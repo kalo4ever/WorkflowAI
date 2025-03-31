@@ -39,7 +39,9 @@ class _ZoneInfoPydanticAnnotation:
 
     @classmethod
     def __get_pydantic_json_schema__(
-        cls, core_schema: core_schema.JsonSchema, handler: GetJsonSchemaHandler,
+        cls,
+        core_schema: core_schema.JsonSchema,
+        handler: GetJsonSchemaHandler,
     ) -> JsonSchemaValue:
         json_schema = handler(core_schema)
         json_schema.update(format="timezone")

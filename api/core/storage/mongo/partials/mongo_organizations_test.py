@@ -9,12 +9,12 @@ from pymongo.errors import DuplicateKeyError
 from core.domain.api_key import APIKey
 from core.domain.errors import DuplicateValueError
 from core.domain.models import Provider
-from core.domain.organization_settings import TenantData
+from core.domain.tenant_data import TenantData
 from core.domain.users import UserIdentifier
 from core.providers.openai.openai_provider import OpenAIConfig
 from core.storage import ObjectNotFoundException
 from core.storage.mongo.conftest import TENANT
-from core.storage.mongo.models.organizations import (
+from core.storage.mongo.models.organization_document import (
     APIKeyDocument,
     DecryptableProviderSettings,
     OrganizationDocument,
@@ -22,7 +22,7 @@ from core.storage.mongo.models.organizations import (
 )
 from core.storage.mongo.mongo_storage import MongoStorage
 from core.storage.mongo.mongo_types import AsyncCollection
-from core.storage.mongo.partials.organizations import MongoOrganizationStorage
+from core.storage.mongo.partials.mongo_organizations import MongoOrganizationStorage
 from core.storage.mongo.utils import dump_model
 from core.utils import no_op
 from core.utils.encryption import Encryption
@@ -41,6 +41,13 @@ def other_organization_storage(mongo_test_uri: str, mock_encryption: Encryption)
         encryption=mock_encryption,
         event_router=no_op.event_router,
     ).organizations
+
+
+@pytest.fixture(scope="function")
+async def inserted_tenant(organization_storage: MongoOrganizationStorage, org_col: AsyncCollection):
+    org_settings = OrganizationDocument(tenant=TENANT)
+    await org_col.insert_one(dump_model(org_settings))
+    return org_settings.tenant
 
 
 class TestGetOrganizationSettings:
@@ -996,37 +1003,6 @@ class TestFindAnonymousTenant:
             await org_col.insert_one(dump_model(OrganizationDocument(tenant="user123", anonymous_user_id="user123")))
 
 
-class TestUnsetLastPaymentFailedAt:
-    async def test_unset_last_payment_failed_at(
-        self,
-        organization_storage: MongoOrganizationStorage,
-        org_col: AsyncCollection,
-    ) -> None:
-        time = datetime(2025, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
-        await org_col.insert_one(
-            dump_model(
-                OrganizationDocument(
-                    tenant=TENANT,
-                    slug="simple_slug",
-                    providers=[],
-                    no_tasks_yet=True,
-                    last_payment_failed_at=time,
-                ),
-            ),
-        )
-        doc = await org_col.find_one({"tenant": TENANT})
-        assert doc is not None
-        assert "last_payment_failed_at" in doc
-        assert doc["last_payment_failed_at"] is not None
-        assert doc["last_payment_failed_at"] == time
-
-        await organization_storage.unset_last_payment_failed_at()
-
-        doc = await org_col.find_one({"tenant": TENANT})
-        assert doc is not None
-        assert "last_payment_failed_at" not in doc
-
-
 class TestMigrateTenantToUser:
     async def test_success(
         self,
@@ -1292,30 +1268,6 @@ class TestMigrateTenantToOrganization:
             )
 
 
-class TestAttemptLockForPayment:
-    async def test_attempt_lock_for_payment_success(
-        self,
-        organization_storage: MongoOrganizationStorage,
-        org_col: AsyncCollection,
-    ) -> None:
-        # Insert a tenant with different owner_id and anon_id
-        await org_col.insert_one(dump_model(OrganizationDocument(tenant=TENANT)))
-
-        # Attempt lock for payment
-        res = await organization_storage.attempt_lock_for_payment()
-        assert res is not None
-        assert res.tenant == TENANT
-
-        # Verify the document was locked
-        doc = await org_col.find_one({"tenant": TENANT})
-        assert doc is not None
-        assert doc["locked_for_payment"] is True
-
-        # Now lock it again it should return None
-        res = await organization_storage.attempt_lock_for_payment()
-        assert res is None
-
-
 class TestFeedbackSlackHookForTenant:
     async def test_get_feedback_slack_hook_success(
         self,
@@ -1365,3 +1317,208 @@ class TestFeedbackSlackHookForTenant:
         # Try to get slack hook for non-existent organization
         with pytest.raises(ObjectNotFoundException):
             await organization_storage.feedback_slack_hook_for_tenant(tenant_uid=999)
+
+
+class TestAttemptLockForPayment:
+    async def test_attempt_lock_for_payment_success(
+        self,
+        organization_storage: MongoOrganizationStorage,
+        org_col: AsyncCollection,
+    ) -> None:
+        # Insert a tenant with different owner_id and anon_id
+        await org_col.insert_one(dump_model(OrganizationDocument(tenant=TENANT)))
+
+        # Attempt lock for payment
+        res = await organization_storage.attempt_lock_for_payment(tenant=TENANT)
+        assert res is not None
+        assert res.tenant == TENANT
+
+        # Verify the document was locked
+        doc = await org_col.find_one({"tenant": TENANT})
+        assert doc is not None
+        assert doc["locked_for_payment"] is True
+
+        # Now lock it again it should return None
+        res = await organization_storage.attempt_lock_for_payment(tenant=TENANT)
+        assert res is None
+
+
+class TestUnlockPaymentForSuccess:
+    @pytest.fixture(autouse=True)
+    async def lock_inserted_tenant(self, organization_storage: MongoOrganizationStorage, inserted_tenant: str):
+        lock = await organization_storage.attempt_lock_for_payment(inserted_tenant)
+        assert lock, "sanity check, could not lock org"
+
+    async def test_unlock_payment_for_success(
+        self,
+        organization_storage: MongoOrganizationStorage,
+        org_col: AsyncCollection,
+        inserted_tenant: str,
+    ) -> None:
+        # Add initial credits
+        await org_col.update_one(
+            {"tenant": inserted_tenant},
+            {"$set": {"current_credits_usd": 10}},
+        )
+
+        # Unlock payment for success with a payment amount
+        await organization_storage.unlock_payment_for_success(tenant=inserted_tenant, amount=50)
+
+        # Verify the document was unlocked and credits were updated
+        doc = await org_col.find_one({"tenant": inserted_tenant})
+        assert doc is not None
+        assert "locked_for_payment" not in doc
+        assert doc["current_credits_usd"] == 60  # 10 + 50
+
+        # Check that we can still get the tenant
+        tenant = await organization_storage.get_organization()
+        assert tenant is not None
+        assert tenant.locked_for_payment is None
+        assert tenant.current_credits_usd == 60
+
+        # And that we can lock it again
+        lock = await organization_storage.attempt_lock_for_payment(inserted_tenant)
+        assert lock is not None
+        assert lock.tenant == inserted_tenant
+        assert lock.locked_for_payment is True
+        assert lock.current_credits_usd == 60
+
+    async def test_unlock_payment_for_success_no_credits(
+        self,
+        organization_storage: MongoOrganizationStorage,
+        org_col: AsyncCollection,
+        inserted_tenant: str,
+    ) -> None:
+        # Unlock payment for success with a payment amount (no initial credits)
+        await organization_storage.unlock_payment_for_success(tenant=inserted_tenant, amount=50)
+
+        # Verify the document was unlocked and credits were set
+        doc = await org_col.find_one({"tenant": inserted_tenant})
+        assert doc is not None
+        assert "locked_for_payment" not in doc
+        assert doc["current_credits_usd"] == 50
+
+        # Check that we can still get the tenant
+        tenant = await organization_storage.get_organization()
+        assert tenant is not None
+        assert tenant.locked_for_payment is None
+        assert tenant.current_credits_usd == 50
+
+        # And that we can lock it again
+        lock = await organization_storage.attempt_lock_for_payment(inserted_tenant)
+        assert lock is not None
+        assert lock.tenant == inserted_tenant
+        assert lock.locked_for_payment is True
+        assert lock.current_credits_usd == 50
+
+    async def test_unlock_payment_for_success_after_failure(
+        self,
+        organization_storage: MongoOrganizationStorage,
+        org_col: AsyncCollection,
+        inserted_tenant: str,
+    ) -> None:
+        # First unlock with a failure
+        await organization_storage.unlock_payment_for_failure(
+            tenant=inserted_tenant,
+            now=datetime.now(timezone.utc).replace(microsecond=0),
+            code="internal",
+            failure_reason="Test internal error",
+        )
+
+        # Now unlock with a success
+        lock = await organization_storage.attempt_lock_for_payment(inserted_tenant)
+        assert lock is not None, "sanity check, could not lock org"
+
+        await organization_storage.unlock_payment_for_success(tenant=inserted_tenant, amount=50)
+
+        # Verify the document was unlocked and credits were updated
+        doc = await org_col.find_one({"tenant": inserted_tenant})
+        assert doc is not None
+        assert "locked_for_payment" not in doc
+        assert "payment_failure" not in doc
+        assert doc["current_credits_usd"] == 50
+
+
+class TestUnlockPaymentForFailure:
+    @pytest.fixture(autouse=True)
+    async def lock_inserted_tenant(self, organization_storage: MongoOrganizationStorage, inserted_tenant: str):
+        lock = await organization_storage.attempt_lock_for_payment(inserted_tenant)
+        assert lock, "sanity check, could not lock org"
+
+    async def test_unlock_payment_for_failure_internal(
+        self,
+        organization_storage: MongoOrganizationStorage,
+        org_col: AsyncCollection,
+        inserted_tenant: str,
+    ) -> None:
+        # Get current time
+        now = datetime.now(timezone.utc).replace(microsecond=0)
+
+        # Unlock payment for failure with internal error
+        await organization_storage.unlock_payment_for_failure(
+            tenant=inserted_tenant,
+            now=now,
+            code="internal",
+            failure_reason="Test internal error",
+        )
+
+        # Verify the document was unlocked and error was recorded
+        doc = await org_col.find_one({"tenant": TENANT})
+        assert doc is not None
+        assert "locked_for_payment" not in doc
+        assert doc["payment_failure"] == {
+            "failure_code": "internal",
+            "failure_reason": "Test internal error",
+            "failure_date": now,
+        }
+
+        # Check that we can still get the tenant
+        tenant = await organization_storage.get_organization()
+        assert tenant is not None
+        assert tenant.locked_for_payment is None
+        assert tenant.payment_failure is not None
+        assert tenant.payment_failure.failure_code == "internal"
+        assert tenant.payment_failure.failure_reason == "Test internal error"
+        assert tenant.payment_failure.failure_date == now
+
+        # And that we can still lock and get the same info
+        lock = await organization_storage.attempt_lock_for_payment(inserted_tenant)
+        assert lock is not None
+        assert lock.tenant == inserted_tenant
+        assert lock.locked_for_payment is True
+        assert lock.payment_failure is not None
+        assert lock.payment_failure.failure_code == "internal"
+        assert lock.payment_failure.failure_reason == "Test internal error"
+        assert lock.payment_failure.failure_date == now
+
+    async def test_unlock_payment_for_failure_payment_failed(
+        self,
+        organization_storage: MongoOrganizationStorage,
+        org_col: AsyncCollection,
+    ) -> None:
+        # Get current time
+        now = datetime.now(timezone.utc).replace(microsecond=0)
+
+        # Unlock payment for failure with payment_failed error
+        await organization_storage.unlock_payment_for_failure(
+            tenant=TENANT,
+            now=now,
+            code="payment_failed",
+            failure_reason="Test payment failed error",
+        )
+
+        # Verify the document was unlocked and error was recorded
+        doc = await org_col.find_one({"tenant": TENANT})
+        assert doc is not None
+        assert "locked_for_payment" not in doc
+        assert doc["payment_failure"] == {
+            "failure_code": "payment_failed",
+            "failure_reason": "Test payment failed error",
+            "failure_date": now,
+        }
+
+        # Check that we can still get the tenant
+        tenant = await organization_storage.get_organization()
+        assert tenant is not None
+        assert tenant.locked_for_payment is None
+        assert tenant.payment_failure is not None

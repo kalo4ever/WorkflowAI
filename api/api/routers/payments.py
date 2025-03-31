@@ -3,12 +3,11 @@ import os
 
 import stripe
 from fastapi import APIRouter
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, Field, model_validator
 
 from api.dependencies.security import RequiredUserOrganizationDep, UserDep
-from api.dependencies.services import PaymentServiceDep
-from api.dependencies.storage import OrganizationStorageDep
-from api.services.payments import PaymentMethodResponse
+from api.dependencies.services import PaymentServiceDep, PaymentSystemServiceDep
+from api.services.payments_service import PaymentMethodResponse, PaymentService
 
 router = APIRouter(prefix="/organization/payments")
 
@@ -41,6 +40,7 @@ class CustomerCreatedResponse(BaseModel):
     customer_id: str
 
 
+# TODO: deprecate this route, we should just create a customer the first time a payment method is added
 @router.post("/customers", description="Create a customer in Stripe for the organization")
 async def create_customer(
     payment_service: PaymentServiceDep,
@@ -50,7 +50,10 @@ async def create_customer(
 
 
 class PaymentIntentCreatedResponse(BaseModel):
-    client_secret: str
+    client_secret: str = Field(
+        description="The stripe client secret for the payment intent, "
+        "that can be used by the client to retrieve the payment using the client secret and a publishable key.",
+    )
     payment_intent_id: str
 
 
@@ -58,27 +61,25 @@ class CreatePaymentIntentRequest(BaseModel):
     amount: float
 
 
-@router.post("/payment-intents", description="Create a payment intent in Stripe for the organization")
+@router.post("/payment-intents", description="Create a manual payment intent in Stripe for the organization")
 async def create_payment_intent(
     request: CreatePaymentIntentRequest,
-    payment_service: PaymentServiceDep,
     user_org: RequiredUserOrganizationDep,
 ) -> PaymentIntentCreatedResponse:
-    payment_intent = await payment_service.create_payment_intent(user_org, request.amount, trigger="manual")
+    payment_intent = await PaymentService.create_payment_intent(user_org, request.amount, trigger="manual")
     if not payment_intent.client_secret:
         raise ValueError("Payment intent creation failed")
     return PaymentIntentCreatedResponse(
         client_secret=payment_intent.client_secret,
-        payment_intent_id=payment_intent.id,
+        payment_intent_id=payment_intent.payment_intent_id,
     )
 
 
 @router.get("/payment-methods", description="Get the payment method attached to the organization")
 async def get_payment_method(
-    payment_service: PaymentServiceDep,
     user_org: RequiredUserOrganizationDep,
 ) -> PaymentMethodResponse | None:
-    return await payment_service.get_payment_method(user_org)
+    return await PaymentService.get_payment_method(user_org)
 
 
 @router.delete("/payment-methods", description="Delete the payment method attached to the organization")
@@ -110,10 +111,18 @@ class AutomaticPaymentRequest(BaseModel):
 @router.put("/automatic-payments", description="Enable or disable automatic payments")
 async def update_automatic_payments(
     request: AutomaticPaymentRequest,
-    storage: OrganizationStorageDep,
+    payment_service: PaymentServiceDep,
 ) -> None:
-    # Endpoint: PUT /organization/payments/automatic-payments
-    # Body: { opt_in: bool, threshold: float, balance_to_maintain: float }
-    # Response: 204 No Content
+    await payment_service.configure_automatic_payment(
+        opt_in=request.opt_in,
+        threshold=request.threshold,
+        balance_to_maintain=request.balance_to_maintain,
+    )
 
-    await storage.update_automatic_payment(request.opt_in, request.threshold, request.balance_to_maintain)
+
+@router.post("/automatic-payments/retry", description="Retry a failed automatic payment")
+async def retry_automatic_payment(
+    payment_service: PaymentSystemServiceDep,
+    user_org: RequiredUserOrganizationDep,
+) -> None:
+    await payment_service.retry_automatic_payment(user_org)

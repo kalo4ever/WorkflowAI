@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException
 
 from api.dependencies.provider_factory import ProviderFactoryDep
 from api.dependencies.storage import OrganizationStorageDep
-from core.domain.organization_settings import (
+from core.domain.tenant_data import (
     ProviderConfig,
     ProviderSettings,
     TenantData,

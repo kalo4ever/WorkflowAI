@@ -9,7 +9,7 @@ from jinja2.meta import find_undeclared_variables
 # Compiled regepx to check if instructions are a template
 # Jinja templates use  {%%} for expressions {{}} for variables and {# ... #} for comments
 
-_template_regex = re.compile(rf"({re.escape("{%")}|{re.escape("{{")}|{re.escape("{#")})")
+_template_regex = re.compile(rf"({re.escape('{%')}|{re.escape('{{')}|{re.escape('{#')})")
 
 
 class InvalidTemplateError(Exception):

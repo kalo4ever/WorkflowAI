@@ -3,12 +3,12 @@ import logging
 from datetime import datetime
 from typing import Optional, Self
 
-from pydantic import BaseModel, Field, TypeAdapter
+from pydantic import BaseModel, Field, TypeAdapter, ValidationError
 from typing_extensions import override
 
 from core.domain.api_key import APIKey
 from core.domain.models import Provider
-from core.domain.organization_settings import (
+from core.domain.tenant_data import (
     ProviderConfig,
     ProviderSettings,
     PublicOrganizationData,
@@ -17,10 +17,10 @@ from core.domain.organization_settings import (
 from core.domain.users import UserIdentifier
 from core.storage.mongo.models.base_document import BaseDocumentWithID
 from core.utils.encryption import Encryption
-from core.utils.fields import datetime_factory, id_factory
+from core.utils.fields import datetime_factory, datetime_zero, id_factory
 from core.utils.ids import id_uint32
 
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 
 class DecryptableProviderSettings(ProviderSettings):
@@ -81,6 +81,23 @@ class APIKeyDocument(BaseModel):
         )
 
 
+class PaymentFailureSchema(BaseModel):
+    failure_date: datetime | None = None
+    failure_reason: str | None = None
+    failure_code: str | None = None
+
+    def to_domain(self) -> TenantData.PaymentFailure | None:
+        try:
+            return TenantData.PaymentFailure(
+                failure_date=self.failure_date or datetime_zero(),
+                failure_reason=self.failure_reason or "",
+                failure_code=self.failure_code or "internal",  # pyright: ignore [reportArgumentType]
+            )
+        except ValidationError:
+            _logger.exception("Invalid payment failure", extra={"failure": self.model_dump()})
+            return None
+
+
 class OrganizationDocument(BaseDocumentWithID):
     uid: int = Field(default_factory=id_uint32)
     anonymous_user_id: str | None = None
@@ -105,7 +122,7 @@ class OrganizationDocument(BaseDocumentWithID):
     api_keys: list[APIKeyDocument] | None = None
     stripe_customer_id: str | None = None
     locked_for_payment: bool | None = None
-    last_payment_failed_at: datetime | None = None
+
     automatic_payment_enabled: bool = Field(default=False, title="Automatic payment enabled")
     automatic_payment_threshold: float | None = Field(default=None, title="Automatic payment threshold")
     automatic_payment_balance_to_maintain: float | None = Field(
@@ -115,6 +132,8 @@ class OrganizationDocument(BaseDocumentWithID):
 
     # For now the field is filled manually
     feedback_slack_hook: str | None = None
+
+    payment_failure: PaymentFailureSchema | None = None
 
     @classmethod
     def from_domain(cls, org_settings: TenantData, no_tasks_yet: bool | None = None) -> Self:
@@ -132,7 +151,6 @@ class OrganizationDocument(BaseDocumentWithID):
             api_keys=None,
             stripe_customer_id=org_settings.stripe_customer_id or None,
             locked_for_payment=org_settings.locked_for_payment or None,
-            last_payment_failed_at=org_settings.last_payment_failed_at or None,
             automatic_payment_enabled=org_settings.automatic_payment_enabled,
             automatic_payment_threshold=org_settings.automatic_payment_threshold or None,
             automatic_payment_balance_to_maintain=org_settings.automatic_payment_balance_to_maintain or None,
@@ -154,7 +172,6 @@ class OrganizationDocument(BaseDocumentWithID):
             org_id=self.org_id,
             stripe_customer_id=self.stripe_customer_id,
             locked_for_payment=self.locked_for_payment,
-            last_payment_failed_at=self.last_payment_failed_at,
             automatic_payment_enabled=self.automatic_payment_enabled,
             automatic_payment_threshold=self.automatic_payment_threshold,
             automatic_payment_balance_to_maintain=self.automatic_payment_balance_to_maintain,
@@ -162,6 +179,7 @@ class OrganizationDocument(BaseDocumentWithID):
             anonymous_user_id=self.anonymous_user_id or None,
             owner_id=self.owner_id or None,
             feedback_slack_hook=self.feedback_slack_hook or None,
+            payment_failure=self.payment_failure.to_domain() if self.payment_failure else None,
         )
 
     def to_domain_public(self) -> PublicOrganizationData:
