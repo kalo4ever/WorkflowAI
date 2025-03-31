@@ -1018,11 +1018,11 @@ async def test_run_audio_openai(test_client: IntegrationTestClient):
         "content_type": "audio/mpeg",
         "url": test_client.storage_url(
             task,
-            "aba2c61cc31bc5cbd4b3499997e2eca79dd2eee2c125cb830df4a962d0c88c9f.mp3",
+            "7f1d285a8d5bda9b6c3af1cbec3cef932204877a4bd7223fc7281c7706877905.mp3",
         ),
         "storage_url": test_client.storage_url(
             task,
-            "aba2c61cc31bc5cbd4b3499997e2eca79dd2eee2c125cb830df4a962d0c88c9f.mp3",
+            "7f1d285a8d5bda9b6c3af1cbec3cef932204877a4bd7223fc7281c7706877905.mp3",
         ),
     }
     assert fetched_run["task_output"] == {"greeting": "Hello James!"}
@@ -1724,7 +1724,7 @@ async def test_cache_with_image_url(test_client: IntegrationTestClient):
             "content_type": "image/gif",
             "storage_url": test_client.storage_url(
                 task,
-                "b42185f145ca9603ed7f63beb59f2c1f8308e6fd65ccb44c726a8717c3a41c89.gif",
+                "2801434f08433a71b4f618414724c5be7bda2bbb55b3c85f83b7c008585a61d8.gif",
             ),
         },
     }
@@ -1959,3 +1959,27 @@ class TestMultiProviderConfigs:
 
         # We only called anthropic once
         assert len(httpx_mock.get_requests(url="https://api.anthropic.com/v1/messages")) == 1
+
+
+async def test_invalid_base64_data(test_client: IntegrationTestClient):
+    """Check that we handle invalid base64 data correctly by returning an error immediately"""
+    task = await test_client.create_task(
+        input_schema={
+            "properties": {
+                "image": {
+                    "$ref": "#/$defs/Image",
+                },
+            },
+        },
+    )
+
+    with pytest.raises(HTTPStatusError) as e:
+        # Sending an image URL without a content type will force the runner to download the file
+        await test_client.run_task_v1(
+            task,
+            model=Model.GEMINI_1_5_FLASH_LATEST,
+            task_input={"image": {"data": "iamnotbase64"}},
+        )
+
+    assert e.value.response.status_code == 400
+    assert e.value.response.json()["error"]["code"] == "invalid_file"

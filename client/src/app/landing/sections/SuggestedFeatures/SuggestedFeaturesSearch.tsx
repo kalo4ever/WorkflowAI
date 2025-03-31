@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useCopyCurrentUrl } from '@/lib/hooks/useCopy';
-import { useFastRedirectWithParam } from '@/lib/queryString';
+import { useRedirectWithParams } from '@/lib/queryString';
 import { cleanURL, isValidURL } from './utils';
 
 type Props = {
@@ -15,7 +15,7 @@ export function SuggestedFeaturesSearch(props: Props) {
   const { companyURL } = props;
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const fastRedirectWithParam = useFastRedirectWithParam();
+  const redirectWithParams = useRedirectWithParams();
 
   const [entryField, setEntryField] = useState('');
   const [inProgress, setInProgress] = useState(false);
@@ -56,13 +56,15 @@ export function SuggestedFeaturesSearch(props: Props) {
       setEntryField(cleanedURL);
       setErrorToShow(undefined);
 
-      fastRedirectWithParam('companyURL', cleanedURL, true);
+      redirectWithParams({
+        path: `/${cleanedURL}`,
+      });
 
       setTimeout(() => {
         setInProgress(false);
       }, 1000);
     },
-    [fastRedirectWithParam]
+    [redirectWithParams]
   );
 
   const copyUrl = useCopyCurrentUrl();
