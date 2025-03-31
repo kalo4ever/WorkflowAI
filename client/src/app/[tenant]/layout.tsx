@@ -9,6 +9,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { useTaskParams, useTenantID } from '@/lib/hooks/useTaskParams';
 import { TENANT_PLACEHOLDER } from '@/lib/routeFormatter';
 import { useOrFetchTask } from '@/store';
+import { looksLikeURL } from '../landing/sections/SuggestedFeatures/utils';
 import { LoggedOutBanner, LoggedOutBannerForDemoTask } from './components/LoggedOutBanner';
 import { RedirectForTenant } from './components/RedirectForTenant';
 import { Sidebar } from './components/sidebar';
@@ -16,13 +17,17 @@ import { Sidebar } from './components/sidebar';
 export default function Layout({ children }: Readonly<{ children: React.ReactNode }>) {
   const tenant = useTenantID();
 
-  const { taskId } = useTaskParams();
+  const { taskId, tenant: tenantParam } = useTaskParams();
   const { isSignedIn } = useAuth();
   const { task } = useOrFetchTask(tenant, taskId);
 
   const showTaskBanner = !isSignedIn && tenant === TENANT_PLACEHOLDER && !!taskId;
 
   const showBanner = !showTaskBanner && !isSignedIn;
+
+  if (looksLikeURL(tenantParam)) {
+    return <>{children}</>;
+  }
 
   return (
     <RedirectForTenant>
