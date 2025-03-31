@@ -75,14 +75,7 @@ class SuggestAgentForCompanyOutput(BaseModel):
     )
 
 
-@workflowai.agent(
-    id="suggest-llmagents-for-company",
-    model=workflowai.Model.CLAUDE_3_7_SONNET_20250219,
-)
-def stream_suggest_agents_for_company(
-    input: SuggestAgentForCompanyInput,
-) -> AsyncIterator[SuggestAgentForCompanyOutput]:
-    """Your role is to generate a comprehensive list of exactly 10 agents suggestions that can be used to power features for our clients, based on:
+INSTRUCTIONS = """Your role is to generate a comprehensive list of exactly 10 agents suggestions that can be used to power features for our clients, based on:
 
     - 'company_url' and 'company_url_content' (in order to understand the company and propose agents that make sense based on the company's context)
     - their existing agents (in order to avoid duplicates, and propose new agents that make sense based on the agents the client is already using)
@@ -202,4 +195,16 @@ def stream_suggest_agents_for_company(
     - Categorize product.
     - Extract info from medical bills.
     """
-    ...
+
+
+@workflowai.agent(
+    id="suggest-llmagents-for-company",
+    version=workflowai.VersionProperties(
+        model=workflowai.Model.CLAUDE_3_7_SONNET_20250219,
+        max_tokens=2500,  # Generated suggested featuress can be lengthy, so 2500 instead of 1000 of most Claude agents
+        instructions=INSTRUCTIONS,
+    ),
+)
+def stream_suggest_agents_for_company(
+    input: SuggestAgentForCompanyInput,
+) -> AsyncIterator[SuggestAgentForCompanyOutput]: ...

@@ -5,7 +5,6 @@ from pydantic import BaseModel, Field
 
 from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task import AgentSchemaJson
 from core.domain.fields.chat_message import ChatMessage
-from core.domain.models import Model
 
 
 class TaskDescriptionGenerationTaskInput(BaseModel):
@@ -25,11 +24,12 @@ class TaskDescriptionGenerationTaskOutput(BaseModel):
     )
 
 
-@workflowai.agent(id="task-description-generation", model=Model.CLAUDE_3_7_SONNET_20250219)
-async def run_task_description_generation(
-    task_input: TaskDescriptionGenerationTaskInput,
-) -> TaskDescriptionGenerationTaskOutput:
-    """You are a task analysis assistant specializing in understanding and describing task specifications.
+@workflowai.agent(
+    id="task-description-generation",
+    version=workflowai.VersionProperties(
+        model=workflowai.Model.CLAUDE_3_7_SONNET_20250219,
+        max_tokens=500,
+        instructions="""You are a task analysis assistant specializing in understanding and describing task specifications.
 
     Given a task schema containing input and output specifications, along with any task instructions, analyze these components to generate a concise, one-sentence description of what the task accomplishes. The 'task_description' must be a maximum of 80 characters.
 
@@ -42,26 +42,9 @@ async def run_task_description_generation(
 
     The description should be clear, action-oriented, and focus on the main purpose of the task. The term AI agent must be used.
 
-    Avoid technical details about the schema structure itself and instead focus on the functional purpose of the task."""
-    ...
-
-
-@workflowai.agent(id="task-description-generation", model=Model.CLAUDE_3_7_SONNET_20250219)
+    Avoid technical details about the schema structure itself and instead focus on the functional purpose of the task.""",
+    ),
+)
 def stream_task_description_generation(
     task_input: TaskDescriptionGenerationTaskInput,
-) -> AsyncIterator[TaskDescriptionGenerationTaskOutput]:
-    """You are a task analysis assistant specializing in understanding and describing task specifications.
-
-    Given a task schema containing input and output specifications, along with any task instructions, analyze these components to generate a concise, one-sentence description of what the task accomplishes. The 'task_description' must be a maximum of 80 characters.
-
-    The descriptions for tasks should mirror the content of the opening line of 'task_instructions', minus the "You are…" at the start. For example:
-
-    - Opening line: You are a medical scribe assistant specializing in converting medical transcripts into structured SOAP notes.
-    'task_description': An AI agent specializing in converting medical transcripts into structured SOAP notes.
-    - Opening line: You are a text summarization expert skilled in creating concise and accurate summaries.
-    'task_description': An AI agent skilled in creating concise and accurate summaries.
-
-    The description should be clear, action-oriented, and focus on the main purpose of the task. The term AI agent must be used.
-
-    Avoid technical details about the schema structure itself and instead focus on the functional purpose of the task."""
-    ...
+) -> AsyncIterator[TaskDescriptionGenerationTaskOutput]: ...

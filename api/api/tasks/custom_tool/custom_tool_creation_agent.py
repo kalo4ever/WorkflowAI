@@ -20,14 +20,7 @@ class CustomToolCreationAgentOutput(BaseModel):
     )
 
 
-@workflowai.agent(
-    id="tool-creation-chat",
-    model=workflowai.Model.CLAUDE_3_7_SONNET_20250219,
-)
-def stream_custom_tool_creation_agent(
-    task_input: CustomToolCreationAgentInput,
-) -> AsyncIterator[CustomToolCreationAgentOutput]:
-    """You are a tool creation specialist helping users design and define new tools through conversation. Your role is to assist in creating well-defined tools while maintaining a helpful dialogue.
+INSTRUCTIONS = """You are a tool creation specialist helping users design and define new tools through conversation. Your role is to assist in creating well-defined tools while maintaining a helpful dialogue.
 
     Based on the conversation history in the messages array, provide a response as an assistant that helps guide the tool creation process. If the user provides requirements or specifications for a tool, help refine them into a concrete tool definition. If a tool is already being discussed, provide constructive feedback and suggestions for improvement.
 
@@ -43,4 +36,16 @@ def stream_custom_tool_creation_agent(
     Focus on understanding the user's needs and iteratively improving the tool definition through conversation. Ensure any proposed tools are practical, well-structured, and align with the user's requirements.
 
     In case the users passes a JSON schema already just double check everythin is OK and remove OpenAI specific keywords like strict=true, or additionalProperties=false."""
-    ...
+
+
+@workflowai.agent(
+    id="tool-creation-chat",
+    version=workflowai.VersionProperties(
+        model=workflowai.Model.CLAUDE_3_7_SONNET_20250219,
+        max_tokens=1000,
+        instructions=INSTRUCTIONS,
+    ),
+)
+def stream_custom_tool_creation_agent(
+    task_input: CustomToolCreationAgentInput,
+) -> AsyncIterator[CustomToolCreationAgentOutput]: ...
