@@ -1913,5 +1913,4 @@ class TestFeedValidationError:
         internal_tasks_service._feed_output_validation_error(agent_input)  # pyright: ignore[reportPrivateUsage]
 
         # Assert
-        assert "File" in agent_input.task_output_schema["$defs"]
         assert agent_input.current_preview_output_validation_error is None

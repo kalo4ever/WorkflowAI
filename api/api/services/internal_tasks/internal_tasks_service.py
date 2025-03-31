@@ -119,7 +119,7 @@ from core.tasks.task_input_example.task_input_migration_task import (
     stream_task_input_migration_task,
 )
 from core.tools import ToolKind
-from core.utils.schema_sanitation import add_missing_defs, streamline_schema
+from core.utils.schema_sanitation import streamline_schema
 from core.utils.schemas import EXPLAINATION_KEY, schema_needs_explanation, strip_json_schema_metadata_keys
 from core.utils.url_utils import extract_and_fetch_urls
 
@@ -1139,7 +1139,7 @@ class InternalTasksService:
         try:
             # In some cases, $defs are missing from the schema sent by the frontend.
             # Ex: when the user manually added a "document" field to the schema.
-            add_missing_defs(schema)
+            schema = streamline_schema(schema)
 
             agent_io = SerializableTaskIO(
                 json_schema=schema,
