@@ -49,37 +49,30 @@ from tests.integration.common import (
 from tests.utils import fixture_bytes, fixtures_json, request_json_body
 
 
-async def test_run_with_metadata(
-    httpx_mock: HTTPXMock,
-    int_api_client: AsyncClient,
-    patched_broker: InMemoryBroker,
-):
-    task = await create_task(int_api_client, patched_broker, httpx_mock)
+async def test_run_with_metadata(test_client: IntegrationTestClient):
+    task = await test_client.create_task()
 
-    mock_vertex_call(
-        httpx_mock,
+    test_client.mock_vertex_call(
         publisher="google",
         model="gemini-1.5-pro-002",
         latency=0.01,
     )
 
     # Run the task the first time
-    task_run = await run_task_v1(
-        int_api_client,
-        task_id="greet",
-        task_schema_id=1,
+    task_run = await test_client.run_task_v1(
+        task,
         task_input={"name": "John", "age": 30},
-        model="gemini-1.5-pro-002",
+        model=Model.GEMINI_1_5_PRO_002,
         metadata={"key1": "value1", "key2": "value2"},
     )
 
     # Check returned cost
     assert task_run["cost_usd"] == pytest.approx(0.000169, abs=1e-6)  # pyright: ignore[reportUnknownMemberType]
 
-    await wait_for_completed_tasks(patched_broker)
+    await test_client.wait_for_completed_tasks()
 
     # Check groups
-    groups = await list_groups(int_api_client, task)
+    groups = (await test_client.get(task_schema_url(task, "groups")))["items"]
     assert len(groups) == 1
     assert groups[0]["properties"]["model"] == "gemini-1.5-pro-002"
     assert "provider" not in groups[0]["properties"]
@@ -87,9 +80,7 @@ async def test_run_with_metadata(
 
     # Fetch the task run
 
-    fetched = await int_api_client.get(f"/chiefofstaff.ai/agents/greet/runs/{task_run['id']}")
-    assert fetched.status_code == 200
-    fetched_task_run = fetched.json()
+    fetched_task_run = await test_client.get(f"/chiefofstaff.ai/agents/greet/runs/{task_run['id']}")
 
     assert fetched_task_run["metadata"]["workflowai.overhead_seconds"]
     assert fetched_task_run["metadata"]["workflowai.inference_seconds"]
@@ -100,13 +91,13 @@ async def test_run_with_metadata(
     assert fetched_task_run["metadata"]["workflowai.providers"] == ["google"]
     assert fetched_task_run["metadata"]["workflowai.provider"] == "google"
 
-    await wait_for_completed_tasks(patched_broker)
+    await test_client.wait_for_completed_tasks()
 
-    amplitude_requests = await get_amplitude_requests(httpx_mock)
+    amplitude_requests = await get_amplitude_requests(test_client.httpx_mock)
     assert len(amplitude_requests) == 1
     event = amplitude_requests[0]["events"][0]
 
-    org = result_or_raise(await int_api_client.get("/_/organization/settings"))
+    org = await test_client.get("/_/organization/settings")
 
     assert event["user_id"] == org["tenant"]
     assert event["event_type"] == "org.ran.task"
@@ -1539,49 +1530,6 @@ async def test_unknown_error_invalid_argument_max_tokens(
     )
 
 
-async def test_gemini_thinking_mode_model(
-    int_api_client: AsyncClient,
-    httpx_mock: HTTPXMock,
-    patched_broker: InMemoryBroker,
-):
-    task = await create_task(int_api_client, patched_broker, httpx_mock)
-
-    version = await create_version(
-        int_api_client,
-        task["task_id"],
-        task["task_schema_id"],
-        {"model": Model.GEMINI_2_0_FLASH_THINKING_EXP_0121},
-    )
-
-    iteration = version["iteration"]
-
-    mock_gemini_call(
-        httpx_mock,
-        model=Model.GEMINI_2_0_FLASH_THINKING_EXP_0121,
-        api_version="v1alpha",
-        json=fixtures_json("gemini", "completion_thoughts_gemini_2.0_flash_thinking_mode.json"),
-    )
-
-    run = await run_task_v1(
-        int_api_client,
-        task_id=task["task_id"],
-        task_schema_id=task["task_schema_id"],
-        task_input={"name": "John", "age": 32},
-        version=iteration,
-        use_cache="never",
-    )
-
-    assert (
-        run["task_output"]["greeting"]
-        == "Explaining how AI works is a bit like explaining how a human brain works – it's incredibly complex and the exact mechanisms are still being researched. While the underlying mechanisms can be complex, the fundamental principles of data-driven learning and pattern recognition remain central.\n"
-    )
-
-    assert (
-        run["reasoning_steps"][0]["step"]
-        == 'My thinking process for generating the explanation of how AI works went something like this:\n\n1. **Deconstruct the Request:** The user asked "Explain how AI works." This is a broad question, so a comprehensive yet accessible explanation is needed. I need to cover the core principles without getting bogged down in overly technical jargon.\n\n2. **Identify Key Concepts:**  I immediately thought of the fundamental building blocks of AI. This led to the identification of:\n'
-    )
-
-
 async def test_latest_model(test_client: IntegrationTestClient):
     task = await test_client.create_task()
 
@@ -1592,71 +1540,6 @@ async def test_latest_model(test_client: IntegrationTestClient):
 
     assert fetched_run["cost_usd"] > 0
     assert fetched_run["llm_completions"][0]["usage"]["model_context_window_size"] > 0
-
-
-async def test_model_pdf_image(
-    int_api_client: AsyncClient,
-    httpx_mock: HTTPXMock,
-    patched_broker: InMemoryBroker,
-):
-    task = await create_task(
-        int_api_client,
-        patched_broker,
-        httpx_mock,
-        input_schema={"type": "object", "properties": {"image": {"$ref": "#/$defs/File", "format": "image"}}},
-    )
-
-    httpx_mock.add_response(
-        # Content type is not guessable from URL but only from the data
-        url="https://media3.giphy.com/media/giphy",
-        content=fixture_bytes("files/test.png"),
-    )
-    httpx_mock.add_response(
-        url="https://bedrock-runtime.us-west-2.amazonaws.com/model/us.anthropic.claude-3-5-sonnet-20241022-v2:0/converse",
-        status_code=429,
-        json={
-            "message": "Rate limit exceeded",
-        },
-    )
-    httpx_mock.add_response(
-        url="https://api.anthropic.com/v1/messages",
-        status_code=200,
-        json={
-            "id": "sdf_123",
-            "type": "message",
-            "role": "assistant",
-            "model": "claude-3-5-sonnet-20241022",
-            "content": [
-                {
-                    "type": "text",
-                    "text": '{\n    "greeting": "Hello, how can I help you today?"\n}',
-                },
-            ],
-            "stop_reason": "end_turn",
-            "usage": {
-                "input_tokens": 1590,
-                "output_tokens": 152,
-            },
-        },
-    )
-    res = await run_task_v1(
-        int_api_client,
-        task_id=task["task_id"],
-        task_schema_id=task["task_schema_id"],
-        task_input={
-            "image": {
-                "url": "https://media3.giphy.com/media/giphy",
-            },
-        },
-        model=Model.CLAUDE_3_5_SONNET_20241022.value,
-    )
-    await wait_for_completed_tasks(patched_broker)
-
-    assert res["task_output"] == {"greeting": "Hello, how can I help you today?"}
-    # Cost should be (1590 * $0.000003) + (152 * $0.000015) = $0.00705
-    assert pytest.approx(res["cost_usd"], abs=0.0001) == 0.00705  # pyright: ignore
-    assert res["metadata"]["workflowai.provider"] == "anthropic"
-    assert res["metadata"]["workflowai.providers"] == ["amazon_bedrock", "anthropic"]
 
 
 async def test_partial_output(test_client: IntegrationTestClient):

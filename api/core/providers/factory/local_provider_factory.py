@@ -104,10 +104,3 @@ class LocalProviderFactory(AbstractProviderFactory):
 
     def available_providers(self) -> Iterable[Provider]:
         return self._providers.keys()
-
-
-_shared_provider_factory = LocalProviderFactory()
-
-
-def shared_provider_factory() -> LocalProviderFactory:
-    return _shared_provider_factory

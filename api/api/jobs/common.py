@@ -11,6 +11,7 @@ from api.services.internal_tasks.internal_tasks_service import InternalTasksServ
 from api.services.internal_tasks.meta_agent_service import MetaAgentService
 from api.services.models import ModelsService
 from api.services.payments import PaymentService
+from api.services.providers_service import shared_provider_factory
 from api.services.reviews import ReviewsService
 from api.services.run import RunService
 from api.services.runs import RunsService
@@ -19,7 +20,6 @@ from core.deprecated.workflowai import WorkflowAI
 from core.domain.analytics_events.analytics_events import UserProperties
 from core.domain.events import Event, EventRouter
 from core.domain.users import UserIdentifier
-from core.providers.factory.local_provider_factory import shared_provider_factory
 from core.storage.azure.azure_blob_file_storage import FileStorage
 from core.storage.backend_storage import BackendStorage, SystemBackendStorage
 from core.utils.encryption import Encryption

@@ -8,6 +8,7 @@ from typing import Any, Callable, Iterable, NamedTuple, Optional
 from pydantic import TypeAdapter
 from typing_extensions import override
 
+from api.services.providers_service import shared_provider_factory
 from core.domain.agent_run_result import INTERNAL_AGENT_RUN_RESULT_SCHEMA_KEY, AgentRunResult
 from core.domain.consts import METADATA_KEY_PROVIDER_NAME, METADATA_KEY_USED_MODEL, METADATA_KEY_USED_PROVIDERS
 from core.domain.errors import (
@@ -35,7 +36,6 @@ from core.domain.types import TaskInputDict
 from core.providers.base.abstract_provider import AbstractProvider
 from core.providers.base.config import ProviderConfig
 from core.providers.base.provider_options import ProviderOptions
-from core.providers.factory.local_provider_factory import shared_provider_factory
 from core.runners.abstract_runner import AbstractRunner, CacheFetcher
 from core.runners.workflowai.internal_tool import build_all_internal_tools
 from core.runners.workflowai.provider_pipeline import ProviderPipeline

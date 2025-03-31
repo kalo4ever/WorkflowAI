@@ -79,7 +79,7 @@ async def lifespan(app: FastAPI):
 
     logger.info("Preparing providers")
 
-    from core.providers.factory.local_provider_factory import shared_provider_factory
+    from api.services.providers_service import shared_provider_factory
 
     factory = shared_provider_factory()
     logger.info(f"Prepared providers {', '.join(list(factory.available_providers()))}")  # noqa: G004
