@@ -1,6 +1,7 @@
 import { ArrowUpFilled } from '@fluentui/react-icons';
 import { cx } from 'class-variance-authority';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { useDebounceCallback } from 'usehooks-ts';
 import { Button } from '@/components/ui/Button';
 import { Textarea } from '../ui/Textarea';
 
@@ -14,7 +15,19 @@ type NewTaskSuggestedFeaturesHeaderProps = {
 export function NewTaskSuggestedFeaturesHeader(props: NewTaskSuggestedFeaturesHeaderProps) {
   const { userMessage, setUserMessage, onSendIteration, loading } = props;
   const [inProgress, setInProgress] = useState(false);
+  const [localMessage, setLocalMessage] = useState(userMessage);
   const isLoading = loading || inProgress;
+
+  const debouncedSetUserMessage = useDebounceCallback(setUserMessage, 100);
+
+  const handleMessageChange = useCallback(
+    (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const newValue = event.target.value;
+      setLocalMessage(newValue);
+      debouncedSetUserMessage(newValue);
+    },
+    [debouncedSetUserMessage]
+  );
 
   const onSendMessage = useCallback(async () => {
     setInProgress(true);
@@ -26,12 +39,12 @@ export function NewTaskSuggestedFeaturesHeader(props: NewTaskSuggestedFeaturesHe
     }, 1000);
   }, [onSendIteration]);
 
-  const isGenerateButtonActive = !isLoading && userMessage.length > 0;
+  const isGenerateButtonActive = useMemo(() => !isLoading && localMessage.length > 0, [isLoading, localMessage]);
 
   const [isFocused, setIsFocused] = useState(false);
   const showGradientBorder = !isLoading && isFocused;
 
-  const showSendButton = userMessage.length > 0 || isFocused;
+  const showSendButton = localMessage.length > 0 || isFocused;
 
   return (
     <div className='flex flex-col gap-2 w-full'>
@@ -43,14 +56,14 @@ export function NewTaskSuggestedFeaturesHeader(props: NewTaskSuggestedFeaturesHe
       >
         <div
           className={cx(
-            'flex flex-row w-full items-center justify-between gap-2 rounded-[2px]',
+            'flex flex-row w-full items-end justify-between gap-2 rounded-[2px]',
             isLoading ? 'bg-gray-100' : 'bg-white',
             showGradientBorder ? 'm-[2px] px-2 py-1' : 'm-[1px] px-[9px] py-[5px]'
           )}
         >
           <Textarea
-            value={userMessage}
-            onChange={(event) => setUserMessage(event.target.value)}
+            value={localMessage}
+            onChange={handleMessageChange}
             placeholder='Write a description of the feature you want to build.'
             className={cx(
               'w-full text-[16px] font-normal pt-2 pb-[6px] pr-0 pl-1 focus-visible:ring-0 border-none bg-transparent max-h-[300px] scrollbar-hide',
@@ -72,7 +85,7 @@ export function NewTaskSuggestedFeaturesHeader(props: NewTaskSuggestedFeaturesHe
               icon={<ArrowUpFilled className='w-3.5 h-3.5' />}
               size='none'
               className={cx(
-                'w-8 h-8 rounded-full flex-shrink-0 disabled:text-gray-400 disabled:opacity-100',
+                'w-8 h-8 rounded-full flex-shrink-0 disabled:text-gray-400 disabled:opacity-100 mb-1',
                 isGenerateButtonActive
                   ? 'bg-custom-indigo-gradient'
                   : isLoading
