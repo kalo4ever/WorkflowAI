@@ -881,12 +881,24 @@ class IntegrationTestClient:
         publisher: str = "google",
         url: str | re.Pattern[str] | None = None,
         status_code: int = 200,
+        latency: float | None = None,
     ):
         if not regions:
             regions = os.environ.get("GOOGLE_VERTEX_AI_LOCATION", "us-central1").split(",")
 
         for region in regions:
-            mock_vertex_call(self.httpx_mock, json, model, parts, region, usage, publisher, url, status_code)
+            mock_vertex_call(
+                self.httpx_mock,
+                json,
+                model,
+                parts,
+                region,
+                usage,
+                publisher,
+                url,
+                status_code,
+                latency=latency,
+            )
 
     async def wait_for_completed_tasks(self):
         await wait_for_completed_tasks(self.patched_broker)

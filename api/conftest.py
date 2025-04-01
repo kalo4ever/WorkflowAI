@@ -15,6 +15,7 @@ from core.domain.task_info import TaskInfo
 from core.domain.task_io import SerializableTaskIO
 from core.domain.task_variant import SerializableTaskVariant
 from core.domain.users import User
+from core.providers.factory.abstract_provider_factory import AbstractProviderFactory
 from core.utils.schemas import JsonSchema
 from tests.asgi_transport import patch_asgi_transport
 from tests.utils import fixtures_json
@@ -340,9 +341,7 @@ def mock_internal_tasks_service() -> Mock:
 
 @pytest.fixture()
 def mock_provider_factory():
-    from core.providers.factory.abstract_provider_factory import AbstractProviderFactory
-
-    return AsyncMock(spec=AbstractProviderFactory)
+    return Mock(spec=AbstractProviderFactory)
 
 
 # We make sure we have a test storage container for the tests

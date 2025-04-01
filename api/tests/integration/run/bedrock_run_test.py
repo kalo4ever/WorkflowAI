@@ -3,6 +3,7 @@ from httpx import HTTPStatusError
 from pytest_httpx import IteratorStream
 
 from core.domain.models import Model
+from core.domain.models.providers import Provider
 from tests.integration.common import (
     IntegrationTestClient,
 )
@@ -18,7 +19,10 @@ async def test_content_moderation_failed_generation_wrapper(test_client: Integra
         stream=IteratorStream(fixtures_stream("bedrock", "stream_content_moderation.txt")),
     )
 
-    task_run = test_client.stream_run_task_v1(task, model=Model.CLAUDE_3_OPUS_20240229)
+    task_run = test_client.stream_run_task_v1(
+        task,
+        version={"model": Model.CLAUDE_3_OPUS_20240229, "provider": Provider.AMAZON_BEDROCK},
+    )
 
     assert task_run
     chunks = [c async for c in task_run]
@@ -40,7 +44,10 @@ async def test_content_moderation_failed_generation_wrapper_with_completion(test
     )
 
     with pytest.raises(HTTPStatusError) as e:
-        await test_client.run_task_v1(task, model=Model.CLAUDE_3_OPUS_20240229)
+        await test_client.run_task_v1(
+            task,
+            version={"model": Model.CLAUDE_3_OPUS_20240229, "provider": Provider.AMAZON_BEDROCK},
+        )
 
     assert e.value.response.json()["error"]["code"] == "content_moderation"
     assert (
