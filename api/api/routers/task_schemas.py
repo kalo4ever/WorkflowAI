@@ -14,7 +14,7 @@ from sentry_sdk import capture_exception, new_scope
 from api.dependencies.event_router import EventRouterDep
 from api.dependencies.latest_task_variant import TaskVariantDep
 from api.dependencies.path_params import TaskID, TaskSchemaID
-from api.dependencies.security import ProviderSettingsDep, TenantDep, UserDep, UserOrganizationDep
+from api.dependencies.security import TenantDep, UserDep, UserOrganizationDep
 from api.dependencies.services import (
     AnalyticsServiceDep,
     GroupServiceDep,
@@ -604,7 +604,7 @@ class DeployVersionResponse(BaseModel):
     deployed_at: datetime
 
 
-@router.post("/versions/{version_id}/deploy")
+@router.post("/versions/{version_id}/deploy", deprecated=True)
 async def deploy_version(
     task_schema_id: TaskSchemaID,
     task_tuple: TaskTupleDep,
@@ -612,7 +612,6 @@ async def deploy_version(
     request: DeployVersionRequest,
     task_deployments_service: TaskDeploymentsServiceDep,
     user: UserDep,
-    provider_settings: ProviderSettingsDep,
 ) -> DeployVersionResponse:
     # Endpoint: POST /agents/{task_id}/schemas/{task_schema_id}/versions/{version_id}/deploy
     # Deploy a version to an environment.
@@ -623,21 +622,21 @@ async def deploy_version(
     # task_id: test, task_schema_id: 1, version_id: 4, environment: dev, provider_config_id: 2
     # Call 1 config details are overwritten by Call 2 details, for the iteration 4, environment: dev
     user_identifier = UserIdentifier(user_id=user.user_id if user else "", user_email=user.sub if user else "")
+    if request.provider_config_id:
+        logger.warning("provider_config_id are no longer considered")
     deployment = await task_deployments_service.deploy_version(
         task_id=task_tuple,
         task_schema_id=task_schema_id,
         version_id=version_id,
         environment=request.environment,
-        provider_config_id=request.provider_config_id,
         deployed_by=user_identifier,
-        provider_settings=provider_settings,
     )
 
     return DeployVersionResponse(
         version_id=deployment.iteration,
         task_schema_id=deployment.schema_id,
         environment=deployment.environment,
-        provider_config_id=deployment.provider_config_id,
+        provider_config_id=None,
         deployed_at=deployment.deployed_at,
     )
 

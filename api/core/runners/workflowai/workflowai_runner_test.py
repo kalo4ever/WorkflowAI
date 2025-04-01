@@ -36,7 +36,6 @@ from core.domain.tool_call import ToolCall, ToolCallRequestWithID
 from core.domain.types import TaskOutputDict
 from core.providers.base.abstract_provider import AbstractProvider
 from core.providers.base.provider_options import ProviderOptions
-from core.providers.google.gemini.gemini_api_provider import GoogleGeminiAPIProviderConfig
 from core.runners.workflowai.internal_tool import InternalTool
 from core.runners.workflowai.templates import TemplateName
 from core.runners.workflowai.utils import FileWithKeyPath, ToolCallRecursionError
@@ -1278,26 +1277,6 @@ class TestInit:
                 properties=TaskGroupProperties(model=Model.GPT_4O_MINI_2024_07_18, provider=Provider.GOOGLE),
                 disable_fallback=disable_fallback,
             )
-
-    @pytest.mark.parametrize("disable_fallback", [False, True])
-    def test_raises_error_if_config_id_has_wrong_provider(self, mock_task: Mock, disable_fallback: bool):
-        def _init_runner():
-            WorkflowAIRunner(
-                task=mock_task,
-                properties=TaskGroupProperties(model=Model.GPT_4O_MINI_2024_07_18),
-                provider_config=(
-                    "provider_config_id",
-                    GoogleGeminiAPIProviderConfig(api_key="sk-ant-api03-...", url=""),
-                ),
-                disable_fallback=disable_fallback,
-            )
-
-        # Only raise if disable_fallback is True
-        if disable_fallback:
-            with pytest.raises(ProviderDoesNotSupportModelError):
-                _init_runner()
-        else:
-            _init_runner()
 
     # TODO[models]: this test relies on actual model data. it should be patched instead
     def test_deprecated_model(self, mock_task: Mock):

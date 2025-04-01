@@ -7,7 +7,7 @@ from core.domain.task_group_properties import TaskGroupProperties
 from core.domain.users import UserIdentifier
 from core.domain.version_environment import VersionEnvironment
 from core.storage import ObjectNotFoundException
-from core.storage.mongo.models.task_deployments import TaskDeploymentDocument
+from core.storage.mongo.models.deployment_document import TaskDeploymentDocument
 from core.storage.mongo.models.user_identifier import UserIdentifierSchema
 from core.storage.mongo.mongo_storage import MongoStorage
 from core.storage.mongo.mongo_storage_test import TASK_ID
@@ -28,7 +28,6 @@ def _task_deployment(
     environment: str = "dev",
     deployed_at: datetime = datetime.now(timezone.utc),
     deployed_by: UserIdentifier = UserIdentifier(user_id="user1", user_email="test@example.com"),
-    provider_config_id: str | None = None,
     properties: dict[str, Any] | None = None,
 ) -> TaskDeploymentDocument:
     # Default properties
@@ -39,7 +38,6 @@ def _task_deployment(
         "environment": environment,
         "deployed_at": deployed_at,
         "deployed_by": UserIdentifierSchema.from_domain(deployed_by),
-        "provider_config_id": provider_config_id,
         "properties": properties or {"instructions": "some instructions", "model": "gemini-1.0-pro-vision-001"},
     }
     # Merge with provided kwargs
@@ -81,7 +79,6 @@ class TestDeployTask:
             user_id="user1",
             user_email="test@example.com",
         )
-        assert task_deployment_doc.provider_config_id is None
         assert remove_none(task_deployment_doc.properties) == {
             "has_templated_instructions": False,
             "instructions": "some instructions",
@@ -200,7 +197,6 @@ class TestListDeployments:
             user_id="user1",
             user_email="test@example.com",
         )
-        assert deployments[0].provider_config_id is None
         assert deployments[0].properties == TaskGroupProperties.model_validate(
             {"instructions": "some instructions", "model": "gemini-1.0-pro-vision-001"},
         )
@@ -208,42 +204,6 @@ class TestListDeployments:
     async def test_not_found(self, task_deployments_storage: MongoTaskDeploymentsStorage) -> None:
         deployments = [d async for d in task_deployments_storage.list_task_deployments(TASK_ID, 1)]
         assert len(deployments) == 0
-
-    async def test_update_existing_provider_config_id(
-        self,
-        task_deployments_storage: MongoTaskDeploymentsStorage,
-    ) -> None:
-        # Insert initial deployment
-        initial = _task_deployment()
-        await task_deployments_storage.deploy_task_version(initial.to_resource())
-
-        # Create updated deployment
-        updated = _task_deployment(
-            deployed_by=UserIdentifier(user_id="user2", user_email="another@example.com"),
-            provider_config_id="config1",
-            deployed_at=initial.deployed_at + timedelta(seconds=5),
-        )
-        await task_deployments_storage.deploy_task_version(updated.to_resource())
-
-        # Verify update
-        stored = task_deployments_storage.list_task_deployments(
-            initial.task_id,
-            initial.task_schema_id,
-            VersionEnvironment(initial.environment),
-            initial.iteration,
-        )
-        stored_deployments = [d async for d in stored]
-        assert len(stored_deployments) == 1
-        assert stored_deployments[0].iteration == 1
-        assert stored_deployments[0].environment == "dev"
-        assert abs(stored_deployments[0].deployed_at - updated.deployed_at).total_seconds() <= 0.001
-        assert stored_deployments[0].deployed_by is not None
-        assert stored_deployments[0].deployed_by.user_id == "user2"
-        assert stored_deployments[0].deployed_by.user_email == "another@example.com"
-        assert stored_deployments[0].provider_config_id == "config1"
-        assert stored_deployments[0].properties == TaskGroupProperties.model_validate(
-            {"instructions": "some instructions", "model": "gemini-1.0-pro-vision-001"},
-        )
 
     async def test_exclude_properties(self, task_deployments_storage: MongoTaskDeploymentsStorage) -> None:
         # Check there are no validation errors when excluding properties

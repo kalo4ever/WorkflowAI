@@ -63,6 +63,7 @@ class TestListVersionMajors:
             task_id=task_id,
             schema_id=schema_id,
             iteration=1,
+            version_id="1",
             deployed_at=datetime.now(),
             deployed_by=UserIdentifier(user_email="test@example.com"),
             environment=VersionEnvironment.DEV,
