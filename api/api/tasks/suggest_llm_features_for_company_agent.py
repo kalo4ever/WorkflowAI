@@ -5,7 +5,6 @@ import workflowai
 from pydantic import BaseModel, Field
 
 from core.domain.fields.chat_message import ChatMessage
-from core.domain.models import Model
 from core.runners.workflowai.internal_tool import InternalTool
 
 
@@ -116,14 +115,7 @@ class SuggestLlmAgentForCompanyOutput(BaseModel):
     )
 
 
-@workflowai.agent(
-    id="suggest-llmfeatures-for-company",
-    model=Model.CLAUDE_3_7_SONNET_20250219,
-)
-def suggest_llm_agents_for_company(
-    input: SuggestLlmAgentForCompanyInput,
-) -> AsyncIterator[SuggestLlmAgentForCompanyOutput]:
-    """Your role is to generate a comprehensive list of LLM-powered structured generation agents and engage in a chat-based interaction about agent suggestions. Follow these guidelines to ensure clarity and specificity in your suggestions:
+INSTRUCTIONS = """Your role is to generate a comprehensive list of LLM-powered structured generation agents and engage in a chat-based interaction about agent suggestions. Follow these guidelines to ensure clarity and specificity in your suggestions:
 
     - Begin by analyzing the company context, including:
     - The company name and description to understand their domain and business focus.
@@ -269,4 +261,16 @@ def suggest_llm_agents_for_company(
     SECTION: MARKETING
     - Generate marketing copy (ads, social media posts, website content) based on product specifications and target audience.
     Relevant for: company selling physical products."""
-    ...
+
+
+@workflowai.agent(
+    id="suggest-llmfeatures-for-company",
+    version=workflowai.VersionProperties(
+        model=workflowai.Model.CLAUDE_3_7_SONNET_20250219,
+        max_tokens=2500,  # Generated suggested features can be lengthy, so 2500 instead of 1000 of most Claude agents
+        instructions=INSTRUCTIONS,
+    ),
+)
+def suggest_llm_agents_for_company(
+    input: SuggestLlmAgentForCompanyInput,
+) -> AsyncIterator[SuggestLlmAgentForCompanyOutput]: ...

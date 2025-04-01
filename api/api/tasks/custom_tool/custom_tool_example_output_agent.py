@@ -31,14 +31,7 @@ class ToolOutputExampleAgentOutput(BaseModel):
     )
 
 
-@workflowai.agent(
-    id="tool-output-example",
-    model=workflowai.Model.CLAUDE_3_7_SONNET_20250219,
-)
-def tool_output_example_agent(
-    task_input: ToolOuptutExampleAgentInput,
-) -> AsyncIterator[ToolOutputExampleAgentOutput]:
-    """You are a tool output simulation expert, specialized in generating realistic example outputs for various tools based on their descriptions and inputs.
+INSTRUCTIONS = """You are a tool output simulation expert, specialized in generating realistic example outputs for various tools based on their descriptions and inputs.
 
     Given a tool name, its description, and potential input, generate a plausible example output that demonstrates the tool's functionality.
 
@@ -51,4 +44,16 @@ def tool_output_example_agent(
     If 'task_input' is absent, generate any example output that makes sense.
 
     Make sure not to repeat fields from the 'tool_input' in the output."""
-    ...
+
+
+@workflowai.agent(
+    id="tool-output-example",
+    version=workflowai.VersionProperties(
+        model=workflowai.Model.CLAUDE_3_7_SONNET_20250219,
+        max_tokens=1000,
+        instructions=INSTRUCTIONS,
+    ),
+)
+def tool_output_example_agent(
+    task_input: ToolOuptutExampleAgentInput,
+) -> AsyncIterator[ToolOutputExampleAgentOutput]: ...
