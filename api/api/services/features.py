@@ -23,6 +23,11 @@ from api.tasks.company_agent_suggestion_agent import (
     SuggestedAgent,
     stream_suggest_agents_for_company,
 )
+from api.tasks.company_domain_from_email_agent import (
+    ClassifyEmailDomainAgentInput,
+    ClassifyEmailDomainAgentOutput,
+    run_classify_email_domain_agent,
+)
 from core.domain.errors import InternalError, ObjectNotFoundError
 from core.domain.events import EventRouter, FeaturesByDomainGenerationStarted
 from core.domain.features import BaseFeature, tag_kind
@@ -82,18 +87,38 @@ class FeatureService:
         self.storage = storage
 
     @staticmethod
-    def get_feature_sections_preview(user_domain: str | None = None) -> list[FeatureSectionPreview]:
+    async def _is_company_email_domain(user_email_domain: str | None) -> bool:
+        try:
+            if not user_email_domain:
+                return False
+
+            company_domain_classification = await run_classify_email_domain_agent(
+                ClassifyEmailDomainAgentInput(email_domain=user_email_domain),
+            )
+            return company_domain_classification.result == ClassifyEmailDomainAgentOutput.Result.COMPANY_EMAIL_DOMAIN
+        except Exception as e:
+            _logger.exception("Error classifying email domain", exc_info=e)
+            # If anything wrong happens, we'll show the company-specific features, since it's less bad to show "gmail.com" to non-company users
+            # Than to hide the company-specific features for real company users
+            return True
+
+    @staticmethod
+    async def get_feature_sections_preview(user_domain: str | None = None) -> list[FeatureSectionPreview]:
+        is_company_email_domain = await FeatureService._is_company_email_domain(user_domain)
+
         return [
             FeatureSectionPreview(
                 name=section.name,
                 tags=[
                     FeatureSectionPreview.TagPreview(
-                        name=user_domain  # fills the "For You" section with the company name
+                        name=user_domain  # fills the company_specific" name section with the company name
                         if user_domain and tag.kind == "company_specific"
                         else tag.name,
                         kind=tag.kind,
                     )
                     for tag in section.tags
+                    # If the user's email domain is not a company email domain, we don't want to show the "company_specific" section
+                    if tag.kind != "company_specific" or is_company_email_domain
                 ],
             )
             for section in FEATURES_MAPPING
