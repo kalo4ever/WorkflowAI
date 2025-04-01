@@ -10,6 +10,7 @@ import { PageHeader } from './PageHeader';
 type PageContainerProps = {
   children: React.ReactNode;
   rightBarChildren?: React.ReactNode;
+  rightBarText?: string;
   task: SerializableTask | undefined;
   isInitialized: boolean;
   name: string | React.ReactNode;
@@ -17,12 +18,14 @@ type PageContainerProps = {
   showBottomBorder?: boolean;
   extraButton?: React.ReactNode;
   showSchema?: boolean;
+  documentationLink?: string;
 };
 
 export function PageContainer(props: PageContainerProps) {
   const {
     children,
     rightBarChildren,
+    rightBarText,
     task,
     isInitialized,
     name,
@@ -30,6 +33,7 @@ export function PageContainer(props: PageContainerProps) {
     showBottomBorder = true,
     extraButton,
     showSchema = true,
+    documentationLink,
   } = props;
 
   const copyUrl = useCopyCurrentUrl();
@@ -62,12 +66,19 @@ export function PageContainer(props: PageContainerProps) {
         <PageHeader
           task={task}
           name={name}
+          documentationLink={documentationLink}
           className={cn(
             'flex items-center gap-2 h-[60px] flex-shrink-0 overflow-hidden',
             showBottomBorder && 'border-b border-dashed border-gray-200'
           )}
           showSchema={showSchema}
         >
+          {!!rightBarText && <div className='text-gray-500 text-xs pr-1'>{rightBarText}</div>}
+          {!!documentationLink && (
+            <Button variant='newDesign' toRoute={documentationLink} target='_blank' rel='noopener noreferrer'>
+              Documentation
+            </Button>
+          )}
           {extraButton}
           {showCopyLink && (
             <Button variant='newDesign' icon={<Link16Regular />} onClick={copyUrl} className='w-9 h-9 px-0 py-0' />

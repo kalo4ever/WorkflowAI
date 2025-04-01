@@ -1097,9 +1097,10 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
           name='Playground'
           showCopyLink={false}
           showBottomBorder={true}
+          documentationLink='https://docs.workflowai.com/features/playground'
+          rightBarText='Your data is not used for LLM training.'
           rightBarChildren={
             <div className='flex flex-row items-center gap-2 font-lato'>
-              <div className='text-gray-500 text-xs pr-1'>Your data is not used for LLM training.</div>
               <Button variant='newDesign' icon={<Link16Regular />} onClick={copyUrl} className='w-9 h-9 px-0 py-0' />
               <RunAgentsButton
                 showSaveAllVersions={showSaveAllVersions && !noCreditsLeft}
