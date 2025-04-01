@@ -38,11 +38,7 @@ class SuggestedAgentInputOutputExampleOutput(BaseModel):
     )
 
 
-@workflowai.agent(id="suggested-task-output-example", model=workflowai.Model.CLAUDE_3_7_SONNET_20250219)
-def stream_suggested_agent_input_output_example(
-    input: SuggestedAgentInputOutputExampleInput,
-) -> AsyncIterator[SuggestedAgentInputOutputExampleOutput]:
-    """You are a business analyst specializing in agent documentation and specification.
+INSTRUCTIONS = """You are a business analyst specializing in agent documentation and specification.
 
     Your goal is to analyze the input data containing:
 
@@ -55,4 +51,16 @@ def stream_suggested_agent_input_output_example(
     and generate representative example input and output objects. Indeed the input and output must be linked in the sense that the input would have realistically yield the output.
 
     Both examples must strictly conform to their respective JSON schemas (input_json_schema and output_json_schema) while realistically demonstrating what the task input and output would look like."""
-    ...
+
+
+@workflowai.agent(
+    id="suggested-task-output-example",
+    version=workflowai.VersionProperties(
+        model=workflowai.Model.CLAUDE_3_7_SONNET_20250219,
+        max_tokens=2500,  # Example IOs can be lengthy, so 2500 instead of 1000 of most Claude agents
+        instructions=INSTRUCTIONS,
+    ),
+)
+def stream_suggested_agent_input_output_example(
+    input: SuggestedAgentInputOutputExampleInput,
+) -> AsyncIterator[SuggestedAgentInputOutputExampleOutput]: ...

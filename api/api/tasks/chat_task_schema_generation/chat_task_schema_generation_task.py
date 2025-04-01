@@ -7,7 +7,6 @@ from pydantic import BaseModel, Field
 
 from api.tasks.extract_company_info_from_domain_task import Product
 from core.domain.fields.chat_message import ChatMessage
-from core.domain.models import Model
 from core.domain.url_content import URLContent
 
 logger = logging.getLogger(__name__)
@@ -163,11 +162,7 @@ class AgentBuilderOutput(BaseModel):
     )
 
 
-@workflowai.agent(id="chattaskschemageneration", model=Model.CLAUDE_3_7_SONNET_20250219)
-async def agent_builder(
-    input: AgentBuilderInput,
-) -> AgentBuilderOutput:
-    """Step 1 (only if there is no existing_agent_schema):
+INSTRUCTIONS = """Step 1 (only if there is no existing_agent_schema):
 
     Based on the past messages exchanged with the user, decide if you have enough information to trigger the agent's schema generation.
 
@@ -275,4 +270,16 @@ async def agent_builder(
 
     For schema update (existing_agent_schema is not None), acknowledge the update of the schema.
     Since 'answer_to_user' is displayed in a chat interface, make sure that 'answer_to_user' includes line breaks, if needed, to enhance readability."""
-    ...
+
+
+@workflowai.agent(
+    id="chattaskschemageneration",
+    version=workflowai.VersionProperties(
+        model=workflowai.Model.CLAUDE_3_7_SONNET_20250219,
+        max_tokens=2500,  # Generated schema can be lengthy, so 2500 instead of 1000 of most Claude agents
+        instructions=INSTRUCTIONS,
+    ),
+)
+async def agent_builder(
+    input: AgentBuilderInput,
+) -> AgentBuilderOutput: ...

@@ -1103,38 +1103,50 @@ class InternalTasksService:
         self,
         task_input: GenerateTaskPreviewTaskInput,
     ) -> AsyncIterator[GenerateTaskPreviewTaskOutput]:
-        if task_input.current_preview:
-            self._feed_input_validation_error(task_input)
-            self._feed_output_validation_error(task_input)
-
+        self._feed_input_validation_error(task_input)
+        self._feed_output_validation_error(task_input)
         return stream_generate_task_preview(task_input)
 
     def _feed_input_validation_error(self, task_input: GenerateTaskPreviewTaskInput) -> None:
         if task_input.current_preview is None:
             return
 
-        try:
-            agent_input = SerializableTaskIO(
-                json_schema=task_input.task_input_schema,
-                version="1",
-            )
-            agent_input.enforce(task_input.current_preview.input)
-        except JSONSchemaValidationError as e:
-            task_input.current_preview_input_validation_error = str(e)
-        except Exception as e:
-            self.logger.exception("Unexpected error while validating current preview input", exc_info=e)
+        self._validate_preview_field(
+            task_input,
+            schema=task_input.task_input_schema,
+            value=task_input.current_preview.input,
+            error_attr="current_preview_input_validation_error",
+        )
 
     def _feed_output_validation_error(self, task_input: GenerateTaskPreviewTaskInput) -> None:
         if task_input.current_preview is None:
             return
 
+        self._validate_preview_field(
+            task_input,
+            schema=task_input.task_output_schema,
+            value=task_input.current_preview.output,
+            error_attr="current_preview_output_validation_error",
+        )
+
+    def _validate_preview_field(
+        self,
+        task_input: GenerateTaskPreviewTaskInput,
+        schema: dict[str, Any],
+        value: dict[str, Any],
+        error_attr: str,
+    ) -> None:
         try:
-            agent_output = SerializableTaskIO(
-                json_schema=task_input.task_output_schema,
+            # In some cases, $defs are missing from the schema sent by the frontend.
+            # Ex: when the user manually added a "document" field to the schema.
+            schema = streamline_schema(schema)
+
+            agent_io = SerializableTaskIO(
+                json_schema=schema,
                 version="1",
             )
-            agent_output.enforce(task_input.current_preview.output)
+            agent_io.enforce(value)
         except JSONSchemaValidationError as e:
-            task_input.current_preview_output_validation_error = str(e)
+            setattr(task_input, error_attr, str(e))
         except Exception as e:
-            self.logger.exception("Unexpected error while validating current preview output", exc_info=e)
+            self.logger.exception("Unexpected error while validating current preview", exc_info=e)

@@ -1753,15 +1753,164 @@ class TestStreamGenerateTaskPreview:
                 mock_stream_generate_task_preview.assert_called_once()
 
 
-class TestGetAvailableToolDescriptions:
-    def test_get_available_tool_descriptions(
+class TestFeedValidationError:
+    @pytest.fixture
+    def task_input(self):
+        return GenerateTaskPreviewTaskInput(
+            chat_messages=[UserChatMessage(content="test")],
+            task_input_schema={"type": "object", "properties": {"name": {"type": "string"}}},
+            task_output_schema={"type": "object", "properties": {"result": {"type": "string"}}},
+            current_preview=TaskPreview(
+                input={"name": "test input"},
+                output={"result": "test output"},
+            ),
+        )
+
+    def test_feed_input_validation_error_no_preview(
+        self,
+        internal_tasks_service: InternalTasksService,
+        task_input: GenerateTaskPreviewTaskInput,
+    ):
+        # Arrange
+        task_input.current_preview = None
+
+        # Act
+        internal_tasks_service._feed_input_validation_error(task_input)  # pyright: ignore[reportPrivateUsage]
+
+        # Assert
+        assert task_input.current_preview_input_validation_error is None
+
+    def test_feed_output_validation_error_no_preview(
+        self,
+        internal_tasks_service: InternalTasksService,
+        task_input: GenerateTaskPreviewTaskInput,
+    ):
+        # Arrange
+        task_input.current_preview = None
+
+        # Act
+        internal_tasks_service._feed_output_validation_error(task_input)  # pyright: ignore[reportPrivateUsage]
+
+        # Assert
+        assert task_input.current_preview_output_validation_error is None
+
+    def test_feed_input_validation_error_valid_input(
+        self,
+        internal_tasks_service: InternalTasksService,
+        task_input: GenerateTaskPreviewTaskInput,
+    ):
+        # Act
+        internal_tasks_service._feed_input_validation_error(task_input)  # pyright: ignore[reportPrivateUsage]
+
+        # Assert
+        assert task_input.current_preview_input_validation_error is None
+
+    def test_feed_output_validation_error_valid_output(
+        self,
+        internal_tasks_service: InternalTasksService,
+        task_input: GenerateTaskPreviewTaskInput,
+    ):
+        # Act
+        internal_tasks_service._feed_output_validation_error(task_input)  # pyright: ignore[reportPrivateUsage]
+
+        # Assert
+        assert task_input.current_preview_output_validation_error is None
+
+    def test_feed_input_validation_error_invalid_input(
+        self,
+        internal_tasks_service: InternalTasksService,
+        task_input: GenerateTaskPreviewTaskInput,
+    ):
+        # Arrange
+        assert task_input.current_preview is not None
+        task_input.current_preview.input = {"name": 3}
+
+        # Act
+        internal_tasks_service._feed_input_validation_error(task_input)  # pyright: ignore[reportPrivateUsage]
+
+        # Assert
+        assert task_input.current_preview_input_validation_error is not None
+        assert " 3 is not of type 'string'" in task_input.current_preview_input_validation_error
+
+    def test_feed_output_validation_error_invalid_output(
+        self,
+        internal_tasks_service: InternalTasksService,
+        task_input: GenerateTaskPreviewTaskInput,
+    ):
+        # Arrange
+        assert task_input.current_preview is not None
+        task_input.current_preview.output = {"result": True}
+
+        # Act
+        internal_tasks_service._feed_output_validation_error(task_input)  # pyright: ignore[reportPrivateUsage]
+
+        # Assert
+        assert task_input.current_preview_output_validation_error is not None
+        assert "True is not of type 'string'" in task_input.current_preview_output_validation_error
+
+    def test_feed_input_validation_error_unexpected_exception(
+        self,
+        internal_tasks_service: InternalTasksService,
+        task_input: GenerateTaskPreviewTaskInput,
+    ):
+        # Arrange
+        unexpected_error = ValueError("Unexpected validation error")
+
+        # Act
+        with patch(
+            "core.domain.task_io.SerializableTaskIO.enforce",
+            side_effect=unexpected_error,
+        ):
+            with patch.object(internal_tasks_service.logger, "exception") as mock_logger:
+                internal_tasks_service._feed_input_validation_error(task_input)  # pyright: ignore[reportPrivateUsage]
+
+                # Assert
+                assert task_input.current_preview_input_validation_error is None
+                mock_logger.assert_called_once()
+
+    def test_feed_output_validation_error_unexpected_exception(
+        self,
+        internal_tasks_service: InternalTasksService,
+        task_input: GenerateTaskPreviewTaskInput,
+    ):
+        # Arrange
+        unexpected_error = ValueError("Unexpected validation error")
+
+        # Act
+        with patch(
+            "core.domain.task_io.SerializableTaskIO.enforce",
+            side_effect=unexpected_error,
+        ):
+            with patch.object(internal_tasks_service.logger, "exception") as mock_logger:
+                internal_tasks_service._feed_output_validation_error(task_input)  # pyright: ignore[reportPrivateUsage]
+
+                # Assert
+                assert task_input.current_preview_output_validation_error is None
+                mock_logger.assert_called_once()
+
+    def test_feed_input_validation_error_referencing_error(
         self,
         internal_tasks_service: InternalTasksService,
     ):
+        schema_with_missing_defs = {
+            "type": "object",
+            "properties": {
+                "result": {"$ref": "#/$defs/File"},  # ref is present but defs is missing
+            },
+        }
+
+        agent_input = GenerateTaskPreviewTaskInput(
+            chat_messages=[UserChatMessage(content="test")],
+            task_input_schema=schema_with_missing_defs,
+            task_output_schema=schema_with_missing_defs,
+            current_preview=TaskPreview(
+                input={"name": {}},
+                output={"result": {}},
+            ),
+        )
+
         # Act
-        result = internal_tasks_service._get_available_tool_descriptions()  # pyright: ignore[reportPrivateUsage]
+        internal_tasks_service._feed_output_validation_error(agent_input)  # pyright: ignore[reportPrivateUsage]
 
         # Assert
-        assert len(result) == 2
-        assert result[0].handle == ToolKind.WEB_SEARCH_PERPLEXITY_SONAR_PRO.value
-        assert result[1].handle == ToolKind.WEB_BROWSER_TEXT.value
+        assert agent_input.current_preview_output_validation_error is None

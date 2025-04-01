@@ -20,7 +20,7 @@ class ClassifyEmailDomainAgentOutput(BaseModel):
     )
 
 
-@workflowai.agent(id="classify-email-domain", model=Model.GPT_4O_MINI_LATEST)
+@workflowai.agent(id="classify-email-domain", model=Model.GEMINI_2_0_FLASH_001)  # blazing fast and high reasoning model
 async def run_classify_email_domain_agent(
     input: ClassifyEmailDomainAgentInput,
 ) -> ClassifyEmailDomainAgentOutput:

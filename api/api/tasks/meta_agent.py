@@ -465,6 +465,7 @@ META_AGENT_INSTRUCTIONS = """You are WorkflowAI's meta-agent. You are responsibl
         instructions=META_AGENT_INSTRUCTIONS,
         model=workflowai.Model.CLAUDE_3_7_SONNET_20250219,
         temperature=0.5,
+        max_tokens=1000,
     ),
 )
 async def meta_agent(_: MetaAgentInput) -> MetaAgentOutput: ...

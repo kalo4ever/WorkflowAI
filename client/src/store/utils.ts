@@ -59,7 +59,7 @@ export function buildTaskStatsScopeKey({
   createdAfter,
   createdBefore,
   taskSchemaId,
-  version,
+  versionID,
   isActive,
 }: {
   tenant: TenantID | undefined;
@@ -67,10 +67,10 @@ export function buildTaskStatsScopeKey({
   createdAfter?: Date;
   createdBefore?: Date;
   taskSchemaId?: TaskSchemaID;
-  version?: number;
+  versionID?: string;
   isActive?: boolean;
 }) {
-  return `${tenant}-${taskId}-${createdAfter}-${createdBefore}-${taskSchemaId}-${version}-${isActive}`;
+  return `${tenant}-${taskId}-${createdAfter}-${createdBefore}-${taskSchemaId}-${versionID}-${isActive}`;
 }
 
 export function rootTenantPath(tenant?: TenantID | undefined, v1: boolean = false) {

@@ -29,7 +29,21 @@ class InputGenerationInstructionsOutput(BaseModel):
     )
 
 
-@workflowai.agent(id="input-generation-instructions", model=workflowai.Model.CLAUDE_3_7_SONNET_20250219)
+INSTRUCTIONS = """You are an instruction generation specialist focused on creating clear guidelines for input data generation that will be passed to another agent, the Input Generation Agent.
+
+    Focus solely on extracting relevant information from the 'creation_chat_messages' (e.g., URLs to use), as the Input Generation Agent also has access to the agent_name and the input/output schemas.
+
+    Do not hesitate to return 'N/A' if the 'creation_chat_messages' does not contain anything that is not included in the schemas."""
+
+
+@workflowai.agent(
+    id="input-generation-instructions",
+    version=workflowai.VersionProperties(
+        model=workflowai.Model.CLAUDE_3_7_SONNET_20250219,
+        max_tokens=1000,
+        instructions=INSTRUCTIONS,
+    ),
+)
 async def run_input_generation_instructions(
     input: InputGenerationInstructionsInput,
 ) -> InputGenerationInstructionsOutput:

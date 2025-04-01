@@ -1,5 +1,127 @@
 from core.domain.features import BaseFeature, FeatureSection, FeatureTag, FeatureWithImage
 
+GENERATE_PRODUCT_DESCRIPTIONS_BASED_ON_IMAGE_FEATURE = BaseFeature(
+    name="Generate Product Descriptions Based on Image",
+    description="Create detailed product descriptions automatically from uploaded images. This agent analyzes the visual content and generates appropriate text describing the product shown, saving time on content creation while maintaining consistency across your product catalog.",
+    specifications="Input: an image. Output: a description of the product shown in the image.",
+)
+
+SUMMARIZE_PDF_CONTENT_FEATURE = BaseFeature(
+    name="Summarize PDF Content",
+    description="Extract the key information from PDF documents with our summarization tool. This agent analyzes the full content of your PDF and generates a concise text summary highlighting the main points.",
+    specifications="Input: a PDF document. Output: a summary of the content (string).",
+)
+
+GENERATE_VERSIONS_OF_SOCIAL_MEDIA_POSTS_FEATURE = BaseFeature(
+    name="Generate Versions of Social Media Posts Optimized for Different Platforms",
+    description="Create platform-specific variations of your social media content. Provide a topic or existing post along with your target platforms, and receive tailored versions optimized for the appropriate tone, format, and length requirements of each selected social media site.",
+    specifications="Input: a topic or existing post and a list of social media sites. Output: versions of a social media post that contain the same content as the input topic and are tailored to the appropriate tone and length for each of the requested social media sites.",
+)
+
+SUMMARIZE_INSURANCE_COVERAGE_DETAILS_FROM_POLICY_DOCUMENTS_FEATURE = BaseFeature(
+    name="Summarize Insurance Coverage Details From Policy Documents",
+    description="Extract and organize key coverage details from insurance policy documents. This feature analyzes insurance plan information and produces a structured summary of coverage terms, limits, deductibles, and other essential policy details.",
+    specifications="Input: insurance plan information in a document. Output: summary of insurance coverage details.",
+)
+
+EXTRACT_CALENDAR_EVENT_FROM_EMAIL_FEATURE = BaseFeature(
+    name="Extract Calendar Event From Email",
+    description="Automatically identifies and extracts calendar event details from email content. This agent analyzes the email text and organizes relevant information into structured event fields, allowing for quick transfer of meeting details to your calendar.",
+    specifications="Input: a text email. Output: a calendar event (field1, field2, field3). The goal is to extract a calendar event from the email.",
+)
+
+
+EXTRACT_TASKS_FROM_MEETING_TRANSCRIPT_FEATURE = FeatureWithImage(
+    name="Extract Tasks From a Meeting Transcript - by M1",
+    description="Automatically identify and extract tasks from meeting transcripts. This agent analyzes the conversation text and generates a structured list of tasks, each with a title, description, and the original quote from which it was derived.",
+    specifications="Input: a written transcript of a meeting. Output: a list of tasks extracted from the transcript. Each task should include a title, description, and a corresponding quote in the transcript.",
+    image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/m1-extract-tasks-from-trancript.png",
+)
+
+EXTRACT_MEETING_NOTES_FROM_TRANSCRIPT_FEATURE = FeatureWithImage(
+    name="Extract Meeting Notes from a Transcript - by M1",
+    description="Transform meeting transcripts into structured notes with this feature. It analyzes transcript content and generates organized notes with clear titles and bullet-pointed details, making it easier to review and share key information from your meetings.",
+    specifications="Input: a transcript of a meeting. Output: a list of notes from the content of the meeting. Each note should have a title and a body that is written in bullet point form.",
+    image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/m1-extract-meeting-notes-from-transcipt.png",
+)
+
+SUMMARIZE_MEETING_CONTENT_FROM_TRANSCRIPT_FEATURE = FeatureWithImage(
+    name="Summarize Meeting Content From a Transcript - by M1",
+    description="Transform meeting transcripts into concise bullet-point summaries. This feature analyzes the content of your meeting transcript and generates a structured summary highlighting key points, decisions, and action items.",
+    specifications="Input: (string) a transcript of a meeting. Output: (string) a summary of the meeting in bullet points.",
+    image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/m1-summarize-meeting-content-from-transcript.png",
+)
+
+GENERATE_SASSY_IMAGE_DESCRIPTION_FEATURE = FeatureWithImage(
+    name="Generate Sassy Image Description - by Amo",
+    description="Create short, witty image descriptions with a sassy twist. This feature analyzes images and generates humorous captions (5 words maximum) that add personality while remaining appropriate.",
+    specifications="Input: an image. Output: a short (5 words max) description of the image. Goal: the description should be sassy, humorous, but not offensive.",
+    image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/amo-sassy-image-description.png",
+)
+
+GENERATE_SOAP_NOTES_FROM_TRANSCRIPT_FEATURE = FeatureWithImage(
+    name="Generate SOAP Notes From Transcript - by Berry Street",
+    description="Convert audio recordings into structured SOAP notes. This feature analyzes your audio files and automatically generates clinical documentation in the SOAP format (Subjective, Objective, Assessment, Plan), helping clinicians transform verbal sessions into organized medical records.",
+    specifications="Input: an audio file. Output: SOAP notes from the audio file.",
+    image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/berrystreet-generate-soap-notes-from-transcript.png",
+)
+
+GENERATE_7_DAY_MEAL_PLANNER_FEATURE = FeatureWithImage(
+    name="7 Day Meal Planner - by Berry Street",
+    description="Plan your entire week's meals with personalized recommendations based on your dietary needs. Specify restrictions, preferences, calorie goals, and household considerations to receive a complete 7-day plan with breakfast, lunch, dinner, and snacks. Each meal includes nutritional information with calorie count and macronutrient breakdown.",
+    specifications="Goal is to create a meal plan for the week. Input: dietary restrictions and allergies (string), food preferences (string), calorie and macro requirement (string), household considerations (string). Output: breakfast, lunch, dinner, and a snack for each day of the week. Each item (breakfast, lunch, dinner, snack) should have a title (string), a description (string), the calories for the meal (number), and protein (number), fat (number), carb (number) breakdown.",
+    image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/berrystreet-7-day-meal-planner.png",
+)
+
+GENERATE_SHOPPING_LIST_FROM_MEAL_PLAN_FEATURE = FeatureWithImage(
+    name="Create a Shopping List From a Meal Plan - by Berry Street",
+    description="Transform your meal plan into an organized shopping list. This feature takes your selected meals and recipes, then generates a complete shopping list with item names, quantities, and units for all ingredients needed.",
+    specifications="Input: a list of meals (title and recipe). Output: a shopping list. Each item in the shopping list should have a name 'item', quantity, and unit.",
+    image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/berrystreet-generated-shopping-list-from-meal-plan.png",
+)
+
+GENERATE_FOOD_IMAGE_JOURNALING_FEATURE = FeatureWithImage(
+    name="Food Image Journaling - by Berry Street",
+    description="Capture images of your meals to automatically generate detailed food descriptions and nutritional information. This tool analyzes your food photos to provide estimated calorie counts and nutrient content, helping you track your dietary intake with visual documentation.",
+    specifications="Input: an image of a meal. Output: a description of the food included in the picture, along with estimated nutritional information.",
+    image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/berrystreet-food-image-journaling.png",
+)
+
+SUMMARIZE_REVIEWS_FEATURE = FeatureWithImage(
+    name="Summary of Reviews - by Google",
+    description="Consolidates multiple Google reviews into a concise third-person summary highlighting common themes and sentiments expressed by reviewers. This provides a quick overview of collective opinions without needing to read each individual review.",
+    specifications="Input: a list of reviews about a place. Output: a string that is a third-person summary of common themes expressed in the reviews.",
+    image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/google-reviews-summary.png",
+)
+
+WRITTING_TOOLS_FEATURE = FeatureWithImage(
+    name="Writing Tools - by Apple",
+    description="Transform your writing with Apple's Writing Tools. This feature allows you to select text and apply various improvements such as summarizing into bullet points, adjusting tone (friendly or professional), making content more concise, or proofreading for errors. Simply select your text and choose the desired writing enhancement.",
+    specifications="Input: a piece of writing (text, email, note, etc.), and one request for writing help (summarize into bullet points, rephrase to be more friendly, rephrase to be more professional, rephrase to be more concise, proofread). Output: updated text that is edited per the input request.",
+    image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/apple-system-wide-writting-tools.png",
+)
+
+ANSWER_QUESTION_ABOUT_PRODUCT_FEATURE = FeatureWithImage(
+    name="Answer Question About a Product - by Amazon",
+    description="Provides answers to specific questions about Amazon products. Simply provide a product URL and your question to receive detailed information based on the product listing.",
+    specifications="Input: a URL of a product, and a question about the product. Output: an answer to the question about the product.",
+    image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/amazon-answer-questions-about-products.png",
+)
+
+SMART_EMAIL_RESPONSE_FEATURE = FeatureWithImage(
+    name="Smart Email Response - by Google",
+    description="Generate complete email responses based on short prompts. This feature analyzes your input and creates appropriate email content that matches your intended message. Simply provide a brief description of what you want to communicate, and receive a fully composed email ready to send.",
+    specifications="Input: (string) a short email prompt. Output: (string) an email composed based on the content of the prompt.",
+    image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/google-smart-email-response.png",
+)
+
+NOTIFICATION_SUMMARIES_FEATURE = FeatureWithImage(
+    name="Notification Summaries - by Apple",
+    description="Consolidates multiple notifications from the same app into a single, concise summary. The summary displays the app name as the title and presents a brief overview of all notifications in the body, making it easier to process information at a glance.",
+    specifications="Input: a list of notifications texts (title, possible subtitle, body) (all from the same app). Output: a summary of all notifications, formatted like a notification. Title is the name of the app. Body is the summary (so the summary needs to be short enough to fit the notification body).",
+    image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/apple-notification-summary.png",
+)
+
 FEATURES_MAPPING: list[FeatureSection] = [
     FeatureSection(
         name="Categories",
@@ -12,52 +134,31 @@ FEATURES_MAPPING: list[FeatureSection] = [
             FeatureTag(
                 name="Featured",
                 features=[
-                    BaseFeature(
-                        name="Generate Product Descriptions Based on Image",
-                        description="Create detailed product descriptions automatically from uploaded images. This agent analyzes the visual content and generates appropriate text describing the product shown, saving time on content creation while maintaining consistency across your product catalog.",
-                        specifications="Input: an image. Output: a description of the product shown in the image.",
-                    ),
-                    BaseFeature(
-                        name="Summarize PDF Content",
-                        description="Extract the key information from PDF documents with our summarization tool. This agent analyzes the full content of your PDF and generates a concise text summary highlighting the main points.",
-                        specifications="Input: a PDF document. Output: a summary of the content (string).",
-                    ),
-                    BaseFeature(
-                        name="Generate Versions of Social Media Posts Optimized for Different Platforms",
-                        description="Create platform-specific variations of your social media content. Provide a topic or existing post along with your target platforms, and receive tailored versions optimized for the appropriate tone, format, and length requirements of each selected social media site.",
-                        specifications="Input: a topic or existing post and a list of social media sites. Output: versions of a social media post that contain the same content as the input topic and are tailored to the appropriate tone and length for each of the requested social media sites.",
-                    ),
-                    BaseFeature(
-                        name="Summarize Insurance Coverage Details From Policy Documents",
-                        description="Extract and organize key coverage details from insurance policy documents. This feature analyzes insurance plan information and produces a structured summary of coverage terms, limits, deductibles, and other essential policy details.",
-                        specifications="Input: insurance plan information in a document. Output: summary of insurance coverage details.",
-                    ),
-                    BaseFeature(
-                        name="Extract Calendar Event From Email",
-                        description="Automatically identifies and extracts calendar event details from email content. This agent analyzes the email text and organizes relevant information into structured event fields, allowing for quick transfer of meeting details to your calendar.",
-                        specifications="Input: a text email. Output: a calendar event (field1, field2, field3). The goal is to extract a calendar event from the email.",
-                    ),
-                    BaseFeature(
-                        name="From M1: Extract Tasks From a Meeting Transcript",
-                        description="Automatically identify and extract tasks from meeting transcripts. This agent analyzes the conversation text and generates a structured list of tasks, each with a title, description, and the original quote from which it was derived.",
-                        specifications="Input: a written transcript of a meeting. Output: a list of tasks extracted from the transcript. Each task should include a title, description, and a corresponding quote in the transcript.",
-                    ),
-                    BaseFeature(
-                        name="From Berry Street: Create a Shopping List From a Meal Plan",
-                        description="Transform your meal plan into an organized shopping list. This feature takes your selected meals and recipes, then generates a complete shopping list with item names, quantities, and units for all ingredients needed.",
-                        specifications="Input: a list of meals (title and recipe). Output: a shopping list. Each item in the shopping list should have a name 'item', quantity, and unit.",
-                    ),
+                    GENERATE_PRODUCT_DESCRIPTIONS_BASED_ON_IMAGE_FEATURE,
+                    SUMMARIZE_PDF_CONTENT_FEATURE,
+                    GENERATE_VERSIONS_OF_SOCIAL_MEDIA_POSTS_FEATURE,
+                    SUMMARIZE_INSURANCE_COVERAGE_DETAILS_FROM_POLICY_DOCUMENTS_FEATURE,
+                    EXTRACT_CALENDAR_EVENT_FROM_EMAIL_FEATURE,
+                    EXTRACT_TASKS_FROM_MEETING_TRANSCRIPT_FEATURE,
+                    EXTRACT_MEETING_NOTES_FROM_TRANSCRIPT_FEATURE,
+                    SUMMARIZE_MEETING_CONTENT_FROM_TRANSCRIPT_FEATURE,
+                    GENERATE_SASSY_IMAGE_DESCRIPTION_FEATURE,
+                    GENERATE_SOAP_NOTES_FROM_TRANSCRIPT_FEATURE,
+                    GENERATE_7_DAY_MEAL_PLANNER_FEATURE,
+                    GENERATE_SHOPPING_LIST_FROM_MEAL_PLAN_FEATURE,
+                    GENERATE_FOOD_IMAGE_JOURNALING_FEATURE,
+                    SUMMARIZE_REVIEWS_FEATURE,
+                    WRITTING_TOOLS_FEATURE,
+                    ANSWER_QUESTION_ABOUT_PRODUCT_FEATURE,
+                    SMART_EMAIL_RESPONSE_FEATURE,
+                    NOTIFICATION_SUMMARIES_FEATURE,
                 ],
                 kind="static",
             ),
             FeatureTag(
                 name="E-Commerce",
                 features=[
-                    BaseFeature(
-                        name="Generate Product Descriptions Based on Image",
-                        description="Create detailed product descriptions automatically from uploaded images. This agent analyzes the visual content and generates appropriate text describing the product shown, saving time on content creation while maintaining consistency across your product catalog.",
-                        specifications="Input: an image. Output: a description of the product shown in the image.",
-                    ),
+                    GENERATE_PRODUCT_DESCRIPTIONS_BASED_ON_IMAGE_FEATURE,
                     BaseFeature(
                         name="Generate Shopping List Based on a Picture of Food",
                         description="Create a shopping list by uploading a photo of a meal. This agent identifies ingredients in the image and compiles them into a ready-to-use shopping list.",
@@ -144,11 +245,7 @@ FEATURES_MAPPING: list[FeatureSection] = [
                         description="Convert PDF medical records into concise patient history summaries. This feature extracts key medical information from uploaded PDF documents and generates a structured overview of the patient's health history, conditions, and treatments.",
                         specifications="Input: medical records in a PDF. Output: summary of medical history from provided records.",
                     ),
-                    BaseFeature(
-                        name="Summarize Insurance Coverage Details From Policy Documents",
-                        description="Extract and organize key coverage details from insurance policy documents. This feature analyzes insurance plan information and produces a structured summary of coverage terms, limits, deductibles, and other essential policy details.",
-                        specifications="Input: insurance plan information in a document. Output: summary of insurance coverage details.",
-                    ),
+                    SUMMARIZE_INSURANCE_COVERAGE_DETAILS_FROM_POLICY_DOCUMENTS_FEATURE,
                     BaseFeature(
                         name="Classify Medical Claims by Approval Likelihood",
                         description="Analyze medical claims to determine their likelihood of approval. This feature evaluates claim details and provides an assessment of approval probability, helping to prioritize claims processing and identify potential issues before submission.",
@@ -165,11 +262,7 @@ FEATURES_MAPPING: list[FeatureSection] = [
             FeatureTag(
                 name="Marketing",
                 features=[
-                    BaseFeature(
-                        name="Generate Product Descriptions Based on Image",
-                        description="Create detailed product descriptions automatically from uploaded images. This agent analyzes the visual content and generates appropriate text describing the product shown, saving time on content creation while maintaining consistency across your product catalog.",
-                        specifications="Input: an image. Output: a description of the product shown in the image.",
-                    ),
+                    GENERATE_PRODUCT_DESCRIPTIONS_BASED_ON_IMAGE_FEATURE,
                     BaseFeature(
                         name="Generate Ad Copy Based on a Product Description",
                         description="Transform product descriptions into compelling ad copy. This feature analyzes your product information and generates targeted advertising text that highlights key selling points and benefits, helping you create effective marketing materials quickly.",
@@ -180,11 +273,7 @@ FEATURES_MAPPING: list[FeatureSection] = [
                         description="Create complete blog posts by specifying a topic and desired tone. This agent will generate relevant content that matches your requested style, saving time while maintaining your unique voice.",
                         specifications="Input: a topic and a tone. Output: a blog post about the topic in the requested tone.",
                     ),
-                    BaseFeature(
-                        name="Generate Versions of Social Media Posts Optimized for Different Platforms",
-                        description="Create platform-specific variations of your social media content. Provide a topic or existing post along with your target platforms, and receive tailored versions optimized for the appropriate tone, format, and length requirements of each selected social media site.",
-                        specifications="Input: a topic or existing post and a list of social media sites. Output: versions of a social media post that contain the same content as the input topic and are tailored to the appropriate tone and length for each of the requested social media sites.",
-                    ),
+                    GENERATE_VERSIONS_OF_SOCIAL_MEDIA_POSTS_FEATURE,
                     BaseFeature(
                         name="Generate Engagement-Driven Email Subject Lines",
                         description="Create compelling email subject lines based on your email content. This tool analyzes your message body and generates subject lines designed to increase open rates and reader engagement while maintaining authenticity.",
@@ -251,11 +340,7 @@ FEATURES_MAPPING: list[FeatureSection] = [
                         description="Create targeted follow-up email suggestions based on your meeting notes. This feature analyzes the content of your notes to identify action items, commitments, and key discussion points that require email follow-up, helping you maintain clear communication and accountability after meetings.",
                         specifications="Input: notes from a meeting. Output: suggestions for follow-up emails that need to be sent.",
                     ),
-                    BaseFeature(
-                        name="Extract Calendar Event From Email",
-                        description="Automatically identifies and extracts calendar event details from email content. This agent analyzes the email text and organizes relevant information into structured event fields, allowing for quick transfer of meeting details to your calendar.",
-                        specifications="Input: a text email. Output: a calendar event (field1, field2, field3). The goal is to extract a calendar event from the email.",
-                    ),
+                    EXTRACT_CALENDAR_EVENT_FROM_EMAIL_FEATURE,
                     BaseFeature(
                         name="Draft Message Response Based on Previous Messages (Email, Text)",
                         description="Generate a contextually appropriate response to the most recent message in a conversation thread. This feature analyzes the history of messages between two people (via email or text) and creates a relevant reply that continues the conversation naturally based on the previous exchanges.",
@@ -307,11 +392,7 @@ FEATURES_MAPPING: list[FeatureSection] = [
                         description="Generate multiple-choice quizzes on any topic or person. Simply provide a subject, and receive a ready-to-use quiz with questions and answer options to test knowledge or facilitate learning.",
                         specifications="Input: a topic or person. Output: a quiz with multiple-choice answers about the input topic.",
                     ),
-                    BaseFeature(
-                        name="Generate Versions of Social Media Posts Optimized for Different Platforms",
-                        description="Create platform-specific variations of your social media content. Provide a topic or existing post along with your target platforms, and receive tailored versions optimized for the appropriate tone, format, and length requirements of each selected social media site.",
-                        specifications="Input: a topic or existing post and a list of social media sites. Output: versions of a social media post that contain the same content as the input topic and are tailored to the appropriate tone and length for each of the requested social media sites",
-                    ),
+                    GENERATE_VERSIONS_OF_SOCIAL_MEDIA_POSTS_FEATURE,
                     BaseFeature(
                         name="Detect Bot/Spam Posts",
                         description="Analyzes social media posts to identify content generated by automated bots or spam sources. This tool examines message patterns and characteristics to determine if a post is likely automated or unwanted promotional content rather than genuine user communication.",
@@ -404,12 +485,7 @@ FEATURES_MAPPING: list[FeatureSection] = [
             FeatureTag(
                 name="Apple, Google, Amazon",
                 features=[
-                    FeatureWithImage(
-                        name="Answer Question About a Product - by Amazon",
-                        description="Provides answers to specific questions about Amazon products. Simply provide a product URL and your question to receive detailed information based on the product listing.",
-                        specifications="Input: a URL of a product, and a question about the product. Output: an answer to the question about the product.",
-                        image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/amazon-answer-questions-about-products.png",
-                    ),
+                    ANSWER_QUESTION_ABOUT_PRODUCT_FEATURE,
                     FeatureWithImage(
                         name="Review Highlights - by Amazon",
                         description="Summarizes common themes from multiple Amazon product reviews into a concise third-person overview. This feature identifies recurring points mentioned across reviews and presents them as a structured summary, helping users quickly understand collective customer experiences.",
@@ -422,36 +498,16 @@ FEATURES_MAPPING: list[FeatureSection] = [
                         specifications="Input: a story prompt, and the age of the target child. Output: a story based on the prompt and written for the appropriate age group.",
                         image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/amazon-review-highlights.png",
                     ),
-                    FeatureWithImage(
-                        name="Writing Tools - by Apple",
-                        description="Transform your writing with Apple's Writing Tools. This feature allows you to select text and apply various improvements such as summarizing into bullet points, adjusting tone (friendly or professional), making content more concise, or proofreading for errors. Simply select your text and choose the desired writing enhancement.",
-                        specifications="Input: a piece of writing (text, email, note, etc.), and one request for writing help (summarize into bullet points, rephrase to be more friendly, rephrase to be more professional, rephrase to be more concise, proofread). Output: updated text that is edited per the input request.",
-                        image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/apple-system-wide-writting-tools.png",
-                    ),
-                    FeatureWithImage(
-                        name="Notification Summaries - by Apple",
-                        description="Consolidates multiple notifications from the same app into a single, concise summary. The summary displays the app name as the title and presents a brief overview of all notifications in the body, making it easier to process information at a glance.",
-                        specifications="Input: a list of notifications texts (title, possible subtitle, body) (all from the same app). Output: a summary of all notifications, formatted like a notification. Title is the name of the app. Body is the summary (so the summary needs to be short enough to fit the notification body).",
-                        image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/apple-notification-summary.png",
-                    ),
+                    WRITTING_TOOLS_FEATURE,
+                    NOTIFICATION_SUMMARIES_FEATURE,
                     FeatureWithImage(
                         name="Priority Messages and Intelligent Email Summaries - by Apple",
                         description="Automatically identifies high-priority emails in your inbox and generates concise summaries of each message. This feature analyzes your incoming mail to help you quickly identify important communications and understand message content without opening each email.",
                         specifications="Input: a list of emails. Output: the priority of each email and a summary of each email.",
                         image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/apple-priority-message-and-intelligent-email-summaries.png",
                     ),
-                    FeatureWithImage(
-                        name="Summary of Reviews - by Google",
-                        description="Consolidates multiple Google reviews into a concise third-person summary highlighting common themes and sentiments expressed by reviewers. This provides a quick overview of collective opinions without needing to read each individual review.",
-                        specifications="Input: a list of reviews about a place. Output: a string that is a third-person summary of common themes expressed in the reviews.",
-                        image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/google-reviews-summary.png",
-                    ),
-                    FeatureWithImage(
-                        name="Smart Email Response - by Google",
-                        description="Generate complete email responses based on short prompts. This feature analyzes your input and creates appropriate email content that matches your intended message. Simply provide a brief description of what you want to communicate, and receive a fully composed email ready to send.",
-                        specifications="Input: (string) a short email prompt. Output: (string) an email composed based on the content of the prompt.",
-                        image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/google-smart-email-response.png",
-                    ),
+                    SUMMARIZE_REVIEWS_FEATURE,
+                    SMART_EMAIL_RESPONSE_FEATURE,
                     FeatureWithImage(
                         name="Summarize in Recorder - by Google",
                         description="Convert audio files into text with Google's Recorder app. This feature automatically generates both a concise summary and a complete transcription of your audio content, making it easier to review and reference recorded information.",
@@ -464,54 +520,14 @@ FEATURES_MAPPING: list[FeatureSection] = [
             FeatureTag(
                 name="Our Customers",
                 features=[
-                    FeatureWithImage(
-                        name="Extract Meeting Notes from a Transcript - by M1",
-                        description="Transform meeting transcripts into structured notes with this feature. It analyzes transcript content and generates organized notes with clear titles and bullet-pointed details, making it easier to review and share key information from your meetings.",
-                        specifications="Input: a transcript of a meeting. Output: a list of notes from the content of the meeting. Each note should have a title and a body that is written in bullet point form.",
-                        image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/m1-extract-meeting-notes-from-transcipt.png",
-                    ),
-                    FeatureWithImage(
-                        name="Extract Tasks From a Meeting Transcript - by M1",
-                        description="Automatically identify and extract tasks from meeting transcripts. This agent analyzes the conversation text and generates a structured list of tasks, each with a title, description, and the original quote from which it was derived.",
-                        specifications="Input: a written transcript of a meeting. Output: a list of tasks extracted from the transcript. Each task should include a title, description, and a corresponding quote in the transcript.",
-                        image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/m1-extract-tasks-from-trancript.png",
-                    ),
-                    FeatureWithImage(
-                        name="Summarize Meeting Content From a Transcript - by M1",
-                        description="Transform meeting transcripts into concise bullet-point summaries. This feature analyzes the content of your meeting transcript and generates a structured summary highlighting key points, decisions, and action items.",
-                        specifications="Input: (string) a transcript of a meeting. Output: (string) a summary of the meeting in bullet points.",
-                        image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/m1-summarize-meeting-content-from-transcript.png",
-                    ),
-                    FeatureWithImage(
-                        name="Generate Sassy Image Description - by Amo",
-                        description="Create short, witty image descriptions with a sassy twist. This feature analyzes images and generates humorous captions (5 words maximum) that add personality while remaining appropriate.",
-                        specifications="Input: an image. Output: a short (5 words max) description of the image. Goal: the description should be sassy, humorous, but not offensive.",
-                        image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/amo-sassy-image-description.png",
-                    ),
-                    FeatureWithImage(
-                        name="Generate SOAP Notes From Transcript - by Berry Street",
-                        description="Convert audio recordings into structured SOAP notes. This feature analyzes your audio files and automatically generates clinical documentation in the SOAP format (Subjective, Objective, Assessment, Plan), helping clinicians transform verbal sessions into organized medical records.",
-                        specifications="Input: an audio file. Output: SOAP notes from the audio file.",
-                        image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/berrystreet-generate-soap-notes-from-transcript.png",
-                    ),
-                    FeatureWithImage(
-                        name="7 Day Meal Planner - by Berry Street",
-                        description="Plan your entire week's meals with personalized recommendations based on your dietary needs. Specify restrictions, preferences, calorie goals, and household considerations to receive a complete 7-day plan with breakfast, lunch, dinner, and snacks. Each meal includes nutritional information with calorie count and macronutrient breakdown.",
-                        specifications="Goal is to create a meal plan for the week. Input: dietary restrictions and allergies (string), food preferences (string), calorie and macro requirement (string), household considerations (string). Output: breakfast, lunch, dinner, and a snack for each day of the week. Each item (breakfast, lunch, dinner, snack) should have a title (string), a description (string), the calories for the meal (number), and protein (number), fat (number), carb (number) breakdown.",
-                        image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/berrystreet-7-day-meal-planner.png",
-                    ),
-                    FeatureWithImage(
-                        name="Create a Shopping List From a Meal Plan - by Berry Street",
-                        description="Transform your meal plan into an organized shopping list. This feature takes your selected meals and recipes, then generates a complete shopping list with item names, quantities, and units for all ingredients needed.",
-                        specifications="Input: a list of meals (title and recipe). Output: a shopping list. Each item in the shopping list should have a name 'item', quantity, and unit.",
-                        image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/berrystreet-generated-shopping-list-from-meal-plan.png",
-                    ),
-                    FeatureWithImage(
-                        name="Food Image Journaling - by Berry Street",
-                        description="Capture images of your meals to automatically generate detailed food descriptions and nutritional information. This tool analyzes your food photos to provide estimated calorie counts and nutrient content, helping you track your dietary intake with visual documentation.",
-                        specifications="Input: an image of a meal. Output: a description of the food included in the picture, along with estimated nutritional information.",
-                        image_url="https://workflowai.blob.core.windows.net/workflowai-public/landing-page-features/berrystreet-food-image-journaling.png",
-                    ),
+                    EXTRACT_MEETING_NOTES_FROM_TRANSCRIPT_FEATURE,
+                    EXTRACT_TASKS_FROM_MEETING_TRANSCRIPT_FEATURE,
+                    SUMMARIZE_MEETING_CONTENT_FROM_TRANSCRIPT_FEATURE,
+                    GENERATE_SASSY_IMAGE_DESCRIPTION_FEATURE,
+                    GENERATE_SOAP_NOTES_FROM_TRANSCRIPT_FEATURE,
+                    GENERATE_7_DAY_MEAL_PLANNER_FEATURE,
+                    GENERATE_SHOPPING_LIST_FROM_MEAL_PLAN_FEATURE,
+                    GENERATE_FOOD_IMAGE_JOURNALING_FEATURE,
                 ],
                 kind="static",
             ),
@@ -538,16 +554,8 @@ FEATURES_MAPPING: list[FeatureSection] = [
                         description="Automatically extract structured data from insurance invoice documents. This agent identifies and captures policy information, charges, and invoice details, converting unstructured document content into organized, usable data.",
                         specifications="Input: insurance invoice document. Output: data from document including policy information and charges, and invoice details.",
                     ),
-                    BaseFeature(
-                        name="Summarize Insurance Coverage Details From Policy Documents",
-                        description="Extract and organize key coverage details from insurance policy documents. This feature analyzes insurance plan information and produces a structured summary of coverage terms, limits, deductibles, and other essential policy details.",
-                        specifications="Input: insurance plan information in a document. Output: summary of insurance coverage details.",
-                    ),
-                    BaseFeature(
-                        name="Summarize PDF Content",
-                        description="Extract the key information from PDF documents with our summarization tool. This agent analyzes the full content of your PDF and generates a concise text summary highlighting the main points.",
-                        specifications="Input: a PDF document. Output: a summary of the content (string).",
-                    ),
+                    SUMMARIZE_INSURANCE_COVERAGE_DETAILS_FROM_POLICY_DOCUMENTS_FEATURE,
+                    SUMMARIZE_PDF_CONTENT_FEATURE,
                     BaseFeature(
                         name="Generate an FAQ From a Document",
                         description="Transform your document into a comprehensive FAQ. This feature analyzes your document content and automatically creates relevant question-answer pairs that capture key information, making complex content more accessible and easier to navigate.",
@@ -645,11 +653,7 @@ FEATURES_MAPPING: list[FeatureSection] = [
                         description="Automatically extract key information from receipt images. This agent identifies vendor details, transaction date and time, reference numbers, and currency. It also captures itemized purchases with quantities and prices, along with total amounts. This functionality supports multiple currencies and provides structured data from your receipt images.",
                         specifications="Input: image of a receipt. Output: vendor information (name and address), date and time receipt was created at, reference number, currency (enum w USD|EUR|JPY|GBP|AUD|CAD|CHF|CNY|SEK|NZD|MXN|SGD|HKD|NOK|KRW|TRY|INR|RUB|BRL|ZAR|DKK|PLN|THB|IDR|MYR|VND), list of each item (name, quantity, gross and net price), total net and gross price.",
                     ),
-                    BaseFeature(
-                        name="Generate Product Descriptions Based on Image",
-                        description="Create detailed product descriptions automatically from uploaded images. This agent analyzes the visual content and generates appropriate text describing the product shown, saving time on content creation while maintaining consistency across your product catalog.",
-                        specifications="Input: image of a product. Output: a description of the product. The goal is to generate a description that could be used to help describe and sell the product (ex. on Amazon).",
-                    ),
+                    GENERATE_PRODUCT_DESCRIPTIONS_BASED_ON_IMAGE_FEATURE,
                     BaseFeature(
                         name="Generate the Location of a Given Image",
                         description="Identify the city and country shown in an uploaded image. This feature analyzes visual elements in photographs to determine geographic locations, helping users identify where pictures were taken.",

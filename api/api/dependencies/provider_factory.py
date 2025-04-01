@@ -2,8 +2,8 @@ from typing import Annotated
 
 from fastapi import Depends
 
+from api.services.providers_service import shared_provider_factory
 from core.providers.factory.abstract_provider_factory import AbstractProviderFactory
-from core.providers.factory.local_provider_factory import shared_provider_factory
 
 
 def _provider_factory() -> AbstractProviderFactory:
