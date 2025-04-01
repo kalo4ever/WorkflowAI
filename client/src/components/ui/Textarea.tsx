@@ -21,17 +21,17 @@ function useAutoResizeTextarea(ref: React.ForwardedRef<HTMLTextAreaElement>, aut
         clone.style.visibility = 'hidden';
         ref.parentNode?.appendChild(clone);
 
-        const height = clone.scrollHeight + 2 + 'px';
+        const height = Math.round(clone.scrollHeight + 2) + 'px';
         ref.style.height = height;
         ref.parentNode?.removeChild(clone);
       } else {
         ref.style.height = '0';
-        const height = ref.scrollHeight + 2 + 'px';
+        const height = Math.round(ref.scrollHeight + 2) + 'px';
         ref.style.height = height;
       }
 
-      if (Math.abs(parseFloat(ref.style.height) - previousHeight) > 4) {
-        ref.scrollTop = ref.scrollHeight;
+      if (Math.abs(Math.round(parseFloat(ref.style.height)) - Math.round(previousHeight)) > 4) {
+        ref.scrollTop = Math.round(ref.scrollHeight);
       }
     }
   }, []);

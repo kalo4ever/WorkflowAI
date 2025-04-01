@@ -591,7 +591,7 @@ class TestIsSchemaSupported:
 
         schema = fixtures_json("jsonschemas", "schema_1.json")
 
-        with patch("core.utils.redis_cache.get_redis_client") as mock_cache:
+        with patch("redis.asyncio.Redis.get") as mock_cache:
             mock_cache.get.return_value = None
             is_supported = await azure_openai_provider.is_schema_supported_for_structured_generation(
                 task_name="test",

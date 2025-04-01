@@ -18,7 +18,7 @@ from tests.utils import fixture_bytes
         "https://iamafile.com/hello",
     ],
 )
-async def test_claude_fallbacks_to_bedrock_for_pdf(test_client: IntegrationTestClient, file_url: str):
+async def test_claude_supports_pdfs_on_anthropic(test_client: IntegrationTestClient, file_url: str):
     # Create a task with a file
     task = await test_client.create_task(
         input_schema={
@@ -54,7 +54,7 @@ async def test_claude_fallbacks_to_bedrock_for_pdf(test_client: IntegrationTestC
     assert out["task_output"] == {"greeting": "hello"}
 
     fetched = await test_client.fetch_run(task=task, run=out)
-    assert fetched["metadata"]["workflowai.providers"] == ["amazon_bedrock", "anthropic"]
+    assert fetched["metadata"]["workflowai.providers"] == ["anthropic"]
 
 
 async def test_anthropic_tool_calls_streaming(test_client: IntegrationTestClient):

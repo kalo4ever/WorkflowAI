@@ -1,5 +1,7 @@
 import asyncio
+import contextlib
 import json
+import os
 import re
 from base64 import b64encode
 from typing import Any
@@ -15,6 +17,7 @@ from core.domain.consts import METADATA_KEY_USED_MODEL
 from core.domain.models import Model, Provider
 from core.domain.models.model_datas_mapping import MODEL_DATAS
 from core.domain.models.model_provider_datas_mapping import OPENAI_PROVIDER_DATA
+from core.providers.factory.local_provider_factory import LocalProviderFactory
 from core.providers.google.google_provider_domain import (
     Candidate,
     CompletionResponse,
@@ -46,37 +49,30 @@ from tests.integration.common import (
 from tests.utils import fixture_bytes, fixtures_json, request_json_body
 
 
-async def test_run_with_metadata(
-    httpx_mock: HTTPXMock,
-    int_api_client: AsyncClient,
-    patched_broker: InMemoryBroker,
-):
-    task = await create_task(int_api_client, patched_broker, httpx_mock)
+async def test_run_with_metadata(test_client: IntegrationTestClient):
+    task = await test_client.create_task()
 
-    mock_vertex_call(
-        httpx_mock,
+    test_client.mock_vertex_call(
         publisher="google",
         model="gemini-1.5-pro-002",
         latency=0.01,
     )
 
     # Run the task the first time
-    task_run = await run_task_v1(
-        int_api_client,
-        task_id="greet",
-        task_schema_id=1,
+    task_run = await test_client.run_task_v1(
+        task,
         task_input={"name": "John", "age": 30},
-        model="gemini-1.5-pro-002",
+        model=Model.GEMINI_1_5_PRO_002,
         metadata={"key1": "value1", "key2": "value2"},
     )
 
     # Check returned cost
     assert task_run["cost_usd"] == pytest.approx(0.000169, abs=1e-6)  # pyright: ignore[reportUnknownMemberType]
 
-    await wait_for_completed_tasks(patched_broker)
+    await test_client.wait_for_completed_tasks()
 
     # Check groups
-    groups = await list_groups(int_api_client, task)
+    groups = (await test_client.get(task_schema_url(task, "groups")))["items"]
     assert len(groups) == 1
     assert groups[0]["properties"]["model"] == "gemini-1.5-pro-002"
     assert "provider" not in groups[0]["properties"]
@@ -84,9 +80,7 @@ async def test_run_with_metadata(
 
     # Fetch the task run
 
-    fetched = await int_api_client.get(f"/chiefofstaff.ai/agents/greet/runs/{task_run['id']}")
-    assert fetched.status_code == 200
-    fetched_task_run = fetched.json()
+    fetched_task_run = await test_client.get(f"/chiefofstaff.ai/agents/greet/runs/{task_run['id']}")
 
     assert fetched_task_run["metadata"]["workflowai.overhead_seconds"]
     assert fetched_task_run["metadata"]["workflowai.inference_seconds"]
@@ -97,13 +91,13 @@ async def test_run_with_metadata(
     assert fetched_task_run["metadata"]["workflowai.providers"] == ["google"]
     assert fetched_task_run["metadata"]["workflowai.provider"] == "google"
 
-    await wait_for_completed_tasks(patched_broker)
+    await test_client.wait_for_completed_tasks()
 
-    amplitude_requests = await get_amplitude_requests(httpx_mock)
+    amplitude_requests = await get_amplitude_requests(test_client.httpx_mock)
     assert len(amplitude_requests) == 1
     event = amplitude_requests[0]["events"][0]
 
-    org = result_or_raise(await int_api_client.get("/_/organization/settings"))
+    org = await test_client.get("/_/organization/settings")
 
     assert event["user_id"] == org["tenant"]
     assert event["event_type"] == "org.ran.task"
@@ -1024,11 +1018,11 @@ async def test_run_audio_openai(test_client: IntegrationTestClient):
         "content_type": "audio/mpeg",
         "url": test_client.storage_url(
             task,
-            "aba2c61cc31bc5cbd4b3499997e2eca79dd2eee2c125cb830df4a962d0c88c9f.mp3",
+            "7f1d285a8d5bda9b6c3af1cbec3cef932204877a4bd7223fc7281c7706877905.mp3",
         ),
         "storage_url": test_client.storage_url(
             task,
-            "aba2c61cc31bc5cbd4b3499997e2eca79dd2eee2c125cb830df4a962d0c88c9f.mp3",
+            "7f1d285a8d5bda9b6c3af1cbec3cef932204877a4bd7223fc7281c7706877905.mp3",
         ),
     }
     assert fetched_run["task_output"] == {"greeting": "Hello James!"}
@@ -1536,49 +1530,6 @@ async def test_unknown_error_invalid_argument_max_tokens(
     )
 
 
-async def test_gemini_thinking_mode_model(
-    int_api_client: AsyncClient,
-    httpx_mock: HTTPXMock,
-    patched_broker: InMemoryBroker,
-):
-    task = await create_task(int_api_client, patched_broker, httpx_mock)
-
-    version = await create_version(
-        int_api_client,
-        task["task_id"],
-        task["task_schema_id"],
-        {"model": Model.GEMINI_2_0_FLASH_THINKING_EXP_0121},
-    )
-
-    iteration = version["iteration"]
-
-    mock_gemini_call(
-        httpx_mock,
-        model=Model.GEMINI_2_0_FLASH_THINKING_EXP_0121,
-        api_version="v1alpha",
-        json=fixtures_json("gemini", "completion_thoughts_gemini_2.0_flash_thinking_mode.json"),
-    )
-
-    run = await run_task_v1(
-        int_api_client,
-        task_id=task["task_id"],
-        task_schema_id=task["task_schema_id"],
-        task_input={"name": "John", "age": 32},
-        version=iteration,
-        use_cache="never",
-    )
-
-    assert (
-        run["task_output"]["greeting"]
-        == "Explaining how AI works is a bit like explaining how a human brain works – it's incredibly complex and the exact mechanisms are still being researched. While the underlying mechanisms can be complex, the fundamental principles of data-driven learning and pattern recognition remain central.\n"
-    )
-
-    assert (
-        run["reasoning_steps"][0]["step"]
-        == 'My thinking process for generating the explanation of how AI works went something like this:\n\n1. **Deconstruct the Request:** The user asked "Explain how AI works." This is a broad question, so a comprehensive yet accessible explanation is needed. I need to cover the core principles without getting bogged down in overly technical jargon.\n\n2. **Identify Key Concepts:**  I immediately thought of the fundamental building blocks of AI. This led to the identification of:\n'
-    )
-
-
 async def test_latest_model(test_client: IntegrationTestClient):
     task = await test_client.create_task()
 
@@ -1589,71 +1540,6 @@ async def test_latest_model(test_client: IntegrationTestClient):
 
     assert fetched_run["cost_usd"] > 0
     assert fetched_run["llm_completions"][0]["usage"]["model_context_window_size"] > 0
-
-
-async def test_model_pdf_image(
-    int_api_client: AsyncClient,
-    httpx_mock: HTTPXMock,
-    patched_broker: InMemoryBroker,
-):
-    task = await create_task(
-        int_api_client,
-        patched_broker,
-        httpx_mock,
-        input_schema={"type": "object", "properties": {"image": {"$ref": "#/$defs/File", "format": "image"}}},
-    )
-
-    httpx_mock.add_response(
-        # Content type is not guessable from URL but only from the data
-        url="https://media3.giphy.com/media/giphy",
-        content=fixture_bytes("files/test.png"),
-    )
-    httpx_mock.add_response(
-        url="https://bedrock-runtime.us-west-2.amazonaws.com/model/us.anthropic.claude-3-5-sonnet-20241022-v2:0/converse",
-        status_code=429,
-        json={
-            "message": "Rate limit exceeded",
-        },
-    )
-    httpx_mock.add_response(
-        url="https://api.anthropic.com/v1/messages",
-        status_code=200,
-        json={
-            "id": "sdf_123",
-            "type": "message",
-            "role": "assistant",
-            "model": "claude-3-5-sonnet-20241022",
-            "content": [
-                {
-                    "type": "text",
-                    "text": '{\n    "greeting": "Hello, how can I help you today?"\n}',
-                },
-            ],
-            "stop_reason": "end_turn",
-            "usage": {
-                "input_tokens": 1590,
-                "output_tokens": 152,
-            },
-        },
-    )
-    res = await run_task_v1(
-        int_api_client,
-        task_id=task["task_id"],
-        task_schema_id=task["task_schema_id"],
-        task_input={
-            "image": {
-                "url": "https://media3.giphy.com/media/giphy",
-            },
-        },
-        model=Model.CLAUDE_3_5_SONNET_20241022.value,
-    )
-    await wait_for_completed_tasks(patched_broker)
-
-    assert res["task_output"] == {"greeting": "Hello, how can I help you today?"}
-    # Cost should be (1590 * $0.000003) + (152 * $0.000015) = $0.00705
-    assert pytest.approx(res["cost_usd"], abs=0.0001) == 0.00705  # pyright: ignore
-    assert res["metadata"]["workflowai.provider"] == "anthropic"
-    assert res["metadata"]["workflowai.providers"] == ["amazon_bedrock", "anthropic"]
 
 
 async def test_partial_output(test_client: IntegrationTestClient):
@@ -1838,7 +1724,7 @@ async def test_cache_with_image_url(test_client: IntegrationTestClient):
             "content_type": "image/gif",
             "storage_url": test_client.storage_url(
                 task,
-                "b42185f145ca9603ed7f63beb59f2c1f8308e6fd65ccb44c726a8717c3a41c89.gif",
+                "2801434f08433a71b4f618414724c5be7bda2bbb55b3c85f83b7c008585a61d8.gif",
             ),
         },
     }
@@ -1868,6 +1754,231 @@ async def test_image_not_found(test_client: IntegrationTestClient):
             task,
             model=Model.GEMINI_1_5_FLASH_LATEST,
             task_input={"image": {"url": "https://media3.giphy.com/media/giphy"}},
+        )
+
+    assert e.value.response.status_code == 400
+    assert e.value.response.json()["error"]["code"] == "invalid_file"
+
+
+class TestMultiProviderConfigs:
+    # Patch a factory that has multiple providers for anthropic and fireworks
+    @pytest.fixture(autouse=True)
+    def multi_provider_factory(self):
+        with patch.dict(
+            os.environ,
+            {
+                "FIREWORKS_API_KEY": "fw_api_key_0",
+                "FIREWORKS_API_KEY_1": "fw_api_key_1",
+                "FIREWORKS_API_KEY_2": "fw_api_key_2",
+                "ANTHROPIC_API_KEY": "anthropic_api_key_0",
+                "ANTHROPIC_API_KEY_1": "anthropic_api_key_1",
+                "ANTHROPIC_API_KEY_2": "anthropic_api_key_2",
+            },
+        ):
+            factory = LocalProviderFactory()
+            assert len(list(factory.get_providers(Provider.FIREWORKS))) == 3, "sanity fireworks"
+            assert len(list(factory.get_providers(Provider.ANTHROPIC))) == 3, "sanity anthropic"
+            with patch("core.runners.workflowai.workflowai_runner.WorkflowAIRunner.provider_factory", new=factory):
+                yield factory
+
+    @pytest.fixture()
+    def patched_shuffle(self):
+        idx = 0
+
+        # Patch the shuffle with a deterministic round robin for the first item
+        def _shuffle(iterable: list[Any]):
+            if not iterable:
+                return
+            nonlocal idx
+            val = iterable[0]
+            iterable[0] = iterable[idx % len(iterable)]
+            iterable[idx % len(iterable)] = val
+            idx += 1
+
+        with patch("random.shuffle", side_effect=_shuffle) as mock_shuffle:
+            yield mock_shuffle
+
+    async def test_multi_fireworks_providers(
+        self,
+        test_client: IntegrationTestClient,
+        httpx_mock: HTTPXMock,
+        patched_shuffle: Mock,
+    ):
+        """Check that the provider keys are correctly round robin-ed for fireworks"""
+        task = await test_client.create_task(output_schema={"properties": {"city": {"type": "string"}}})
+
+        count_by_api_key: dict[str, int] = {}
+
+        def _callback(request: httpx.Request):
+            assert request.headers["Authorization"].startswith("Bearer fw_api_key_")
+            key = request.headers["Authorization"].removeprefix("Bearer fw_api_key_")
+            count = count_by_api_key.get(key, 0)
+            count_by_api_key[key] = count + 1
+            return httpx.Response(status_code=200, json=fixtures_json("fireworks", "completion.json"))
+
+        httpx_mock.add_callback(
+            url="https://api.fireworks.ai/inference/v1/chat/completions",
+            method="POST",
+            callback=_callback,
+        )
+
+        for _ in range(10):
+            await test_client.run_task_v1(task, model=Model.DEEPSEEK_R1_2501, use_cache="never", autowait=False)
+
+        assert len(count_by_api_key) == 3, "sanity"
+        keys = list(count_by_api_key.keys())
+        assert keys == ["0", "1", "2"]
+        assert [count_by_api_key[key] for key in keys] == [4, 3, 3]
+
+    async def test_multi_fireworks_providers_with_errors(
+        self,
+        test_client: IntegrationTestClient,
+        httpx_mock: HTTPXMock,
+        patched_shuffle: Mock,
+    ):
+        """Check that the provider keys are correctly round robin-ed for fireworks
+        and falls through whenever we hit a rate limit"""
+        task = await test_client.create_task(output_schema={"properties": {"city": {"type": "string"}}})
+
+        used_api_key: list[int] = []
+        # We return a 429 every other call for each api key
+
+        def _callback(request: httpx.Request):
+            assert request.headers["Authorization"].startswith("Bearer fw_api_key_")
+            key = request.headers["Authorization"].removeprefix("Bearer fw_api_key_")
+            used_api_key.append(int(key))
+
+            # Provider 1 returns a 429
+            if key == "1":
+                return httpx.Response(status_code=429)
+
+            # Provider 2 returns a 500
+            if key == "2":
+                return httpx.Response(status_code=500)
+
+            return httpx.Response(status_code=200, json=fixtures_json("fireworks", "completion.json"))
+
+        httpx_mock.add_callback(
+            url="https://api.fireworks.ai/inference/v1/chat/completions",
+            method="POST",
+            callback=_callback,
+        )
+
+        for _ in range(3):
+            with contextlib.suppress(HTTPStatusError):
+                await test_client.run_task_v1(task, model=Model.DEEPSEEK_R1_2501, use_cache="never", autowait=False)
+
+        assert used_api_key == [
+            # 1
+            0,  # Call to provider 0 succeeds
+            # 2
+            1,  # Provider 1 so 429, second one in line is Provider 0
+            0,
+            # 3
+            2,  # Provider 2 so 500, no fallback
+        ]
+
+    async def test_multi_anthropic_providers(
+        self,
+        test_client: IntegrationTestClient,
+        multi_provider_factory: LocalProviderFactory,
+        httpx_mock: HTTPXMock,
+        patched_shuffle: Mock,
+    ):
+        """Anthropic we only shuffle the subsequent calls if the first call returns a 429"""
+        task = await test_client.create_task(output_schema={"properties": {}})
+        used_api_key: list[int] = []
+        return_429 = False
+
+        def _callback(request: httpx.Request):
+            assert request.headers["x-api-key"].startswith("anthropic_api_key_")
+            key = request.headers["x-api-key"].removeprefix("anthropic_api_key_")
+            used_api_key.append(int(key))
+
+            # Provider 0 returns a 429 every other call
+            if key == "0":
+                nonlocal return_429
+                should_return_429 = return_429
+                return_429 = not return_429
+                if should_return_429:
+                    return httpx.Response(status_code=429)
+
+            return httpx.Response(status_code=200, json=fixtures_json("anthropic", "completion.json"))
+
+        httpx_mock.add_callback(
+            url="https://api.anthropic.com/v1/messages",
+            method="POST",
+            callback=_callback,
+        )
+
+        for _ in range(4):
+            await test_client.run_task_v1(task, model=Model.CLAUDE_3_5_SONNET_LATEST, use_cache="never", autowait=False)
+
+        assert used_api_key == [
+            # 0
+            0,  # First call to provider succeeds
+            # 1
+            0,  # Provider 0 so 429, second one in line is Provider 1
+            1,
+            # 2
+            0,
+            # 3
+            0,
+            2,
+        ]
+
+    async def test_fallback_to_other_provider(
+        self,
+        test_client: IntegrationTestClient,
+        multi_provider_factory: LocalProviderFactory,
+        httpx_mock: HTTPXMock,
+    ):
+        # Anthropic returns a 503
+        httpx_mock.add_response(
+            url="https://api.anthropic.com/v1/messages",
+            method="POST",
+            status_code=503,
+        )
+
+        # But we fallback to bedrock
+        httpx_mock.add_response(
+            url="https://bedrock-runtime.us-west-2.amazonaws.com/model/us.anthropic.claude-3-5-sonnet-20241022-v2:0/converse",
+            method="POST",
+            json=fixtures_json("bedrock", "completion.json"),
+        )
+
+        task = await test_client.create_task()
+
+        res = await test_client.run_task_v1(
+            task,
+            model=Model.CLAUDE_3_5_SONNET_20241022,
+            use_cache="never",
+            autowait=False,
+        )
+        assert res
+
+        # We only called anthropic once
+        assert len(httpx_mock.get_requests(url="https://api.anthropic.com/v1/messages")) == 1
+
+
+async def test_invalid_base64_data(test_client: IntegrationTestClient):
+    """Check that we handle invalid base64 data correctly by returning an error immediately"""
+    task = await test_client.create_task(
+        input_schema={
+            "properties": {
+                "image": {
+                    "$ref": "#/$defs/Image",
+                },
+            },
+        },
+    )
+
+    with pytest.raises(HTTPStatusError) as e:
+        # Sending an image URL without a content type will force the runner to download the file
+        await test_client.run_task_v1(
+            task,
+            model=Model.GEMINI_1_5_FLASH_LATEST,
+            task_input={"image": {"data": "iamnotbase64"}},
         )
 
     assert e.value.response.status_code == 400

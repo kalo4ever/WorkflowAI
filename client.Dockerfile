@@ -102,5 +102,5 @@ USER nextjs
 
 EXPOSE 3000
 
-CMD ["node", "/app/server.js"]
+CMD ["node", "/app/client/server.js"]
 

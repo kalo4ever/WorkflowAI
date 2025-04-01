@@ -8,6 +8,7 @@ from typing import Any, Callable, Iterable, NamedTuple, Optional
 from pydantic import TypeAdapter
 from typing_extensions import override
 
+from api.services.providers_service import shared_provider_factory
 from core.domain.agent_run_result import INTERNAL_AGENT_RUN_RESULT_SCHEMA_KEY, AgentRunResult
 from core.domain.consts import METADATA_KEY_PROVIDER_NAME, METADATA_KEY_USED_MODEL, METADATA_KEY_USED_PROVIDERS
 from core.domain.errors import (
@@ -20,7 +21,6 @@ from core.domain.errors import (
 )
 from core.domain.fields.internal_reasoning_steps import InternalReasoningStep
 from core.domain.message import Message
-from core.domain.models import Provider
 from core.domain.models.model_data import FinalModelData, ModelData
 from core.domain.models.model_datas_mapping import MODEL_DATAS
 from core.domain.models.utils import get_model_data, get_model_provider_data
@@ -36,7 +36,6 @@ from core.domain.types import TaskInputDict
 from core.providers.base.abstract_provider import AbstractProvider
 from core.providers.base.config import ProviderConfig
 from core.providers.base.provider_options import ProviderOptions
-from core.providers.factory.local_provider_factory import shared_provider_factory
 from core.runners.abstract_runner import AbstractRunner, CacheFetcher
 from core.runners.workflowai.internal_tool import build_all_internal_tools
 from core.runners.workflowai.provider_pipeline import ProviderPipeline
@@ -762,20 +761,12 @@ class WorkflowAIRunner(AbstractRunner[WorkflowAIRunnerOptions]):
                 msg=f"{model_data.model.value} does not support tool calling",
             )
 
-    def _build_provider(self, provider_type: Provider, provider_config: tuple[str, ProviderConfig] | None):
-        if provider_config:
-            return self.provider_factory.build_provider(provider_config[1], config_id=provider_config[0])
-
-        return self.provider_factory.get_provider(provider_type)
-
     def _build_provider_data(
         self,
+        provider: AbstractProvider[Any, Any],
         model_data: FinalModelData,
         is_structured_generation_enabled: bool,
-        provider_type: Provider,
-        provider_config: tuple[str, ProviderConfig] | None,
     ) -> tuple[AbstractProvider[Any, Any], TemplateName, ProviderOptions, FinalModelData]:
-        provider = self._build_provider(provider_type, provider_config)
         provider_options = ProviderOptions(
             model=model_data.model,
             temperature=self._options.temperature,
@@ -785,8 +776,6 @@ class WorkflowAIRunner(AbstractRunner[WorkflowAIRunnerOptions]):
             structured_generation=is_structured_generation_enabled,
             tenant=self.task.tenant,
         )
-
-        provider = self._build_provider(provider_type, provider_config)
 
         model_data_copy = model_data.model_copy()
         provider.sanitize_model_data(model_data_copy)
@@ -984,6 +973,7 @@ class WorkflowAIRunner(AbstractRunner[WorkflowAIRunnerOptions]):
         pipeline = ProviderPipeline(
             options=self._options,
             provider_config=self._provider_config,
+            factory=self.provider_factory,
             builder=self._build_provider_data,
         )
 
