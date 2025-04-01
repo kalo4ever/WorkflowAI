@@ -38,7 +38,7 @@ async def list_feature_sections(user: UserDep) -> FeatureSectionResponse:
         # Since user.tenant is not always the user's email domain, we use the email domain to fill the "For You" section
         user_domain = safe_domain_from_email(user.sub)
 
-    return FeatureSectionResponse(sections=FeatureService.get_feature_sections_preview(user_domain))
+    return FeatureSectionResponse(sections=await FeatureService.get_feature_sections_preview(user_domain))
 
 
 class FeatureListResponse(BaseModel):
