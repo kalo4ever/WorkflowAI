@@ -56,7 +56,8 @@ class TaskDeploymentsService:
     async def deploy_version(
         self,
         task_id: TaskTuple,
-        task_schema_id: int,
+        # TODO[versionv1]: remove this once we only deploy by version_id
+        task_schema_id: int | None,
         version_id: int | str,
         environment: VersionEnvironment,
         deployed_by: UserIdentifier | None,
@@ -64,11 +65,13 @@ class TaskDeploymentsService:
         if isinstance(version_id, str):
             group = await self._storage_task_groups.get_task_group_by_id(task_id[0], version_id)
         else:
+            if not task_schema_id:
+                raise ValueError("task_schema_id is required for deploying by iteration")
             group = await self._storage_task_groups.get_task_group_by_iteration(task_id[0], task_schema_id, version_id)
 
         task_deployment = TaskDeployment(
             task_id=task_id[0],
-            schema_id=task_schema_id,
+            schema_id=group.schema_id,
             iteration=group.iteration,
             version_id=group.id,
             environment=environment,

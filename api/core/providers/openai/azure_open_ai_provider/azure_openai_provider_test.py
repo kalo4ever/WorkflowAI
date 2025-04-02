@@ -64,20 +64,21 @@ class TestValues(unittest.TestCase):
 class TestRequestHeaders:
     async def test_request_headers_with_metadata(self, azure_openai_provider: AzureOpenAIProvider):
         # Setup provider with test config
-        azure_openai_provider._config = AzureOpenAIConfig(  # pyright: ignore [reportPrivateUsage]
-            deployments={
-                "eastus": {
-                    "api_key": "test-key-eastus",
-                    "url": "https://test-eastus.openai.azure.com",
-                    "models": ["gpt-4o-2024-11-20"],
-                },
-                "westus": {
-                    "api_key": "test-key-westus",
-                    "url": "https://test-westus.openai.azure.com",
-                    "models": ["gpt-4-turbo-2024-04-09"],
+        azure_openai_provider._config = AzureOpenAIConfig.model_validate(  # pyright: ignore [reportPrivateUsage]
+            {
+                "deployments": {
+                    "eastus": {
+                        "api_key": "test-key-eastus",
+                        "url": "https://test-eastus.openai.azure.com",
+                        "models": ["gpt-4o-2024-11-20"],
+                    },
+                    "westus": {
+                        "api_key": "test-key-westus",
+                        "url": "https://test-westus.openai.azure.com",
+                        "models": ["gpt-4-turbo-2024-04-09"],
+                    },
                 },
             },
-            default_region="eastus",
         )
 
         # Simulate _request_url setting the metadata

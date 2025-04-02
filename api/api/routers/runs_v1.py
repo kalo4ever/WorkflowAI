@@ -224,7 +224,7 @@ async def get_run(
 
 # We use response_model_exclude_none to hide the empty field in standard messages, payload
 # (ex: is tool call input when not needed in the tool call response, when there is an id for the tool call.)
-@router.get("/{run_id}/completions", response_model=LLMCompletionsResponse, response_model_exclude_none=True)
+@router.get("/{run_id}/completions", response_model_exclude_none=True)
 async def get_llm_completions(
     task_tuple: TaskTupleDep,
     run_id: str,

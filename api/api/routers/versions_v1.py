@@ -471,30 +471,29 @@ class DeployVersionRequest(BaseModel):
 
 class DeployVersionResponse(BaseModel):
     task_schema_id: TaskSchemaID
-    version_id: int
+    version_id: str
     environment: VersionEnvironment
     deployed_at: datetime
 
 
 @router.post("/versions/{version_id}/deploy")
 async def deploy_version(
-    task_schema_id: TaskSchemaID,
     task_tuple: TaskTupleDep,
-    version_id: int,
+    version_id: str,
     request: DeployVersionRequest,
     task_deployments_service: TaskDeploymentsServiceDep,
     user: RequiredUserDep,
 ) -> DeployVersionResponse:
     deployment = await task_deployments_service.deploy_version(
         task_id=task_tuple,
-        task_schema_id=task_schema_id,
+        task_schema_id=None,
         version_id=version_id,
         environment=request.environment,
         deployed_by=user.identifier(),
     )
 
     return DeployVersionResponse(
-        version_id=deployment.iteration,
+        version_id=deployment.version_id,
         task_schema_id=deployment.schema_id,
         environment=deployment.environment,
         deployed_at=deployment.deployed_at,
