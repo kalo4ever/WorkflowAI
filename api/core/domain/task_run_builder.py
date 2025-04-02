@@ -49,16 +49,10 @@ class TaskRunBuilder(BaseModel):
 
     llm_completions: list[LLMCompletion] = Field(default_factory=list)
 
-    # The config that was used to run a task
-    # If not provided the default config was used
-    config_id: Optional[str] = None
-
     # The id of the tenant that created the task run
     # if different from the task's tenant
     author_tenant: str | None = None  # TODO: remove in favor of author uid
     author_uid: int | None = None
-
-    is_free: bool | None = None
 
     private_fields: set[str] | None = None
 
@@ -144,11 +138,9 @@ class TaskRunBuilder(BaseModel):
             tool_call_requests=list(output.tool_call_requests) if output and output.tool_call_requests else None,
             reasoning_steps=output.reasoning_steps if output else None,
             example_id=self.example_id,
-            config_id=self.config_id,
             metadata=metadata or None,
             status="failure" if error else "success",
             error=error,
-            is_free=self.is_free,
             author_tenant=self.author_tenant,
             author_uid=self.author_uid,
             private_fields=self.private_fields,

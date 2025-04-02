@@ -7,7 +7,13 @@ from pydantic import BaseModel, Field, model_validator
 
 from api.dependencies.path_params import TaskID, TaskSchemaID
 from api.dependencies.security import RequiredUserDep
-from api.dependencies.services import GroupServiceDep, InternalTasksServiceDep, ModelsServiceDep, VersionsServiceDep
+from api.dependencies.services import (
+    GroupServiceDep,
+    InternalTasksServiceDep,
+    ModelsServiceDep,
+    TaskDeploymentsServiceDep,
+    VersionsServiceDep,
+)
 from api.dependencies.storage import StorageDep
 from api.dependencies.task_info import TaskTupleDep
 from api.schemas.user_identifier import UserIdentifier
@@ -187,7 +193,6 @@ class VersionDeploymentMetadata(BaseModel):
     environment: VersionEnvironment
     deployed_at: datetime
     deployed_by: UserIdentifier | None
-    provider_config_id: str | None
 
     @classmethod
     def from_domain(cls, deployment: DVersionDeploymentMetadata):
@@ -195,7 +200,6 @@ class VersionDeploymentMetadata(BaseModel):
             environment=deployment.environment,
             deployed_at=deployment.deployed_at,
             deployed_by=UserIdentifier.from_domain(deployment.deployed_by),
-            provider_config_id=deployment.provider_config_id,
         )
 
 
@@ -458,4 +462,39 @@ async def update_version_notes(
         version_id,
         TaskGroupUpdate(notes=request.notes),
         user.identifier(),
+    )
+
+
+class DeployVersionRequest(BaseModel):
+    environment: VersionEnvironment
+
+
+class DeployVersionResponse(BaseModel):
+    task_schema_id: TaskSchemaID
+    version_id: str
+    environment: VersionEnvironment
+    deployed_at: datetime
+
+
+@router.post("/versions/{version_id}/deploy")
+async def deploy_version(
+    task_tuple: TaskTupleDep,
+    version_id: str,
+    request: DeployVersionRequest,
+    task_deployments_service: TaskDeploymentsServiceDep,
+    user: RequiredUserDep,
+) -> DeployVersionResponse:
+    deployment = await task_deployments_service.deploy_version(
+        task_id=task_tuple,
+        task_schema_id=None,
+        version_id=version_id,
+        environment=request.environment,
+        deployed_by=user.identifier(),
+    )
+
+    return DeployVersionResponse(
+        version_id=deployment.version_id,
+        task_schema_id=deployment.schema_id,
+        environment=deployment.environment,
+        deployed_at=deployment.deployed_at,
     )

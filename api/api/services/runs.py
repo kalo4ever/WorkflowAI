@@ -51,6 +51,8 @@ class LLMCompletionTypedMessages(BaseModel):
     response: str | None = None
     usage: LLMUsage
     duration_seconds: float | None = None
+    provider_config_id: str | None = None
+    provider: Provider | None = None
 
 
 class LLMCompletionsResponse(BaseModel):
@@ -188,6 +190,8 @@ class RunsService:
                 response=c.response,
                 usage=c.usage,
                 duration_seconds=c.duration_seconds,
+                provider_config_id=c.config_id,
+                provider=c.provider,
             )
             llm_completions_typed.append(t)
         return LLMCompletionsResponse(completions=llm_completions_typed)

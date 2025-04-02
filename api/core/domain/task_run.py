@@ -122,13 +122,6 @@ class SerializableTaskRun(SerializableTaskRunBase):
         description="A list of raw completions used to generate the task output",
     )
 
-    config_id: Optional[str] = Field(
-        default=None,
-        description="The id of the config that was used to run the task",
-    )
-
-    is_free: bool | None = None
-
     from_cache: bool | None = None
 
     private_fields: set[str] | None = None
@@ -187,6 +180,14 @@ class SerializableTaskRun(SerializableTaskRunBase):
         if self.llm_completions:
             return int(sum(completion.usage.completion_token_count or 0 for completion in self.llm_completions))
         return None
+
+    @property
+    def credits_used(self) -> float:
+        """Return the total amount of credits used for the task run"""
+        if not self.llm_completions:
+            return 0
+
+        return sum(completion.credits_used for completion in self.llm_completions)
 
 
 class TaskRunIO(Protocol):

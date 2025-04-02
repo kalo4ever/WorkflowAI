@@ -28,7 +28,7 @@ class TestProviderIterator:
                 is_structured_generation_enabled=None,
                 instructions="",
             ),
-            provider_config=None,
+            custom_configs=None,
             builder=provider_builder,
             factory=LocalProviderFactory(),
         )
@@ -66,7 +66,7 @@ class TestProviderIterator:
                 is_structured_generation_enabled=None,
                 instructions="",
             ),
-            provider_config=None,
+            custom_configs=None,
             builder=provider_builder,
             factory=mock_provider_factory,
         )
@@ -110,7 +110,7 @@ class TestProviderIterator:
                 is_structured_generation_enabled=None,
                 instructions="",
             ),
-            provider_config=None,
+            custom_configs=None,
             builder=provider_builder,
             factory=mock_provider_factory,
         )
@@ -137,7 +137,7 @@ class TestProviderIterator:
                 is_structured_generation_enabled=None,
                 instructions="",
             ),
-            provider_config=None,
+            custom_configs=None,
             builder=provider_builder,
             factory=mock_provider_factory,
         )

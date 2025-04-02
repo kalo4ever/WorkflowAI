@@ -26,9 +26,14 @@ logger = logging.getLogger(__name__)
 class DecryptableProviderSettings(ProviderSettings):
     secrets: str
 
+    _encryption: Encryption | None = None
+
     @override
-    def decrypt(self, encryption: Encryption) -> ProviderConfig:
-        decrypted = encryption.decrypt(self.secrets)
+    def decrypt(self) -> ProviderConfig:
+        if not self._encryption:
+            raise ValueError("Encryption is not set")
+
+        decrypted = self._encryption.decrypt(self.secrets)
         as_dict = json.loads(decrypted)
         return TypeAdapter[ProviderConfig](ProviderConfig).validate_python(
             {
@@ -43,6 +48,7 @@ class ProviderSettingsSchema(BaseModel):
     created_at: datetime = Field(default_factory=datetime_factory)
     provider: Provider
     secrets: str
+    preserve_credits: bool | None = None
 
     @classmethod
     def from_domain(cls, domain: ProviderConfig, encryption: Encryption) -> Self:
@@ -52,13 +58,16 @@ class ProviderSettingsSchema(BaseModel):
             secrets=encryption.encrypt(dumped),
         )
 
-    def to_domain(self) -> DecryptableProviderSettings:
-        return DecryptableProviderSettings(
+    def to_domain(self, encryption: Encryption | None) -> DecryptableProviderSettings:
+        out = DecryptableProviderSettings(
             id=self.id,
             created_at=self.created_at,
             provider=self.provider,
             secrets=self.secrets,
+            preserve_credits=self.preserve_credits or None,
         )
+        out._encryption = encryption  # pyright: ignore [reportPrivateUsage]
+        return out
 
 
 class APIKeyDocument(BaseModel):
@@ -142,13 +151,13 @@ class OrganizationDocument(BaseDocumentWithID):
             feedback_slack_hook=org_settings.feedback_slack_hook or None,
         )
 
-    def to_domain(self) -> TenantData:
+    def to_domain(self, encryption: Encryption | None) -> TenantData:
         return TenantData(
             uid=self.uid,
             slug=self.slug or "",
             name=self.display_name or "",
             tenant=self.tenant or "",
-            providers=[s.to_domain() for s in self.providers] if self.providers else [],
+            providers=[s.to_domain(encryption) for s in self.providers] if self.providers else [],
             added_credits_usd=self.added_credits_usd,
             current_credits_usd=self.current_credits_usd,
             org_id=self.org_id,

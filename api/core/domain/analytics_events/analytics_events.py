@@ -147,9 +147,6 @@ class RanTaskEventProperties(BaseModel):
     group: VersionProperties = Field(description="The group of the task run")
     environment: str | None = Field(description="The environment used as part of the 'deploy to environment' feature")
 
-    is_workflowai_llm_provider_key: bool = Field(
-        description="Whether the task run is using WorkflowAI's LLM provider key",
-    )
     latency_seconds: float | None = Field(description="The latency of the task run in seconds", ge=0)
 
     tokens_count: float = Field(description="The number of tokens in the task run", ge=0)
@@ -170,7 +167,6 @@ class RanTaskEventProperties(BaseModel):
             trigger=trigger,
             group=VersionProperties.from_domain(task_run.group),
             environment=task_run.used_environment,
-            is_workflowai_llm_provider_key=task_run.config_id is None,
             latency_seconds=task_run.duration_seconds,
             tokens_count=(input_tokens or 0) + (output_tokens or 0),
             input_tokens_count=input_tokens,

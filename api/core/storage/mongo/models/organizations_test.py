@@ -1,15 +1,10 @@
-import json
-from datetime import datetime
-
 import pytest
 
-from core.domain.models import Provider
 from core.domain.organization_settings import ProviderConfig
 from core.providers.google.google_provider import GoogleProviderConfig
 from core.providers.groq.groq_provider import GroqConfig
 from core.providers.openai.openai_provider import OpenAIConfig
 from core.storage.mongo.models.organizations import (
-    DecryptableProviderSettings,
     OrganizationDocument,
     ProviderSettingsSchema,
 )
@@ -30,30 +25,8 @@ def test_provider_settings_schema_sanity(config: ProviderConfig, mock_encryption
     assert schema.provider == config.provider
     assert schema.secrets
 
-    domain = schema.to_domain()
-    assert domain.decrypt(mock_encryption) == config
-
-
-class TestDecryptableProviderSettings:
-    def test_decrypt_old_google_config(self, mock_encryption: Encryption) -> None:
-        old_config = {
-            "vertex_credentials": "k",
-            "vertex_project": "p",
-            "vertex_location": "l",
-        }
-
-        settings = DecryptableProviderSettings(
-            provider=Provider.GOOGLE,
-            secrets=json.dumps(old_config) + "_encrypted",
-            id="",
-            created_at=datetime.now(),
-        )
-
-        assert settings.decrypt(mock_encryption) == GoogleProviderConfig(
-            vertex_project="p",
-            vertex_credentials="k",
-            vertex_location=["l"],
-        )
+    domain = schema.to_domain(mock_encryption)
+    assert domain.decrypt() == config
 
 
 class TestDeserializeOrganization:

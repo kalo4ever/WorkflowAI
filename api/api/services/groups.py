@@ -19,15 +19,12 @@ from core.domain.tool import Tool
 from core.domain.users import UserIdentifier
 from core.domain.version_environment import VersionEnvironment
 from core.domain.version_reference import VersionReference
-from core.providers.base.config import ProviderConfig
 from core.runners.abstract_runner import AbstractRunner
 from core.runners.workflowai.noop_external_runner import NoopExternalRunner
 from core.runners.workflowai.workflowai_runner import WorkflowAIRunner
 from core.storage import ObjectNotFoundException
 from core.storage.backend_storage import BackendStorage
 from core.tools import get_tools_in_instructions
-from core.utils.encryption import Encryption
-from core.utils.models.dumps import safe_dump_pydantic_model
 
 
 class SanitizedVersion(NamedTuple):
@@ -35,7 +32,6 @@ class SanitizedVersion(NamedTuple):
     id: TaskGroupIdentifier | None = None
     iteration: int | None = None
     environment: VersionEnvironment | None = None
-    config_id: str | None = None
     is_external: bool | None = None
 
 
@@ -43,13 +39,11 @@ class GroupService:
     def __init__(
         self,
         storage: BackendStorage,
-        encryption: Encryption,
         event_router: EventRouter,
         analytics_service: AnalyticsService,
         user: UserIdentifier,
     ):
         self.storage = storage
-        self.encryption = encryption
         self.event_router = event_router
 
         self.analytics_service = analytics_service
@@ -197,7 +191,6 @@ class GroupService:
                 deployment.properties,
                 iteration=deployment.iteration,
                 environment=reference.version,
-                config_id=deployment.provider_config_id,
             )
 
         if not reference.version:
@@ -255,8 +248,8 @@ class GroupService:
         self,
         task: SerializableTaskVariant,
         sanitized_version: SanitizedVersion,
-        provider_config: tuple[str, ProviderConfig] | None,
-        disable_fallback: bool = False,
+        custom_configs: list[ProviderSettings] | None,
+        disable_fallback: bool,
     ) -> AbstractRunner[Any]:
         metadata: dict[str, Any] = {}
         if sanitized_version.environment:
@@ -269,7 +262,7 @@ class GroupService:
             cache_fetcher=self.storage.task_runs.fetch_cached_run,
             properties=sanitized_version.properties,
             metadata=metadata or None,
-            provider_config=provider_config,
+            custom_configs=custom_configs,
             disable_fallback=disable_fallback,
         )
         await runner.validate_run_options()
@@ -300,27 +293,6 @@ class GroupService:
             is_chain_of_thought_enabled = None
         properties.is_chain_of_thought_enabled = is_chain_of_thought_enabled
 
-    def _find_provider_config(
-        self,
-        provider_config_id: str | None,
-        provider_settings: list[ProviderSettings] | None,
-    ):
-        if not provider_config_id:
-            return None
-        if provider_settings:
-            for provider_setting in provider_settings:
-                if provider_setting.id == provider_config_id:
-                    return provider_config_id, provider_setting.decrypt(self.encryption)
-
-        self._logger.error(
-            "Provider config not found",
-            extra={
-                "provider_config_id": provider_config_id,
-                "provider_settings": safe_dump_pydantic_model(provider_settings),
-            },
-        )
-        return None
-
     async def sanitize_groups_for_internal_runner(  # noqa: C901
         self,
         task_id: str,
@@ -329,7 +301,6 @@ class GroupService:
         variant: Optional[SerializableTaskVariant] = None,
         detect_chain_of_thought: bool = False,  # COT detection is only run when creating a group from POST /groups for now.
         # detect_structured_generation: bool = False,  # Structured generation detection is only run when creating a group from POST /groups for now.
-        provider_config_id: str | None = None,
         provider_settings: list[ProviderSettings] | None = None,
         disable_fallback: bool = False,
     ) -> tuple[AbstractRunner[Any], bool]:
@@ -350,15 +321,6 @@ class GroupService:
                 group=TaskGroup(iteration=version.iteration or 0, properties=version.properties),
                 cache_fetcher=self.storage.task_runs.fetch_cached_run,
             ), True
-
-        if provider_config_id:
-            if version.config_id:
-                self._logger.warning(
-                    "Provider config id provided but version already has a config id",
-                    extra={"task_id": task_id, "task_schema_id": task_schema_id, "version": version},
-                )
-        else:
-            provider_config_id = version.config_id
 
         if not version.iteration:
             # Check for enabled tools
@@ -388,7 +350,7 @@ class GroupService:
         runner = await self._build_runner_from_properties(
             variant,
             version,
-            provider_config=self._find_provider_config(provider_config_id, provider_settings),
+            custom_configs=provider_settings,
             disable_fallback=disable_fallback,
         )
         is_different_version = version.properties.model_dump(exclude_none=True) != runner.properties.model_dump(

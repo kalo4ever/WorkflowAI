@@ -1021,7 +1021,7 @@ class TestComplete:
         httpx_mock: HTTPXMock,
         google_provider: GoogleProvider,
     ):
-        google_provider.config.default_block_threshold = None
+        google_provider._config.default_block_threshold = None  # pyright: ignore [reportPrivateUsage]
 
         httpx_mock.add_response(
             url="https://us-central1-aiplatform.googleapis.com/v1/projects/test_project/locations/us-central1/publishers/google/models/gemini-1.5-pro-001:generateContent",
@@ -1050,7 +1050,7 @@ class TestComplete:
         google_provider: GoogleProvider,
         builder_context: BuilderInterface,
     ):
-        google_provider.config.vertex_location = ["us-central1", "us-east1"]
+        google_provider._config.vertex_location = ["us-central1", "us-east1"]  # pyright: ignore [reportPrivateUsage]
         httpx_mock.add_response(
             url="https://us-central1-aiplatform.googleapis.com/v1/projects/test_project/locations/us-central1/publishers/google/models/gemini-1.5-pro-001:generateContent",
             status_code=429,
@@ -1093,7 +1093,7 @@ class TestComplete:
         google_provider: GoogleProvider,
         builder_context: BuilderInterface,
     ):
-        google_provider.config.vertex_location = ["us-central1", "us-east1"]
+        google_provider._config.vertex_location = ["us-central1", "us-east1"]  # pyright: ignore [reportPrivateUsage]
         httpx_mock.add_response(
             url="https://us-central1-aiplatform.googleapis.com/v1/projects/test_project/locations/us-central1/publishers/google/models/gemini-1.5-pro-001:generateContent",
             status_code=429,
@@ -1170,7 +1170,7 @@ class TestRequiresDownloadingFile:
 
 class TestVertexLocationRandomization:
     async def test_vertex_location_randomization(self, google_provider: GoogleProvider):
-        google_provider.config.vertex_location = ["us-central1", "us-east1", "us-west1", "us-south1", "us-north1"]
+        google_provider._config.vertex_location = ["us-central1", "us-east1", "us-west1", "us-south1", "us-north1"]  # pyright: ignore [reportPrivateUsage]
         with patch("core.providers.google.google_provider.GoogleProvider.get_vertex_location") as mock_vertex_location:
             mock_vertex_location.side_effect = ["us-central1", "us-east1", "us-west1"]
 
@@ -1179,7 +1179,7 @@ class TestVertexLocationRandomization:
             assert len(set(urls)) == len(urls)
 
     async def test_vertex_location_randomization_with_last_used_location(self, google_provider: GoogleProvider):
-        google_provider.config.vertex_location = ["us-central1", "us-east1", "us-west1", "us-south1", "us-north1"]
+        google_provider._config.vertex_location = ["us-central1", "us-east1", "us-west1", "us-south1", "us-north1"]  # pyright: ignore [reportPrivateUsage]
         with patch("core.providers.google.google_provider.GoogleProvider._get_metadata") as mock_get_metadata:
 
             def get_metadata_side_effect(key: str) -> str | None:
@@ -1238,7 +1238,7 @@ class TestHandleStatusCode:
         assert e.value.should_try_next_provider
 
     def test_missing_model_custom_config(self, google_provider: GoogleProvider):
-        google_provider.config_id = "test_config_id"
+        google_provider._config_id = "test_config_id"  # pyright: ignore [reportPrivateUsage]
         mock_response = Mock(spec=httpx.Response)
         mock_response.status_code = 404
         mock_response.json.return_value = {

@@ -13,7 +13,6 @@ class VersionDeploymentMetadata(BaseModel):
     deployed_at: datetime
     deployed_by: UserIdentifier | None
     environment: VersionEnvironment
-    provider_config_id: str | None
 
     @classmethod
     def from_deployment(cls, deployment: TaskDeployment):
@@ -21,7 +20,6 @@ class VersionDeploymentMetadata(BaseModel):
             deployed_at=deployment.deployed_at,
             deployed_by=deployment.deployed_by,
             environment=deployment.environment,
-            provider_config_id=deployment.provider_config_id,
         )
 
 

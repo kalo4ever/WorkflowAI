@@ -8,15 +8,11 @@ from api.services.analytics import AnalyticsService
 from api.services.groups import GroupService
 from api.services.run import RunService
 from core.domain.analytics_events.analytics_events import DeployedTaskVersionProperties, VersionProperties
-from core.domain.errors import BadRequestError, ProviderError
-from core.domain.organization_settings import ProviderSettings
 from core.domain.task_group import TaskGroup, TaskGroupQuery
-from core.domain.task_run_query import SerializableTaskRunQuery
 from core.domain.users import UserIdentifier
 from core.domain.version_environment import VersionEnvironment
-from core.domain.version_reference import VersionReference
 from core.storage import TaskTuple
-from core.storage.mongo.models.task_deployments import TaskDeployment
+from core.storage.mongo.models.deployment_document import TaskDeployment
 
 
 class VersionsResponse(TaskGroup):
@@ -57,88 +53,32 @@ class TaskDeploymentsService:
         self._group_service = group_service
         self._analytics_service = analytics_service
 
-    async def validate_provider_config_id_for_version(
-        self,
-        task_id: TaskTuple,
-        task_schema_id: int,
-        version_id: int,
-        provider_config_id: str,
-        provider_settings: list[ProviderSettings] | None,
-    ):
-        q = SerializableTaskRunQuery(
-            task_id=task_id[0],
-            task_schema_id=task_schema_id,
-            include_fields={"_id", "task_input"},
-        )
-        # 1. Retrive latest successful task run for this version
-        try:
-            latest_run = await anext(self._storage.task_runs.fetch_task_run_resources(task_id[1], q))
-        except StopAsyncIteration:
-            # No runs yet for this version, so can't validate
-            return
-
-        if not latest_run:
-            return
-        # 2. Re-run this task run with new provider_config
-        _runner, _ = await self._group_service.sanitize_groups_for_internal_runner(
-            task_id[0],
-            task_schema_id,
-            VersionReference(version=version_id),
-            provider_config_id=provider_config_id,
-            disable_fallback=True,
-            provider_settings=provider_settings,
-        )
-
-        try:
-            await self._run_service.run(
-                runner=_runner,
-                task_run_id=latest_run.id,
-                stream_serializer=None,
-                cache="never",
-                labels=set(),
-                metadata=None,
-                trigger="internal",
-                task_input=latest_run.task_input,
-                store_inline=False,
-                file_storage=None,
-                serializer=lambda run: run,
-            )
-        except ProviderError:
-            raise BadRequestError(
-                msg="The provider config did not run on the given task",
-            )
-        return
-
     async def deploy_version(
         self,
         task_id: TaskTuple,
-        task_schema_id: int,
-        version_id: int,
+        # TODO[versionv1]: remove this once we only deploy by version_id
+        task_schema_id: int | None,
+        version_id: int | str,
         environment: VersionEnvironment,
-        provider_config_id: str | None,
         deployed_by: UserIdentifier | None,
-        provider_settings: list[ProviderSettings] | None,
     ) -> TaskDeployment:
-        group = await self._storage_task_groups.get_task_group_by_iteration(task_id[0], task_schema_id, version_id)
+        if isinstance(version_id, str):
+            group = await self._storage_task_groups.get_task_group_by_id(task_id[0], version_id)
+        else:
+            if not task_schema_id:
+                raise ValueError("task_schema_id is required for deploying by iteration")
+            group = await self._storage_task_groups.get_task_group_by_iteration(task_id[0], task_schema_id, version_id)
 
         task_deployment = TaskDeployment(
             task_id=task_id[0],
-            schema_id=task_schema_id,
-            iteration=version_id,
+            schema_id=group.schema_id,
+            iteration=group.iteration,
+            version_id=group.id,
             environment=environment,
-            provider_config_id=provider_config_id,
             deployed_by=deployed_by,
             deployed_at=datetime.now(timezone.utc),
             properties=group.properties,
         )
-        if provider_config_id:
-            await self.validate_provider_config_id_for_version(
-                task_id,
-                task_schema_id,
-                version_id,
-                provider_config_id,
-                provider_settings,
-            )
 
         self._analytics_service.send_event(
             lambda: DeployedTaskVersionProperties(
@@ -178,7 +118,6 @@ class TaskDeploymentsService:
                 deployments=[
                     DeployedVersionsResponse.Deployment(
                         environment=d.environment,
-                        provider_config_id=d.provider_config_id,
                         deployed_at=d.deployed_at,
                         deployed_by=d.deployed_by,
                     )

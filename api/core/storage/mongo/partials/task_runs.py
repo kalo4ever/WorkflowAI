@@ -102,9 +102,7 @@ class MongoTaskRunStorage(PartialStorage[TaskRunDocument], TaskRunStorage):
                     "_id": {"$dateToString": {"format": "%Y-%m-%d", "date": "$created_at"}},
                     "total_count": {"$sum": 1},
                     "total_cost_usd": {
-                        "$sum": {
-                            "$cond": [{"$eq": ["$is_free", True]}, 0, "$cost_usd"],
-                        },
+                        "$sum": "$cost_usd",
                     },
                 },
             },

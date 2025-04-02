@@ -41,7 +41,7 @@ async def add_provider_settings(
     if not is_valid:
         raise HTTPException(400, "Invalid provider config")
 
-    return await storage.add_provider_config(provider.config)
+    return await storage.add_provider_config(config)
 
 
 @router.delete("/settings/providers/{provider_id}", description="Delete a provider config")
