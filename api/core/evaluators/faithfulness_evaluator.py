@@ -2,6 +2,11 @@ from typing import Any
 
 from typing_extensions import override
 
+from core.agents.chat_faithfulness_check_task import (
+    ChatFaithfulnessCheckTask,
+    ChatFaithfulnessCheckTaskInput,
+    ChatFaithfulnessCheckTaskOutput,
+)
 from core.domain.evaluator_options import EvaluatorOptions
 from core.domain.task_evaluation import TaskEvaluation
 from core.domain.task_evaluator import FaithfulnessEvaluator
@@ -9,11 +14,6 @@ from core.domain.task_group_properties import TaskGroupProperties
 from core.domain.task_variant import SerializableTaskVariant
 from core.domain.version_reference import VersionReference
 from core.evaluators.example_based_evaluator import ExampleBasedEvaluator
-from core.tasks.chat_faithfulness_check_task import (
-    ChatFaithfulnessCheckTask,
-    ChatFaithfulnessCheckTaskInput,
-    ChatFaithfulnessCheckTaskOutput,
-)
 from core.utils.dicts import get_at_keypath
 
 

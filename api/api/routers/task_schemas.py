@@ -26,10 +26,10 @@ from api.dependencies.task_info import TaskTupleDep
 from api.errors import prettify_errors
 from api.routers.common import DeprecatedVersionReference
 from api.services.python_gen import RunCode, generate_full_run_code
-from api.tasks.task_instruction_tool_update.task_instruction_tool_update_task import (
+from api.utils import error_json_response
+from core.agents.task_instruction_tool_update_task import (
     TaskInstructionsToolUpdateTaskOutput,
 )
-from api.utils import error_json_response
 from core.domain.analytics_events.analytics_events import (
     GeneratedInputProperties,
     ImportedTaskRunEventProperties,

@@ -6,7 +6,7 @@ import pytest
 from pydantic import ValidationError
 
 from api.schemas.build_task_request import BuildAgentIteration, BuildAgentRequest
-from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task import AgentSchemaJson
+from core.agents.chat_task_schema_generation.chat_task_schema_generation_task import AgentSchemaJson
 from core.domain.events import TaskChatStartedEvent
 from core.domain.fields.chat_message import UserChatMessage
 from core.domain.fields.file import File

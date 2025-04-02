@@ -12,21 +12,21 @@ from api.services.features import (
     FeatureService,
 )
 from api.services.internal_tasks._internal_tasks_utils import officially_suggested_tools
-from api.tasks.agent_input_output_example import SuggestedAgentInputOutputExampleOutput
-from api.tasks.agent_output_example import SuggestedAgentOutputExampleInput
-from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task import (
+from core.agents.agent_input_output_example import SuggestedAgentInputOutputExampleOutput
+from core.agents.agent_output_example import SuggestedAgentOutputExampleInput
+from core.agents.chat_task_schema_generation.chat_task_schema_generation_task import (
     InputGenericFieldConfig,
     InputObjectFieldConfig,
     InputSchemaFieldType,
     OutputObjectFieldConfig,
     OutputStringFieldConfig,
 )
-from api.tasks.chat_task_schema_generation.schema_generation_agent import (
+from core.agents.chat_task_schema_generation.schema_generation_agent import (
     NewAgentSchema,
     SchemaBuilderInput,
     SchemaBuilderOutput,
 )
-from api.tasks.company_agent_suggestion_agent import (
+from core.agents.company_agent_suggestion_agent import (
     SuggestAgentForCompanyInput,
     SuggestAgentForCompanyOutput,
     SuggestedAgent,

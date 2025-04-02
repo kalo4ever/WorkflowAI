@@ -3,8 +3,9 @@ from typing import AsyncIterator
 import workflowai
 from pydantic import BaseModel, Field
 
-from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task import AgentSchemaJson
 from core.domain.fields.chat_message import ChatMessage
+
+from .chat_task_schema_generation.chat_task_schema_generation_task import AgentSchemaJson
 
 
 class TaskDescriptionGenerationTaskInput(BaseModel):

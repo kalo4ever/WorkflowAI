@@ -3,7 +3,7 @@ from typing import Any
 
 import pytest
 
-from api.tasks.chat_task_schema_generation.apply_field_updates import (
+from core.agents.chat_task_schema_generation.apply_field_updates import (
     InputFieldUpdate,
     OutputFieldUpdate,
     apply_field_updates,

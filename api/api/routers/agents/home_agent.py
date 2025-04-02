@@ -7,7 +7,7 @@ from api.services.internal_tasks.agent_suggestions_service import (
     SuggestedAgentOutputExampleOutputWithSchema,
     SuggestLlmAgentsForCompanyOutputAndStatus,
 )
-from api.tasks.suggest_llm_features_for_company_agent import (
+from core.agents.suggest_llm_features_for_company_agent import (
     AgentSuggestionChatMessage,
     SuggestedAgent,
 )

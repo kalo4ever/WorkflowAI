@@ -1,7 +1,7 @@
 from unittest.mock import AsyncMock, patch
 
 from api.services.internal_tasks.moderation_service import ModerationService
-from api.tasks.moderation_task import ModerationOutput
+from core.agents.moderation_task import ModerationOutput
 
 
 async def test_handle_moderation_result_positive_with_iteration():

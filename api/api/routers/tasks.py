@@ -26,9 +26,9 @@ from api.schemas.build_task_request import (
 from api.services import tasks
 from api.services.task_deployments import DeployedVersionsResponse, VersionsResponse
 from api.services.task_gen import get_new_task_input_from_request
-from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task import AgentSchemaJson
-from api.tasks.generate_task_preview import GenerateTaskPreviewTaskInput
-from api.tasks.utils import WORKFLOWAI_ENV_FOR_INTERNAL_TASKS
+from core.agents.chat_task_schema_generation.chat_task_schema_generation_task import AgentSchemaJson
+from core.agents.generate_task_preview import GenerateTaskPreviewTaskInput
+from core.agents.utils import WORKFLOWAI_ENV_FOR_INTERNAL_TASKS
 from core.domain.analytics_events.analytics_events import (
     CreatedTaskProperties,
     EditedTaskSchemaEventProperties,
