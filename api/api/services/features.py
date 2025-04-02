@@ -87,11 +87,8 @@ class FeatureService:
         self.storage = storage
 
     @staticmethod
-    async def _is_company_email_domain(user_email_domain: str | None) -> bool:
+    async def _is_company_email_domain(user_email_domain: str) -> bool:
         try:
-            if not user_email_domain:
-                return False
-
             company_domain_classification = await run_classify_email_domain_agent(
                 ClassifyEmailDomainAgentInput(email_domain=user_email_domain),
             )
@@ -104,7 +101,7 @@ class FeatureService:
 
     @staticmethod
     async def get_feature_sections_preview(user_domain: str | None = None) -> list[FeatureSectionPreview]:
-        is_company_email_domain = await FeatureService._is_company_email_domain(user_domain)
+        show_company_section = user_domain is None or await FeatureService._is_company_email_domain(user_domain)
 
         return [
             FeatureSectionPreview(
@@ -118,7 +115,7 @@ class FeatureService:
                     )
                     for tag in section.tags
                     # If the user's email domain is not a company email domain, we don't want to show the "company_specific" section
-                    if tag.kind != "company_specific" or is_company_email_domain
+                    if tag.kind != "company_specific" or show_company_section
                 ],
             )
             for section in FEATURES_MAPPING
