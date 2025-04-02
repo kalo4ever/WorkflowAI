@@ -101,6 +101,7 @@ class FeatureService:
 
     @staticmethod
     async def get_feature_sections_preview(user_domain: str | None = None) -> list[FeatureSectionPreview]:
+        # We want to show company specific section for anonymous user because they must be able to enter any URL and get suggestion for this URL.
         show_company_section = user_domain is None or await FeatureService._is_company_email_domain(user_domain)
 
         return [
