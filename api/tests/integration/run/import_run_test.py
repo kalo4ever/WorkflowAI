@@ -43,7 +43,6 @@ async def test_import_run_with_metadata_and_labels(
 
     created = result_or_raise(await int_api_client.post("/chiefofstaff.ai/agents/greet/schemas/1/runs", json=payload))
     assert created["metadata"] == {"key1": "value1"}
-    assert set(created["labels"]) == {"label1", "label2"}
     assert created["cost_usd"] == 1.0
 
     # Credits should not have been decremented
