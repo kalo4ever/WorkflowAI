@@ -297,25 +297,6 @@ class ClickhouseRun(BaseModel):
     def serialize_metadata(self, metadata: dict[str, str] | None):
         return metadata or dict[str, str]()
 
-    # TODO: this should really be a simpler int32.. No need to store as a UUID
-    provider_config_uuid: UUID | None = None
-
-    @field_serializer("provider_config_uuid")
-    def serialize_provider_config_uuid(self, provider_config_uuid: UUID | None):
-        if provider_config_uuid:
-            return str(provider_config_uuid)
-        return "00000000-0000-0000-0000-000000000000"
-
-    @field_validator("provider_config_uuid", mode="before")
-    def parse_provider_config_uuid(cls, value: Any) -> UUID | None:
-        if not value:
-            return None
-        if isinstance(value, str):
-            value = UUID(value)
-        if not isinstance(value, UUID):
-            raise ValueError("invalid value")
-        return value if value.int else None
-
     author_uid: Annotated[int | None, validate_int(MAX_UINT_32, "author_uid")] = None
 
     @field_serializer("author_uid")
