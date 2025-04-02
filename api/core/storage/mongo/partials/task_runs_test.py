@@ -30,37 +30,31 @@ class TestAggregateTaskRunCosts:
             _task_run(
                 _id="run1",
                 cost_usd=10.0,
-                is_free=False,
                 created_at=datetime(2023, 1, 1, tzinfo=timezone.utc),
             ),
             _task_run(
                 _id="run2",
                 cost_usd=20.0,
-                is_free=False,
                 created_at=datetime(2023, 1, 1, tzinfo=timezone.utc),
             ),
             _task_run(
                 _id="run3",
                 cost_usd=0.0,
-                is_free=False,
                 created_at=datetime(2023, 1, 2, tzinfo=timezone.utc),
             ),
             _task_run(
                 _id="run4",
                 cost_usd=15.0,
-                is_free=False,
                 created_at=datetime(2023, 1, 2, tzinfo=timezone.utc),
             ),
             _task_run(
                 _id="run5",
                 cost_usd=5.0,
-                is_free=False,
                 created_at=datetime(2023, 1, 1, tzinfo=timezone.utc),
             ),
             _task_run(
                 _id="run6",
                 cost_usd=25.0,
-                is_free=False,
                 created_at=datetime(2023, 1, 5, tzinfo=timezone.utc),
             ),
         ]
@@ -101,37 +95,31 @@ class TestAggregateTaskRunCosts:
             _task_run(
                 _id="run1",
                 cost_usd=10.0,
-                is_free=False,
                 created_at=datetime(2023, 1, 1, tzinfo=timezone.utc),
             ),
             _task_run(
                 _id="run2",
                 cost_usd=20.0,
-                is_free=True,
                 created_at=datetime(2023, 1, 1, tzinfo=timezone.utc),
             ),
             _task_run(
                 _id="run3",
                 cost_usd=0.0,
-                is_free=False,
                 created_at=datetime(2023, 1, 2, tzinfo=timezone.utc),
             ),
             _task_run(
                 _id="run4",
                 cost_usd=15.0,
-                is_free=True,
                 created_at=datetime(2023, 1, 2, tzinfo=timezone.utc),
             ),
             _task_run(
                 _id="run5",
                 cost_usd=5.0,
-                is_free=False,
                 created_at=datetime(2023, 1, 1, tzinfo=timezone.utc),
             ),
             _task_run(
                 _id="run6",
                 cost_usd=25.0,
-                is_free=False,
                 created_at=datetime(2023, 1, 5, tzinfo=timezone.utc),
             ),
         ]
@@ -171,61 +159,51 @@ class TestAggregateTaskRunCosts:
             _task_run(
                 _id="run1",
                 cost_usd=10.0,
-                is_free=False,
                 created_at=current_date,
             ),
             _task_run(
                 _id="run2",
                 cost_usd=20.0,
-                is_free=False,
                 created_at=current_date - timedelta(days=1),
             ),
             _task_run(
                 _id="run3",
                 cost_usd=0.0,
-                is_free=False,
                 created_at=current_date - timedelta(days=3),
             ),
             _task_run(
                 _id="run4",
                 cost_usd=15.0,
-                is_free=False,
                 created_at=current_date - timedelta(days=3),
             ),
             _task_run(
                 _id="run5",
                 cost_usd=5.0,
-                is_free=False,
                 created_at=current_date - timedelta(days=4),
             ),
             _task_run(
                 _id="run6",
                 cost_usd=25.0,
-                is_free=False,
                 created_at=current_date - timedelta(days=3),
             ),
             _task_run(
                 _id="run7",
                 cost_usd=0.0,
-                is_free=False,
                 created_at=current_date - timedelta(days=9),
             ),
             _task_run(
                 _id="run8",
                 cost_usd=15.0,
-                is_free=False,
                 created_at=current_date - timedelta(days=8),
             ),
             _task_run(
                 _id="run9",
                 cost_usd=5.0,
-                is_free=False,
                 created_at=current_date - timedelta(days=8),
             ),
             _task_run(
                 _id="run10",
                 cost_usd=25.0,
-                is_free=False,
                 created_at=current_date - timedelta(days=7),
             ),
         ]
@@ -264,67 +242,56 @@ class TestAggregateTaskRunCosts:
             _task_run(
                 _id="run1",
                 cost_usd=10.0,
-                is_free=False,
                 created_at=current_date - timedelta(days=30),
             ),
             _task_run(
                 _id="run2",
                 cost_usd=20.0,
-                is_free=False,
                 created_at=current_date - timedelta(days=29),
             ),
             _task_run(
                 _id="run3",
                 cost_usd=0.0,
-                is_free=False,
                 created_at=current_date - timedelta(days=27),
             ),
             _task_run(
                 _id="run4",
                 cost_usd=15.0,
-                is_free=False,
                 created_at=current_date - timedelta(days=27),
             ),
             _task_run(
                 _id="run5",
                 cost_usd=5.0,
-                is_free=False,
                 created_at=current_date - timedelta(days=28),
             ),
             _task_run(
                 _id="run6",
                 cost_usd=25.0,
-                is_free=False,
                 created_at=current_date - timedelta(days=27),
             ),
             _task_run(
                 _id="run7",
                 cost_usd=0.0,
-                is_free=False,
                 created_at=current_date - timedelta(days=33),
             ),
             _task_run(
                 _id="run8",
                 cost_usd=15.0,
-                is_free=False,
                 created_at=current_date - timedelta(days=32),
             ),
             _task_run(
                 _id="run9",
                 cost_usd=5.0,
-                is_free=False,
                 created_at=current_date - timedelta(days=32),
             ),
             _task_run(
                 _id="run10",
                 cost_usd=25.0,
-                is_free=False,
                 created_at=current_date - timedelta(days=31),
             ),
             _task_run(
                 _id="run11",
                 cost_usd=3.0,
-                is_free=False,
                 created_at=current_date,
             ),
         ]
@@ -367,67 +334,56 @@ class TestAggregateTaskRunCosts:
             _task_run(
                 _id="run1",
                 cost_usd=10.0,
-                is_free=False,
                 created_at=current_date - timedelta(days=365),
             ),
             _task_run(
                 _id="run2",
                 cost_usd=20.0,
-                is_free=False,
                 created_at=current_date - timedelta(days=290),
             ),
             _task_run(
                 _id="run3",
                 cost_usd=0.0,
-                is_free=False,
                 created_at=current_date - timedelta(days=270),
             ),
             _task_run(
                 _id="run4",
                 cost_usd=15.0,
-                is_free=False,
                 created_at=current_date - timedelta(days=270),
             ),
             _task_run(
                 _id="run5",
                 cost_usd=5.0,
-                is_free=False,
                 created_at=current_date - timedelta(days=280),
             ),
             _task_run(
                 _id="run6",
                 cost_usd=25.0,
-                is_free=False,
                 created_at=current_date - timedelta(days=270),
             ),
             _task_run(
                 _id="run7",
                 cost_usd=0.0,
-                is_free=False,
                 created_at=current_date - timedelta(days=376),
             ),
             _task_run(
                 _id="run8",
                 cost_usd=15.0,
-                is_free=False,
                 created_at=current_date - timedelta(days=376),
             ),
             _task_run(
                 _id="run9",
                 cost_usd=5.0,
-                is_free=False,
                 created_at=current_date - timedelta(days=382),
             ),
             _task_run(
                 _id="run10",
                 cost_usd=25.0,
-                is_free=False,
                 created_at=current_date - timedelta(days=391),
             ),
             _task_run(
                 _id="run11",
                 cost_usd=3.0,
-                is_free=False,
                 created_at=current_date,
             ),
         ]
@@ -471,14 +427,12 @@ class TestAggregateTaskRunCosts:
                 _id="run1",
                 task_id="task1",
                 cost_usd=10.0,
-                is_free=False,
                 created_at=current_date - timedelta(days=29),
             ),
             _task_run(
                 _id="run2",
                 task_id="task2",
                 cost_usd=20.0,
-                is_free=False,
                 created_at=current_date - timedelta(days=29),
             ),
         ]

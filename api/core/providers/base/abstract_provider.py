@@ -54,17 +54,24 @@ ProviderOutput = TypeVar("ProviderOutput")
 
 
 class AbstractProvider(ABC, Generic[ProviderConfigVar, ProviderRequestVar]):
-    def __init__(self, config: Optional[ProviderConfigVar] = None, config_id: Optional[str] = None, index: int = 0):
-        self.config: ProviderConfigVar = config or self._default_config(index=index)
-        self.config_id = config_id
+    def __init__(
+        self,
+        config: Optional[ProviderConfigVar] = None,
+        config_id: Optional[str] = None,
+        index: int = 0,
+        preserve_credits: bool | None = None,
+    ):
+        self._config: ProviderConfigVar = config or self._default_config(index=index)
+        self._config_id = config_id
         # The index of the provider, useful when there are multiple
         # Providers configured for a single provider type
         self._index = index
         self.logger = logging.getLogger(type(self).__name__)
+        self._preserve_credits = preserve_credits
 
     @property
-    def _is_custom_config(self) -> bool:
-        return self.config_id is not None
+    def is_custom_config(self) -> bool:
+        return self._config_id is not None
 
     # TODO: remove
     @abstractmethod
@@ -478,12 +485,12 @@ class AbstractProvider(ABC, Generic[ProviderConfigVar, ProviderRequestVar]):
         The completion object can then be updated in place"""
 
         kwargs, raw = await self._prepare_completion(messages, options, stream)
+        raw.config_id = self._config_id
+        raw.preserve_credits = self._preserve_credits
         builder = self._builder_context()
         if builder is not None:
             builder.llm_completions.append(raw)
 
-            if self.config_id:
-                builder.config_id = self.config_id
         return kwargs, raw
 
     def validate_output(

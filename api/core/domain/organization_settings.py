@@ -10,6 +10,7 @@ class ProviderSettings(BaseModel):
     id: str
     created_at: datetime
     provider: Provider
+    preserve_credits: bool | None = None
 
     def decrypt(self) -> ProviderConfig:
         # Implement decryption in subclasses

@@ -35,23 +35,23 @@ class AzureOpenAIConfig(BaseModel):
 
 class AzureOpenAIProvider(OpenAIProviderBase[AzureOpenAIConfig]):
     def is_model_available_in_region(self, model_value: str, region: str) -> bool:
-        region_config = self.config.get_region_config(region)
+        region_config = self._config.get_region_config(region)
         if not region_config:
             return False
         return model_value in region_config["models"]  # type: ignore
 
     def get_best_region_for_model(self, model_value: str) -> str:
         if self.is_model_available_in_region(model_value, "eastus"):
-            return self.config.default_region
-        for region in self.config.deployments:
+            return self._config.default_region
+        for region in self._config.deployments:
             if self.is_model_available_in_region(model_value, region):
                 return region
         raise ValueError(f"No region found for model {model_value}")
 
     @override
     async def _request_headers(self, request: dict[str, Any], url: str, model: Model) -> dict[str, str]:
-        region = self._get_metadata(_AZURE_API_REGION_METADATA_KEY) or self.config.default_region
-        region_config = self.config.get_region_config(region)
+        region = self._get_metadata(_AZURE_API_REGION_METADATA_KEY) or self._config.default_region
+        region_config = self._config.get_region_config(region)
         if not region_config:
             raise ValueError(f"No configuration found for region {region}")
         return {
@@ -62,12 +62,12 @@ class AzureOpenAIProvider(OpenAIProviderBase[AzureOpenAIConfig]):
     @override
     def _request_url(self, model: Model, stream: bool) -> str:
         model_value = MODEL_NAME_MAP.get(model, model.value)
-        region = self.get_best_region_for_model(model_value) or self.config.default_region
-        region_config = self.config.get_region_config(region)
+        region = self.get_best_region_for_model(model_value) or self._config.default_region
+        region_config = self._config.get_region_config(region)
         if not region_config:
             raise ProviderDoesNotSupportModelError(model=model, provider=self.name())
         self._add_metadata(_AZURE_API_REGION_METADATA_KEY, region)
-        return f"{region_config['url']}{model_value}/chat/completions?api-version={self.config.api_version}"
+        return f"{region_config['url']}{model_value}/chat/completions?api-version={self._config.api_version}"
 
     @override
     @classmethod

@@ -94,7 +94,7 @@ class ProviderPipeline:
             e.capture_if_needed()
             self.errors.append(e)
 
-            if provider.config_id is not None:
+            if provider.is_custom_config:
                 # In case of custom configs, we always retry
                 return
 
@@ -172,7 +172,7 @@ class ProviderPipeline:
         for config in configs:
             try:
                 decrypted = config.decrypt()
-                provider = self._factory.build_provider(decrypted, config.id)
+                provider = self._factory.build_provider(decrypted, config.id, preserve_credits=config.preserve_credits)
                 yield provider
             except Exception:
                 _logger.exception("Failed to build provider with custom config", extra={"config_id": config.id})

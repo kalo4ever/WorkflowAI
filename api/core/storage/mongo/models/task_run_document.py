@@ -70,8 +70,6 @@ class TaskRunDocument(BaseDocumentWithStrID):
 
     metadata: dict[str, Any] | None = None
 
-    is_free: bool | None = None
-
     author_tenant: str | None = None
 
     # Is external is only stored, not exposed to the API for now
@@ -86,6 +84,9 @@ class TaskRunDocument(BaseDocumentWithStrID):
         usage: Optional[LLMUsage] = None
         provider: Optional[Provider] = None
 
+        config_id: Optional[str] = None
+        preserve_credits: Optional[bool] = None
+
         def to_domain(self, default_provider: Provider) -> DLLMCompletion:
             return DLLMCompletion(
                 duration_seconds=self.duration_seconds,
@@ -94,6 +95,8 @@ class TaskRunDocument(BaseDocumentWithStrID):
                 tool_calls=safe_map_optional(self.tool_calls, ToolCallSchema.to_domain, logger=logger),
                 usage=self.usage or LLMUsage(),
                 provider=self.provider or default_provider,
+                config_id=self.config_id,
+                preserve_credits=self.preserve_credits,
             )
 
         @classmethod
@@ -104,6 +107,8 @@ class TaskRunDocument(BaseDocumentWithStrID):
                 response=llm_completion.response,
                 usage=llm_completion.usage,
                 tool_calls=safe_map_optional(llm_completion.tool_calls, ToolCallSchema.from_domain, logger=logger),
+                config_id=llm_completion.config_id,
+                preserve_credits=llm_completion.preserve_credits,
             )
 
     llm_completions: Optional[list[LLMCompletion]] = Field(
@@ -206,11 +211,9 @@ class TaskRunDocument(BaseDocumentWithStrID):
                 ToolCallSchema.from_domain,
                 logger=logger,
             ),
-            config_id=task_run.config_id,
             metadata=task_run.metadata,
             status=task_run.status,
             error=cls.Error.from_domain(task_run.error) if task_run.error else None,
-            is_free=task_run.is_free,
             author_tenant=task_run.author_tenant,
             is_external=task_run.is_external,
             private_fields=list(task_run.private_fields) if task_run.private_fields else None,
@@ -282,11 +285,9 @@ class TaskRunDocument(BaseDocumentWithStrID):
             labels=set(self.labels) if self.labels else None,
             tool_calls=safe_map_optional(self.tool_calls, ToolCallResultSchema.to_domain, logger=logger),
             tool_call_requests=safe_map_optional(self.tool_call_requests, ToolCallSchema.to_domain, logger=logger),
-            config_id=self.config_id,
             metadata=self.metadata,
             status=self.status,
             error=self.error.to_domain() if self.error else None,
-            is_free=self.is_free,
             author_tenant=self.author_tenant,
             private_fields=set(self.private_fields) if self.private_fields else None,
             is_active=self.is_active,

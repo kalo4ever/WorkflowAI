@@ -48,6 +48,7 @@ class ProviderSettingsSchema(BaseModel):
     created_at: datetime = Field(default_factory=datetime_factory)
     provider: Provider
     secrets: str
+    preserve_credits: bool | None = None
 
     @classmethod
     def from_domain(cls, domain: ProviderConfig, encryption: Encryption) -> Self:
@@ -63,6 +64,7 @@ class ProviderSettingsSchema(BaseModel):
             created_at=self.created_at,
             provider=self.provider,
             secrets=self.secrets,
+            preserve_credits=self.preserve_credits or None,
         )
         out._encryption = encryption  # pyright: ignore [reportPrivateUsage]
         return out

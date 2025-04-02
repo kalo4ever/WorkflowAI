@@ -152,7 +152,7 @@ async def list_task_runs(
     return await runs_service.list_runs(task_uid[1], query)
 
 
-@router.post("/runs", description="Import an agent run")
+@router.post("/runs", description="Import an agent run", deprecated=True, include_in_schema=False)
 async def create_task_run(
     task_variant: TaskVariantDep,
     request: CreateTaskRunRequest,

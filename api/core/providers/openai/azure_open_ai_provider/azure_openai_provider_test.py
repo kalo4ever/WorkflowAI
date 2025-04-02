@@ -64,7 +64,7 @@ class TestValues(unittest.TestCase):
 class TestRequestHeaders:
     async def test_request_headers_with_metadata(self, azure_openai_provider: AzureOpenAIProvider):
         # Setup provider with test config
-        azure_openai_provider.config = AzureOpenAIConfig(
+        azure_openai_provider._config = AzureOpenAIConfig(  # pyright: ignore [reportPrivateUsage]
             deployments={
                 "eastus": {
                     "api_key": "test-key-eastus",
