@@ -92,7 +92,6 @@ async def test_run_with_metadata_and_labels(
             "temperature": 0.0,
         },
         "input_tokens_count": 110.25,
-        "is_workflowai_llm_provider_key": True,
         "latency_seconds": latency_seconds,  #
         "output_tokens_count": 6.25,
         "task": {

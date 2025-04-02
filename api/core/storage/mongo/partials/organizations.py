@@ -48,7 +48,7 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
     @override
     async def get_organization(self) -> TenantData:
         doc = await self._find_one({}, projection=self._projection(None))
-        return doc.to_domain()
+        return doc.to_domain(self.encryption)
 
     @override
     async def get_public_organization(self, slug: str) -> PublicOrganizationData:
@@ -96,7 +96,7 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
         doc = await self._collection.find_one(filter, projection=self._projection(None))
         if doc is None:
             raise ObjectNotFoundException("Organization  not found", code="organization_not_found")
-        return OrganizationDocument.model_validate(doc).to_domain()
+        return OrganizationDocument.model_validate(doc).to_domain(self.encryption)
 
     async def _find_one_and_update_tenant(self, filter: dict[str, Any], update: dict[str, Any]) -> TenantData:
         doc = await self._collection.find_one_and_update(
@@ -107,7 +107,7 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
         )
         if doc is None:
             raise ObjectNotFoundException("Organization  not found", code="organization_not_found")
-        return OrganizationDocument.model_validate(doc).to_domain()
+        return OrganizationDocument.model_validate(doc).to_domain(self.encryption)
 
     @override
     async def find_tenant_for_org_id(self, org_id: str) -> TenantData:
@@ -134,7 +134,7 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
             {"$push": {"providers": dump_model(schema)}},
         )
 
-        return schema.to_domain()
+        return schema.to_domain(self.encryption)
 
     @override
     async def delete_provider_config(self, config_id: str) -> None:
@@ -167,7 +167,7 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
             },
             return_document=True,
         )
-        return OrganizationDocument.model_validate(res).to_domain()
+        return OrganizationDocument.model_validate(res).to_domain(self.encryption)
 
     @override
     async def create_organization(self, org_settings: TenantData) -> TenantData:
@@ -178,7 +178,7 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
         with self._wrap_errors():
             res = await self._collection.insert_one(dump_model(doc))
         doc.id = res.inserted_id
-        return doc.to_domain()
+        return doc.to_domain(self.encryption)
 
     @override
     async def add_5_credits_for_first_task(self) -> None:
@@ -267,7 +267,7 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
                 projection=self._projection(None),
                 return_document=True,
             )
-            return res.to_domain()
+            return res.to_domain(self.encryption)
         except ObjectNotFoundException:
             return None
 

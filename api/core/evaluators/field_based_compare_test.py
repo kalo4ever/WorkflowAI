@@ -7,6 +7,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from pydantic import BaseModel, Field
 
+from core.agents.text_equivalence_task import TextEquivalenceTaskOutput
 from core.deprecated.workflowai import WorkflowAI
 from core.domain.field_based_evaluation_config import (
     ArrayComparisonOptions,
@@ -16,7 +17,6 @@ from core.domain.field_based_evaluation_config import (
     StringComparisonOptions,
 )
 from core.evaluators.field_based_compare import EvaluationError, FieldBasedCompare
-from core.tasks.text_equivalence.text_equivalence_task import TextEquivalenceTaskOutput
 from core.utils.schemas import JsonSchema
 from tests.models import task_example_ser, task_run_ser, task_variant
 from tests.utils import fixtures_json

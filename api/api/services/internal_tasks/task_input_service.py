@@ -3,7 +3,7 @@ from typing import AsyncIterator
 
 from pydantic import ValidationError
 
-from api.tasks.task_input_import_task import (
+from core.agents.task_input_import_task import (
     TaskInputImportTaskInput,
     stream_task_inputs_import_task,
     task_input_import,

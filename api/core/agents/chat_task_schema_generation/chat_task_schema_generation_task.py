@@ -5,7 +5,7 @@ from typing import Any, Literal, TypeAlias
 import workflowai
 from pydantic import BaseModel, Field
 
-from api.tasks.extract_company_info_from_domain_task import Product
+from core.agents.extract_company_info_from_domain_task import Product
 from core.domain.fields.chat_message import ChatMessage
 from core.domain.url_content import URLContent
 

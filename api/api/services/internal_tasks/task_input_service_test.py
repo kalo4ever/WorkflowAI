@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, Mock, patch
 import pytest
 
 from api.services.internal_tasks.task_input_service import TaskInputService
-from api.tasks.task_input_import_task import TaskInputImportTaskInput, TaskInputImportTaskOutput
+from core.agents.task_input_import_task import TaskInputImportTaskInput, TaskInputImportTaskOutput
 from core.domain.task_variant import SerializableTaskVariant
 from tests.models import task_variant
 from tests.utils import mock_aiter

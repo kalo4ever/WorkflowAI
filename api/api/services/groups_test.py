@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from api.tasks.detect_chain_of_thought_task import (
+from core.agents.detect_chain_of_thought_task import (
     DetectChainOfThoughtUsageTaskOutput,
 )
 from core.domain.errors import InvalidRunOptionsError
@@ -16,7 +16,6 @@ from core.domain.tool import Tool
 from core.domain.users import UserIdentifier
 from core.domain.version_environment import VersionEnvironment
 from core.domain.version_reference import VersionReference
-from core.providers.openai.openai_provider import OpenAIConfig
 from core.runners.workflowai.workflowai_runner import WorkflowAIRunner
 from core.storage import ObjectNotFoundException
 from core.storage.mongo.models.organizations import DecryptableProviderSettings
@@ -45,14 +44,12 @@ async def mock_detect_chain_of_thought(monkeypatch: pytest.MonkeyPatch) -> Async
 @pytest.fixture(scope="function")
 def group_service(
     mock_storage: Mock,
-    mock_encryption: Mock,
     mock_event_router: Mock,
     mock_analytics_service: Mock,
     mock_logger: Mock,
 ) -> GroupService:
     grp = GroupService(
         storage=mock_storage,
-        encryption=mock_encryption,
         event_router=mock_event_router,
         analytics_service=mock_analytics_service,
         user=UserIdentifier(user_id="test_user_id", user_email="test_user_email@example.com"),
@@ -339,7 +336,7 @@ class TestSanitizeGroupsForInternalRunner:
         assert runner.properties.is_chain_of_thought_enabled is None
         mock_detect_chain_of_thought.assert_not_called()
 
-    async def test_provider_used_is_from_user_if_available(
+    async def test_provider_configs_passed_to_runner(
         self,
         group_service: GroupService,
         mock_storage: Mock,
@@ -365,7 +362,6 @@ class TestSanitizeGroupsForInternalRunner:
                     "task_variant_id": "task_variant_id",
                 },
             ),
-            provider_config_id="openai_provider_settings",
         )
         mock_storage.task_version_resource_by_id.return_value = task_variant(
             task_id="task_id",
@@ -380,87 +376,7 @@ class TestSanitizeGroupsForInternalRunner:
         )
         assert isinstance(runner, WorkflowAIRunner)
 
-        assert runner._provider_config == ("openai_provider_settings", OpenAIConfig(api_key="user_api_key"))  # pyright: ignore [reportPrivateUsage]
-
-    async def test_provider_used_is_from_workflow_if_user_not_available(
-        self,
-        mock_storage: Mock,
-        group_service: GroupService,
-    ) -> None:
-        provider_settings: list[ProviderSettings] = [
-            DecryptableProviderSettings(
-                id="google_provider_settings",
-                created_at=datetime.datetime(2022, 1, 1, 0, 0, 0),
-                provider=Provider.GOOGLE,
-                secrets='{"api_key": "some_key"}_encrypted',
-            ),
-        ]
-
-        mock_storage.task_version_resource_by_id.return_value = task_variant(
-            task_id="task_id",
-            task_schema_id=1,
-        )
-
-        mock_storage.task_deployments.get_task_deployment.return_value = task_deployment(
-            properties=TaskGroupProperties.model_validate(
-                {
-                    "model": "gpt-4o-2024-05-13",
-                    "task_variant_id": "task_variant_id",
-                },
-            ),
-            provider_config_id="openai_provider_settings",
-        )
-
-        runner, _ = await group_service.sanitize_groups_for_internal_runner(
-            task_id="task_id",
-            task_schema_id=1,
-            reference=VersionReference(version=VersionEnvironment.PRODUCTION),
-            provider_settings=provider_settings,
-        )
-        assert isinstance(runner, WorkflowAIRunner)
-        assert runner._provider_config is None  # pyright: ignore [reportPrivateUsage]
-
-    # TODO: re-enable the test when the provider is dynamic
-    # async def test_provider_used_is_workflow_if_provider_config_id_does_not_match(
-    #     self,
-    #     mock_storage: Mock,
-    #     group_service: GroupService,
-    #     mock_logger: Mock,
-    # ) -> None:
-    #     # Somehow the deployment refers to a provider config that is mapped to a different provider
-    #     # This should not happen
-    #     provider_settings: list[ProviderSettings] = [
-    #         DecryptableProviderSettings(
-    #             id="google_provider_settings",
-    #             created_at=datetime.datetime(2022, 1, 1, 0, 0, 0),
-    #             provider=Provider.GOOGLE,
-    #             secrets='{"api_key": "some_key"}_encrypted',
-    #         ),
-    #     ]
-
-    #     mock_storage.task_version_resource_by_id.return_value = task_variant(
-    #         task_id="task_id",
-    #         task_schema_id=1,
-    #     )
-
-    #     mock_storage.task_deployments.get_task_deployment.return_value = task_deployment(
-    #         properties=TaskGroupProperties.model_validate(
-    #             {
-    #                 "model": "gpt-4o-2024-05-13",
-    #                 "task_variant_id": "task_variant_id",
-    #             },
-    #         ),
-    #         provider_config_id="google_provider_settings",
-    #     )
-
-    #     runner, _ = await group_service.sanitize_groups_for_internal_runner(
-    #         task_id="task_id",
-    #         task_schema_id=1,
-    #         reference=VersionReference(version="production"),
-    #         provider_settings=provider_settings,
-    #     )
-    #     assert isinstance(runner, WorkflowAIRunner)
-    #     assert runner._provider_config is None  # pyright: ignore [reportPrivateUsage]
+        assert runner._custom_configs == provider_settings  # pyright: ignore [reportPrivateUsage]
 
     async def test_template_is_validated(
         self,

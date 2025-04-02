@@ -115,7 +115,6 @@ async def test_run_with_metadata(test_client: IntegrationTestClient):
             "temperature": 0.0,
         },
         "input_tokens_count": 110.25,
-        "is_workflowai_llm_provider_key": True,
         "latency_seconds": latency_seconds,  #
         "output_tokens_count": 6.25,
         "task": {

@@ -8,7 +8,12 @@ from core.providers.base.config import ProviderConfig
 
 class AbstractProviderFactory(ABC):
     @abstractmethod
-    def build_provider(self, config: ProviderConfig, config_id: str) -> AbstractProvider[Any, Any]:
+    def build_provider(
+        self,
+        config: ProviderConfig,
+        config_id: str,
+        preserve_credits: bool | None,
+    ) -> AbstractProvider[Any, Any]:
         pass
 
     @abstractmethod

@@ -1,6 +1,6 @@
 import logging
 import random
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
 from typing import Any, NoReturn, Protocol
 
@@ -9,8 +9,8 @@ from core.domain.errors import InternalError, NoProviderSupportingModelError, Pr
 from core.domain.models.model_data import FinalModelData, ModelData
 from core.domain.models.providers import Provider
 from core.domain.models.utils import get_model_data
+from core.domain.organization_settings import ProviderSettings
 from core.providers.base.abstract_provider import AbstractProvider
-from core.providers.base.config import ProviderConfig
 from core.providers.base.provider_options import ProviderOptions
 from core.providers.factory.abstract_provider_factory import AbstractProviderFactory
 from core.runners.workflowai.templates import TemplateName
@@ -42,24 +42,25 @@ _round_robin_similar_providers: set[Provider] = {
     Provider.FIREWORKS,
 }
 
+_logger = logging.getLogger("ProviderPipeline")
+
 
 class ProviderPipeline:
     def __init__(
         self,
         options: WorkflowAIRunnerOptions,
-        provider_config: tuple[str, ProviderConfig] | None,
+        custom_configs: list[ProviderSettings] | None,
         factory: AbstractProviderFactory,
         builder: ProviderPipelineBuilder,
     ):
         self._factory = factory
         self._options = options
         self.model_data = get_model_data(options.model)
-        self.provider_config = provider_config
+        self._custom_configs = custom_configs
         self.errors: list[ProviderError] = []
         self.builder = builder
         self._force_structured_generation = options.is_structured_generation_enabled
         self._last_error_was_structured_generation = False
-        self._logger = logging.getLogger(self.__class__.__name__)
 
     @property
     def last_error_code(self) -> ProviderErrorCode | None:
@@ -93,7 +94,7 @@ class ProviderPipeline:
             e.capture_if_needed()
             self.errors.append(e)
 
-            if provider.config_id is not None:
+            if provider.is_custom_config:
                 # In case of custom configs, we always retry
                 return
 
@@ -121,25 +122,30 @@ class ProviderPipeline:
     def _build(self, provider: AbstractProvider[Any, Any], model_data: FinalModelData) -> PipelineProviderData:
         return self.builder(provider, model_data, self._use_structured_output())
 
+    def _iter_with_structured_gen(
+        self,
+        provider: AbstractProvider[Any, Any],
+        model_data: FinalModelData,
+    ) -> Iterator[PipelineProviderData]:
+        yield self._build(provider, model_data)
+
+        if self._should_retry_without_structured_generation():
+            yield self._build(provider, model_data)
+
     def _single_provider_iterator(
         self,
+        providers: Iterable[AbstractProvider[Any, Any]],
         model_data: FinalModelData,
         provider_type: Provider,
     ) -> Iterator[PipelineProviderData]:
-        def _iter_with_structured_gen(provider: AbstractProvider[Any, Any]) -> Iterator[PipelineProviderData]:
-            yield self._build(provider, model_data)
-
-            if self._should_retry_without_structured_generation():
-                yield self._build(provider, model_data)
-
-        providers = iter(self._factory.get_providers(provider_type))
+        providers = iter(providers)
         if provider_type not in _round_robin_similar_providers:
             # We yield the first provider first in order to max out quotas
             try:
                 provider = next(providers)
             except StopIteration:
                 raise NoProviderSupportingModelError(model=self._options.model)
-            yield from _iter_with_structured_gen(provider)
+            yield from self._iter_with_structured_gen(provider, model_data)
 
             # No point in retrying on the same provider if the last error code was not a rate limit
             if self.last_error_code != "rate_limit":
@@ -156,21 +162,44 @@ class ProviderPipeline:
             # We can safely call _iter_with_structured_gen multiple times
             # if the structured generation fails the first time, the retries
             # Without the structured gen will not happen
-            yield from _iter_with_structured_gen(provider)
+            yield from self._iter_with_structured_gen(provider, model_data)
 
             # No point in retrying on the same provider if the last error code was not a rate limit
             if self.last_error_code != "rate_limit":
                 return
 
+    def _build_custom_providers(self, configs: list[ProviderSettings]) -> Iterable[AbstractProvider[Any, Any]]:
+        for config in configs:
+            try:
+                decrypted = config.decrypt()
+                provider = self._factory.build_provider(decrypted, config.id, preserve_credits=config.preserve_credits)
+                yield provider
+            except Exception:
+                _logger.exception("Failed to build provider with custom config", extra={"config_id": config.id})
+                continue
+
+    def _custom_configs_iterator(self) -> Iterator[PipelineProviderData]:
+        if not self._custom_configs:
+            return
+
+        configs_by_provider: dict[Provider, list[ProviderSettings]] = {}
+        for config in self._custom_configs:
+            configs_by_provider.setdefault(config.provider, []).append(config)
+
+        for provider, configs in configs_by_provider.items():
+            if not self.model_data.supported_by_provider(provider):
+                pass
+            yield from self._single_provider_iterator(self._build_custom_providers(configs), self.model_data, provider)
+
     def provider_iterator(self) -> Iterator[PipelineProviderData]:
-        if self.provider_config:
-            yield self._build(
-                self._factory.build_provider(self.provider_config[1], config_id=self.provider_config[0]),
-                self.model_data,
-            )
+        yield from self._custom_configs_iterator()
 
         if self._options.provider:
-            yield from self._single_provider_iterator(self.model_data, self._options.provider)
+            yield from self._single_provider_iterator(
+                providers=self._factory.get_providers(self._options.provider),
+                model_data=self.model_data,
+                provider_type=self._options.provider,
+            )
             return
 
         for provider, provider_data in self.model_data.providers:
@@ -178,4 +207,8 @@ class ProviderPipeline:
             # We assume that
             provider_model_data = provider_data.override(self.model_data)
 
-            yield from self._single_provider_iterator(provider_model_data, provider)
+            yield from self._single_provider_iterator(
+                providers=self._factory.get_providers(provider),
+                model_data=provider_model_data,
+                provider_type=provider,
+            )

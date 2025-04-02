@@ -1,7 +1,7 @@
 from typing import Optional
 
 from api.schemas.build_task_request import BuildAgentRequest
-from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task import AgentSchemaJson
+from core.agents.chat_task_schema_generation.chat_task_schema_generation_task import AgentSchemaJson
 from core.domain.fields.chat_message import AssistantChatMessage, ChatMessage, UserChatMessage
 from core.utils.iter_utils import last_where
 

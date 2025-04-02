@@ -106,19 +106,6 @@ def _from_sanitized_metadata(metadata: dict[str, str] | None):
     return {k: _from_sanitized_metadata_value(v) for k, v in metadata.items()}
 
 
-def _provider_config_uuid(provider_config: str | None) -> UUID | None:
-    if not provider_config:
-        return None
-    try:
-        uid = UUID(provider_config)
-        return uid if uid.int else None
-    except ValueError:
-        _logger.warning("Invalid provider config UUID: %s", provider_config)
-        import hashlib
-
-        return UUID(hashlib.md5(provider_config.encode()).hexdigest())
-
-
 _FIELD_TO_QUERY: dict[SearchField, tuple[str, str, Callable[[Any], Any] | None]] = {
     SearchField.PRICE: ("cost_millionth_usd", "UInt32", _cost_millionth_usd),
     SearchField.LATENCY: ("duration_ds", "UInt16", _duration_ds),
@@ -310,25 +297,6 @@ class ClickhouseRun(BaseModel):
     def serialize_metadata(self, metadata: dict[str, str] | None):
         return metadata or dict[str, str]()
 
-    # TODO: this should really be a simpler int32.. No need to store as a UUID
-    provider_config_uuid: UUID | None = None
-
-    @field_serializer("provider_config_uuid")
-    def serialize_provider_config_uuid(self, provider_config_uuid: UUID | None):
-        if provider_config_uuid:
-            return str(provider_config_uuid)
-        return "00000000-0000-0000-0000-000000000000"
-
-    @field_validator("provider_config_uuid", mode="before")
-    def parse_provider_config_uuid(cls, value: Any) -> UUID | None:
-        if not value:
-            return None
-        if isinstance(value, str):
-            value = UUID(value)
-        if not isinstance(value, UUID):
-            raise ValueError("invalid value")
-        return value if value.int else None
-
     author_uid: Annotated[int | None, validate_int(MAX_UINT_32, "author_uid")] = None
 
     @field_serializer("author_uid")
@@ -427,6 +395,9 @@ class ClickhouseRun(BaseModel):
 
         provider: str
 
+        config_id: str | None = None
+        preserve_credits: bool | None = None
+
         # Using aliases to limit the size of the generated json to a minium
         class _LLMUsage(BaseModel):
             prompt_token_count: RoundedFloat | None = Field(alias="pt", default=None)
@@ -479,6 +450,8 @@ class ClickhouseRun(BaseModel):
                 tool_calls=safe_map_optional(self.tool_calls, ClickhouseRun._ToolCall.to_domain, logger=_logger),
                 usage=self.usage.to_domain(),
                 provider=Provider(self.provider),
+                config_id=self.config_id,
+                preserve_credits=self.preserve_credits,
             )
 
         @classmethod
@@ -494,6 +467,8 @@ class ClickhouseRun(BaseModel):
                 ),
                 usage=cls._LLMUsage.from_domain(llm_completion.usage),
                 provider=llm_completion.provider.value,
+                config_id=llm_completion.config_id,
+                preserve_credits=llm_completion.preserve_credits,
             )
 
     llm_completions: list[_LLMCompletion] | None = None
@@ -576,8 +551,6 @@ class ClickhouseRun(BaseModel):
             error_payload=cls._Error.from_domain(run.error) if run.error else None,
             # Metadata
             metadata=_sanitize_metadata(run.metadata, provider=run.group.properties.provider),
-            # Provider
-            provider_config_uuid=_provider_config_uuid(run.config_id),
             # Author
             author_uid=run.author_uid,
             # Active
@@ -623,8 +596,6 @@ class ClickhouseRun(BaseModel):
             error=self.error,
             # Metadata
             metadata=_from_sanitized_metadata(self.metadata),
-            # Provider config id
-            config_id=str(self.provider_config_uuid) if self.provider_config_uuid else None,
             # Author
             author_uid=self.author_uid,
             # Active

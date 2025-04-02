@@ -217,11 +217,11 @@ class FieldBasedCompare(ExampleBasedEvaluator[FieldBasedCompareOptions]):
 
     async def _fuzzy_compare_str(self, expected: str, actual: str, path: list[str] = []) -> list[EvaluationError]:
         # TODO: figure out circulat import
-        from core.deprecated.workflowai import WorkflowAI
-        from core.tasks.text_equivalence.text_equivalence_task import (
+        from core.agents.text_equivalence_task import (
             TextEquivalenceTask,
             TextEquivalenceTaskInput,
         )
+        from core.deprecated.workflowai import WorkflowAI
 
         input = TextEquivalenceTaskInput(
             correct_text=expected,

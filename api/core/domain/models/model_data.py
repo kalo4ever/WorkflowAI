@@ -79,6 +79,9 @@ class FinalModelData(ModelData):
         description="The provider data for the model. Extracted from the model provider data list",
     )
 
+    def supported_by_provider(self, provider: Provider) -> bool:
+        return any(p == provider for p, _ in self.providers)
+
     def provider_data(self, provider: Provider) -> ModelProviderData:
         for p, provider_data in self.providers:
             if p == provider:

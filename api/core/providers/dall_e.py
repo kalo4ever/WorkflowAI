@@ -9,7 +9,8 @@ router = APIRouter(prefix="/images")
 
 
 async def generate_and_display_image(
-    prompt: str, size: Literal["256x256", "512x512", "1024x1024", "1792x1024", "1024x1792"],
+    prompt: str,
+    size: Literal["256x256", "512x512", "1024x1024", "1792x1024", "1024x1792"],
 ) -> bytes:
     # Initialize the AsyncOpenAI client
     client = AsyncOpenAI(api_key=os.environ["OPENAI_API_KEY"])
@@ -26,4 +27,3 @@ async def generate_and_display_image(
 
     # Get the base64 image data from the response
     return base64.b64decode(response.data[0].b64_json)  # type: ignore
-

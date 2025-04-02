@@ -95,14 +95,14 @@ class AnthropicProvider(HTTPXProvider[AnthropicConfig, CompletionResponse]):
     @override
     async def _request_headers(self, request: dict[str, Any], url: str, model: Model) -> dict[str, str]:
         return {
-            "x-api-key": self.config.api_key,
+            "x-api-key": self._config.api_key,
             "anthropic-version": ANTHROPIC_VERSION,
             "anthropic-beta": ANTHROPIC_PDF_BETA,
         }
 
     @override
     def _request_url(self, model: Model, stream: bool) -> str:
-        return self.config.url
+        return self._config.url
 
     @override
     def _response_model_cls(self) -> type[CompletionResponse]:

@@ -175,8 +175,8 @@ class HTTPXProvider(AbstractProvider[ProviderConfigVar, dict[str, Any]], Generic
     def _handle_error_status_code(self, response: Response):
         match response.status_code:
             case 401 | 403:
-                err = InvalidProviderConfig(f"Config {self.config_id} seems invalid", response=response)
-                if not self.config_id:
+                err = InvalidProviderConfig(f"Config {self._config_id} seems invalid", response=response)
+                if not self._config_id:
                     # if no config id is provided, then it's the local config that is invalid
                     # so it should still log to sentry
 

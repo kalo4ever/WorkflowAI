@@ -5,8 +5,8 @@ import pytest
 from workflowai import Run
 
 from api.services.internal_tasks.improve_prompt_service import ImprovePromptService
-from api.tasks.chat_task_schema_generation.apply_field_updates import InputFieldUpdate, OutputFieldUpdate
-from api.tasks.improve_prompt import ImprovePromptAgentOutput
+from core.agents.chat_task_schema_generation.apply_field_updates import InputFieldUpdate, OutputFieldUpdate
+from core.agents.improve_prompt import ImprovePromptAgentOutput
 from core.domain.task_group import TaskGroup
 from core.domain.task_group_properties import TaskGroupProperties
 from core.domain.task_variant import SerializableTaskVariant

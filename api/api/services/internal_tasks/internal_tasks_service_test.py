@@ -10,7 +10,12 @@ from api.services.internal_tasks.internal_tasks_service import (
     InternalTasksService,
 )
 from api.services.tasks import AgentSummary
-from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task import (
+from core.agents.audio_transcription_task import (
+    AudioTranscriptionTask,
+    AudioTranscriptionTaskInput,
+    AudioTranscriptionTaskOutput,
+)
+from core.agents.chat_task_schema_generation.chat_task_schema_generation_task import (
     AgentBuilderInput,
     AgentBuilderOutput,
     AgentSchema,
@@ -24,28 +29,40 @@ from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task impo
     OutputObjectFieldConfig,
     OutputStringFieldConfig,
 )
-from api.tasks.extract_company_info_from_domain_task import ExtractCompanyInfoFromDomainTaskOutput, Product
-from api.tasks.generate_changelog import (
+from core.agents.extract_company_info_from_domain_task import ExtractCompanyInfoFromDomainTaskOutput, Product
+from core.agents.generate_changelog import (
     GenerateChangelogFromPropertiesTaskInput,
     GenerateChangelogFromPropertiesTaskOutput,
     Properties,
     Schema,
     TaskGroupWithSchema,
 )
-from api.tasks.generate_task_preview import GenerateTaskPreviewTaskInput, GenerateTaskPreviewTaskOutput
-from api.tasks.input_generation_instructions_agent import InputGenerationInstructionsOutput
-from api.tasks.task_description_generation.task_description_generation_task import (
+from core.agents.generate_task_preview import GenerateTaskPreviewTaskInput, GenerateTaskPreviewTaskOutput
+from core.agents.input_generation_instructions_agent import InputGenerationInstructionsOutput
+from core.agents.reformat_instructions_task import (
+    TaskInstructionsReformatingTaskInput,
+    TaskInstructionsReformatingTaskOutput,
+)
+from core.agents.task_description_generation_task import (
     TaskDescriptionGenerationTaskInput,
     TaskDescriptionGenerationTaskOutput,
 )
-from api.tasks.task_instruction_generation.task_instructions_generation_task import (
+from core.agents.task_input_example.task_input_example_task import (
+    TaskInputExampleTaskInput,
+    TaskInputExampleTaskOutput,
+)
+from core.agents.task_input_example.task_input_migration_task import (
+    TaskInputMigrationTaskInput,
+    TaskInputMigrationTaskOutput,
+)
+from core.agents.task_instruction_generation.task_instructions_generation_task import (
     TaskInstructionsGenerationTaskInput,
     TaskInstructionsGenerationTaskOutput,
 )
-from api.tasks.task_instruction_required_tools_picking.task_instructions_required_tools_picking_task import (
+from core.agents.task_instruction_required_tools_picking.task_instructions_required_tools_picking_task import (
     TaskInstructionsRequiredToolsPickingTaskOutput,
 )
-from api.tasks.task_instructions_migration.task_instructions_migration_task import (
+from core.agents.task_instructions_migration_task import (
     TaskInstructionsMigrationTaskInput,
     TaskInstructionsMigrationTaskOutput,
 )
@@ -61,23 +78,6 @@ from core.domain.task_preview import TaskPreview
 from core.domain.task_variant import SerializableTaskVariant
 from core.domain.version_reference import VersionReference
 from core.storage.mongo.models.task_group import TaskGroupDocument
-from core.tasks.audio_transcription.audio_transcription_task import (
-    AudioTranscriptionTask,
-    AudioTranscriptionTaskInput,
-    AudioTranscriptionTaskOutput,
-)
-from core.tasks.reformat_instructions.reformat_instructions_task import (
-    TaskInstructionsReformatingTaskInput,
-    TaskInstructionsReformatingTaskOutput,
-)
-from core.tasks.task_input_example.task_input_example_task import (
-    TaskInputExampleTaskInput,
-    TaskInputExampleTaskOutput,
-)
-from core.tasks.task_input_example.task_input_migration_task import (
-    TaskInputMigrationTaskInput,
-    TaskInputMigrationTaskOutput,
-)
 from core.tools import ToolKind
 from tests.utils import mock_aiter
 

@@ -81,7 +81,14 @@ export function FeedbackTableContainer() {
   const { taskRunId, setTaskRunId, clearTaskRunId } = useRunIDParam();
 
   return (
-    <PageContainer task={task} name='User Feedback' showCopyLink={true} showSchema={false} isInitialized={!!task}>
+    <PageContainer
+      task={task}
+      name='User Feedback'
+      showCopyLink={true}
+      showSchema={false}
+      isInitialized={!!task}
+      documentationLink='https://docs.workflowai.com/features/user-feedback'
+    >
       <div className='w-full h-full flex flex-col items-stretch gap-6 p-4'>
         <SlackIntegration />
         <FeedbackTable tenant={tenant} taskId={taskId} className='flex-1' setTaskRunId={setTaskRunId} />

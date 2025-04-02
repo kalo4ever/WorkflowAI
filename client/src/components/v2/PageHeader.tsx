@@ -1,4 +1,4 @@
-import { ChevronUpDownFilled } from '@fluentui/react-icons';
+import { ChevronUpDownFilled, InfoRegular } from '@fluentui/react-icons';
 import { useState } from 'react';
 import { TaskSwitcherMode } from '@/app/[tenant]/components/TaskSwitcher';
 import { SchemaSelectorContainer, TaskSwitcherContainer } from '@/app/[tenant]/components/TaskSwitcherContainer';
@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { useOrFetchClerkOrganization, useOrFetchTasks } from '@/store';
 import { TaskID } from '@/types/aliases';
 import { SerializableTask } from '@/types/workflowAI';
+import { Button } from '../ui/Button';
 
 type TaskSectionProps = {
   task: SerializableTask;
@@ -49,10 +50,11 @@ type PageHeaderProps = {
   className?: string;
   children?: React.ReactNode;
   showSchema: boolean;
+  documentationLink?: string;
 };
 
 export function PageHeader(props: PageHeaderProps) {
-  const { task, name, className, children, showSchema } = props;
+  const { task, name, className, children, showSchema, documentationLink } = props;
   const { tenant, taskSchemaId } = useTaskParams();
 
   const [taskPopoverOpen, setTaskPopoverOpen] = useState(false);
@@ -86,7 +88,20 @@ export function PageHeader(props: PageHeaderProps) {
         {!!taskSchemaId && showSchema && (
           <SchemaSelectorContainer tenant={tenant} taskId={task.id as TaskID} selectedSchemaId={taskSchemaId} />
         )}
-        <div className='ml-3 text-[13px] font-semibold text-gray-900'>{name}</div>
+        <div className='flex flex-row items-center'>
+          <div className='ml-3 text-[13px] font-semibold text-gray-900'>{name}</div>
+          {documentationLink && (
+            <Button
+              variant='text'
+              icon={<InfoRegular className='w-4 h-4' />}
+              toRoute={documentationLink}
+              target='_blank'
+              rel='noopener noreferrer'
+              size='none'
+              className='text-indigo-500 items-center w-6 h-6'
+            />
+          )}
+        </div>
       </div>
 
       <div className='flex flex-row gap-2 justify-end items-center'>{children}</div>

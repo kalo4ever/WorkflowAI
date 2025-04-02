@@ -2,7 +2,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task import AgentSchemaJson
+from core.agents.chat_task_schema_generation.chat_task_schema_generation_task import AgentSchemaJson
 
 
 class AgentSchema(BaseModel):

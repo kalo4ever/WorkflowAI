@@ -1,6 +1,5 @@
 from datetime import date, datetime
 from typing import get_args
-from uuid import UUID, uuid4
 
 import pytest
 
@@ -50,38 +49,42 @@ class TestClickhouseRunsValidate:
 
         ClickhouseRun.from_domain(MAX_UINT_32, task_run)
 
-    def test_provider_config_uuid_none(self, task_run: SerializableTaskRun):
-        run = ClickhouseRun.from_domain(1, task_run)
-        assert run.provider_config_uuid is None
-        assert run.to_domain("").config_id is None
-
-        run = ClickhouseRun.model_validate(run.model_dump())
-        assert run.provider_config_uuid is None
-
-    def test_provider_config_uuid_not_none(self, task_run: SerializableTaskRun):
-        # Set the config id to a UUID
-        task_run.config_id = str(uuid4())
-        run = ClickhouseRun.from_domain(1, task_run)
-        assert run.to_domain("").config_id == task_run.config_id
-
-        run = ClickhouseRun.model_validate(run.model_dump())
-        assert run.provider_config_uuid == UUID(task_run.config_id)
-
     def test_provider_metadata(self, task_run: SerializableTaskRun):
         task_run.group.properties.provider = "openai"
         task_run.metadata = None
         run = ClickhouseRun.from_domain(1, task_run)
         assert run.metadata == {"workflowai.provider": "openai"}
 
-    def test_llm_completions(self, task_run: SerializableTaskRun):
-        task_run.llm_completions = [
-            LLMCompletion(
-                messages=[{"bla": "bla"}],
-                usage=LLMUsage(prompt_token_count=1, completion_token_count=1),
-                provider=Provider.OPEN_AI,
-                duration_seconds=1.1,
+    @pytest.mark.parametrize(
+        "completions",
+        [
+            pytest.param(
+                [
+                    LLMCompletion(
+                        messages=[{"bla": "bla"}],
+                        usage=LLMUsage(prompt_token_count=1, completion_token_count=1),
+                        provider=Provider.OPEN_AI,
+                        config_id="123",
+                        preserve_credits=True,
+                    ),
+                ],
+                id="with_config_id",
             ),
-        ]
+            pytest.param(
+                [
+                    LLMCompletion(
+                        messages=[{"bla": "bla"}],
+                        usage=LLMUsage(prompt_token_count=1, completion_token_count=1),
+                        provider=Provider.OPEN_AI,
+                        duration_seconds=1.1,
+                    ),
+                ],
+                id="without_config_id",
+            ),
+        ],
+    )
+    def test_llm_completion(self, task_run: SerializableTaskRun, completions: list[LLMCompletion]):
+        task_run.llm_completions = completions
         run = ClickhouseRun.from_domain(1, task_run)
         sanity = ClickhouseRun.model_validate_json(run.model_dump_json())
         assert sanity.llm_completions == run.llm_completions

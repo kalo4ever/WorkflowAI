@@ -40,13 +40,13 @@ class GoogleGeminiAPIProvider(GoogleProviderBase[GoogleGeminiAPIProviderConfig])
     @override
     def _request_url(self, model: Model, stream: bool) -> str:
         if stream:
-            suffix = f"streamGenerateContent?alt=sse&key={self.config.api_key}"
+            suffix = f"streamGenerateContent?alt=sse&key={self._config.api_key}"
         else:
-            suffix = f"generateContent?key={self.config.api_key}"
+            suffix = f"generateContent?key={self._config.api_key}"
 
         model_str = model.value
         api_version = self.model_api_versions.get(model, "v1beta")
-        return f"{self.config.url}/{api_version}/models/{model_str}:{suffix}"
+        return f"{self._config.url}/{api_version}/models/{model_str}:{suffix}"
 
     @override
     @classmethod

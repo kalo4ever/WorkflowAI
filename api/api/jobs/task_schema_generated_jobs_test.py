@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 from api.jobs.task_schema_generated_jobs import notify_slack_on_task_schema_generated
-from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task import AgentSchemaJson
+from core.agents.chat_task_schema_generation.chat_task_schema_generation_task import AgentSchemaJson
 from core.domain.analytics_events.analytics_events import UserProperties
 from core.domain.events import TaskSchemaGeneratedEvent
 from core.domain.fields.chat_message import ChatMessage

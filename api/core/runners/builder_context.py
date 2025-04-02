@@ -19,7 +19,5 @@ class BuilderInterface(Protocol):
 
     def get_metadata(self, key: str) -> Any | None: ...
 
-    config_id: Optional[str]
-
 
 builder_context = ContextVar[Optional[BuilderInterface]]("builder_context", default=None)

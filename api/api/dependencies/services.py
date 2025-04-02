@@ -8,7 +8,6 @@ from api.dependencies.analytics import (
     AnalyticsTaskPropertiesDep,
     UserPropertiesDep,
 )
-from api.dependencies.encryption import EncryptionDep
 from api.dependencies.event_router import EventRouterDep
 from api.dependencies.provider_factory import ProviderFactoryDep
 from api.dependencies.security import TenantUIDDep, UserDep
@@ -72,14 +71,12 @@ AgentSuggestionsServiceDep = Annotated[TaskSuggestionsService, Depends(task_sugg
 
 def group_service(
     storage: StorageDep,
-    encryption: EncryptionDep,
     event_router: EventRouterDep,
     analytics_service: AnalyticsServiceDep,
     user: UserDep,
 ) -> GroupService:
     return GroupService(
         storage=storage,
-        encryption=encryption,
         event_router=event_router,
         analytics_service=analytics_service,
         user=UserIdentifier(

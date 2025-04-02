@@ -12,18 +12,18 @@ from api.services.internal_tasks.agent_suggestions_service import (
 )
 from api.services.slack_notifications import SlackNotificationDestination, get_user_and_org_str, send_slack_notification
 from api.services.tasks import list_agent_summaries
-from api.tasks.agent_output_example import SuggestedAgentOutputExampleInput, stream_suggested_agent_output_example
-from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task_utils import build_json_schema_with_defs
-from api.tasks.chat_task_schema_generation.schema_generation_agent import (
+from core.agents.agent_output_example import SuggestedAgentOutputExampleInput, stream_suggested_agent_output_example
+from core.agents.chat_task_schema_generation.chat_task_schema_generation_task_utils import build_json_schema_with_defs
+from core.agents.chat_task_schema_generation.schema_generation_agent import (
     SchemaBuilderInput,
     run_agent_schema_generation,
 )
-from api.tasks.company_agent_suggestion_agent import (
+from core.agents.company_agent_suggestion_agent import (
     SuggestAgentForCompanyInput,
     SuggestedAgent,
     stream_suggest_agents_for_company,
 )
-from api.tasks.company_domain_from_email_agent import (
+from core.agents.company_domain_from_email_agent import (
     ClassifyEmailDomainAgentInput,
     ClassifyEmailDomainAgentOutput,
     run_classify_email_domain_agent,
@@ -87,11 +87,8 @@ class FeatureService:
         self.storage = storage
 
     @staticmethod
-    async def _is_company_email_domain(user_email_domain: str | None) -> bool:
+    async def _is_company_email_domain(user_email_domain: str) -> bool:
         try:
-            if not user_email_domain:
-                return False
-
             company_domain_classification = await run_classify_email_domain_agent(
                 ClassifyEmailDomainAgentInput(email_domain=user_email_domain),
             )
@@ -104,7 +101,8 @@ class FeatureService:
 
     @staticmethod
     async def get_feature_sections_preview(user_domain: str | None = None) -> list[FeatureSectionPreview]:
-        is_company_email_domain = await FeatureService._is_company_email_domain(user_domain)
+        # We want to show company specific section for anonymous user because they must be able to enter any URL and get suggestion for this URL.
+        show_company_section = user_domain is None or await FeatureService._is_company_email_domain(user_domain)
 
         return [
             FeatureSectionPreview(
@@ -118,7 +116,7 @@ class FeatureService:
                     )
                     for tag in section.tags
                     # If the user's email domain is not a company email domain, we don't want to show the "company_specific" section
-                    if tag.kind != "company_specific" or is_company_email_domain
+                    if tag.kind != "company_specific" or show_company_section
                 ],
             )
             for section in FEATURES_MAPPING

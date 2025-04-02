@@ -111,6 +111,7 @@ export function ApiContent(props: ApiContentProps) {
       showCopyLink={true}
       extraButton={inviteTeamButton}
       showSchema={false}
+      documentationLink='https://docs.workflowai.com/features/code'
     >
       <div className='flex flex-row h-full w-full'>
         <div className='h-full border-r border-dashed border-gray-200 w-[308px] flex-shrink-0'>

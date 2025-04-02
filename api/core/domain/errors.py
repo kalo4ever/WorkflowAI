@@ -139,14 +139,15 @@ class ProviderDoesNotSupportModelError(DefaultError):
     default_message = "Provider does not support model"
     code = "provider_does_not_support_model"
 
-    def __init__(self, model: Model, provider: Provider):
+    def __init__(self, model: Model | str, provider: Provider):
         super().__init__(details={"model": model, "provider": provider})
 
         self.model = model
         self.provider = provider
 
     def __str__(self) -> str:
-        return f"Provider '{self.provider.value}' does not support '{self.model.value}'"
+        model_str = self.model.value if isinstance(self.model, Model) else self.model
+        return f"Provider '{self.provider.value}' does not support '{model_str}'"
 
 
 class NoProviderSupportingModelError(DefaultError):

@@ -118,18 +118,18 @@ class AmazonBedrockProvider(HTTPXProvider[AmazonBedrockConfig, CompletionRespons
             method="POST",
             url=url,
             headers=httpx.Headers(),
-            aws_access_key=self.config.aws_bedrock_access_key,
-            aws_secret_key=self.config.aws_bedrock_secret_key,
+            aws_access_key=self._config.aws_bedrock_access_key,
+            aws_secret_key=self._config.aws_bedrock_secret_key,
             aws_session_token=None,
-            region=self.config.region_for_model(model),
+            region=self._config.region_for_model(model),
             data=json.dumps(request),
         )
 
     @override
     def _request_url(self, model: Model, stream: bool) -> str:
         suffix = "converse-stream" if stream else "converse"
-        region = self.config.region_for_model(model)
-        url_model = self.config.id_for_model(model)
+        region = self._config.region_for_model(model)
+        url_model = self._config.id_for_model(model)
 
         return f"https://bedrock-runtime.{region}.amazonaws.com/model/{url_model}/{suffix}"
 
@@ -294,7 +294,7 @@ class AmazonBedrockProvider(HTTPXProvider[AmazonBedrockConfig, CompletionRespons
     def supports_model(self, model: Model) -> bool:
         try:
             # Can vary based on the models declared in 'AWS_BEDROCK_MODEL_REGION_MAP
-            if model not in self.config.available_model_x_region_map.keys():
+            if model not in self._config.available_model_x_region_map.keys():
                 return False
 
             return True

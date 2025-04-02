@@ -89,7 +89,7 @@ class GroqProvider(HTTPXProvider[GroqConfig, CompletionResponse]):
     @override
     async def _request_headers(self, request: dict[str, Any], url: str, model: Model) -> dict[str, str]:
         return {
-            "Authorization": f"Bearer {self.config.api_key}",
+            "Authorization": f"Bearer {self._config.api_key}",
         }
 
     @override
