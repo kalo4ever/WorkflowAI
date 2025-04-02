@@ -40,13 +40,13 @@ from tests.utils import mock_aiter
 class TestFeatureService:
     async def test_get_feature_sections_preview_company_email_domain(self) -> None:
         with patch.object(FeatureService, "_is_company_email_domain", return_value=True):
-            result = await FeatureService.get_feature_sections_preview()
+            result = await FeatureService.get_feature_sections_preview(user_domain="example.com")
             expected_result = [
                 FeatureSectionPreview(
                     name="Categories",
                     tags=[
                         FeatureSectionPreview.TagPreview(
-                            name="",
+                            name="example.com",
                             kind="company_specific",
                         ),  # Placeholder for where the company-specific features will go.
                         FeatureSectionPreview.TagPreview(name="Featured", kind="static"),
@@ -78,9 +78,48 @@ class TestFeatureService:
 
             assert result == expected_result
 
+    async def test_get_feature_sections_preview_empty_user_domain(self) -> None:
+        result = await FeatureService.get_feature_sections_preview(user_domain=None)
+        expected_result = [
+            FeatureSectionPreview(
+                name="Categories",
+                tags=[
+                    FeatureSectionPreview.TagPreview(
+                        name="",
+                        kind="company_specific",
+                    ),  # Placeholder for where the company-specific features will go.
+                    FeatureSectionPreview.TagPreview(name="Featured", kind="static"),
+                    FeatureSectionPreview.TagPreview(name="E-Commerce", kind="static"),
+                    FeatureSectionPreview.TagPreview(name="Healthcare", kind="static"),
+                    FeatureSectionPreview.TagPreview(name="Marketing", kind="static"),
+                    FeatureSectionPreview.TagPreview(name="Productivity", kind="static"),
+                    FeatureSectionPreview.TagPreview(name="Social", kind="static"),
+                    FeatureSectionPreview.TagPreview(name="Developer Tools", kind="static"),
+                ],
+            ),
+            FeatureSectionPreview(
+                name="Inspired by",
+                tags=[
+                    FeatureSectionPreview.TagPreview(name="Apple, Google, Amazon", kind="static"),
+                    FeatureSectionPreview.TagPreview(name="Our Customers", kind="static"),
+                ],
+            ),
+            FeatureSectionPreview(
+                name="Use Cases",
+                tags=[
+                    FeatureSectionPreview.TagPreview(name="PDFs and Documents", kind="static"),
+                    FeatureSectionPreview.TagPreview(name="Scraping", kind="static"),
+                    FeatureSectionPreview.TagPreview(name="Image", kind="static"),
+                    FeatureSectionPreview.TagPreview(name="Audio", kind="static"),
+                ],
+            ),
+        ]
+
+        assert result == expected_result
+
     async def test_get_feature_sections_preview_personal_email_domain(self) -> None:
         with patch.object(FeatureService, "_is_company_email_domain", return_value=False):
-            result = await FeatureService.get_feature_sections_preview()
+            result = await FeatureService.get_feature_sections_preview(user_domain="example.com")
             expected_result = [
                 FeatureSectionPreview(
                     name="Categories",
