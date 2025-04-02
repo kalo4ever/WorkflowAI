@@ -1,7 +1,11 @@
 import logging
 from typing import Any, TypeAlias
 
-from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task import (
+from core.domain.fields.file import File, FileKind
+from core.domain.fields.local_date_time import DatetimeLocal
+from core.utils import strings
+
+from .chat_task_schema_generation_task import (
     EnumFieldConfig,
     InputArrayFieldConfig,
     InputGenericFieldConfig,
@@ -13,9 +17,6 @@ from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task impo
     OutputSchemaFieldType,
     OutputStringFieldConfig,
 )
-from core.domain.fields.file import File, FileKind
-from core.domain.fields.local_date_time import DatetimeLocal
-from core.utils import strings
 
 FieldConfig: TypeAlias = (
     InputGenericFieldConfig

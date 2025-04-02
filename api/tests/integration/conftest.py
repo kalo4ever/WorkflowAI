@@ -269,7 +269,7 @@ def pytest_configure(config: pytest.Config):
 # TODO: do not use, use mock internal task instead
 @pytest.fixture(scope="function")
 def mock_run_detect_chain_of_thought_task():
-    from api.tasks.detect_chain_of_thought_task import DetectChainOfThoughtUsageTaskOutput
+    from core.agents.detect_chain_of_thought_task import DetectChainOfThoughtUsageTaskOutput
 
     with patch(
         "api.services.groups.run_detect_chain_of_thought_task",

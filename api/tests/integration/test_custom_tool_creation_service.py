@@ -95,9 +95,9 @@ async def test_stream_example_output() -> None:
         ]
         assert results, "No output received"
         output = results[0]
-        assert (
-            output.example_tool_output_string == "Output string"
-        ), f"Expected 'Output string', got {output.example_tool_output_string}"
+        assert output.example_tool_output_string == "Output string", (
+            f"Expected 'Output string', got {output.example_tool_output_string}"
+        )
         assert output.example_tool_output_json == {
             "key": "value",
         }, f"Expected output json {{'key': 'value'}}, got {output.example_tool_output_json}"

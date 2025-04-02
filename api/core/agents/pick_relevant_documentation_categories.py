@@ -1,8 +1,9 @@
 import workflowai
 from pydantic import BaseModel, Field
 
-from api.tasks.meta_agent import MetaAgentChatMessage
 from core.domain.documentation_section import DocumentationSection
+
+from .meta_agent import MetaAgentChatMessage
 
 
 class PickRelevantDocumentationSectionsInput(BaseModel):

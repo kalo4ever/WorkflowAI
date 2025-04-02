@@ -4,25 +4,28 @@
 
 ### Requirements
 
-- python 3.12
+- python 3.12.\* (< 3.13)
 - docker to start the dependencies
-- [poetry](https://python-poetry.org/)
+- [poetry](https://python-poetry.org/) 1.8.\* (< 2.0)
 - [ffmpeg](https://ffmpeg.org/ffmpeg.html) to handle audio files
 - [poppler](https://poppler.freedesktop.org/) to handle pdf files
 
-Example mac setup:
+Example Mac setup:
 
 ```sh
-# Install poppler for pdf parsing
-brew install poppler ffmeg
+# Install python 3.12 if needed
+brew install python@3.12
 # Install pipx https://pipx.pypa.io/stable/installation/
 brew install pipx
 pipx ensurepath
 # Install poetry with pipx
-pipx install poetry==1.8.0
+pipx install poetry==1.8.5
 # [Recommended] Configure poetry to create virtual envs in project
 # It makes it easier to be picked up by vscode
 poetry config virtualenvs.in-project true
+
+# Install poppler for pdf parsing and ffmpeg for image detection
+brew install poppler ffmpeg
 ```
 
 ### Installation

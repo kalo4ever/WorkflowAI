@@ -5,12 +5,13 @@ import workflowai
 from pydantic import BaseModel
 from workflowai import Model
 
-from api.tasks.company_domain_from_email_agent import (
+from core.utils.email_utils import safe_domain_from_email
+
+from .company_domain_from_email_agent import (
     ClassifyEmailDomainAgentInput,
     ClassifyEmailDomainAgentOutput,
     run_classify_email_domain_agent,
 )
-from core.utils.email_utils import safe_domain_from_email
 
 _logger = logging.getLogger(__name__)
 

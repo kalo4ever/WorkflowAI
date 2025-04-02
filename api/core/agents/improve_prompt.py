@@ -3,8 +3,9 @@ from typing import Any
 import workflowai
 from pydantic import BaseModel, Field
 
-from api.tasks.chat_task_schema_generation.apply_field_updates import InputFieldUpdate, OutputFieldUpdate
 from core.domain.url_content import URLContent
+
+from .chat_task_schema_generation.apply_field_updates import InputFieldUpdate, OutputFieldUpdate
 
 
 class ImprovePromptAgentInput(BaseModel):

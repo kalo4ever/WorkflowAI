@@ -5,12 +5,12 @@ from typing import Any, AsyncIterator
 from workflowai import Model
 
 from api.services.internal_tasks._internal_tasks_utils import officially_suggested_tools
-from api.tasks.chat_task_schema_generation.apply_field_updates import (
+from core.agents.chat_task_schema_generation.apply_field_updates import (
     InputFieldUpdate,
     OutputFieldUpdate,
     apply_field_updates,
 )
-from api.tasks.improve_prompt import (
+from core.agents.improve_prompt import (
     ImprovePromptAgentInput,
     ImprovePromptAgentOutput,
     run_improve_prompt_agent,

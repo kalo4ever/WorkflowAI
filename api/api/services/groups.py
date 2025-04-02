@@ -2,7 +2,10 @@ import logging
 from typing import Any, NamedTuple, Optional
 
 from api.services.analytics import AnalyticsService
-from api.tasks.detect_chain_of_thought_task import DetectChainOfThoughtUsageTaskInput, run_detect_chain_of_thought_task
+from core.agents.detect_chain_of_thought_task import (
+    DetectChainOfThoughtUsageTaskInput,
+    run_detect_chain_of_thought_task,
+)
 from core.domain.consts import METADATA_KEY_DEPLOYMENT_ENVIRONMENT, METADATA_KEY_REQUESTED_ITERATION
 from core.domain.errors import (
     InternalError,

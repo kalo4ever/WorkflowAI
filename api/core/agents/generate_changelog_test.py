@@ -1,4 +1,4 @@
-from api.tasks.generate_changelog import (
+from .generate_changelog import (
     GenerateChangelogFromPropertiesTaskInput,
     Properties,
     Schema,

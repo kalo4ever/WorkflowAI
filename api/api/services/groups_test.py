@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from api.tasks.detect_chain_of_thought_task import (
+from core.agents.detect_chain_of_thought_task import (
     DetectChainOfThoughtUsageTaskOutput,
 )
 from core.domain.errors import InvalidRunOptionsError

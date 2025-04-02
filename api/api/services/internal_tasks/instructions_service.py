@@ -1,7 +1,7 @@
 import logging
 from typing import AsyncIterator
 
-from api.tasks.task_instruction_tool_update.task_instruction_tool_update_task import (
+from core.agents.task_instruction_tool_update_task import (
     TaskInstructionsToolUpdateTaskInput,
     TaskInstructionsToolUpdateTaskOutput,
     stream_task_instruction_tool_update,

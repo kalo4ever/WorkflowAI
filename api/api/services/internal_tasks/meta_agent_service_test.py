@@ -17,9 +17,9 @@ from api.services.internal_tasks.meta_agent_service import (
     RunCurrentAgentOnModelsToolCall,
 )
 from api.services.runs import RunsService
-from api.tasks.extract_company_info_from_domain_task import Product
-from api.tasks.meta_agent import MetaAgentInput, MetaAgentOutput
-from api.tasks.meta_agent import PlaygroundState as PlaygroundStateDomain
+from core.agents.extract_company_info_from_domain_task import Product
+from core.agents.meta_agent import MetaAgentInput, MetaAgentOutput
+from core.agents.meta_agent import PlaygroundState as PlaygroundStateDomain
 from core.domain.documentation_section import DocumentationSection
 from core.domain.events import MetaAgentChatMessagesSent
 from core.domain.task_group_properties import TaskGroupProperties

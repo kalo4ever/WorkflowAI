@@ -12,18 +12,18 @@ from api.services.internal_tasks.agent_suggestions_service import (
 )
 from api.services.slack_notifications import SlackNotificationDestination, get_user_and_org_str, send_slack_notification
 from api.services.tasks import list_agent_summaries
-from api.tasks.agent_output_example import SuggestedAgentOutputExampleInput, stream_suggested_agent_output_example
-from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task_utils import build_json_schema_with_defs
-from api.tasks.chat_task_schema_generation.schema_generation_agent import (
+from core.agents.agent_output_example import SuggestedAgentOutputExampleInput, stream_suggested_agent_output_example
+from core.agents.chat_task_schema_generation.chat_task_schema_generation_task_utils import build_json_schema_with_defs
+from core.agents.chat_task_schema_generation.schema_generation_agent import (
     SchemaBuilderInput,
     run_agent_schema_generation,
 )
-from api.tasks.company_agent_suggestion_agent import (
+from core.agents.company_agent_suggestion_agent import (
     SuggestAgentForCompanyInput,
     SuggestedAgent,
     stream_suggest_agents_for_company,
 )
-from api.tasks.company_domain_from_email_agent import (
+from core.agents.company_domain_from_email_agent import (
     ClassifyEmailDomainAgentInput,
     ClassifyEmailDomainAgentOutput,
     run_classify_email_domain_agent,
