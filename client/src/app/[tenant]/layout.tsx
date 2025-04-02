@@ -2,7 +2,7 @@
 
 import { ApiKeysModal } from '@/components/ApiKeysModal/ApiKeysModal';
 import { CommandK } from '@/components/CommandK';
-import { ManageProviderKeysModal } from '@/components/ProviderKeysModal/ManageProviderKeysModal';
+import { ManageProviderKeysModal } from '@/components/ProviderKeysModal/ManageProviderKeysContainer';
 import { TaskSettingsModal } from '@/components/TaskSettingsModal/TaskSettingsModal';
 import { StripeWrapper } from '@/components/stripe/StripeWrapper';
 import { useAuth } from '@/lib/AuthContext';
