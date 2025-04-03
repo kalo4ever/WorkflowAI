@@ -50,7 +50,7 @@ type Props = {
   scrollToSuggestedFeatures: () => void;
 };
 
-export function GirdComponent(props: Props) {
+export function GridComponent(props: Props) {
   const { className, entries, scrollToSuggestedFeatures } = props;
 
   return (

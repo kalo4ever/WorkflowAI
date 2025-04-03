@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { AIProviderIcon } from '@/components/icons/models/AIProviderIcon';
 import { cn } from '@/lib/utils';
 import { useOrFetchModels } from '@/store/fetchers';
@@ -147,18 +147,22 @@ export function PriceComponent(props: Props) {
   const { className } = props;
 
   const { models } = useOrFetchModels();
-  const threeFirstModels = models?.slice(0, 4);
+
+  const filteredModels = useMemo(() => {
+    return models?.slice(0, 4);
+  }, [models]);
+
   const [selectedModelIndex, setSelectedModelIndex] = useState<number>(0);
 
   return (
     <div className={cn('flex flex-col items-center sm:gap-8 gap-6 sm:px-16 px-4 w-full max-w-[1260px]', className)}>
       <div className='flex flex-col border border-gray-200 rounded-[2px] w-full'>
         <PriceSectionModelSelector
-          models={threeFirstModels}
+          models={filteredModels}
           selectedModelIndex={selectedModelIndex}
           setSelectedModelIndex={setSelectedModelIndex}
         />
-        <PriceSectionGraph model={threeFirstModels?.[selectedModelIndex]} />
+        <PriceSectionGraph model={filteredModels?.[selectedModelIndex]} />
       </div>
     </div>
   );
