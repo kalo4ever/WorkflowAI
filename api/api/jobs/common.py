@@ -21,6 +21,7 @@ from core.domain.analytics_events.analytics_events import UserProperties
 from core.domain.events import Event, EventRouter
 from core.domain.users import UserIdentifier
 from core.services.emails.email_service import EmailService
+from core.services.users.user_service import UserService
 from core.storage.azure.azure_blob_file_storage import FileStorage
 from core.storage.backend_storage import BackendStorage, SystemBackendStorage
 from core.utils.encryption import Encryption
@@ -273,10 +274,19 @@ def feature_service_dep(storage: StorageDep, event_router: EventRouterDep) -> Fe
 FeatureServiceDep = Annotated[FeatureService, TaskiqDepends(feature_service_dep)]
 
 
-def email_service_dep() -> EmailService:
-    from api.services.postmark_service import PostmarkService
+def user_service_dep() -> UserService:
+    from core.services.users import shared_user_service
 
-    return PostmarkService()
+    return shared_user_service.shared_user_service
+
+
+UserServiceDep = Annotated[UserService, TaskiqDepends(user_service_dep)]
+
+
+def email_service_dep(storage: StorageDep, user_service: UserServiceDep) -> EmailService:
+    from core.services.emails import shared_email_service
+
+    return shared_email_service.email_service_builder(storage.organizations, user_service)
 
 
 EmailServiceDep = Annotated[EmailService, TaskiqDepends(email_service_dep)]

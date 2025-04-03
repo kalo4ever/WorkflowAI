@@ -35,7 +35,10 @@ from api.services.transcriptions import TranscriptionService
 from api.services.versions import VersionsService
 from core.deprecated.workflowai import WorkflowAI
 from core.domain.users import UserIdentifier
+from core.services.emails import shared_email_service
 from core.services.emails.email_service import EmailService
+from core.services.users import shared_user_service
+from core.services.users.user_service import UserService
 from core.storage.file_storage import FileStorage
 
 
@@ -267,10 +270,15 @@ def run_feedback_generator(
 RunFeedbackGeneratorDep = Annotated[Callable[[str], str], Depends(run_feedback_generator)]
 
 
-def email_service_dep() -> EmailService:
-    from api.services.postmark_service import PostmarkService
+def user_service_dep() -> UserService:
+    return shared_user_service.shared_user_service
 
-    return PostmarkService()
+
+UserServiceDep = Annotated[UserService, Depends(user_service_dep)]
+
+
+def email_service_dep(storage: StorageDep, user_service: UserServiceDep) -> EmailService:
+    return shared_email_service.email_service_builder(storage.organizations, user_service)
 
 
 EmailServiceDep = Annotated[EmailService, Depends(email_service_dep)]

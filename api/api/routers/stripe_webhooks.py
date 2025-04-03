@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Literal
+from typing import Any, Literal
 
 import stripe
 from fastapi import APIRouter, Header, Request, Response
@@ -19,7 +19,7 @@ class PaymentIntentData(BaseModel):
     object: Literal["payment_intent"]
     id: str
     amount: int
-    metadata: dict[str, str]
+    metadata: dict[str, Any]
     status: str
 
     class LastPaymentError(BaseModel):

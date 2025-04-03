@@ -37,6 +37,7 @@ class _CustomerMetadata(BaseModel):
     tenant_uid: int
     slug: str | None = None
     organization_id: str | None = None
+    owner_id: str | None = None
 
     @field_serializer("tenant_uid")
     def serialize_tenant_uid(self, tenant_uid: int) -> str:
@@ -97,10 +98,11 @@ class PaymentService:
             return org_settings.stripe_customer_id
 
         metadata = _CustomerMetadata(
-            organization_id=org_settings.org_id or "",
+            organization_id=org_settings.org_id or None,
             tenant=org_settings.tenant,
-            slug=org_settings.slug,
+            slug=org_settings.slug or None,
             tenant_uid=org_settings.uid,
+            owner_id=org_settings.owner_id or None,
         )
 
         # TODO: protect against race conditions here, we could be creating multiple customers
@@ -136,10 +138,11 @@ class PaymentService:
             )
 
         metadata = _IntentMetadata(
-            organization_id=org_settings.org_id or "",
+            organization_id=org_settings.org_id or None,
             tenant=org_settings.tenant,
-            slug=org_settings.slug,
+            slug=org_settings.slug or None,
             tenant_uid=org_settings.uid,
+            owner_id=org_settings.owner_id or None,
             trigger=trigger,
         )
 
