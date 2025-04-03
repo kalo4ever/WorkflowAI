@@ -58,66 +58,43 @@ export function replaceFileData(
   return innerReplaceFileDataWithURL(schema, schema.$defs, obj, replacer) as Record<string, unknown>;
 }
 
-export type FileFormat = 'audio' | 'image' | 'text' | 'document' | 'universal';
-
-function appendToFormats(
-  schema: JsonValueSchema | undefined,
-  defs: JsonSchemaDefinitions | undefined,
-  formats: Set<FileFormat>
-) {
+export function containsFile(schema: JsonValueSchema | undefined, defs: JsonSchemaDefinitions | undefined): boolean {
   if (schema === undefined || defs === undefined) {
-    return;
+    return false;
   }
 
-  if (schema.followedRefName === 'Image') {
-    formats.add('image');
-  }
-
-  if (schema.followedRefName === 'File') {
-    switch (schema.format) {
-      case 'audio':
-        formats.add('audio');
-        break;
-      case 'image':
-        formats.add('image');
-        break;
-      case 'pdf':
-      case 'text':
-      case 'document':
-        formats.add('document');
-        break;
-      default:
-        formats.add('universal');
-        break;
-    }
+  if (
+    schema.followedRefName === 'Image' ||
+    schema.followedRefName === 'Audio' ||
+    schema.followedRefName === 'Video' ||
+    schema.followedRefName === 'Document' ||
+    schema.followedRefName === 'File'
+  ) {
+    return true;
   }
 
   if ('properties' in schema && schema.properties) {
     for (const key in schema.properties) {
       const subSchema = getSubSchema(schema, defs, key);
-      appendToFormats(subSchema, defs, formats);
+      if (containsFile(subSchema, defs)) {
+        return true;
+      }
     }
   }
 
   if ('items' in schema && schema.items) {
     if (Array.isArray(schema.items)) {
       for (const idx in schema.items) {
-        appendToFormats(getSubSchema(schema, defs, idx), defs, formats);
+        if (containsFile(getSubSchema(schema, defs, idx), defs)) {
+          return true;
+        }
       }
     } else {
-      appendToFormats(getSubSchema(schema, defs, '0'), defs, formats);
+      if (containsFile(getSubSchema(schema, defs, '0'), defs)) {
+        return true;
+      }
     }
   }
-}
 
-export function extractFormats(schema: JsonSchema | undefined | null): FileFormat[] | undefined {
-  if (schema === undefined || schema === null) {
-    return undefined;
-  }
-  const formats = new Set<FileFormat>();
-  appendToFormats(schema, schema.$defs, formats);
-  if (formats.size === 0) {
-    return undefined;
-  }
-  return Array.from(formats);
+  return false;
 }
