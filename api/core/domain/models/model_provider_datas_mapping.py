@@ -573,7 +573,7 @@ AMAZON_BEDROCK_PROVIDER_DATA: ProviderDataByModel = {
             source="https://aws.amazon.com/bedrock/pricing/",
         ),
         lifecycle_data=LifecycleData(
-            sunset_date=datetime.date(year=2025, month=1, day=1),
+            sunset_date=datetime.date(year=2025, month=7, day=20),
             source="https://aws.amazon.com/bedrock/pricing/",
             post_sunset_replacement_model=Model.CLAUDE_3_5_SONNET_20241022,
         ),
