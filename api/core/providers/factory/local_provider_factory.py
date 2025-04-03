@@ -98,9 +98,14 @@ class LocalProviderFactory(AbstractProviderFactory):
         return self.PROVIDER_TYPES[config.provider]
 
     @override
-    def build_provider(self, config: ProviderConfig, config_id: str) -> AbstractProvider[Any, Any]:
+    def build_provider(
+        self,
+        config: ProviderConfig,
+        config_id: str,
+        preserve_credits: bool | None,
+    ) -> AbstractProvider[Any, Any]:
         """Build a provider from a configuration dictionary."""
-        return self.provider_type(config)(config=config, config_id=config_id)
+        return self.provider_type(config)(config=config, config_id=config_id, preserve_credits=preserve_credits)
 
     def available_providers(self) -> Iterable[Provider]:
         return self._providers.keys()

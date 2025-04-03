@@ -2,7 +2,7 @@ from typing import Any
 
 import pytest
 
-from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task import (
+from .chat_task_schema_generation_task import (
     EnumFieldConfig,
     InputArrayFieldConfig,
     InputGenericFieldConfig,
@@ -14,7 +14,7 @@ from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task impo
     OutputSchemaFieldType,
     OutputStringFieldConfig,
 )
-from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task_utils import (
+from .chat_task_schema_generation_task_utils import (
     build_json_schema_with_defs,
 )
 

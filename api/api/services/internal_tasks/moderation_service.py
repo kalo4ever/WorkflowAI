@@ -2,7 +2,7 @@ import logging
 import os
 from typing import Any
 
-from api.tasks.moderation_task import (
+from core.agents.moderation_task import (
     ModerationOutput,
     TaskRunModerationInput,
     TaskVersionModerationInput,

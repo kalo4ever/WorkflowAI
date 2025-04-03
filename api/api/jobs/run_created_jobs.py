@@ -38,10 +38,10 @@ async def evaluate_run_review(event: RunCreatedEvent, reviews_service: ReviewsSe
 
 @broker.task(retry_on_error=False)
 async def decrement_credits(event: RunCreatedEvent, payment_service: PaymentSystemServiceDep):
-    if not event.run.is_free and event.run.cost_usd and event.run.config_id is None:
+    if cost := event.run.credits_used:
         await payment_service.decrement_credits(
             event.run.author_tenant or event.tenant,
-            event.run.cost_usd,
+            cost,
         )
 
 

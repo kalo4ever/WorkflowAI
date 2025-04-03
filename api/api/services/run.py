@@ -119,7 +119,6 @@ class RunService:
         trigger: RunTrigger,
         serializer: Callable[[SerializableTaskRun], BaseModel],
         author_tenant: TenantTuple | None = None,
-        is_free: bool | None = None,
         stream_last_chunk: bool = False,
         store_inline: bool = False,
         private_fields: set[str] | None = None,
@@ -140,7 +139,6 @@ class RunService:
         )
         builder.author_uid = author_tenant[1] if author_tenant else None
         builder.author_tenant = author_tenant[0] if author_tenant else None
-        builder.is_free = is_free
         builder.version_changed = is_different_version
         if stream_serializer:
             return StreamingResponse(

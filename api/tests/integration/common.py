@@ -322,6 +322,8 @@ def task_schema_url(task: dict[str, Any], path: str, tenant: str = "_") -> str:
 
 
 def task_url_v1(task: dict[str, Any], path: str, tenant: str = "_") -> str:
+    if path.startswith("/"):
+        path = path[1:]
     return f"/v1/{tenant}/agents/{_task_id(task)}/{path}"
 
 
@@ -376,6 +378,13 @@ def openai_endpoint(
     return f"https://{base_url}/openai/deployments/{model_str}/chat/completions?api-version={api_version}"
 
 
+def azure_openai_endpoint(
+    model: str = "gpt-4o-2024-11-20",
+    region: str = "eastus",
+):
+    return f"https://workflowai-azure-oai-staging-{region}.openai.azure.com/openai/deployments/{model}/chat/completions?api-version=2024-12-01-preview"
+
+
 def mock_openai_call(
     httpx_mock: HTTPXMock,
     status_code: int = 200,
@@ -396,7 +405,7 @@ def mock_openai_call(
     if provider == "openai":
         url = openai_endpoint()
     else:
-        url = f"https://workflowai-azure-oai-staging-eastus.openai.azure.com/openai/deployments/{model}/chat/completions?api-version=2024-12-01-preview"
+        url = azure_openai_endpoint(model)
 
     message: dict[str, Any] = {}
     if tool_calls_content is not None:

@@ -235,16 +235,17 @@ def wai_task_run(output: Any, **kwargs: Any):
 
 def task_deployment(
     iteration: int = 1,
+    version_id: str = "version_id",
     schema_id: int = 1,
     task_id: str = "task_id",
     environment: VersionEnvironment = VersionEnvironment.DEV,
     properties: TaskGroupProperties | None = None,
-    provider_config_id: str | None = None,
 ):
     return TaskDeployment(
         task_id=task_id,
         schema_id=schema_id,
         iteration=iteration,
+        version_id=version_id,
         environment=environment,
         deployed_at=datetime.now(),
         deployed_by=UserIdentifier(
@@ -252,7 +253,6 @@ def task_deployment(
             user_email="user_email@example.com",
         ),
         properties=properties or TaskGroupProperties(model="gpt-4o-2024-08-06"),
-        provider_config_id=provider_config_id,
     )
 
 

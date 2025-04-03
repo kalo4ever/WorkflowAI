@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 
 from api.services.internal_tasks.instructions_service import InstructionsService
-from api.tasks.task_instruction_tool_update.task_instruction_tool_update_task import (
+from core.agents.task_instruction_tool_update_task import (
     TaskInstructionsToolUpdateTaskInput,
     TaskInstructionsToolUpdateTaskOutput,
 )

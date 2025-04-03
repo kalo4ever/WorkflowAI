@@ -37,8 +37,8 @@ def test_provider_init_config_id(provider_cls: Type[AbstractProvider[Any, Any]])
     # Check that we can initialize a provider with a config_id
     with patch.object(provider_cls, "_default_config") as mock_from_env:
         provider = provider_cls(config_id="config_id")
-        assert provider.config_id == "config_id"
-        assert provider.config is not None
+        assert provider._config_id == "config_id"  # pyright: ignore [reportPrivateUsage]
+        assert provider._config is not None  # pyright: ignore [reportPrivateUsage]
         mock_from_env.assert_called_once()
 
 

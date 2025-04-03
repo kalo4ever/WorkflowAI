@@ -11,15 +11,11 @@ from core.domain.version_environment import VersionEnvironment
 class TaskDeployment(BaseModel):
     task_id: str = Field(description="The ID of the task")
     schema_id: int = Field(description="The schema ID of the task")
-    # TODO[versionv2]: remove and replace with hash
+    # TODO[versionv2]: remove and replace with version_id
     iteration: int = Field(description="The version ID (group iteration or alias)")
+    version_id: str = Field(description="The version ID")
     properties: TaskGroupProperties = Field(description="The task group properties")
     environment: VersionEnvironment = Field(description="The deployment environment")
-
-    provider_config_id: str | None = Field(
-        default=None,
-        description="The provider configuration ID, if None, WorkflowAI's key is used",
-    )
 
     deployed_at: datetime = Field(description="When the deployment was made")
     deployed_by: UserIdentifier | None = Field(None, description="Who made the deployment")

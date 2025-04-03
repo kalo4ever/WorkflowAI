@@ -30,11 +30,11 @@ from core.domain.structured_output import StructuredOutput
 from core.domain.task_group_properties import FewShotConfiguration, FewShotExample, TaskGroupProperties
 from core.domain.task_run_reply import RunReply
 from core.domain.task_variant import SerializableTaskVariant
+from core.domain.tenant_data import ProviderSettings
 from core.domain.tool import Tool
 from core.domain.tool_call import ToolCall, ToolCallRequestWithID
 from core.domain.types import TaskInputDict
 from core.providers.base.abstract_provider import AbstractProvider
-from core.providers.base.config import ProviderConfig
 from core.providers.base.provider_options import ProviderOptions
 from core.runners.abstract_runner import AbstractRunner, CacheFetcher
 from core.runners.workflowai.internal_tool import build_all_internal_tools
@@ -103,7 +103,7 @@ class WorkflowAIRunner(AbstractRunner[WorkflowAIRunnerOptions]):
         task: SerializableTaskVariant,
         properties: Optional[TaskGroupProperties] = None,
         options: Optional[WorkflowAIRunnerOptions] = None,
-        provider_config: tuple[str, ProviderConfig] | None = None,
+        custom_configs: list[ProviderSettings] | None = None,
         cache_fetcher: Optional[CacheFetcher] = None,
         metadata: dict[str, Any] | None = None,
         disable_fallback: bool = False,
@@ -119,11 +119,8 @@ class WorkflowAIRunner(AbstractRunner[WorkflowAIRunnerOptions]):
         if self._options.provider:
             # This will throw a ProviderDoesNotSupportModelError if the provider does not support the model
             get_model_provider_data(self._options.provider, self._options.model)
-        if provider_config and disable_fallback:
-            # We should check if the provider is the same as the one in the provider_config
-            get_model_provider_data(provider_config[1].provider, self._options.model)
 
-        self._provider_config = provider_config
+        self._custom_configs = custom_configs
 
         self.disable_fallback = disable_fallback
         # internal tool cache contains the result of internal tool calls
@@ -972,7 +969,7 @@ class WorkflowAIRunner(AbstractRunner[WorkflowAIRunnerOptions]):
     def _build_pipeline(self):
         pipeline = ProviderPipeline(
             options=self._options,
-            provider_config=self._provider_config,
+            custom_configs=self._custom_configs,
             factory=self.provider_factory,
             builder=self._build_provider_data,
         )

@@ -108,14 +108,12 @@ def group_service_dep(
     event_router: EventRouterDep,
     storage: StorageDep,
     analytics_service: AnalyticsServiceDep,
-    enc: EncryptionDep,
     event: EventDep,
 ):
     from api.services.groups import GroupService
 
     return GroupService(
         storage=storage,
-        encryption=enc,
         event_router=event_router,
         analytics_service=analytics_service,
         user=UserIdentifier(

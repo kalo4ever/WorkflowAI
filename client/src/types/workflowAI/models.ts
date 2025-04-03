@@ -1594,8 +1594,6 @@ export type SerializableTaskRun = {
   /**
    * The id of the config that was used to run the task
    */
-  config_id?: string | null;
-  is_free?: boolean | null;
   from_cache?: boolean | null;
   private_fields?: Array<string> | null;
   /**

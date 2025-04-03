@@ -3,7 +3,7 @@ from typing import Protocol
 
 from core.domain.task_deployment import TaskDeployment
 from core.domain.version_environment import VersionEnvironment
-from core.storage.mongo.models.task_deployments import TaskDeploymentDocument
+from core.storage.mongo.models.deployment_document import TaskDeploymentDocument
 
 
 class TaskDeploymentsStorage(Protocol):

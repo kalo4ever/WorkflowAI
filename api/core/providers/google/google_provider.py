@@ -22,6 +22,7 @@ from core.providers.google.google_provider_domain import (
     message_or_system_message,
 )
 
+# TODO: switch to having models multi region by default
 # https://cloud.google.com/vertex-ai/generative-ai/docs/learn/locations#available-regions
 _MIXED_REGION_MODELS = {
     # Model.GEMINI_2_0_FLASH_EXP,
@@ -64,7 +65,7 @@ class GoogleProvider(GoogleProviderBase[GoogleProviderConfig]):
         return random.choice(choices)
 
     def all_available_regions(self):
-        return set(self.config.vertex_location)
+        return set(self._config.vertex_location)
 
     def get_vertex_location(self) -> str:
         used_regions = self._get_metadata(_VERTEX_API_EXCLUDED_REGIONS_METADATA_KEY)
@@ -81,7 +82,7 @@ class GoogleProvider(GoogleProviderBase[GoogleProviderConfig]):
 
     @override
     async def _request_headers(self, request: dict[str, Any], url: str, model: Model) -> dict[str, str]:
-        token = await google_provider_auth.get_token(self.config.vertex_credentials)
+        token = await google_provider_auth.get_token(self._config.vertex_credentials)
         return {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {token}",
@@ -89,7 +90,7 @@ class GoogleProvider(GoogleProviderBase[GoogleProviderConfig]):
 
     @override
     def _request_url(self, model: Model, stream: bool) -> str:
-        location = self.config.vertex_location[0] if model not in _MIXED_REGION_MODELS else self.get_vertex_location()
+        location = self._config.vertex_location[0] if model not in _MIXED_REGION_MODELS else self.get_vertex_location()
         self._add_metadata(_VERTEX_API_REGION_METADATA_KEY, location)
 
         MODEL_STR_OVERRIDES = {
@@ -111,7 +112,7 @@ class GoogleProvider(GoogleProviderBase[GoogleProviderConfig]):
 
         publisher_str = PUBLISHER_OVERRIDES.get(model, "google")
 
-        return f"https://{location}-aiplatform.googleapis.com/v1/projects/{self.config.vertex_project}/locations/{location}/publishers/{publisher_str}/models/{model_str}:{suffix}"
+        return f"https://{location}-aiplatform.googleapis.com/v1/projects/{self._config.vertex_project}/locations/{location}/publishers/{publisher_str}/models/{model_str}:{suffix}"
 
     @override
     @classmethod

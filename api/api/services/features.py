@@ -12,16 +12,21 @@ from api.services.internal_tasks.agent_suggestions_service import (
 )
 from api.services.slack_notifications import SlackNotificationDestination, get_user_and_org_str, send_slack_notification
 from api.services.tasks import list_agent_summaries
-from api.tasks.agent_output_example import SuggestedAgentOutputExampleInput, stream_suggested_agent_output_example
-from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task_utils import build_json_schema_with_defs
-from api.tasks.chat_task_schema_generation.schema_generation_agent import (
+from core.agents.agent_output_example import SuggestedAgentOutputExampleInput, stream_suggested_agent_output_example
+from core.agents.chat_task_schema_generation.chat_task_schema_generation_task_utils import build_json_schema_with_defs
+from core.agents.chat_task_schema_generation.schema_generation_agent import (
     SchemaBuilderInput,
     run_agent_schema_generation,
 )
-from api.tasks.company_agent_suggestion_agent import (
+from core.agents.company_agent_suggestion_agent import (
     SuggestAgentForCompanyInput,
     SuggestedAgent,
     stream_suggest_agents_for_company,
+)
+from core.agents.company_domain_from_email_agent import (
+    ClassifyEmailDomainAgentInput,
+    ClassifyEmailDomainAgentOutput,
+    run_classify_email_domain_agent,
 )
 from core.domain.errors import InternalError, ObjectNotFoundError
 from core.domain.events import EventRouter, FeaturesByDomainGenerationStarted
@@ -82,18 +87,36 @@ class FeatureService:
         self.storage = storage
 
     @staticmethod
-    def get_feature_sections_preview(user_domain: str | None = None) -> list[FeatureSectionPreview]:
+    async def _is_company_email_domain(user_email_domain: str) -> bool:
+        try:
+            company_domain_classification = await run_classify_email_domain_agent(
+                ClassifyEmailDomainAgentInput(email_domain=user_email_domain),
+            )
+            return company_domain_classification.result == ClassifyEmailDomainAgentOutput.Result.COMPANY_EMAIL_DOMAIN
+        except Exception as e:
+            _logger.exception("Error classifying email domain", exc_info=e)
+            # If anything wrong happens, we'll show the company-specific features, since it's less bad to show "gmail.com" to non-company users
+            # Than to hide the company-specific features for real company users
+            return True
+
+    @staticmethod
+    async def get_feature_sections_preview(user_domain: str | None = None) -> list[FeatureSectionPreview]:
+        # We want to show company specific section for anonymous user because they must be able to enter any URL and get suggestion for this URL.
+        show_company_section = user_domain is None or await FeatureService._is_company_email_domain(user_domain)
+
         return [
             FeatureSectionPreview(
                 name=section.name,
                 tags=[
                     FeatureSectionPreview.TagPreview(
-                        name=user_domain  # fills the "For You" section with the company name
+                        name=user_domain  # fills the company_specific" name section with the company name
                         if user_domain and tag.kind == "company_specific"
                         else tag.name,
                         kind=tag.kind,
                     )
                     for tag in section.tags
+                    # If the user's email domain is not a company email domain, we don't want to show the "company_specific" section
+                    if tag.kind != "company_specific" or show_company_section
                 ],
             )
             for section in FEATURES_MAPPING

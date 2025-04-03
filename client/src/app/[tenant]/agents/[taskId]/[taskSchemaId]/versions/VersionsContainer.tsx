@@ -103,6 +103,7 @@ export default function VersionsContainer() {
       isInitialized={isTaskInitialized}
       name='Versions'
       showCopyLink={false}
+      documentationLink='https://docs.workflowai.com/concepts/versions'
       rightBarChildren={
         <VersionFilterPicker
           schema_id={taskSchemaId}

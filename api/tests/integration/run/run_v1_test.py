@@ -115,7 +115,6 @@ async def test_run_with_metadata(test_client: IntegrationTestClient):
             "temperature": 0.0,
         },
         "input_tokens_count": 110.25,
-        "is_workflowai_llm_provider_key": True,
         "latency_seconds": latency_seconds,  #
         "output_tokens_count": 6.25,
         "task": {
@@ -248,21 +247,21 @@ async def test_usage_for_per_token_model(
     assert usage["model_context_window_size"] == 128000  # from model
 
 
-async def test_cost_for_zero_cost_gemini_model(
+async def test_cost_for_zero_cost_gemini_experimental_model(
     httpx_mock: HTTPXMock,
     int_api_client: AsyncClient,
     patched_broker: InMemoryBroker,
 ):
     await create_task(int_api_client, patched_broker, httpx_mock)
 
-    mock_gemini_call(httpx_mock, model="gemini-exp-1206")
+    mock_gemini_call(httpx_mock, model="gemini-2.5-pro-exp-03-25")
 
     task_run = await run_task_v1(
         int_api_client,
         task_id="greet",
         task_schema_id=1,
         task_input={"name": "John", "age": 30},
-        model="gemini-exp-1206",
+        model="gemini-2.5-pro-exp-03-25",
     )
 
     assert task_run["cost_usd"] == 0

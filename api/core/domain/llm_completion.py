@@ -1,6 +1,6 @@
 from typing import Any, Optional, cast
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from core.domain.llm_usage import LLMUsage
 from core.domain.message import Message
@@ -22,6 +22,16 @@ class LLMCompletion(BaseModel):
     # The provider that was used to generate the completion
     provider: Provider
 
+    config_id: str | None = Field(
+        default=None,
+        description="An id of the config that was used to generate the completion. If None, the default config was used.",
+    )
+
+    preserve_credits: bool | None = Field(
+        default=None,
+        description="Whether the completion should not decrement the credits of the user.",
+    )
+
     def incur_cost(self) -> bool:
         return not (self.response is None and self.usage.completion_token_count == 0)
 
@@ -36,6 +46,12 @@ class LLMCompletion(BaseModel):
                 Message(content=self.response or "", tool_call_requests=self.tool_calls, role=Message.Role.ASSISTANT),
             )
         return base
+
+    @property
+    def credits_used(self) -> float:
+        if self.preserve_credits:
+            return 0
+        return self.usage.cost_usd or 0
 
 
 def total_tokens_count(completions: list[LLMCompletion] | None) -> tuple[float | None, float | None]:

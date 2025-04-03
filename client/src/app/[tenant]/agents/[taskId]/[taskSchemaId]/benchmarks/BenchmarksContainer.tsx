@@ -226,6 +226,7 @@ export function BenchmarksContainer() {
       name='Benchmarks'
       showCopyLink={true}
       showBottomBorder={true}
+      documentationLink='https://docs.workflowai.com/features/benchmarks'
     >
       <div className='flex flex-row w-full h-full'>
         <div className='flex flex-col w-[215px] h-full flex-shrink-0 border-r border-dashed border-gray-200'>

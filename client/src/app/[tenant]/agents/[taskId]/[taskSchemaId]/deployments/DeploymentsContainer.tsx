@@ -189,6 +189,7 @@ export function DeploymentsContainer() {
       task={task}
       showSchema={false}
       isInitialized={isTaskInitialized && isVersionsInitialized && isOrganizationSettingsInitialized}
+      documentationLink='https://docs.workflowai.com/features/deployments'
       rightBarChildren={
         <div className='flex flex-row items-center gap-2 font-lato'>
           <Button variant='newDesign' onClick={handleOpenProviderKeysModal} className='min-h-8' disabled={isInDemoMode}>

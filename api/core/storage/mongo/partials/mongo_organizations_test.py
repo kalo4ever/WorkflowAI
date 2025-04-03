@@ -118,7 +118,7 @@ class TestAddProviderConfig:
         org_settings = await organization_storage.get_organization()
         for provider in org_settings.providers:
             assert isinstance(provider, DecryptableProviderSettings)
-            decrypted = provider.decrypt(mock_encryption)
+            decrypted = provider.decrypt()
             assert isinstance(decrypted, OpenAIConfig)
             assert decrypted.api_key == "h"
 

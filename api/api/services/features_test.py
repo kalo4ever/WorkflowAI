@@ -12,21 +12,21 @@ from api.services.features import (
     FeatureService,
 )
 from api.services.internal_tasks._internal_tasks_utils import officially_suggested_tools
-from api.tasks.agent_input_output_example import SuggestedAgentInputOutputExampleOutput
-from api.tasks.agent_output_example import SuggestedAgentOutputExampleInput
-from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task import (
+from core.agents.agent_input_output_example import SuggestedAgentInputOutputExampleOutput
+from core.agents.agent_output_example import SuggestedAgentOutputExampleInput
+from core.agents.chat_task_schema_generation.chat_task_schema_generation_task import (
     InputGenericFieldConfig,
     InputObjectFieldConfig,
     InputSchemaFieldType,
     OutputObjectFieldConfig,
     OutputStringFieldConfig,
 )
-from api.tasks.chat_task_schema_generation.schema_generation_agent import (
+from core.agents.chat_task_schema_generation.schema_generation_agent import (
     NewAgentSchema,
     SchemaBuilderInput,
     SchemaBuilderOutput,
 )
-from api.tasks.company_agent_suggestion_agent import (
+from core.agents.company_agent_suggestion_agent import (
     SuggestAgentForCompanyInput,
     SuggestAgentForCompanyOutput,
     SuggestedAgent,
@@ -38,8 +38,48 @@ from tests.utils import mock_aiter
 
 
 class TestFeatureService:
-    def test_get_feature_sections_preview(self) -> None:
-        result = FeatureService.get_feature_sections_preview()
+    async def test_get_feature_sections_preview_company_email_domain(self) -> None:
+        with patch.object(FeatureService, "_is_company_email_domain", return_value=True):
+            result = await FeatureService.get_feature_sections_preview(user_domain="example.com")
+            expected_result = [
+                FeatureSectionPreview(
+                    name="Categories",
+                    tags=[
+                        FeatureSectionPreview.TagPreview(
+                            name="example.com",
+                            kind="company_specific",
+                        ),  # Placeholder for where the company-specific features will go.
+                        FeatureSectionPreview.TagPreview(name="Featured", kind="static"),
+                        FeatureSectionPreview.TagPreview(name="E-Commerce", kind="static"),
+                        FeatureSectionPreview.TagPreview(name="Healthcare", kind="static"),
+                        FeatureSectionPreview.TagPreview(name="Marketing", kind="static"),
+                        FeatureSectionPreview.TagPreview(name="Productivity", kind="static"),
+                        FeatureSectionPreview.TagPreview(name="Social", kind="static"),
+                        FeatureSectionPreview.TagPreview(name="Developer Tools", kind="static"),
+                    ],
+                ),
+                FeatureSectionPreview(
+                    name="Inspired by",
+                    tags=[
+                        FeatureSectionPreview.TagPreview(name="Apple, Google, Amazon", kind="static"),
+                        FeatureSectionPreview.TagPreview(name="Our Customers", kind="static"),
+                    ],
+                ),
+                FeatureSectionPreview(
+                    name="Use Cases",
+                    tags=[
+                        FeatureSectionPreview.TagPreview(name="PDFs and Documents", kind="static"),
+                        FeatureSectionPreview.TagPreview(name="Scraping", kind="static"),
+                        FeatureSectionPreview.TagPreview(name="Image", kind="static"),
+                        FeatureSectionPreview.TagPreview(name="Audio", kind="static"),
+                    ],
+                ),
+            ]
+
+            assert result == expected_result
+
+    async def test_get_feature_sections_preview_empty_user_domain(self) -> None:
+        result = await FeatureService.get_feature_sections_preview(user_domain=None)
         expected_result = [
             FeatureSectionPreview(
                 name="Categories",
@@ -77,8 +117,44 @@ class TestFeatureService:
 
         assert result == expected_result
 
-    def test_get_feature_sections_preview_with_user_domain(self) -> None:
-        result = FeatureService.get_feature_sections_preview(user_domain="example.com")
+    async def test_get_feature_sections_preview_personal_email_domain(self) -> None:
+        with patch.object(FeatureService, "_is_company_email_domain", return_value=False):
+            result = await FeatureService.get_feature_sections_preview(user_domain="example.com")
+            expected_result = [
+                FeatureSectionPreview(
+                    name="Categories",
+                    tags=[
+                        FeatureSectionPreview.TagPreview(name="Featured", kind="static"),
+                        FeatureSectionPreview.TagPreview(name="E-Commerce", kind="static"),
+                        FeatureSectionPreview.TagPreview(name="Healthcare", kind="static"),
+                        FeatureSectionPreview.TagPreview(name="Marketing", kind="static"),
+                        FeatureSectionPreview.TagPreview(name="Productivity", kind="static"),
+                        FeatureSectionPreview.TagPreview(name="Social", kind="static"),
+                        FeatureSectionPreview.TagPreview(name="Developer Tools", kind="static"),
+                    ],
+                ),
+                FeatureSectionPreview(
+                    name="Inspired by",
+                    tags=[
+                        FeatureSectionPreview.TagPreview(name="Apple, Google, Amazon", kind="static"),
+                        FeatureSectionPreview.TagPreview(name="Our Customers", kind="static"),
+                    ],
+                ),
+                FeatureSectionPreview(
+                    name="Use Cases",
+                    tags=[
+                        FeatureSectionPreview.TagPreview(name="PDFs and Documents", kind="static"),
+                        FeatureSectionPreview.TagPreview(name="Scraping", kind="static"),
+                        FeatureSectionPreview.TagPreview(name="Image", kind="static"),
+                        FeatureSectionPreview.TagPreview(name="Audio", kind="static"),
+                    ],
+                ),
+            ]
+
+            assert result == expected_result
+
+    async def test_get_feature_sections_preview_with_user_domain(self) -> None:
+        result = await FeatureService.get_feature_sections_preview(user_domain="example.com")
         expected_result = expected_result = [
             FeatureSectionPreview(
                 name="Categories",

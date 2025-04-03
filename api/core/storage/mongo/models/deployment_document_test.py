@@ -4,10 +4,10 @@ from core.domain.task_deployment import TaskDeployment
 from core.domain.task_group_properties import TaskGroupProperties
 from core.domain.users import UserIdentifier
 from core.domain.version_environment import VersionEnvironment
-from core.storage.mongo.models.task_deployments import TaskDeploymentDocument
+from core.storage.mongo.models.deployment_document import TaskDeploymentDocument
 
 
-class TestTaskDeploymentsConversion:
+class TestDeploymentDocumentConversion:
     def test_task_variant_id(self):
         properties = TaskGroupProperties.model_validate(
             {
@@ -26,6 +26,7 @@ class TestTaskDeploymentsConversion:
                 user_email="test@test.com",
                 user_id="123",
             ),
+            version_id="bla",
         )
         document = TaskDeploymentDocument.from_resource("bla", deployment)
 

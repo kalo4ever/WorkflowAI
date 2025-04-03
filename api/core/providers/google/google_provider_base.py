@@ -70,13 +70,13 @@ THINKING_MODE_MODELS = (
 
 class GoogleProviderBase(HTTPXProvider[_GoogleConfigVar, CompletionResponse], Generic[_GoogleConfigVar]):
     def _safety_settings(self) -> list[CompletionRequest.SafetySettings] | None:
-        if self.config.default_block_threshold is None:
+        if self._config.default_block_threshold is None:
             return None
 
         return [
             CompletionRequest.SafetySettings(
                 category=cat,
-                threshold=self.config.default_block_threshold,
+                threshold=self._config.default_block_threshold,
             )
             for cat in HarmCategory
         ]
@@ -361,7 +361,7 @@ class GoogleProviderBase(HTTPXProvider[_GoogleConfigVar, CompletionResponse], Ge
 
     def _handle_not_found(self, message: str, response: httpx.Response):
         if "models" in message:
-            raise MissingModelError(message, capture=not self._is_custom_config, response=response)
+            raise MissingModelError(message, capture=not self.is_custom_config, response=response)
 
     def _handle_unknown_error(self, payload: dict[str, Any], response: httpx.Response):
         error = payload.get("error")

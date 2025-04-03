@@ -5,7 +5,7 @@ import pytest
 from api.services.internal_tasks.internal_tasks_service import (
     InternalTasksService,
 )
-from api.tasks.url_finder_agent import URLFinderAgentInput
+from core.agents.url_finder_agent import URLFinderAgentInput
 from core.tools import ToolKind
 
 

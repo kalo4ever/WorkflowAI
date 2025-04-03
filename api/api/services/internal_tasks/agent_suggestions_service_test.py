@@ -6,23 +6,23 @@ from api.services.internal_tasks.agent_suggestions_service import (
     SuggestLlmAgentsForCompanyOutputAndStatus,
     TaskSuggestionsService,
 )
-from api.tasks.agent_input_output_example import SuggestedAgentInputOutputExampleOutput
-from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task import (
+from core.agents.agent_input_output_example import SuggestedAgentInputOutputExampleOutput
+from core.agents.chat_task_schema_generation.chat_task_schema_generation_task import (
     AgentBuilderOutput,
     AgentSchema,
     InputObjectFieldConfig,
     OutputObjectFieldConfig,
 )
-from api.tasks.detect_company_domain_task import (
+from core.agents.detect_company_domain_task import (
     DetectCompanyDomainTaskInput,
     DetectCompanyDomainTaskOutput,
 )
-from api.tasks.extract_company_info_from_domain_task import (
+from core.agents.extract_company_info_from_domain_task import (
     ExtractCompanyInfoFromDomainTaskInput,
     ExtractCompanyInfoFromDomainTaskOutput,
     Product,
 )
-from api.tasks.suggest_llm_features_for_company_agent import (
+from core.agents.suggest_llm_features_for_company_agent import (
     AgentSuggestionChatMessage,
     SuggestedAgent,
     SuggestLlmAgentForCompanyOutput,
@@ -77,7 +77,7 @@ class TestTaskSuggestionsService:
                 return_value=mock_domain_detection,
             ) as mock_detect,
             patch(
-                "api.tasks.extract_company_info_from_domain_task._extract_company_info_from_domain",
+                "core.agents.extract_company_info_from_domain_task._extract_company_info_from_domain",
                 new_callable=AsyncMock,
                 return_value=mock_company_info,
             ) as mock_extract,
@@ -446,7 +446,7 @@ class TestTaskSuggestionsService:
                 return_value=mock_domain_detection,
             ) as mock_detect,
             patch(
-                "api.tasks.extract_company_info_from_domain_task._extract_company_info_from_domain",
+                "core.agents.extract_company_info_from_domain_task._extract_company_info_from_domain",
                 new_callable=AsyncMock,
                 return_value=mock_company_info,
             ) as mock_extract,

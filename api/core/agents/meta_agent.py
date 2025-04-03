@@ -5,10 +5,11 @@ from typing import Any, Literal
 import workflowai
 from pydantic import BaseModel, Field
 
-from api.tasks.extract_company_info_from_domain_task import Product
 from core.domain.documentation_section import DocumentationSection
 from core.domain.fields.file import File
 from core.domain.url_content import URLContent
+
+from .extract_company_info_from_domain_task import Product
 
 
 class BaseResult(BaseModel):

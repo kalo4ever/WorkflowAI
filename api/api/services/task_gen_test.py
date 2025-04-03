@@ -1,6 +1,6 @@
 from api.schemas.build_task_request import BuildAgentIteration, BuildAgentRequest
 from api.services.task_gen import get_new_task_input_from_request
-from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task import AgentSchemaJson
+from core.agents.chat_task_schema_generation.chat_task_schema_generation_task import AgentSchemaJson
 from core.domain.fields.chat_message import AssistantChatMessage, UserChatMessage
 
 

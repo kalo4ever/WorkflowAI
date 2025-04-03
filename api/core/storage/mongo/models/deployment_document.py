@@ -16,8 +16,8 @@ class TaskDeploymentDocument(BaseDocumentWithID):
     task_schema_id: int = Field(default=0, description="The schema ID of the task")
     # TODO[versionv2]: replace with hash
     iteration: int = Field(default=0, description="The version ID (group iteration or alias)")
+    version_id: str = Field(default="", description="The version ID (hash)")
     environment: Literal["dev", "staging", "production"] = Field(..., description="The deployment environment")
-    provider_config_id: str | None = Field(default=None, description="The provider configuration ID")
     deployed_at: datetime = Field(default_factory=datetime_factory, description="When the deployment was made")
     deployed_by: UserIdentifierSchema | None = Field(default=None, description="Who made the deployment")
     properties: dict[str, Any] | None = Field(default=None, description="The task group properties")
@@ -30,7 +30,6 @@ class TaskDeploymentDocument(BaseDocumentWithID):
             task_schema_id=deployment.schema_id,
             iteration=deployment.iteration,
             environment=deployment.environment.value,
-            provider_config_id=deployment.provider_config_id,
             deployed_at=deployment.deployed_at,
             deployed_by=UserIdentifierSchema.from_domain(deployment.deployed_by) if deployment.deployed_by else None,
             properties=deployment.properties.model_dump() if deployment.properties else None,
@@ -42,7 +41,7 @@ class TaskDeploymentDocument(BaseDocumentWithID):
             schema_id=self.task_schema_id,
             iteration=self.iteration,
             environment=VersionEnvironment(self.environment),
-            provider_config_id=self.provider_config_id,
+            version_id=self.version_id,
             deployed_at=self.deployed_at,
             deployed_by=self.deployed_by.to_domain() if self.deployed_by else None,
             # properties can be empty when projected out
@@ -52,7 +51,6 @@ class TaskDeploymentDocument(BaseDocumentWithID):
     def set_value(self) -> dict[str, Any]:
         return {
             "iteration": self.iteration,
-            "provider_config_id": self.provider_config_id,
             "properties": self.properties,
             "deployed_by": self.deployed_by.model_dump() if self.deployed_by else None,
             "deployed_at": self.deployed_at,

@@ -1,8 +1,8 @@
 import logging
 import os
 
-from api.tasks.meta_agent import MetaAgentChatMessage
-from api.tasks.pick_relevant_documentation_categories import (
+from core.agents.meta_agent import MetaAgentChatMessage
+from core.agents.pick_relevant_documentation_categories import (
     PickRelevantDocumentationSectionsInput,
     pick_relevant_documentation_sections,
 )

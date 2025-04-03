@@ -5,15 +5,15 @@ from pydantic import BaseModel, Field
 
 from core.domain.models import Provider
 from core.providers.base.config import ProviderConfig
-from core.utils.encryption import Encryption
 
 
 class ProviderSettings(BaseModel):
     id: str
     created_at: datetime
     provider: Provider
+    preserve_credits: bool | None = None
 
-    def decrypt(self, encryption: Encryption) -> ProviderConfig:
+    def decrypt(self) -> ProviderConfig:
         # Implement decryption in subclasses
         raise NotImplementedError()
 

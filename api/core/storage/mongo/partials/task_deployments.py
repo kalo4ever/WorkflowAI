@@ -4,7 +4,7 @@ from typing import Any, AsyncIterator
 from core.domain.task_deployment import TaskDeployment
 from core.domain.version_environment import VersionEnvironment
 from core.storage import TenantTuple
-from core.storage.mongo.models.task_deployments import TaskDeploymentDocument
+from core.storage.mongo.models.deployment_document import TaskDeploymentDocument
 from core.storage.mongo.mongo_types import AsyncCollection
 from core.storage.mongo.partials.base_partial_storage import PartialStorage
 from core.storage.mongo.utils import projection
