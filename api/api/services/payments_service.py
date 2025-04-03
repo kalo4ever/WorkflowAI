@@ -364,6 +364,10 @@ class PaymentSystemService:
             # The minimum payment amount is 2$ to avoid cases where the threshold and balance to maintain are
             # too close
             await self.trigger_automatic_payment_if_needed(org_doc.tenant, min_amount=2)
+            return
+
+        # We fail silently here, no point in failint the entire
+        add_background_task(self._send_low_credits_email_if_needed(org_doc))
 
     @classmethod
     def _get_tenant_from_metadata(cls, metadata: dict[str, str]) -> str:
@@ -414,3 +418,17 @@ class PaymentSystemService:
             )
 
         await self.trigger_automatic_payment_if_needed(org_data.tenant, min_amount=1)
+
+    async def _send_low_credits_email_if_needed(self, org_data: TenantData):
+        # For now only a single email at $5
+        threshold = 5
+
+        if not org_data.should_send_low_credits_email(threshold_usd=threshold):
+            return
+
+        try:
+            await self._email_service.send_low_credits_email(org_data.tenant)
+        except Exception:
+            _logger.exception("Failed to send low credits email", extra={"tenant": org_data.tenant})
+
+        await self._org_storage.add_low_credits_email_sent(org_data.tenant, threshold)

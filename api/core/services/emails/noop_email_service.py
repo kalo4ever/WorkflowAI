@@ -12,3 +12,7 @@ class NoopEmailService(EmailService):
     @override
     async def send_payment_failure_email(self, tenant: str) -> None:
         self._logger.warning("NoopEmailService.send_payment_failure_email called")
+
+    @override
+    async def send_low_credits_email(self, tenant: str) -> None:
+        self._logger.warning("NoopEmailService.send_low_credits_email called")

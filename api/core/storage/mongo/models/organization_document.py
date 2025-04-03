@@ -144,6 +144,12 @@ class OrganizationDocument(BaseDocumentWithID):
 
     payment_failure: PaymentFailureSchema | None = None
 
+    class LowCreditsEmailSent(BaseModel):
+        threshold_cts: int
+        sent_at: datetime
+
+    low_credits_email_sent: list[LowCreditsEmailSent] | None = None
+
     @classmethod
     def from_domain(cls, org_settings: TenantData, no_tasks_yet: bool | None = None) -> Self:
         return cls(
@@ -167,6 +173,15 @@ class OrganizationDocument(BaseDocumentWithID):
             anonymous_user_id=org_settings.anonymous_user_id or None,
             owner_id=org_settings.owner_id or None,
             feedback_slack_hook=org_settings.feedback_slack_hook or None,
+            low_credits_email_sent=[
+                cls.LowCreditsEmailSent(
+                    threshold_cts=threshold_cts,
+                    sent_at=sent_at,
+                )
+                for threshold_cts, sent_at in org_settings.low_credits_email_sent_by_threshold.items()
+            ]
+            if org_settings.low_credits_email_sent_by_threshold
+            else None,
         )
 
     def to_domain(self, encryption: Encryption | None) -> TenantData:
@@ -189,6 +204,14 @@ class OrganizationDocument(BaseDocumentWithID):
             owner_id=self.owner_id or None,
             feedback_slack_hook=self.feedback_slack_hook or None,
             payment_failure=self.payment_failure.to_domain() if self.payment_failure else None,
+            low_credits_email_sent_by_threshold={
+                threshold_cts: sent_at
+                for threshold_cts, sent_at in (
+                    (email.threshold_cts, email.sent_at) for email in self.low_credits_email_sent
+                )
+            }
+            if self.low_credits_email_sent
+            else None,
         )
 
     def to_domain_public(self) -> PublicOrganizationData:

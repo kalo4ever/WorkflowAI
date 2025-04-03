@@ -125,12 +125,7 @@ class LoopsEmailService(EmailService):
                 errors,
             )
 
-    @override
-    async def send_payment_failure_email(self, tenant: str):
-        email_id = os.getenv("PAYMENT_FAILURE_EMAIL_ID")
-        if not email_id:
-            raise EmailSendError("PAYMENT_FAILURE_EMAIL_ID is not set")
-
+    async def _send_emails_to_tenant(self, tenant: str, transaction_id: str):
         org = await self._organization_storage.public_organization_by_tenant(tenant=tenant)
 
         try:
@@ -146,6 +141,22 @@ class LoopsEmailService(EmailService):
         emails = [admin.email for admin in admins]
 
         await self.send_emails(
-            transaction_id=email_id,
+            transaction_id=transaction_id,
             emails_and_variables=[(email, None) for email in emails],
         )
+
+    @override
+    async def send_payment_failure_email(self, tenant: str):
+        email_id = os.getenv("PAYMENT_FAILURE_EMAIL_ID")
+        if not email_id:
+            raise EmailSendError("PAYMENT_FAILURE_EMAIL_ID is not set")
+
+        await self._send_emails_to_tenant(tenant, email_id)
+
+    @override
+    async def send_low_credits_email(self, tenant: str):
+        email_id = os.getenv("LOW_CREDITS_EMAIL_ID")
+        if not email_id:
+            raise EmailSendError("LOW_CREDITS_EMAIL_ID is not set")
+
+        await self._send_emails_to_tenant(tenant, email_id)

@@ -18,6 +18,7 @@ from core.storage.mongo.models.organization_document import (
     APIKeyDocument,
     DecryptableProviderSettings,
     OrganizationDocument,
+    PaymentFailureSchema,
     ProviderSettingsSchema,
 )
 from core.storage.mongo.mongo_storage import MongoStorage
@@ -416,6 +417,49 @@ class TestIncrementCredits:
         doc = await organization_storage.get_organization()
         assert doc.current_credits_usd == 10
         assert doc.added_credits_usd == 10
+
+    async def test_clears_payment_failure_and_low_credits_email(
+        self,
+        organization_storage: MongoOrganizationStorage,
+        org_col: AsyncCollection,
+    ) -> None:
+        # Insert org with payment failure and low credits email sent
+        now = datetime.now(timezone.utc).replace(microsecond=0)
+        await org_col.insert_one(
+            dump_model(
+                OrganizationDocument(
+                    tenant=TENANT,
+                    current_credits_usd=10,
+                    added_credits_usd=20,
+                    payment_failure=PaymentFailureSchema(
+                        failure_code="payment_failed",
+                        failure_reason="Test failure",
+                        failure_date=now,
+                    ),
+                    low_credits_email_sent=[
+                        OrganizationDocument.LowCreditsEmailSent(
+                            threshold_cts=100,
+                            sent_at=now,
+                        ),
+                    ],
+                ),
+            ),
+        )
+
+        # Add credits and verify flags are cleared
+        await organization_storage.add_credits_to_tenant(TENANT, 10)
+
+        doc = await org_col.find_one({"tenant": TENANT})
+        assert doc is not None
+        assert doc["current_credits_usd"] == 20
+        assert doc["added_credits_usd"] == 30
+        assert "payment_failure" not in doc
+        assert "low_credits_email_sent" not in doc
+
+        org = await organization_storage.get_organization()
+        assert org.current_credits_usd == 20
+        assert org.added_credits_usd == 30
+        assert org.payment_failure is None
 
 
 class TestDecrementCredits:
@@ -1531,3 +1575,94 @@ class TestUnlockPaymentForFailure:
         assert tenant is not None
         assert tenant.locked_for_payment is None
         assert tenant.payment_failure is not None
+
+
+class TestAddLowCreditsEmailSent:
+    @pytest.fixture(autouse=True)
+    async def setup_tenant(self, organization_storage: MongoOrganizationStorage, org_col: AsyncCollection):
+        # Insert a tenant with initial credits
+        await org_col.insert_one(
+            dump_model(
+                OrganizationDocument(
+                    tenant=TENANT,
+                    current_credits_usd=10,
+                    added_credits_usd=20,
+                ),
+            ),
+        )
+
+    async def test_add_low_credits_email_sent(
+        self,
+        organization_storage: MongoOrganizationStorage,
+        org_col: AsyncCollection,
+    ) -> None:
+        # Add a low credits email sent record
+        threshold_usd = 1.0
+        await organization_storage.add_low_credits_email_sent(TENANT, threshold_usd)
+
+        # Verify the record was added
+        doc = await org_col.find_one({"tenant": TENANT})
+        assert doc is not None
+        assert "low_credits_email_sent" in doc
+        assert len(doc["low_credits_email_sent"]) == 1
+        assert doc["low_credits_email_sent"][0]["threshold_cts"] == 100
+        assert isinstance(doc["low_credits_email_sent"][0]["sent_at"], datetime)
+
+        # Verify we can get the tenant and see the record
+        tenant = await organization_storage.get_organization()
+        assert tenant.low_credits_email_sent_by_threshold is not None
+        assert len(tenant.low_credits_email_sent_by_threshold) == 1
+        assert 100 in tenant.low_credits_email_sent_by_threshold
+        assert isinstance(tenant.low_credits_email_sent_by_threshold[100], datetime)
+
+    async def test_add_multiple_low_credits_email_sent(
+        self,
+        organization_storage: MongoOrganizationStorage,
+        org_col: AsyncCollection,
+    ) -> None:
+        # Add multiple low credits email sent records
+        thresholds = [1.0, 0.5, 0.25]
+        for threshold in thresholds:
+            await organization_storage.add_low_credits_email_sent(TENANT, threshold)
+
+        # Verify all records were added
+        doc = await org_col.find_one({"tenant": TENANT})
+        assert doc is not None
+        assert "low_credits_email_sent" in doc
+        assert len(doc["low_credits_email_sent"]) == 3
+
+        # Verify we can get the tenant and see all records
+        tenant = await organization_storage.get_organization()
+        assert tenant.low_credits_email_sent_by_threshold is not None
+        assert len(tenant.low_credits_email_sent_by_threshold) == 3
+        assert sorted(tenant.low_credits_email_sent_by_threshold.keys()) == sorted(
+            [int(round(t * 100)) for t in thresholds],
+        )
+        assert all(isinstance(t, datetime) for t in tenant.low_credits_email_sent_by_threshold.values())
+
+    async def test_clear_low_credits_email_sent_after_adding_credits(
+        self,
+        organization_storage: MongoOrganizationStorage,
+        org_col: AsyncCollection,
+    ) -> None:
+        # Add a low credits email sent record
+        threshold_cts = 100
+        await organization_storage.add_low_credits_email_sent(TENANT, threshold_cts)
+
+        # Verify the record was added
+        doc = await org_col.find_one({"tenant": TENANT})
+        assert doc is not None
+        assert "low_credits_email_sent" in doc
+        assert len(doc["low_credits_email_sent"]) == 1
+
+        # Add credits to the tenant
+        await organization_storage.add_credits_to_tenant(TENANT, 50)
+
+        # Verify the low credits email sent record was cleared
+        doc = await org_col.find_one({"tenant": TENANT})
+        assert doc is not None
+        assert "low_credits_email_sent" not in doc
+
+        # Verify we can get the tenant and see no records
+        tenant = await organization_storage.get_organization()
+        assert tenant.low_credits_email_sent_by_threshold is None

@@ -24,6 +24,7 @@ from core.storage.mongo.partials.base_partial_storage import PartialStorage
 from core.storage.mongo.utils import dump_model
 from core.storage.organization_storage import OrganizationStorage
 from core.utils.encryption import Encryption
+from core.utils.fields import datetime_factory
 
 
 class MongoOrganizationStorage(PartialStorage[OrganizationDocument], OrganizationStorage):
@@ -168,7 +169,10 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
         # Add credits and unset the payment failure status
         await self._collection.update_one(
             {"tenant": tenant},
-            {"$inc": {"current_credits_usd": credits, "added_credits_usd": credits}, "$unset": {"payment_failure": ""}},
+            {
+                "$inc": {"current_credits_usd": credits, "added_credits_usd": credits},
+                "$unset": {"payment_failure": "", "low_credits_email_sent": ""},
+            },
         )
 
     @override
@@ -185,6 +189,7 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
                 "automatic_payment_balance_to_maintain": 1,
                 "locked_for_payment": 1,
                 "payment_failure": 1,
+                "low_credits_email_sent": 1,
             },
             return_document=True,
         )
@@ -390,4 +395,22 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
             tenant,
             {"locked_for_payment": True},
             {"$unset": {"locked_for_payment": "", "payment_failure": ""}, "$inc": {"current_credits_usd": amount}},
+        )
+
+    @override
+    async def add_low_credits_email_sent(self, tenant: str, threshold: float) -> None:
+        threshold_cts = int(round(threshold * 100))
+        await self._update_tenant(
+            tenant,
+            {},
+            {
+                "$push": {
+                    "low_credits_email_sent": dump_model(
+                        OrganizationDocument.LowCreditsEmailSent(
+                            threshold_cts=threshold_cts,
+                            sent_at=datetime_factory(),
+                        ),
+                    ),
+                },
+            },
         )

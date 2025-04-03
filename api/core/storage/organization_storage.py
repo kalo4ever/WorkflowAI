@@ -67,6 +67,8 @@ class OrganizationSystemStorage(PublicOrganizationStorage, Protocol):
 
     async def unlock_payment_for_success(self, tenant: str, amount: float): ...
 
+    async def add_low_credits_email_sent(self, tenant: str, threshold: float): ...
+
 
 class OrganizationStorage(OrganizationSystemStorage, Protocol):
     @property
