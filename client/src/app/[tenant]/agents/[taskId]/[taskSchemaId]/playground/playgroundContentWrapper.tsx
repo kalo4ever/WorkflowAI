@@ -13,6 +13,7 @@ export function PlaygroundContentWrapper(props: PlaygroundContentProps) {
   const { taskSchema } = useOrFetchCurrentTaskSchema(tenant, taskId, taskSchemaId);
 
   const fileFormat = useTaskSchemaMode(taskSchema);
+
   const {
     compatibleModels,
     allModels,

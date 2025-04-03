@@ -805,7 +805,6 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
     taskRunId1,
     taskRunId2,
     taskRunId3,
-    fileFormat,
     tenant,
     voidInput,
     persistedVersionId,

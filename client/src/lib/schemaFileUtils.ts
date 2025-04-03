@@ -58,7 +58,7 @@ export function replaceFileData(
   return innerReplaceFileDataWithURL(schema, schema.$defs, obj, replacer) as Record<string, unknown>;
 }
 
-export type FileFormat = 'audio' | 'image' | 'text' | 'document';
+export type FileFormat = 'audio' | 'image' | 'text' | 'document' | 'universal';
 
 function appendToFormats(
   schema: JsonValueSchema | undefined,
@@ -87,7 +87,7 @@ function appendToFormats(
         formats.add('document');
         break;
       default:
-        // TODO: how should we handle a file without a format?
+        formats.add('universal');
         break;
     }
   }
