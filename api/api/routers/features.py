@@ -17,7 +17,9 @@ from api.services.features import (
 )
 from api.services.models import ModelsService
 from core.domain.features import BaseFeature, DirectToAgentBuilderFeature, FeatureWithImage
+from core.domain.models.models import Model
 from core.domain.page import Page
+from core.domain.task_typology import TaskTypology
 from core.utils.email_utils import safe_domain_from_email
 from core.utils.stream_response_utils import safe_streaming_response
 
@@ -155,5 +157,25 @@ async def get_feature_schemas(
     description="Preview available models and their associated data",
 )
 async def preview_models() -> Page[ModelResponse]:
-    models = [ModelResponse.from_service(m) async for m in ModelsService.preview_models() if m.is_default]
+    # Models to be included that are not default
+    _include_models = {
+        Model.DEEPSEEK_R1_2501_BASIC,
+        Model.MISTRAL_LARGE_2_LATEST,
+        Model.LLAMA_3_3_70B,
+    }
+
+    # Total number of default models to include
+    include_default_models_count = 3
+
+    models: list[ModelResponse] = []
+    typology = TaskTypology()  # the default typology, aka text only
+    async for model in ModelsService.preview_models(typology=typology):
+        if model.is_default and not model.is_not_supported_reason and include_default_models_count > 0:
+            models.append(ModelResponse.from_service(model))
+            include_default_models_count -= 1
+            continue
+
+        if model.id in _include_models:
+            models.append(ModelResponse.from_service(model))
+
     return Page(items=models)
