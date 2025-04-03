@@ -1,14 +1,7 @@
-import { first } from 'lodash';
 import { useMemo } from 'react';
-import { extractFormats } from '@/lib/schemaFileUtils';
 import { useOrFetchAllAiModels } from '@/store';
-import { TaskSchemaResponseWithSchema } from '@/types';
 import { TaskID, TaskSchemaID, TenantID } from '@/types/aliases';
 import { ModelResponse } from '@/types/workflowAI';
-
-export function useTaskSchemaMode(taskSchema: TaskSchemaResponseWithSchema | undefined) {
-  return useMemo(() => first(extractFormats(taskSchema?.input_schema.json_schema)), [taskSchema]);
-}
 
 type TModeAiModelsProps = {
   tenant: TenantID | undefined;
