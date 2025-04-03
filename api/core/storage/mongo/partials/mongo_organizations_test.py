@@ -188,7 +188,7 @@ class TestUpdateSlug:
             await other_organization_storage.update_slug("o2", "slug", "b")
 
 
-class TestFindTenantBySlug:
+class TestGetPublicOrganization:
     async def test_success(
         self,
         organization_storage: MongoOrganizationStorage,
@@ -196,7 +196,14 @@ class TestFindTenantBySlug:
         org_col: AsyncCollection,
     ) -> None:
         # Insert two organizations for two tenants
-        org_settings_1 = OrganizationDocument(tenant=TENANT, slug="initial_slug", org_id="o1", providers=[], uid=1)
+        org_settings_1 = OrganizationDocument(
+            tenant=TENANT,
+            slug="initial_slug",
+            org_id="o1",
+            providers=[],
+            uid=1,
+            owner_id="owner1",
+        )
         org_settings_2 = OrganizationDocument(
             tenant="tenant_2",
             slug="initial_slug_2",
@@ -215,6 +222,8 @@ class TestFindTenantBySlug:
         org = await organization_storage.get_public_organization("slug")
         assert org.tenant == TENANT
         assert org.uid == 1
+        assert org.owner_id == "owner1"
+        assert org.org_id == "o1"
 
         # Fetch the same slug for the second tenant (it should not collide, returning the correct tenant)
         org = await other_organization_storage.get_public_organization("initial_slug_2")

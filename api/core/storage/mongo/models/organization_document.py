@@ -198,4 +198,5 @@ class OrganizationDocument(BaseDocumentWithID):
             name=self.display_name or "",
             tenant=self.tenant or "",
             org_id=self.org_id,
+            owner_id=self.owner_id,
         )

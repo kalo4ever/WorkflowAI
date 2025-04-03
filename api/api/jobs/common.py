@@ -20,7 +20,7 @@ from core.deprecated.workflowai import WorkflowAI
 from core.domain.analytics_events.analytics_events import UserProperties
 from core.domain.events import Event, EventRouter
 from core.domain.users import UserIdentifier
-from core.services.email_service import EmailService
+from core.services.emails.email_service import EmailService
 from core.storage.azure.azure_blob_file_storage import FileStorage
 from core.storage.backend_storage import BackendStorage, SystemBackendStorage
 from core.utils.encryption import Encryption

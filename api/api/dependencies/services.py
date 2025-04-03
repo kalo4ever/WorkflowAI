@@ -35,7 +35,7 @@ from api.services.transcriptions import TranscriptionService
 from api.services.versions import VersionsService
 from core.deprecated.workflowai import WorkflowAI
 from core.domain.users import UserIdentifier
-from core.services.email_service import EmailService
+from core.services.emails.email_service import EmailService
 from core.storage.file_storage import FileStorage
 
 

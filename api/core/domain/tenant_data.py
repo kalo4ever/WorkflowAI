@@ -24,6 +24,7 @@ class PublicOrganizationData(BaseModel):
     slug: str = ""
     name: str | None = None
     org_id: str | None = None
+    owner_id: str | None = None
 
 
 class TenantData(PublicOrganizationData):

@@ -51,6 +51,16 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
         doc = await self._find_one({}, projection=self._projection(None))
         return doc.to_domain(self.encryption)
 
+    async def get_public_org(self, filter: dict[str, Any]):
+        doc = await self._collection.find_one(
+            filter,
+            projection={"tenant": 1, "slug": 1, "display_name": 1, "uid": 1, "org_id": 1, "owner_id": 1},
+        )
+        if doc is None:
+            raise ObjectNotFoundException("Organization  not found", code="organization_not_found")
+
+        return OrganizationDocument.model_validate(doc).to_domain_public()
+
     @override
     async def get_public_organization(self, slug: str) -> PublicOrganizationData:
         # We should move the domain to "previous_slugs" once all data have been migrated
@@ -61,14 +71,12 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
         else:
             # New slugs are URL safe and do not contain dots
             filter = {"slug": slug}
-        doc = await self._collection.find_one(
-            filter,
-            projection={"tenant": 1, "slug": 1, "display_name": 1, "uid": 1},
-        )
-        if doc is None:
-            raise ObjectNotFoundException(f"Organization {slug} not found", code="organization_not_found")
 
-        return OrganizationDocument.model_validate(doc).to_domain_public()
+        return await self.get_public_org(filter)
+
+    @override
+    async def public_organization_by_tenant(self, tenant: str) -> PublicOrganizationData:
+        return await self.get_public_org({"tenant": tenant})
 
     @override
     async def update_slug(

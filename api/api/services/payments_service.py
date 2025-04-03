@@ -8,7 +8,7 @@ from pydantic import BaseModel, field_serializer, field_validator
 
 from core.domain.errors import BadRequestError, InternalError
 from core.domain.tenant_data import TenantData
-from core.services.email_service import EmailService
+from core.services.emails.email_service import EmailService
 from core.storage.organization_storage import OrganizationStorage, OrganizationSystemStorage
 from core.utils.background import add_background_task
 from core.utils.fields import datetime_factory

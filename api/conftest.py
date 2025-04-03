@@ -346,7 +346,7 @@ def mock_provider_factory():
 
 @pytest.fixture(scope="function")
 def mock_email_service():
-    from core.services.email_service import EmailService
+    from core.services.emails.email_service import EmailService
 
     return AsyncMock(spec=EmailService)
 
@@ -575,3 +575,10 @@ def hello_task():
 def patch_metric_send():
     with patch("core.domain.metrics.Metric.send", autospec=True) as m:
         yield m
+
+
+@pytest.fixture
+def mock_user_service() -> AsyncMock:
+    from core.services.users.user_service import UserService
+
+    return AsyncMock(spec=UserService)

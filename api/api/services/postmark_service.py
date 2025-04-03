@@ -1,6 +1,6 @@
 from typing import override
 
-from core.services.email_service import EmailService
+from core.services.emails.email_service import EmailService
 
 
 class PostmarkService(EmailService):

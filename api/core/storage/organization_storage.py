@@ -11,9 +11,12 @@ from core.domain.users import UserIdentifier
 from core.providers.base.config import ProviderConfig
 
 
-class OrganizationSystemStorage(Protocol):
+class PublicOrganizationStorage(Protocol):
     async def get_public_organization(self, slug: str) -> PublicOrganizationData: ...
+    async def public_organization_by_tenant(self, tenant: str) -> PublicOrganizationData: ...
 
+
+class OrganizationSystemStorage(PublicOrganizationStorage, Protocol):
     async def find_tenant_for_api_key(self, hashed_key: str) -> TenantData: ...
 
     async def update_api_key_last_used_at(self, hashed_key: str, now: datetime): ...
