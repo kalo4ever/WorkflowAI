@@ -66,13 +66,7 @@ export function requiresFileSupport(
     return false;
   }
 
-  if (
-    schema.followedRefName === 'Image' ||
-    schema.followedRefName === 'Audio' ||
-    schema.followedRefName === 'Video' ||
-    schema.followedRefName === 'Document' ||
-    schema.followedRefName === 'File'
-  ) {
+  if (schema.followedRefName && FILE_REF_NAMES.includes(schema.followedRefName)) {
     return true;
   }
 
