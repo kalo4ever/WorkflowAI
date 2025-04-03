@@ -110,7 +110,7 @@ async def test_decrement_credits(test_client: IntegrationTestClient, mock_stripe
     task = await test_client.create_task()
 
     # Check initial credits
-    org = result_or_raise(await test_client.int_api_client.get("/_/organization/settings"))
+    org = result_or_raise(await test_client.int_api_client.get("/organization/settings"))
     assert org["current_credits_usd"] == 10.0  # Initial credits
     assert org["automatic_payment_enabled"] is False, "sanity check"
 
@@ -127,7 +127,7 @@ async def test_decrement_credits(test_client: IntegrationTestClient, mock_stripe
     await test_client.wait_for_completed_tasks()
 
     # Verify credits are depleted
-    org = result_or_raise(await test_client.int_api_client.get("/_/organization/settings"))
+    org = result_or_raise(await test_client.int_api_client.get("/organization/settings"))
     assert org["automatic_payment_enabled"] is False, "sanity check"
     await test_client.wait_for_completed_tasks()
 
@@ -144,7 +144,7 @@ async def test_decrement_credits(test_client: IntegrationTestClient, mock_stripe
     await test_client.wait_for_completed_tasks()
 
     # Verify credits are decremented
-    org = result_or_raise(await test_client.int_api_client.get("/_/organization/settings"))
+    org = result_or_raise(await test_client.int_api_client.get("/organization/settings"))
     assert org["automatic_payment_enabled"] is False
 
     # Nothing happens when we decrement credits when the automatic payment is disabled
@@ -152,7 +152,7 @@ async def test_decrement_credits(test_client: IntegrationTestClient, mock_stripe
     await test_client.wait_for_completed_tasks()
 
     # Verify credits are decremented
-    org = result_or_raise(await test_client.int_api_client.get("/_/organization/settings"))
+    org = result_or_raise(await test_client.int_api_client.get("/organization/settings"))
     assert org["current_credits_usd"] < 0
     assert org["automatic_payment_enabled"] is False
 
@@ -168,15 +168,15 @@ async def _setup_automatic_payment(test_client: IntegrationTestClient):
     assert org["automatic_payment_enabled"] is False, "sanity check"
 
     # Create customer, add payment method
-    await test_client.post("/_/organization/payments/customers")
+    await test_client.post("/organization/payments/customers")
     await test_client.post(
-        "/_/organization/payments/payment-methods",
+        "/organization/payments/payment-methods",
         json={"payment_method_id": "pm_123"},
     )
 
     # Enable automatic payments
     await test_client.put(
-        "/_/organization/payments/automatic-payments",
+        "/organization/payments/automatic-payments",
         json={"opt_in": True, "threshold": 5, "balance_to_maintain": 10},
     )
     org = await test_client.get_org()
@@ -375,7 +375,7 @@ async def test_automatic_payment_failure_with_retry(
     # But we can retry
     mock_stripe.PaymentIntent.create_async.reset_mock()
     mock_stripe.PaymentIntent.confirm_async.reset_mock()
-    await test_client.post("/_/organization/payments/automatic-payments/retry")
+    await test_client.post("/organization/payments/automatic-payments/retry")
     _assert_payment_created(test_client, mock_stripe, 8)
     # Now we succeed
     await _mock_stripe_webhook(test_client, mock_stripe, amount=800)
@@ -458,7 +458,7 @@ async def test_automatic_payment_failure_with_retry_single_user(
     # But we can retry
     mock_stripe.PaymentIntent.create_async.reset_mock()
     mock_stripe.PaymentIntent.confirm_async.reset_mock()
-    await test_client.post("/_/organization/payments/automatic-payments/retry")
+    await test_client.post("/organization/payments/automatic-payments/retry")
     _assert_payment_created(test_client, mock_stripe, 8, metadata=payment_metadata)
     # Now we succeed
     await _mock_stripe_webhook(test_client, mock_stripe, amount=800)
@@ -485,7 +485,7 @@ async def test_automatic_payment_failure_with_retry_single_user(
 #     task = await test_client.create_task()
 
 #     # Check initial credits and automatic payment setting
-#     org = result_or_raise(await test_client.int_api_client.get("/_/organization/settings"))
+#     org = result_or_raise(await test_client.int_api_client.get("/organization/settings"))
 #     assert org["current_credits_usd"] == 10.0
 #     assert org["automatic_payment_enabled"] is False
 
@@ -503,22 +503,22 @@ async def test_automatic_payment_failure_with_retry_single_user(
 #     # Enable automatic payments
 #     result_or_raise(
 #         await test_client.int_api_client.put(
-#             "/_/organization/payments/automatic-payments",
+#             "/organization/payments/automatic-payments",
 #             json={"opt_in": True, "threshold": 10, "balance_to_maintain": 10},
 #         ),
 #     )
 
 #     # Verify credits
-#     org = result_or_raise(await test_client.int_api_client.get("/_/organization/settings"))
+#     org = result_or_raise(await test_client.int_api_client.get("/organization/settings"))
 #     expected_credits = 8  # 10 - 2
 #     assert abs(org["current_credits_usd"] - expected_credits) < 0.001
 #     assert org["automatic_payment_enabled"] is True
 
 #     # Create customer and add payment method
-#     result_or_raise(await test_client.int_api_client.post("/_/organization/payments/customers"))
+#     result_or_raise(await test_client.int_api_client.post("/organization/payments/customers"))
 #     result_or_raise(
 #         await test_client.int_api_client.post(
-#             "/_/organization/payments/payment-methods",
+#             "/organization/payments/payment-methods",
 #             json={"payment_method_id": "pm_123"},
 #         ),
 #     )
@@ -544,7 +544,7 @@ async def test_automatic_payment_failure_with_retry_single_user(
 
 #     # not a full test, because the credits are added from webhook, but outlines the expected behavior
 #     # Verify final credits
-#     org = result_or_raise(await test_client.int_api_client.get("/_/organization/settings"))
+#     org = result_or_raise(await test_client.int_api_client.get("/organization/settings"))
 #     expected_credits = 7  # 10 - 6 + 5 (only once) - 2 (third run)
 #     assert abs(org["current_credits_usd"] - expected_credits) < 0.001
 #     assert org["automatic_payment_enabled"] is True
@@ -557,7 +557,7 @@ async def test_automatic_payment_failure_with_retry_single_user(
 #     task = await test_client.create_task()
 
 #     # Check initial credits
-#     org = result_or_raise(await test_client.int_api_client.get("/_/organization/settings"))
+#     org = result_or_raise(await test_client.int_api_client.get("/organization/settings"))
 #     assert org["current_credits_usd"] == 10.0
 #     assert org["automatic_payment_enabled"] is False
 
@@ -575,21 +575,21 @@ async def test_automatic_payment_failure_with_retry_single_user(
 #     # Enable automatic payments
 #     result_or_raise(
 #         await test_client.int_api_client.put(
-#             "/_/organization/payments/automatic-payments",
+#             "/organization/payments/automatic-payments",
 #             json={"opt_in": True, "threshold": 5, "balance_to_maintain": 10},
 #         ),
 #     )
-#     org = result_or_raise(await test_client.int_api_client.get("/_/organization/settings"))
+#     org = result_or_raise(await test_client.int_api_client.get("/organization/settings"))
 #     assert org["current_credits_usd"] == 5.0
 #     assert org["automatic_payment_enabled"] is True
 #     assert org["automatic_payment_threshold"] == 5.0
 #     assert org["automatic_payment_balance_to_maintain"] == 10.0
 
 #     # Create customer and add payment method
-#     result_or_raise(await test_client.int_api_client.post("/_/organization/payments/customers"))
+#     result_or_raise(await test_client.int_api_client.post("/organization/payments/customers"))
 #     result_or_raise(
 #         await test_client.int_api_client.post(
-#             "/_/organization/payments/payment-methods",
+#             "/organization/payments/payment-methods",
 #             json={"payment_method_id": "pm_123"},
 #         ),
 #     )
@@ -603,7 +603,7 @@ async def test_automatic_payment_failure_with_retry_single_user(
 #     await test_client.wait_for_completed_tasks()
 
 #     # Verify credits and payment failure
-#     org = result_or_raise(await test_client.int_api_client.get("/_/organization/settings"))
+#     org = result_or_raise(await test_client.int_api_client.get("/organization/settings"))
 #     expected_credits = 0  # 10 - 5 - 5
 #     assert abs(org["current_credits_usd"] - expected_credits) < 0.001
 #     assert org["automatic_payment_enabled"] is True
@@ -615,7 +615,7 @@ async def test_add_payment_method_invalid_card(
     mock_stripe: Mock,
 ):
     # Create customer first
-    result_or_raise(await test_client.int_api_client.post("/_/organization/payments/customers"))
+    result_or_raise(await test_client.int_api_client.post("/organization/payments/customers"))
 
     # Mock stripe.PaymentMethod.attach_async to raise a CardError
     mock_stripe.PaymentMethod.attach_async.side_effect = stripe.CardError(
@@ -634,7 +634,7 @@ async def test_add_payment_method_invalid_card(
 
     # Attempt to add invalid payment method
     response = await test_client.int_api_client.post(
-        "/_/organization/payments/payment-methods",
+        "/organization/payments/payment-methods",
         json={"payment_method_id": "pm_123"},
     )
 
@@ -654,7 +654,7 @@ async def test_add_payment_method_invalid_card(
 #     task = await test_client.create_task()
 
 #     # Check initial credits
-#     org = result_or_raise(await test_client.int_api_client.get("/_/organization/settings"))
+#     org = result_or_raise(await test_client.int_api_client.get("/organization/settings"))
 #     assert org["current_credits_usd"] == 10.0
 #     assert org["automatic_payment_enabled"] is False
 
@@ -672,21 +672,21 @@ async def test_add_payment_method_invalid_card(
 #     # Enable automatic payments
 #     result_or_raise(
 #         await test_client.int_api_client.put(
-#             "/_/organization/payments/automatic-payments",
+#             "/organization/payments/automatic-payments",
 #             json={"opt_in": True, "threshold": 5, "balance_to_maintain": 10},
 #         ),
 #     )
-#     org = result_or_raise(await test_client.int_api_client.get("/_/organization/settings"))
+#     org = result_or_raise(await test_client.int_api_client.get("/organization/settings"))
 #     assert org["current_credits_usd"] == 5.0
 #     assert org["automatic_payment_enabled"] is True
 #     assert org["automatic_payment_threshold"] == 5.0
 #     assert org["automatic_payment_balance_to_maintain"] == 10.0
 
 #     # Create customer and add payment method
-#     result_or_raise(await test_client.int_api_client.post("/_/organization/payments/customers"))
+#     result_or_raise(await test_client.int_api_client.post("/organization/payments/customers"))
 #     result_or_raise(
 #         await test_client.int_api_client.post(
-#             "/_/organization/payments/payment-methods",
+#             "/organization/payments/payment-methods",
 #             json={"payment_method_id": "pm_123"},
 #         ),
 #     )
@@ -700,7 +700,7 @@ async def test_add_payment_method_invalid_card(
 #     await test_client.wait_for_completed_tasks()
 
 #     # Verify credits and payment failure
-#     org = result_or_raise(await test_client.int_api_client.get("/_/organization/settings"))
+#     org = result_or_raise(await test_client.int_api_client.get("/organization/settings"))
 #     expected_credits = 0  # 10 - 5 - 5
 #     assert abs(org["current_credits_usd"] - expected_credits) < 0.001
 #     assert org["automatic_payment_enabled"] is True
@@ -709,12 +709,12 @@ async def test_add_payment_method_invalid_card(
 #     # Add payment method
 #     result_or_raise(
 #         await test_client.int_api_client.post(
-#             "/_/organization/payments/payment-methods",
+#             "/organization/payments/payment-methods",
 #             json={"payment_method_id": "pm_123"},
 #         ),
 #     )
 
-#     org = result_or_raise(await test_client.int_api_client.get("/_/organization/settings"))
+#     org = result_or_raise(await test_client.int_api_client.get("/organization/settings"))
 #     assert org["current_credits_usd"] == 0.0
 #     assert org["automatic_payment_enabled"] is True
 #     assert org["last_payment_failed_at"] is None

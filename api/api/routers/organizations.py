@@ -4,6 +4,7 @@ from fastapi import APIRouter, HTTPException
 
 from api.dependencies.provider_factory import ProviderFactoryDep
 from api.dependencies.storage import OrganizationStorageDep
+from api.tags import RouteTags
 from core.domain.tenant_data import (
     ProviderConfig,
     ProviderSettings,
@@ -11,7 +12,7 @@ from core.domain.tenant_data import (
 )
 from core.storage import ObjectNotFoundException
 
-router = APIRouter(prefix="/organization")
+router = APIRouter(prefix="/organization", tags=[RouteTags.ORGANIZATIONS])
 
 _logger = logging.getLogger(__name__)
 

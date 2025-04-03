@@ -1,4 +1,3 @@
-import logging
 import os
 
 import stripe
@@ -8,11 +7,11 @@ from pydantic import BaseModel, Field, model_validator
 from api.dependencies.security import RequiredUserDep, RequiredUserOrganizationDep
 from api.dependencies.services import PaymentServiceDep, PaymentSystemServiceDep
 from api.services.payments_service import PaymentMethodResponse, PaymentService
+from api.tags import RouteTags
 from core.utils.background import add_background_task
 
-router = APIRouter(prefix="/organization/payments")
+router = APIRouter(prefix="/organization/payments", tags=[RouteTags.PAYMENTS])
 
-_logger = logging.getLogger(__name__)
 
 stripe.api_key = os.getenv("STRIPE_API_KEY")
 
