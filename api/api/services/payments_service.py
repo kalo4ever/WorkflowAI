@@ -72,8 +72,11 @@ class PaymentService:
         self,
         org_settings: TenantData,
         payment_method_id: str,
+        user_email: str,
     ) -> str:
-        stripe_customer_id = self._get_stripe_customer_id_from_org(org_settings)
+        stripe_customer_id = org_settings.stripe_customer_id
+        if stripe_customer_id is None:
+            stripe_customer_id = await self.create_customer(user_email)
 
         payment_method = await stripe.PaymentMethod.attach_async(
             payment_method_id,

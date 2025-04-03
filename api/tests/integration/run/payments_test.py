@@ -168,7 +168,6 @@ async def _setup_automatic_payment(test_client: IntegrationTestClient):
     assert org["automatic_payment_enabled"] is False, "sanity check"
 
     # Create customer, add payment method
-    await test_client.post("/organization/payments/customers")
     await test_client.post(
         "/organization/payments/payment-methods",
         json={"payment_method_id": "pm_123"},
@@ -359,7 +358,8 @@ async def test_automatic_payment_failure_with_retry(
 
     # Check that the emails were sent
     email_requests = test_client.httpx_mock.get_requests(url=LOOPS_TRANSACTIONAL_URL)
-    assert len(email_requests) == 2
+    # 2 payment failed, 2 low balance
+    assert len(email_requests) == 4
     emails = {json.loads(request.content)["email"] for request in email_requests}
     assert emails == {"john@example.com", "jane@example.com"}
 
@@ -442,7 +442,8 @@ async def test_automatic_payment_failure_with_retry_single_user(
 
     # Check that the emails were sent
     email_requests = test_client.httpx_mock.get_requests(url=LOOPS_TRANSACTIONAL_URL)
-    assert len(email_requests) == 1
+    # 1 payment failed, 1 low balance
+    assert len(email_requests) == 2
     emails = {json.loads(request.content)["email"] for request in email_requests}
     assert emails == {"john@example.com"}
 

@@ -30,9 +30,15 @@ async def add_payment_method(
     payment_service: PaymentServiceDep,
     request: PaymentMethodRequest,
     user_org: RequiredUserOrganizationDep,
+    required_user: RequiredUserDep,
 ) -> PaymentMethodIdResponse:
+    payment_method_id = await payment_service.add_payment_method(
+        user_org,
+        request.payment_method_id,
+        required_user.sub,
+    )
     return PaymentMethodIdResponse(
-        payment_method_id=await payment_service.add_payment_method(user_org, request.payment_method_id),
+        payment_method_id=payment_method_id,
     )
 
 
@@ -40,7 +46,12 @@ class CustomerCreatedResponse(BaseModel):
     customer_id: str
 
 
-@router.post("/customers", description="Create a customer in Stripe for the organization")
+@router.post(
+    "/customers",
+    description="Create a customer in Stripe for the organization",
+    deprecated=True,
+    include_in_schema=False,
+)
 async def create_customer(
     payment_service: PaymentServiceDep,
     userDep: RequiredUserDep,
