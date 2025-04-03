@@ -19,7 +19,7 @@ import { useCopyCurrentUrl } from '@/lib/hooks/useCopy';
 import { useDemoMode } from '@/lib/hooks/useDemoMode';
 import { useIsAllowed } from '@/lib/hooks/useIsAllowed';
 import { useParsedSearchParams, useRedirectWithParams } from '@/lib/queryString';
-import { containsFile } from '@/lib/schemaFileUtils';
+import { requiresFileSupport } from '@/lib/schemaFileUtils';
 import { InitInputFromSchemaMode, initInputFromSchema } from '@/lib/schemaUtils';
 import { mergeTaskInputAndVoid } from '@/lib/schemaVoidUtils';
 import { scrollTo } from '@/lib/scrollUtils';
@@ -156,7 +156,10 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
   } = props;
 
   const isInputGenerationSupported = useMemo(() => {
-    return !containsFile(currentTaskSchema.input_schema.json_schema, currentTaskSchema.input_schema.json_schema.$defs);
+    return !requiresFileSupport(
+      currentTaskSchema.input_schema.json_schema,
+      currentTaskSchema.input_schema.json_schema.$defs
+    );
   }, [currentTaskSchema]);
 
   const [scheduledPlaygroundStateMessage, setScheduledPlaygroundStateMessage] = useState<string | undefined>(undefined);

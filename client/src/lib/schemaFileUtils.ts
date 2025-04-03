@@ -58,7 +58,10 @@ export function replaceFileData(
   return innerReplaceFileDataWithURL(schema, schema.$defs, obj, replacer) as Record<string, unknown>;
 }
 
-export function containsFile(schema: JsonValueSchema | undefined, defs: JsonSchemaDefinitions | undefined): boolean {
+export function requiresFileSupport(
+  schema: JsonValueSchema | undefined,
+  defs: JsonSchemaDefinitions | undefined
+): boolean {
   if (schema === undefined || defs === undefined) {
     return false;
   }
@@ -76,7 +79,7 @@ export function containsFile(schema: JsonValueSchema | undefined, defs: JsonSche
   if ('properties' in schema && schema.properties) {
     for (const key in schema.properties) {
       const subSchema = getSubSchema(schema, defs, key);
-      if (containsFile(subSchema, defs)) {
+      if (requiresFileSupport(subSchema, defs)) {
         return true;
       }
     }
@@ -85,12 +88,12 @@ export function containsFile(schema: JsonValueSchema | undefined, defs: JsonSche
   if ('items' in schema && schema.items) {
     if (Array.isArray(schema.items)) {
       for (const idx in schema.items) {
-        if (containsFile(getSubSchema(schema, defs, idx), defs)) {
+        if (requiresFileSupport(getSubSchema(schema, defs, idx), defs)) {
           return true;
         }
       }
     } else {
-      if (containsFile(getSubSchema(schema, defs, '0'), defs)) {
+      if (requiresFileSupport(getSubSchema(schema, defs, '0'), defs)) {
         return true;
       }
     }
