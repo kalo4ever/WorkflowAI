@@ -88,7 +88,7 @@ class PaymentService:
 
         return payment_method.id
 
-    async def create_customer(self, user_email: str | None) -> str:
+    async def create_customer(self, user_email: str) -> str:
         if not stripe.api_key:
             _logger.error("Stripe API key is not set. Skipping customer creation.")
             return ""
@@ -108,7 +108,7 @@ class PaymentService:
         # TODO: protect against race conditions here, we could be creating multiple customers
         customer = await stripe.Customer.create_async(
             name=org_settings.name or org_settings.slug,
-            email=user_email if user_email is not None else f"abc@{org_settings.slug}.com",  # Cannot be null
+            email=user_email,
             metadata=metadata.model_dump(exclude_none=True),
         )
 
@@ -231,7 +231,6 @@ class PaymentService:
         balance_to_maintain: float | None,
     ):
         await self._org_storage.update_automatic_payment(opt_in, threshold, balance_to_maintain)
-        # TODO: if opt in, trigger payment if needed
 
 
 class PaymentSystemService:
@@ -377,12 +376,19 @@ class PaymentSystemService:
         return tenant
 
     async def handle_payment_success(self, metadata: dict[str, str], amount: float):
-        parsed_metadata = _IntentMetadata.model_validate(metadata)
-        if parsed_metadata.trigger == "automatic":
-            await self._org_storage.unlock_payment_for_success(parsed_metadata.tenant, amount)
-            return
-        # Otherwise we just need to add the credits
-        await self._org_storage.add_credits_to_tenant(parsed_metadata.tenant, amount)
+        try:
+            parsed_metadata = _IntentMetadata.model_validate(metadata)
+            if parsed_metadata.trigger == "automatic":
+                await self._org_storage.unlock_payment_for_success(parsed_metadata.tenant, amount)
+                return
+            # Otherwise we just need to add the credits
+            await self._org_storage.add_credits_to_tenant(parsed_metadata.tenant, amount)
+        except Exception as e:
+            # Wrap everything in an InternalError to make sure it's easy to spot
+            raise InternalError(
+                "Urgent: Failed to process adding credits",
+                extra={"metadata": metadata, "amount": amount},
+            ) from e
 
     async def handle_payment_requires_action(self, metadata: dict[str, str]):
         parsed_metadata = _IntentMetadata.model_validate(metadata)

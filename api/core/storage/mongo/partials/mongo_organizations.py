@@ -165,9 +165,10 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
 
     @override
     async def add_credits_to_tenant(self, tenant: str, credits: float) -> None:
+        # Add credits and unset the payment failure status
         await self._collection.update_one(
             {"tenant": tenant},
-            {"$inc": {"current_credits_usd": credits, "added_credits_usd": credits}},
+            {"$inc": {"current_credits_usd": credits, "added_credits_usd": credits}, "$unset": {"payment_failure": ""}},
         )
 
     @override

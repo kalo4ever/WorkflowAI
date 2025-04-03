@@ -316,16 +316,7 @@ async def test_automatic_payment_success(
     assert org["current_credits_usd"] == approx(10, abs=0.01)
 
 
-async def test_automatic_payment_failure_with_retry(
-    test_client: IntegrationTestClient,
-    mock_stripe: Mock,
-):
-    """Test a payment failure with a retry when the user is an organization"""
-    task = await test_client.create_task()
-
-    await _setup_automatic_payment(test_client)
-
-    # Also prepare for email send, we have an organization so all the admins should get an email
+def _prepare_organization_payment_failure_emails(test_client: IntegrationTestClient):
     test_client.httpx_mock.add_response(
         url=f"{CLERK_BASE_URL}/organizations/{test_client.org['org_id']}/memberships?role=admin&limit=5",
         json=fixtures_json("clerk/membership_list.json"),
@@ -338,6 +329,19 @@ async def test_automatic_payment_failure_with_retry(
         url=LOOPS_TRANSACTIONAL_URL,
         status_code=200,
     )
+
+
+async def test_automatic_payment_failure_with_retry(
+    test_client: IntegrationTestClient,
+    mock_stripe: Mock,
+):
+    """Test a payment failure with a retry when the user is an organization"""
+    task = await test_client.create_task()
+
+    await _setup_automatic_payment(test_client)
+
+    # Also prepare for email send, we have an organization so all the admins should get an email
+    _prepare_organization_payment_failure_emails(test_client)
 
     # Deplete credits which should trigger payments
     await _deplete_credits(test_client, task, 8)
@@ -714,3 +718,47 @@ async def test_add_payment_method_invalid_card(
 #     assert org["current_credits_usd"] == 0.0
 #     assert org["automatic_payment_enabled"] is True
 #     assert org["last_payment_failed_at"] is None
+
+
+async def test_automatic_payment_failure_manual_credit_addition(
+    test_client: IntegrationTestClient,
+    mock_stripe: Mock,
+):
+    """Test a payment failure with a retry when the user is an organization"""
+    task = await test_client.create_task()
+
+    await _setup_automatic_payment(test_client)
+
+    # Also prepare for email send, we have an organization so all the admins should get an email
+    _prepare_organization_payment_failure_emails(test_client)
+
+    # Deplete credits which should trigger payments
+    await _deplete_credits(test_client, task, 8)
+    _assert_payment_created(test_client, mock_stripe, 8)
+
+    # But now the call fails
+    await _mock_stripe_webhook(test_client, mock_stripe, event_type="payment_intent.payment_failed")
+    await test_client.wait_for_completed_tasks()
+
+    # Credits were not added because the payment failed and organization has a payment failure
+    org = await test_client.get_org()
+    assert org["current_credits_usd"] == approx(1.999, abs=0.001)
+    assert org["payment_failure"]
+    assert org["payment_failure"]["failure_code"] == "payment_failed"
+
+    # Now I trigger a manual payment
+    await _mock_stripe_webhook(test_client, mock_stripe, amount=800, trigger="manual")
+
+    org = await test_client.get_org()
+    assert org["current_credits_usd"] == approx(10, abs=0.01)
+    assert org.get("payment_failure") is None
+
+    # And now we can run again and automatic payments are back
+    mock_stripe.PaymentIntent.create_async.reset_mock()
+    mock_stripe.PaymentIntent.confirm_async.reset_mock()
+
+    await _deplete_credits(test_client, task, 5)
+    _assert_payment_created(test_client, mock_stripe, 5.01)
+    await _mock_stripe_webhook(test_client, mock_stripe, amount=501)
+    org = await test_client.get_org()
+    assert org["current_credits_usd"] == approx(10, abs=0.01)

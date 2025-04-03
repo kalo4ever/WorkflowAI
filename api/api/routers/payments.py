@@ -5,9 +5,10 @@ import stripe
 from fastapi import APIRouter
 from pydantic import BaseModel, Field, model_validator
 
-from api.dependencies.security import RequiredUserOrganizationDep, UserDep
+from api.dependencies.security import RequiredUserDep, RequiredUserOrganizationDep
 from api.dependencies.services import PaymentServiceDep, PaymentSystemServiceDep
 from api.services.payments_service import PaymentMethodResponse, PaymentService
+from core.utils.background import add_background_task
 
 router = APIRouter(prefix="/organization/payments")
 
@@ -40,13 +41,12 @@ class CustomerCreatedResponse(BaseModel):
     customer_id: str
 
 
-# TODO: deprecate this route, we should just create a customer the first time a payment method is added
 @router.post("/customers", description="Create a customer in Stripe for the organization")
 async def create_customer(
     payment_service: PaymentServiceDep,
-    userDep: UserDep,
+    userDep: RequiredUserDep,
 ) -> CustomerCreatedResponse:
-    return CustomerCreatedResponse(customer_id=await payment_service.create_customer(userDep.sub if userDep else None))
+    return CustomerCreatedResponse(customer_id=await payment_service.create_customer(userDep.sub))
 
 
 class PaymentIntentCreatedResponse(BaseModel):
@@ -112,12 +112,17 @@ class AutomaticPaymentRequest(BaseModel):
 async def update_automatic_payments(
     request: AutomaticPaymentRequest,
     payment_service: PaymentServiceDep,
+    payment_system_service: PaymentSystemServiceDep,
+    user_org: RequiredUserOrganizationDep,
 ) -> None:
     await payment_service.configure_automatic_payment(
         opt_in=request.opt_in,
         threshold=request.threshold,
         balance_to_maintain=request.balance_to_maintain,
     )
+    if request.opt_in:
+        # Trigger a credit decrement if 9 to trigger a payment if needed
+        add_background_task(payment_system_service.decrement_credits(user_org.tenant, 0))
 
 
 @router.post("/automatic-payments/retry", description="Retry a failed automatic payment")
