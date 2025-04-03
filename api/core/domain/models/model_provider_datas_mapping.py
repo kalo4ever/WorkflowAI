@@ -19,40 +19,8 @@ from .model_provider_data import (
 ProviderDataByModel = dict[Model, ModelProviderData]
 ONE_MILLION_TH = 0.000_001
 
-# TODO: Add in Audio file as applicable for Google Provider data models
+
 GOOGLE_PROVIDER_DATA: ProviderDataByModel = {
-    # Model.GEMINI_1_5_PRO_PREVIEW_0514: ModelProviderData(
-    #     text_price=TextPricePerToken(
-    #         prompt_cost_per_token=0.000_000_312_5 * GOOGLE_CHARS_PER_TOKEN,
-    #         completion_cost_per_token=0.000_001_25 * GOOGLE_CHARS_PER_TOKEN,
-    #         thresholded_prices=[
-    #             # Price per token > 128k
-    #             ThresholdedTextPricePerToken(
-    #                 threshold=128_000,
-    #                 prompt_cost_per_token_over_threshold=0.000_000_625 * GOOGLE_CHARS_PER_TOKEN,
-    #                 completion_cost_per_token_over_threshold=0.000_002_5 * GOOGLE_CHARS_PER_TOKEN,
-    #             ),
-    #         ],
-    #         source="https://cloud.google.com/vertex-ai/generative-ai/pricing",
-    #     ),
-    #     image_price=ImageFixedPrice(
-    #         cost_per_image=0.000_328_75,
-    #         thresholded_prices=[
-    #             ThresholdedImageFixedPrice(threshold=128000, cost_per_image_over_threshold=0.000_6575),
-    #         ],
-    #     ),
-    #     audio_price=AudioPricePerSecond(
-    #         cost_per_second=0.000_031_25,
-    #         thresholded_prices=[
-    #             ThresholdedAudioPricePerSecond(threshold=128000, cost_per_second_over_threshold=0.000_0625),
-    #         ],
-    #     ),
-    #     lifecycle_data=LifecycleData(
-    #         sunset_date=datetime.date(year=2024, month=6, day=24),
-    #         post_sunset_replacement_model=Model.GEMINI_1_5_PRO_001,
-    #         source="https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models#model_versions_and_lifecycle",
-    #     ),
-    # ),
     Model.GEMINI_2_0_FLASH_001: ModelProviderData(
         text_price=TextPricePerToken(
             prompt_cost_per_token=0.0375 * ONE_MILLION_TH * GOOGLE_CHARS_PER_TOKEN,
@@ -143,69 +111,6 @@ GOOGLE_PROVIDER_DATA: ProviderDataByModel = {
             source="https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models#model_versions_and_lifecycle",
         ),
     ),
-    # Model.GEMINI_1_5_PRO_PREVIEW_0409: ModelProviderData(
-    #     text_price=TextPricePerToken(
-    #         prompt_cost_per_token=0.000_000_312_5 * GOOGLE_CHARS_PER_TOKEN,
-    #         completion_cost_per_token=0.000_001_25 * GOOGLE_CHARS_PER_TOKEN,
-    #         thresholded_prices=[
-    #             # Price per token > 128k
-    #             ThresholdedTextPricePerToken(
-    #                 threshold=128_000,
-    #                 prompt_cost_per_token_over_threshold=0.000_000_625 * GOOGLE_CHARS_PER_TOKEN,
-    #                 completion_cost_per_token_over_threshold=0.000_002_5 * GOOGLE_CHARS_PER_TOKEN,
-    #             ),
-    #         ],
-    #         source="https://cloud.google.com/vertex-ai/generative-ai/pricing",
-    #     ),
-    #     image_price=ImageFixedPrice(
-    #         cost_per_image=0.000_328_75,
-    #         thresholded_prices=[
-    #             ThresholdedImageFixedPrice(threshold=128000, cost_per_image_over_threshold=0.000_6575),
-    #         ],
-    #     ),
-    #     audio_price=AudioPricePerSecond(
-    #         cost_per_second=0.000_031_25,
-    #         thresholded_prices=[
-    #             ThresholdedAudioPricePerSecond(threshold=128000, cost_per_second_over_threshold=0.000_0625),
-    #         ],
-    #     ),
-    #     lifecycle_data=LifecycleData(
-    #         sunset_date=datetime.date(year=2024, month=6, day=14),
-    #         post_sunset_replacement_model=Model.GEMINI_1_5_PRO_001,
-    #         source="https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models#model_versions_and_lifecycle",
-    #     ),
-    # ),
-    # Model.GEMINI_1_5_FLASH_PREVIEW_0514: ModelProviderData(
-    #     text_price=TextPricePerToken(
-    #         prompt_cost_per_token=0.000_000_018_75 * GOOGLE_CHARS_PER_TOKEN,
-    #         completion_cost_per_token=0.000_000_075 * GOOGLE_CHARS_PER_TOKEN,
-    #         thresholded_prices=[
-    #             ThresholdedTextPricePerToken(
-    #                 threshold=128000,
-    #                 prompt_cost_per_token_over_threshold=0.000_000_037_5 * GOOGLE_CHARS_PER_TOKEN,
-    #                 completion_cost_per_token_over_threshold=0.000_000_15 * GOOGLE_CHARS_PER_TOKEN,
-    #             ),
-    #         ],
-    #         source="https://cloud.google.com/vertex-ai/generative-ai/pricing",
-    #     ),
-    #     image_price=ImageFixedPrice(
-    #         cost_per_image=0.000_02,
-    #         thresholded_prices=[
-    #             ThresholdedImageFixedPrice(threshold=128000, cost_per_image_over_threshold=0.000_04),
-    #         ],
-    #     ),
-    #     audio_price=AudioPricePerSecond(
-    #         cost_per_second=0.000_002,
-    #         thresholded_prices=[
-    #             ThresholdedAudioPricePerSecond(threshold=128000, cost_per_second_over_threshold=0.000_004),
-    #         ],
-    #     ),
-    #     lifecycle_data=LifecycleData(
-    #         sunset_date=datetime.date(year=2024, month=6, day=24),
-    #         post_sunset_replacement_model=Model.GEMINI_1_5_FLASH_001,
-    #         source="https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models#model_versions_and_lifecycle",
-    #     ),
-    # ),
     Model.GEMINI_1_5_FLASH_001: ModelProviderData(
         text_price=TextPricePerToken(
             prompt_cost_per_token=0.000_000_018_75 * GOOGLE_CHARS_PER_TOKEN,
@@ -268,47 +173,6 @@ GOOGLE_PROVIDER_DATA: ProviderDataByModel = {
             source="https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models#model_versions_and_lifecycle",
         ),
     ),
-    # Model.GEMINI_1_0_PRO_VISION_001: ModelProviderData(
-    #     text_price=TextPricePerToken(
-    #         prompt_cost_per_token=0.000_000_125 * GOOGLE_CHARS_PER_TOKEN,
-    #         completion_cost_per_token=0.000_000_375 * GOOGLE_CHARS_PER_TOKEN,
-    #         source="Can not be found in https://cloud.google.com/vertex-ai/generative-ai/pricing, using price from Gemini 1.0 Pro 001/002",
-    #     ),
-    #     image_price=ImageFixedPrice(
-    #         cost_per_image=0.002_5,
-    #     ),
-    #     lifecycle_data=LifecycleData(
-    #         release_date=datetime.date(year=2024, month=2, day=15),
-    #         sunset_date=datetime.date(year=2025, month=2, day=15),
-    #         post_sunset_replacement_model=Model.GEMINI_1_5_FLASH_001,
-    #         source="https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models#model_versions_and_lifecycle",
-    #     ),
-    # ),
-    # Model.GEMINI_1_0_PRO_001: ModelProviderData(
-    #     text_price=TextPricePerToken(
-    #         prompt_cost_per_token=0.000_000_125 * GOOGLE_CHARS_PER_TOKEN,
-    #         completion_cost_per_token=0.000_000_375 * GOOGLE_CHARS_PER_TOKEN,
-    #         source="Can not be found in https://cloud.google.com/vertex-ai/generative-ai/pricing, using price from Gemini 1.0 Pro 001/002",
-    #     ),
-    #     lifecycle_data=LifecycleData(
-    #         release_date=datetime.date(year=2024, month=2, day=15),
-    #         sunset_date=datetime.date(year=2025, month=2, day=15),
-    #         source="https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models#model_versions_and_lifecycle",
-    #     ),
-    # ),
-    # Model.GEMINI_1_0_PRO_002: ModelProviderData(
-    #     text_price=TextPricePerToken(
-    #         prompt_cost_per_token=0.000_000_125 * GOOGLE_CHARS_PER_TOKEN,
-    #         completion_cost_per_token=0.000_000_375 * GOOGLE_CHARS_PER_TOKEN,
-    #         source="Can not be found in https://cloud.google.com/vertex-ai/generative-ai/pricing, using price from Gemini 1.0 Pro 001/002",
-    #     ),
-    #     # TODO: Add audio price
-    #     lifecycle_data=LifecycleData(
-    #         release_date=datetime.date(year=2024, month=4, day=9),
-    #         sunset_date=datetime.date(year=2025, month=4, day=9),
-    #         source="https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models#model_versions_and_lifecycle",
-    #     ),
-    # ),
     Model.LLAMA_3_2_90B: ModelProviderData(
         # Llama 3.2 is free for now, but for UX reasons we're using the same price as Gemini 1.5 Pro 002
         text_price=TextPricePerToken(
@@ -407,58 +271,6 @@ OPENAI_PROVIDER_DATA: ProviderDataByModel = {
             source="https://openai.com/api/pricing/",
         ),
     ),
-    # Model.GPT_4O_2024_05_13: ModelProviderData(
-    #     text_price=TextPricePerToken(
-    #         prompt_cost_per_token=0.000_005,
-    #         prompt_cached_tokens_discount=0.5,
-    #         completion_cost_per_token=0.000_015,
-    #         source="https://openai.com/api/pricing/",
-    #     ),
-    #     lifecycle_data=LifecycleData(
-    #         sunset_date=datetime.date(year=2024, month=12, day=18),
-    #         post_sunset_replacement_model=Model.GPT_4O_2024_11_20,
-    #         source="https://openai.com/api/pricing/",
-    #     ),
-    # ),
-    # Model.GPT_4_TURBO_2024_04_09: ModelProviderData(
-    #     text_price=TextPricePerToken(
-    #         prompt_cost_per_token=0.000_010,
-    #         prompt_cached_tokens_discount=0.5,
-    #         completion_cost_per_token=0.000_030,
-    #         source="https://openai.com/api/pricing/",
-    #     ),
-    #     lifecycle_data=LifecycleData(
-    #         sunset_date=datetime.date(year=2024, month=12, day=18),
-    #         post_sunset_replacement_model=Model.GPT_4O_2024_11_20,
-    #         source="https://openai.com/api/pricing/",
-    #     ),
-    # ),
-    # Model.GPT_4_0125_PREVIEW: ModelProviderData(
-    #     text_price=TextPricePerToken(
-    #         prompt_cost_per_token=0.000_010,
-    #         prompt_cached_tokens_discount=0.5,
-    #         completion_cost_per_token=0.000_030,
-    #         source="https://openai.com/api/pricing/",
-    #     ),
-    #     lifecycle_data=LifecycleData(
-    #         sunset_date=datetime.date(year=2024, month=12, day=18),
-    #         post_sunset_replacement_model=Model.GPT_4O_2024_11_20,
-    #         source="https://openai.com/api/pricing/",
-    #     ),
-    # ),
-    # Model.GPT_4_1106_PREVIEW: ModelProviderData(
-    #     text_price=TextPricePerToken(
-    #         prompt_cost_per_token=0.000_010,
-    #         prompt_cached_tokens_discount=0.5,
-    #         completion_cost_per_token=0.000_030,
-    #         source="https://openai.com/api/pricing/",
-    #     ),
-    #     lifecycle_data=LifecycleData(
-    #         sunset_date=datetime.date(year=2024, month=12, day=18),
-    #         post_sunset_replacement_model=Model.GPT_4O_2024_11_20,
-    #         source="https://openai.com/api/pricing/",
-    #     ),
-    # ),
     Model.GPT_4O_MINI_2024_07_18: ModelProviderData(
         text_price=TextPricePerToken(
             prompt_cost_per_token=0.000_000_15,
@@ -467,32 +279,6 @@ OPENAI_PROVIDER_DATA: ProviderDataByModel = {
             source="https://openai.com/api/pricing/",
         ),
     ),
-    # Model.GPT_3_5_TURBO_1106: ModelProviderData(
-    #     text_price=TextPricePerToken(
-    #         prompt_cost_per_token=0.000_001,
-    #         prompt_cached_tokens_discount=0.5,
-    #         completion_cost_per_token=0.000_002,
-    #         source="https://openai.com/api/pricing/",
-    #     ),
-    #     lifecycle_data=LifecycleData(
-    #         sunset_date=datetime.date(year=2024, month=8, day=19),
-    #         post_sunset_replacement_model=Model.GPT_4O_MINI_2024_07_18,
-    #         source="Early deprecation, decided by WorkflowAI, see https://linear.app/workflowai/issue/WOR-1344/decommission-gpt-35-and-fallback-to-gpt-4o-mini-versions",
-    #     ),
-    # ),  # 10x cheaper than GPT-4o
-    # Model.GPT_4_1106_VISION_PREVIEW: ModelProviderData(
-    #     text_price=TextPricePerToken(
-    #         prompt_cost_per_token=0.000_010,
-    #         prompt_cached_tokens_discount=0.5,
-    #         completion_cost_per_token=0.000_030,
-    #         source="https://openai.com/api/pricing/",
-    #     ),
-    #     lifecycle_data=LifecycleData(
-    #         sunset_date=datetime.date(year=2024, month=6, day=17),
-    #         post_sunset_replacement_model=Model.GPT_4O_2024_11_20,
-    #         source="https://platform.openai.com/docs/deprecations",
-    #     ),
-    # ),
     Model.O1_PREVIEW_2024_09_12: ModelProviderData(
         text_price=TextPricePerToken(
             prompt_cost_per_token=0.000_015,
@@ -712,34 +498,6 @@ GROQ_PROVIDER_DATA: ProviderDataByModel = {
         # native tools calls are not implemented on Groq for now as we will decommssion the provider for now.
         # see [WOR-1968: Disable `Groq` ?](https://linear.app/workflowai/issue/WOR-1968/disable-groq)
     ),
-    # Model.LLAMA_3_2_90B_TEXT_PREVIEW: ModelProviderData(
-    #     # Pricing is not available yet, using pricing from Llama 3.1 70B
-    #     text_price=TextPricePerToken(
-    #         prompt_cost_per_token=0.000_000_59,
-    #         completion_cost_per_token=0.000_000_79,
-    #         source="https://console.groq.com/settings/billing",
-    #     ),
-    #     lifecycle_data=LifecycleData(
-    #         release_date=datetime.date(year=2024, month=9, day=26),
-    #         sunset_date=datetime.date(year=2024, month=11, day=25),
-    #         source="notified by email by Groq",
-    #         post_sunset_replacement_model=Model.LLAMA_3_2_90B_VISION_PREVIEW,
-    #     ),
-    # ),
-    # Model.LLAMA_3_2_11B_TEXT_PREVIEW: ModelProviderData(
-    #     # Pricing is not available yet, using pricing from Llama 3.1 8B
-    #     text_price=TextPricePerToken(
-    #         prompt_cost_per_token=0.000_000_05,
-    #         completion_cost_per_token=0.000_000_08,
-    #         source="https://console.groq.com/settings/billing",
-    #     ),
-    #     lifecycle_data=LifecycleData(
-    #         release_date=datetime.date(year=2024, month=9, day=26),
-    #         sunset_date=datetime.date(year=2024, month=10, day=24),
-    #         source="https://console.groq.com/settings/billing",
-    #         post_sunset_replacement_model=Model.LLAMA_3_1_8B,
-    #     ),
-    # ),
     Model.LLAMA_3_2_3B_PREVIEW: ModelProviderData(
         text_price=TextPricePerToken(
             prompt_cost_per_token=0.000_000_06,
@@ -749,13 +507,6 @@ GROQ_PROVIDER_DATA: ProviderDataByModel = {
         # native tools calls are not implemented on Groq for now as we will decommssion the provider for now.
         # see [WOR-1968: Disable `Groq` ?](https://linear.app/workflowai/issue/WOR-1968/disable-groq)
     ),
-    # Model.LLAMA_3_2_1B_PREVIEW: ModelProviderData(
-    #     text_price=TextPricePerToken(
-    #         prompt_cost_per_token=0.000_000_04,
-    #         completion_cost_per_token=0.000_000_04,
-    #         source="https://console.groq.com/settings/billing",
-    #     ),
-    # ),
     Model.LLAMA_3_2_90B_VISION_PREVIEW: ModelProviderData(
         text_price=TextPricePerToken(
             prompt_cost_per_token=0.000_000_90,
@@ -989,12 +740,16 @@ GOOGLE_GEMINI_API_PROVIDER_DATA: ProviderDataByModel = {
             audio_input_cost_per_token=0.70 * ONE_MILLION_TH,
         ),
     ),
-    Model.GEMINI_2_0_PRO_EXP: ModelProviderData(
+    Model.GEMINI_2_5_PRO_EXP_0325: ModelProviderData(
         text_price=TextPricePerToken(
             prompt_cost_per_token=0.0,
             completion_cost_per_token=0.0,
             source="https://ai.google.dev/pricing",
         ),
+        audio_price=AudioPricePerToken(
+            audio_input_cost_per_token=0.0,
+        ),
+        image_price=ImageFixedPrice(cost_per_image=0.0),
     ),
     Model.GEMINI_1_5_FLASH_8B: ModelProviderData(
         text_price=TextPricePerToken(
@@ -1008,14 +763,6 @@ GOOGLE_GEMINI_API_PROVIDER_DATA: ProviderDataByModel = {
                 ),
             ],
             source="https://ai.google.dev/pricing#1_5flash-8B",
-        ),
-    ),
-    Model.GEMINI_EXP_1206: ModelProviderData(
-        # NOTE: Experimental models are free for now
-        text_price=TextPricePerToken(
-            prompt_cost_per_token=0.0,
-            completion_cost_per_token=0.0,
-            source="https://ai.google.dev/pricing#exp-1206",
         ),
     ),
     Model.GEMINI_1_5_PRO_001: ModelProviderData(
