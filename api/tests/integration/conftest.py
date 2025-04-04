@@ -59,6 +59,7 @@ def setup_environment():
             "CLERK_SECRET_KEY": "sk_test_123",
             "LOOPS_API_KEY": "loops-api-key",
             "PAYMENT_FAILURE_EMAIL_ID": "123",
+            "LOW_CREDITS_EMAIL_ID": "123",
         },
     ):
         yield

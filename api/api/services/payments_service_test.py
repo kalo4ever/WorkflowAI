@@ -125,6 +125,7 @@ class TestAddPaymentMethod:
         payment_method_id = await payment_service.add_payment_method(
             mock_storage.organizations.get_organization.return_value,
             "pm_123",
+            "test@example.com",
         )
 
         assert payment_method_id == "pm_123"
@@ -148,6 +149,7 @@ class TestAddPaymentMethod:
             await payment_service.add_payment_method(
                 mock_storage.organizations.get_organization.return_value,
                 "pm_123",
+                "test@example.com",
             )
 
     async def test_add_payment_method_invalid_card(
@@ -171,6 +173,7 @@ class TestAddPaymentMethod:
             await payment_service.add_payment_method(
                 mock_storage.organizations.get_organization.return_value,
                 "pm_123",
+                "test@example.com",
             )
 
 

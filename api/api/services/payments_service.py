@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 from math import ceil
@@ -6,9 +7,10 @@ from typing import Literal, NamedTuple
 import stripe
 from pydantic import BaseModel, field_serializer, field_validator
 
-from core.domain.errors import BadRequestError, InternalError
+from core.domain.errors import BadRequestError, DefaultError, InternalError
 from core.domain.tenant_data import TenantData
 from core.services.emails.email_service import EmailService
+from core.storage import ObjectNotFoundException
 from core.storage.organization_storage import OrganizationStorage, OrganizationSystemStorage
 from core.utils.background import add_background_task
 from core.utils.fields import datetime_factory
@@ -240,6 +242,8 @@ class PaymentSystemService:
     """A payment service that is not tied to a specific organization.
     It is used to handle payments for all organizations."""
 
+    WAIT_BETWEEN_RETRIES_SECONDS = 1
+
     def __init__(self, org_storage: OrganizationSystemStorage, email_service: EmailService):
         self._org_storage = org_storage
         self._email_service = email_service
@@ -331,12 +335,15 @@ class PaymentSystemService:
         min_amount: float,
     ):
         """Trigger an automatic payment
-        If `min_amount` is provided, a payment will be triggered no matter what the current balance is"""
+        If `min_amount` is provided, a payment will be triggered no matter what the current balance is.
+
+        Returns true if the payment was triggered successfully"""
         org_settings = await self._org_storage.attempt_lock_for_payment(tenant)
+
         if not org_settings:
             # There is already a payment being processed so there is no need to retry
             _logger.info("Failed to lock for payment")
-            return
+            return False
 
         # TODO: check for org autopay status
 
@@ -353,6 +360,9 @@ class PaymentSystemService:
             # For now, since we don't really know what could cause the failure, we should fix manually
             # by updating the db or triggering a retry on the customer account.
             _logger.exception("Automatic payment failed due to an internal error", extra={"tenant": tenant})
+            return False
+
+        return True
 
     async def decrement_credits(self, event_tenant: str, credits: float) -> None:
         org_doc = await self._org_storage.decrement_credits(tenant=event_tenant, credits=credits)
@@ -420,7 +430,47 @@ class PaymentSystemService:
                 extra={"org_data": org_data.model_dump()},
             )
 
-        await self.trigger_automatic_payment_if_needed(org_data.tenant, min_amount=1)
+        if not await self.trigger_automatic_payment_if_needed(org_data.tenant, min_amount=1):
+            # Let's just check if the error magically resolved
+            try:
+                failure = await self._org_storage.check_unlocked_payment_failure(org_data.tenant)
+                if not failure:
+                    return
+            except ObjectNotFoundException:
+                # Organization is locked
+                pass
+            # No need to log, error will already be logged elsewhere
+            raise DefaultError(
+                "The payment could not be triggered, either because a payment is already in progress "
+                "or because of an internal error",
+                code="payment_failed",
+                status_code=402,  # conflict
+            )
+
+        # Organization is now locked to we can wait until it is unlocked and check whether
+        # the failure has been cleared or not
+        # We retry a total of 30 times so 30s
+        for _ in range(30):
+            try:
+                payment_failure = await self._org_storage.check_unlocked_payment_failure(org_data.tenant)
+            except ObjectNotFoundException:
+                # Organization is locked so we can keep retrying
+                await asyncio.sleep(self.WAIT_BETWEEN_RETRIES_SECONDS)
+                continue
+
+            if payment_failure:
+                raise DefaultError(
+                    "The payment did not succeed",
+                    code="payment_failed",
+                    status_code=402,  # payment_required
+                )
+            # Otherwise we are done
+            return
+        raise InternalError(
+            "An internal error occurred and we never received an update on the payment",
+            code="payment_failed",
+            status_code=402,  # payment_required
+        )
 
     async def _send_low_credits_email_if_needed(self, org_data: TenantData):
         # For now only a single email at $5

@@ -1,5 +1,7 @@
+import asyncio
 import json
-from typing import Any, Generator, Literal
+from collections.abc import Callable
+from typing import Any, Literal
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
@@ -17,7 +19,7 @@ from tests.integration.common import (
 from tests.utils import approx, fixtures_json
 
 
-@pytest.fixture
+@pytest.fixture()
 def stripe_customer() -> stripe.Customer:
     customer = stripe.Customer(
         id="cus_123",
@@ -49,7 +51,7 @@ def stripe_customer() -> stripe.Customer:
     return customer
 
 
-@pytest.fixture
+@pytest.fixture()
 def stripe_payment_method() -> stripe.PaymentMethod:
     return stripe.PaymentMethod(
         id="pm_123",
@@ -77,12 +79,12 @@ def stripe_payment_intent(test_client: IntegrationTestClient) -> stripe.PaymentI
     return payment_intent
 
 
-@pytest.fixture
+@pytest.fixture()
 def mock_stripe(
     stripe_customer: stripe.Customer,
     stripe_payment_method: stripe.PaymentMethod,
     stripe_payment_intent: stripe.PaymentIntent,
-) -> Generator[dict[str, Any], None, None]:
+):
     with (
         patch("stripe.Customer", spec=stripe.Customer) as customer_cls,
         patch("stripe.PaymentMethod", spec=stripe.PaymentMethod) as payment_method_cls,
@@ -104,6 +106,12 @@ def mock_stripe(
         mock.PaymentIntent = payment_intent_cls
         mock.Webhook = webhook_cls
         yield mock
+
+
+@pytest.fixture(autouse=True)
+def patch_payment_service_retry_delay():
+    with patch("api.services.payments_service.PaymentSystemService.WAIT_BETWEEN_RETRIES_SECONDS", 0.01):
+        yield
 
 
 async def test_decrement_credits(test_client: IntegrationTestClient, mock_stripe: Mock):
@@ -241,7 +249,14 @@ async def _mock_stripe_webhook(
     event_type: str = "payment_intent.succeeded",
     trigger: Literal["automatic", "manual"] = "automatic",
     amount: float = 800,
+    wait_for: Callable[[], bool] | None = None,
 ):
+    if wait_for is not None:
+        for _ in range(10):
+            if wait_for():
+                break
+            await asyncio.sleep(0.1)
+
     event = stripe.Event()
     event.id = "evt_123"
     event.type = event_type  # pyright: ignore
@@ -375,10 +390,23 @@ async def test_automatic_payment_failure_with_retry(
     # But we can retry
     mock_stripe.PaymentIntent.create_async.reset_mock()
     mock_stripe.PaymentIntent.confirm_async.reset_mock()
-    await test_client.post("/organization/payments/automatic-payments/retry")
+
+    # We have to run both at the same time otherwise retry will never return
+    async with asyncio.TaskGroup() as tg:
+        tg.create_task(test_client.post("/organization/payments/automatic-payments/retry"))
+        # We delay by 10ms to make sure the payment intent is created before we call
+        tg.create_task(
+            _mock_stripe_webhook(
+                test_client,
+                mock_stripe,
+                amount=800,
+                wait_for=lambda: mock_stripe.PaymentIntent.confirm_async.call_count > 0,
+            ),
+        )
+
     _assert_payment_created(test_client, mock_stripe, 8)
     # Now we succeed
-    await _mock_stripe_webhook(test_client, mock_stripe, amount=800)
+
     org = await test_client.get_org()
     assert org["current_credits_usd"] == approx(10, abs=0.01)
     assert org.get("payment_failure") is None
@@ -459,10 +487,20 @@ async def test_automatic_payment_failure_with_retry_single_user(
     # But we can retry
     mock_stripe.PaymentIntent.create_async.reset_mock()
     mock_stripe.PaymentIntent.confirm_async.reset_mock()
-    await test_client.post("/organization/payments/automatic-payments/retry")
+    async with asyncio.TaskGroup() as tg:
+        tg.create_task(test_client.post("/organization/payments/automatic-payments/retry"))
+        # We delay by 10ms to make sure the payment intent is created before we call
+        tg.create_task(
+            _mock_stripe_webhook(
+                test_client,
+                mock_stripe,
+                amount=800,
+                wait_for=lambda: mock_stripe.PaymentIntent.confirm_async.call_count > 0,
+            ),
+        )
+
     _assert_payment_created(test_client, mock_stripe, 8, metadata=payment_metadata)
-    # Now we succeed
-    await _mock_stripe_webhook(test_client, mock_stripe, amount=800)
+
     org = await test_client.get_org()
     assert org["current_credits_usd"] == approx(10, abs=0.01)
     assert org.get("payment_failure") is None
@@ -615,9 +653,6 @@ async def test_add_payment_method_invalid_card(
     test_client: IntegrationTestClient,
     mock_stripe: Mock,
 ):
-    # Create customer first
-    result_or_raise(await test_client.int_api_client.post("/organization/payments/customers"))
-
     # Mock stripe.PaymentMethod.attach_async to raise a CardError
     mock_stripe.PaymentMethod.attach_async.side_effect = stripe.CardError(
         message="Your card's security code is incorrect.",
@@ -646,6 +681,7 @@ async def test_add_payment_method_invalid_card(
 
     # Verify the payment method was not attached
     mock_stripe.PaymentMethod.attach_async.assert_called_once()
+    mock_stripe.Customer.create_async.assert_called_once()
 
 
 # async def test_enable_automatic_payment_multiple_runs_with_failed_payment_and_payment_method_added_after_failure(

@@ -102,8 +102,8 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
                 {"$set": update},
             )
 
-    async def _find_tenant(self, filter: dict[str, Any]) -> TenantData:
-        doc = await self._collection.find_one(filter, projection=self._projection(None))
+    async def _find_tenant(self, filter: dict[str, Any], projection: dict[str, Any] | None = None) -> TenantData:
+        doc = await self._collection.find_one(filter, projection=projection)
         if doc is None:
             raise ObjectNotFoundException("Organization  not found", code="organization_not_found")
         return OrganizationDocument.model_validate(doc).to_domain(self.encryption)
@@ -414,3 +414,11 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
                 },
             },
         )
+
+    @override
+    async def check_unlocked_payment_failure(self, tenant: str) -> TenantData.PaymentFailure | None:
+        doc = await self._find_tenant(
+            {"tenant": tenant, "locked_for_payment": {"$ne": True}},
+            projection={"payment_failure": 1},
+        )
+        return doc.payment_failure

@@ -1666,3 +1666,81 @@ class TestAddLowCreditsEmailSent:
         # Verify we can get the tenant and see no records
         tenant = await organization_storage.get_organization()
         assert tenant.low_credits_email_sent_by_threshold is None
+
+
+class TestCheckUnlockedPaymentFailure:
+    async def test_no_payment_failure(
+        self,
+        organization_storage: MongoOrganizationStorage,
+        org_col: AsyncCollection,
+    ) -> None:
+        # Insert an organization without any payment failure
+        await org_col.insert_one(
+            dump_model(
+                OrganizationDocument(
+                    tenant=TENANT,
+                    current_credits_usd=10,
+                    added_credits_usd=20,
+                ),
+            ),
+        )
+
+        # Check for payment failure
+        failure = await organization_storage.check_unlocked_payment_failure(TENANT)
+        assert failure is None
+
+    async def test_with_payment_failure(
+        self,
+        organization_storage: MongoOrganizationStorage,
+        org_col: AsyncCollection,
+    ) -> None:
+        # Insert an organization with a payment failure
+        now = datetime.now(timezone.utc).replace(microsecond=0)
+        await org_col.insert_one(
+            dump_model(
+                OrganizationDocument(
+                    tenant=TENANT,
+                    current_credits_usd=10,
+                    added_credits_usd=20,
+                    payment_failure=PaymentFailureSchema(
+                        failure_code="payment_failed",
+                        failure_reason="Test failure",
+                        failure_date=now,
+                    ),
+                ),
+            ),
+        )
+
+        # Check for payment failure
+        failure = await organization_storage.check_unlocked_payment_failure(TENANT)
+        assert failure is not None
+        assert failure.failure_code == "payment_failed"
+        assert failure.failure_reason == "Test failure"
+        assert failure.failure_date == now
+
+    async def test_locked_organization(
+        self,
+        organization_storage: MongoOrganizationStorage,
+        org_col: AsyncCollection,
+    ) -> None:
+        # Insert a locked organization with a payment failure
+        now = datetime.now(timezone.utc).replace(microsecond=0)
+        await org_col.insert_one(
+            dump_model(
+                OrganizationDocument(
+                    tenant=TENANT,
+                    current_credits_usd=10,
+                    added_credits_usd=20,
+                    locked_for_payment=True,
+                    payment_failure=PaymentFailureSchema(
+                        failure_code="payment_failed",
+                        failure_reason="Test failure",
+                        failure_date=now,
+                    ),
+                ),
+            ),
+        )
+
+        # Check for payment failure - should return None since organization is locked
+        with pytest.raises(ObjectNotFoundException):
+            await organization_storage.check_unlocked_payment_failure(TENANT)

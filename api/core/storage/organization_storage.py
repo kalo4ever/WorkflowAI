@@ -69,6 +69,10 @@ class OrganizationSystemStorage(PublicOrganizationStorage, Protocol):
 
     async def add_low_credits_email_sent(self, tenant: str, threshold: float): ...
 
+    # Returns either a payment failure or None
+    # or raise an error if the organization is locked
+    async def check_unlocked_payment_failure(self, tenant: str) -> TenantData.PaymentFailure | None: ...
+
 
 class OrganizationStorage(OrganizationSystemStorage, Protocol):
     @property
