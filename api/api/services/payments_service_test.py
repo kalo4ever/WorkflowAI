@@ -83,7 +83,6 @@ class TestCreateCustomer:
             name="Test Org",
             email="test@example.com",
             metadata={
-                "organization_id": "",
                 "tenant": "test-tenant",
                 "slug": "test-org",
                 "tenant_uid": "1",
@@ -142,15 +141,28 @@ class TestAddPaymentMethod:
         self,
         payment_service: PaymentService,
         mock_storage: AsyncMock,
+        mock_stripe: Mock,
     ):
-        mock_storage.organizations.get_organization.return_value.stripe_customer_id = None
+        """Check that a customer is created if one does not exist"""
+        mock_storage.organizations.get_organization.return_value = TenantData(
+            tenant="test-tenant",
+            name="Test Org",
+            slug="test-org",
+            stripe_customer_id=None,
+            uid=1,
+        )
+        _mock_customer(mock_stripe, payment_method=False)
+        mock_stripe.PaymentMethod.attach_async = AsyncMock(
+            return_value=Mock(id="pm_id"),
+        )
 
-        with pytest.raises(BadRequestError, match="Organization has no Stripe customer ID"):
-            await payment_service.add_payment_method(
-                mock_storage.organizations.get_organization.return_value,
-                "pm_123",
-                "test@example.com",
-            )
+        await payment_service.add_payment_method(
+            mock_storage.organizations.get_organization.return_value,
+            "pm_123",
+            "test@example.com",
+        )
+        mock_stripe.PaymentMethod.attach_async.assert_called_once()
+        mock_stripe.Customer.modify_async.assert_called_once()
 
     async def test_add_payment_method_invalid_card(
         self,
@@ -305,7 +317,6 @@ class TestCreatePaymentIntent:
             setup_future_usage="off_session",
             automatic_payment_methods={"enabled": True, "allow_redirects": "never"},
             metadata={
-                "organization_id": "",
                 "tenant": "test-tenant",
                 "slug": "test-org",
                 "trigger": "manual",

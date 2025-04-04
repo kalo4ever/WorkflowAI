@@ -36,7 +36,7 @@ class PaymentIntent(NamedTuple):
 
 class _CustomerMetadata(BaseModel):
     tenant: str
-    tenant_uid: int
+    tenant_uid: int = 0
     slug: str | None = None
     organization_id: str | None = None
     owner_id: str | None = None
@@ -53,7 +53,7 @@ class _CustomerMetadata(BaseModel):
 
 
 class _IntentMetadata(_CustomerMetadata):
-    trigger: Literal["automatic", "manual"]
+    trigger: Literal["automatic", "manual"] = "manual"
 
 
 class PaymentService:
