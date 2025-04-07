@@ -7,7 +7,7 @@ from typing import Literal, NamedTuple
 import stripe
 from pydantic import BaseModel, field_serializer, field_validator
 
-from core.domain.errors import BadRequestError, DefaultError, InternalError
+from core.domain.errors import BadRequestError, DefaultError, InternalError, ObjectNotFoundError
 from core.domain.tenant_data import TenantData
 from core.services.emails.email_service import EmailService
 from core.storage import ObjectNotFoundException
@@ -349,6 +349,12 @@ class PaymentSystemService:
 
         try:
             await self._start_automatic_payment_for_locked_org(org_settings, min_amount=min_amount)
+        except stripe.CardError as e:
+            await self._unlock_payment_for_failure(
+                tenant,
+                code="payment_failed",
+                failure_reason=e.user_message or f"Payment failed with an unknown error. Code: {e.code or 'unknown'}",
+            )
         except Exception:
             await self._unlock_payment_for_failure(
                 tenant,
@@ -415,11 +421,24 @@ class PaymentSystemService:
     async def handle_payment_failure(self, metadata: dict[str, str], failure_reason: str):
         parsed_metadata = _IntentMetadata.model_validate(metadata)
         if parsed_metadata.trigger == "automatic":
-            await self._unlock_payment_for_failure(
-                parsed_metadata.tenant,
-                code="payment_failed",
-                failure_reason=failure_reason,
-            )
+            try:
+                await self._unlock_payment_for_failure(
+                    parsed_metadata.tenant,
+                    code="payment_failed",
+                    failure_reason=failure_reason,
+                )
+
+            except (ObjectNotFoundError, ObjectNotFoundException) as e:
+                # That can happen if the payment was declined when confirming the intent
+                # In which case we already unlocked the payment error
+                # To make sure, let's just see that we have a payment error
+                failure = await self._org_storage.check_unlocked_payment_failure(parsed_metadata.tenant)
+                if not failure:
+                    # If we don't have a failure, it means there is something else weird going on so we should raise
+                    raise InternalError(
+                        "Automatic payment failed but we don't have a payment failure",
+                        extra={"metadata": metadata},
+                    ) from e
 
     async def retry_automatic_payment(self, org_data: TenantData):
         if not org_data.payment_failure:

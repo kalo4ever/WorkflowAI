@@ -277,7 +277,7 @@ def user_service_dep() -> UserService:
 UserServiceDep = Annotated[UserService, Depends(user_service_dep)]
 
 
-def email_service_dep(storage: StorageDep, user_service: UserServiceDep) -> EmailService:
+def email_service_dep(storage: SystemStorageDep, user_service: UserServiceDep) -> EmailService:
     return shared_email_service.email_service_builder(storage.organizations, user_service)
 
 
