@@ -1984,6 +1984,27 @@ async def test_invalid_base64_data(test_client: IntegrationTestClient):
     assert e.value.response.json()["error"]["code"] == "invalid_file"
 
 
+
+async def test_empty_strings_are_not_stripped(test_client: IntegrationTestClient):
+    """Check that we do not strip empty strings from the output when the model explicitly returns them
+    except if they have a format
+    """
+    # Create a task with an output schema with an optional string
+    task = await test_client.create_task(
+        output_schema={
+            "properties": {
+                "greeting": {"type": "string"},
+                "date": {"type": "string", "format": "date"},
+            },
+        },
+    )
+    test_client.mock_openai_call(json_content={"greeting": "", "date": ""})
+
+    res = await test_client.run_task_v1(task, model=Model.GPT_4O_2024_11_20, task_input={"name": "John"})
+    assert res
+    assert res["task_output"]["greeting"] == ""
+    assert "date" not in res["task_output"]
+
 async def test_invalid_unicode_chars(test_client: IntegrationTestClient):
     task = await test_client.create_task()
     test_client.mock_openai_call(bytes=fixture_bytes("openai", "invalid_unicode_chars.json"))
