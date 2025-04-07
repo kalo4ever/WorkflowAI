@@ -12,17 +12,17 @@ from api.services.internal_tasks.agent_suggestions_service import (
     get_supported_task_output_types,
 )
 from api.services.slack_notifications import SlackNotificationDestination, get_user_and_org_str, send_slack_notification
-from api.agents.agent_output_example import SuggestedAgentOutputExampleInput, stream_suggested_agent_output_example
-from api.agents.agent_suggestion_validator_agent import SuggestedAgentValidationInput, run_suggested_agent_validation
-from api.agents.chat_task_schema_generation.chat_task_schema_generation_task_utils import build_json_schema_with_defs
-from api.agents.chat_task_schema_generation.schema_generation_agent import (
+from core.agents.agent_output_example import SuggestedAgentOutputExampleInput, stream_suggested_agent_output_example
+from core.agents.agent_suggestion_validator_agent import SuggestedAgentValidationInput, run_suggested_agent_validation
+from core.agents.chat_task_schema_generation.chat_task_schema_generation_task_utils import build_json_schema_with_defs
+from core.agents.chat_task_schema_generation.schema_generation_agent import (
     SchemaBuilderInput,
     run_agent_schema_generation,
 )
-from api.agents.company_agent_suggestion_agent import (
+from core.agents.company_agent_suggestion_agent import (
     INSTUCTIONS as AGENT_SUGGESTION_INSTRUCTIONS,
 )
-from api.tasks.company_agent_suggestion_agent import (
+from core.agents.company_agent_suggestion_agent import (
     SuggestAgentForCompanyInput,
     SuggestedAgent,
     stream_suggest_agents_for_company,
