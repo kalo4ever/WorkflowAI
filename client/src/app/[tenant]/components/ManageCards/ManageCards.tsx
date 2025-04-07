@@ -5,20 +5,18 @@ import { SimpleTooltip } from '@/components/ui/Tooltip';
 import { useAuth } from '@/lib/AuthContext';
 import { STRIPE_PUBLISHABLE_KEY } from '@/lib/constants';
 import { useOrFetchPayments, usePayments } from '@/store/payments';
-import { TenantID } from '@/types/aliases';
 import { TenantData } from '@/types/workflowAI';
 import { ManageCardsContent } from './ManageCardsContent';
 import { ManageCardsTooltipContent } from './ManageCardsTooltipContent';
 import { useStripePayments } from './hooks/useStripePayments';
 
 type ManageCardsProps = {
-  tenant: TenantID | undefined;
   children: React.ReactNode;
   organizationSettings: TenantData | undefined;
 };
 
 function ManageCardsInner(props: ManageCardsProps) {
-  const { tenant, children, organizationSettings } = props;
+  const { children, organizationSettings } = props;
   const [isOpen, setIsOpen] = useState(false);
 
   const { paymentMethod, isInitialized } = useOrFetchPayments();
@@ -151,7 +149,6 @@ function ManageCardsInner(props: ManageCardsProps) {
 
       <DialogContent className='max-w-[400px] p-0'>
         <ManageCardsContent
-          tenant={tenant}
           paymentMethod={paymentMethod}
           isPaymentMethodAvailable={isPaymentMethodAvailable}
           organizationSettings={organizationSettings}

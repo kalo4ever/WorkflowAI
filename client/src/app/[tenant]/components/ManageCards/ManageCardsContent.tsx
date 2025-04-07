@@ -1,4 +1,3 @@
-import { TenantID } from '@/types/aliases';
 import { PaymentMethodResponse, TenantData } from '@/types/workflowAI';
 import { AddPaymentMethodContent } from './AddPaymentMethodContent';
 import { AmountToAddSection } from './AmountToAddSection';
@@ -10,7 +9,6 @@ import { InfoLabel } from './InfoLabel';
 import { PaymentMethodSection } from './PaymentMethodSection';
 
 type ManageCardsContentProps = {
-  tenant: TenantID | undefined;
   isPaymentMethodAvailable: boolean;
   organizationSettings: TenantData;
   paymentMethod: PaymentMethodResponse | undefined;
@@ -30,7 +28,6 @@ type ManageCardsContentProps = {
 
 export function ManageCardsContent(props: ManageCardsContentProps) {
   const {
-    tenant,
     isPaymentMethodAvailable,
     organizationSettings,
     paymentMethod,
@@ -55,7 +52,6 @@ export function ManageCardsContent(props: ManageCardsContentProps) {
   if (showEnableAutoRecharge) {
     return (
       <EnableAutoRechargeContent
-        tenant={tenant}
         organizationSettings={organizationSettings}
         setIsOpen={() => setShowEnableAutoRecharge(false)}
       />

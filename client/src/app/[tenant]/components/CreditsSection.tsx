@@ -5,16 +5,14 @@ import { formatCurrency } from '@/lib/formatters/numberFormatters';
 import { signUpRoute } from '@/lib/routeFormatter';
 import { useOrFetchOrganizationSettings } from '@/store';
 import { useOrganizationSettings } from '@/store/organization_settings';
-import { TenantID } from '@/types/aliases';
 import { ManageCards } from './ManageCards/ManageCards';
 
 type CreditsSectionProps = {
-  tenant: TenantID | undefined;
   isSignedIn: boolean;
 };
 
 export function CreditsSection(props: CreditsSectionProps) {
-  const { tenant, isSignedIn } = props;
+  const { isSignedIn } = props;
   const { organizationSettings } = useOrFetchOrganizationSettings(30000);
 
   const fetchOrganizationSettings = useOrganizationSettings((state) => state.fetchOrganizationSettings);
@@ -62,9 +60,5 @@ export function CreditsSection(props: CreditsSectionProps) {
     );
   }
 
-  return (
-    <ManageCards tenant={tenant} organizationSettings={organizationSettings}>
-      {content}
-    </ManageCards>
-  );
+  return <ManageCards organizationSettings={organizationSettings}>{content}</ManageCards>;
 }
