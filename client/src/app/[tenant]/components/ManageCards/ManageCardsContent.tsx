@@ -49,7 +49,7 @@ export function ManageCardsContent(props: ManageCardsContentProps) {
   } = props;
 
   if (showAddPaymentMethod) {
-    return <AddPaymentMethodContent tenant={tenant} setIsOpen={() => setShowAddPaymentMethod(false)} />;
+    return <AddPaymentMethodContent setIsOpen={() => setShowAddPaymentMethod(false)} />;
   }
 
   if (showEnableAutoRecharge) {
