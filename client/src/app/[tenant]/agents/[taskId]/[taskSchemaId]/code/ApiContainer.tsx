@@ -135,6 +135,7 @@ export function ApiContainer() {
         ...prev,
         [taskId]: language,
       }));
+
       redirectWithParams({
         params: {
           selectedLanguage: language,

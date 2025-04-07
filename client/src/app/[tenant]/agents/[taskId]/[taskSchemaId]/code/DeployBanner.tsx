@@ -9,19 +9,23 @@ import { VersionV1 } from '@/types/workflowAI';
 
 type DeployBannerProps = {
   version: VersionV1 | undefined;
+  isEnvironmentShown: boolean;
 };
 
 export function DeployBanner(props: DeployBannerProps) {
-  const { version } = props;
+  const { version, isEnvironmentShown } = props;
 
   const { onDeployToClick } = useDeployVersionModal();
 
-  const notDeployed = useMemo(() => {
+  const notDeployedToAllEnvironments = useMemo(() => {
     const environments = environmentsForVersion(version);
-    return environments?.length === 0 || environments === undefined;
+    if (!environments) {
+      return true;
+    }
+    return !environments.includes('production') || !environments.includes('staging') || !environments.includes('dev');
   }, [version]);
 
-  if (!version || !notDeployed) {
+  if (!version || !notDeployedToAllEnvironments || !!isEnvironmentShown) {
     return null;
   }
 

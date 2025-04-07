@@ -140,7 +140,7 @@ export function ApiContent(props: ApiContentProps) {
         </div>
 
         <div className='flex flex-col h-full flex-1 overflow-hidden'>
-          <DeployBanner version={selectedVersionForAPI} />
+          <DeployBanner version={selectedVersionForAPI} isEnvironmentShown={selectedEnvironment !== undefined} />
           <ApiTabsContent
             tenant={tenant}
             taskId={taskId}

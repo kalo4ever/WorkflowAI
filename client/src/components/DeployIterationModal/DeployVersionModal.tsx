@@ -6,7 +6,7 @@ import { displayErrorToaster, displaySuccessToaster } from '@/components/ui/Sonn
 import { DEPLOY_ITERATION_MODAL_OPEN, useQueryParamModal } from '@/lib/globalModal';
 import { useIsAllowed } from '@/lib/hooks/useIsAllowed';
 import { useTaskSchemaParams } from '@/lib/hooks/useTaskParams';
-import { useParsedSearchParams } from '@/lib/queryString';
+import { useParsedSearchParams, useRedirectWithParams } from '@/lib/queryString';
 import { taskApiRoute } from '@/lib/routeFormatter';
 import { formatSemverVersion } from '@/lib/versionUtils';
 import { useOrFetchOrganizationSettings, useOrFetchVersions } from '@/store';
@@ -20,8 +20,7 @@ import { DeployVersionContent } from './DeployVersionContent';
 
 export function useEnvDeploy(tenant: TenantID, taskId: TaskID, taskSchemaId: TaskSchemaID | undefined) {
   const deployVersion = useVersions((state) => state.deployVersion);
-
-  const router = useRouter();
+  const redirectWithParams = useRedirectWithParams();
 
   const deployGroupToEnv = useCallback(
     async (
@@ -42,13 +41,19 @@ export function useEnvDeploy(tenant: TenantID, taskId: TaskID, taskSchemaId: Tas
         });
 
         if (redirectToCodeAfterDeploy) {
-          router.push(
-            taskApiRoute(tenant, taskId, taskSchemaId, {
+          redirectWithParams({
+            params: {
               selectedVersionId: versionId,
               selectedEnvironment: environment,
-            })
-          );
+              deployIterationModalOpen: undefined,
+              deployVersionId: undefined,
+              deploySchemaId: undefined,
+              redirectToCodeAfterDeploy: undefined,
+            },
+            path: taskApiRoute(tenant, taskId, taskSchemaId),
+          });
         }
+
         displaySuccessToaster(
           <span>
             {`Version ${versionText} successfully deployed to ${environment}`}
@@ -69,7 +74,7 @@ export function useEnvDeploy(tenant: TenantID, taskId: TaskID, taskSchemaId: Tas
         displayErrorToaster('Failed to deploy');
       }
     },
-    [deployVersion, tenant, taskId, taskSchemaId, router]
+    [deployVersion, tenant, taskId, taskSchemaId, redirectWithParams]
   );
 
   return deployGroupToEnv;
@@ -117,10 +122,10 @@ export function DeployVersionModal() {
   const {
     deployVersionId: currentVersionId,
     deploySchemaId,
-    redirectToCodeAfterDeploy: useDeployVersionModalText,
+    redirectToCodeAfterDeploy: redirectToCodeAfterDeployText,
   } = useParsedSearchParams('deployVersionId', 'deploySchemaId', 'redirectToCodeAfterDeploy');
 
-  const redirectToCodeAfterDeploy = useDeployVersionModalText === 'true';
+  const redirectToCodeAfterDeploy = redirectToCodeAfterDeployText === 'true';
 
   const taskSchemaId = (deploySchemaId as TaskSchemaID) ?? paramsTaskSchemaId;
 
@@ -231,7 +236,9 @@ export function DeployVersionModal() {
       await updateBenchmark(tenant, taskId, taskSchemaId, Array.from(taskIterationsToAddToBenchmarks), []);
     }
 
-    onClose();
+    if (!redirectToCodeAfterDeploy) {
+      onClose();
+    }
   }, [
     deployVersionToEnv,
     versionsPerEnvironment,
