@@ -2,6 +2,7 @@ import pytest
 
 from .strings import (
     b64_urldecode,
+    clean_unicode_chars,
     is_url_safe,
     normalize,
     remove_accents,
@@ -156,3 +157,17 @@ def test_slugify(string: str, exp: str) -> None:
 def test_remove_empty_lines(text: str, expected: str) -> None:
     """Test that remove_empty_lines correctly replaces any consecutive newline characters with a single newline."""
     assert remove_empty_lines(text) == expected
+
+
+@pytest.mark.parametrize(
+    "input_str, expected_output",
+    [
+        pytest.param("hello \u0000e9 world", "hello é world", id="null byte"),
+        pytest.param("hello\ud83d\udc00world", "helloworld", id="invalid surrogate"),
+        # For now we split surrogates char
+        pytest.param("hello\ud83d\ude00world", "helloworld", id="valid surrogate"),
+        pytest.param("hello😁world", "hello😁world", id="emoji"),
+    ],
+)
+def test_clean_unicode_chars(input_str: str, expected_output: str):
+    assert clean_unicode_chars(input_str) == expected_output

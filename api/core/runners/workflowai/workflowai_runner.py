@@ -65,6 +65,7 @@ from core.utils.schema_augmentation_utils import (
     add_reasoning_steps_to_schema,
 )
 from core.utils.schemas import clean_json_string, is_schema_only_containing_one_property
+from core.utils.strings import clean_unicode_chars
 from core.utils.templates import InvalidTemplateError, TemplateManager
 
 from .workflowai_options import WorkflowAIRunnerOptions
@@ -529,7 +530,12 @@ class WorkflowAIRunner(AbstractRunner[WorkflowAIRunnerOptions]):
 
     def output_factory(self, raw: str, partial: bool = False) -> StructuredOutput:
         json_str = raw.replace("\t", "\\t")
+        # Acting on the string is probably unefficient, we do multiple decodes and encode
+        # On the payload. Instead we should probably retrieve bytes for the output
+        # and act on that.
+        json_str = clean_unicode_chars(json_str)
         json_str = clean_json_string(json_str)
+
         try:
             json_dict = json.loads(json_str)
         except json.JSONDecodeError:
