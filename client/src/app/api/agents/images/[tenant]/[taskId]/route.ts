@@ -12,6 +12,14 @@ const lato = fetch(new URL('@/app/fonts/Lato/Lato-Regular.ttf', import.meta.url)
 function getEntriesFromOutput(output: JsonSchema, parentKey = ''): { key: string; value: string }[] {
   const entries: { key: string; value: string }[] = [];
 
+  if (typeof output === 'string' || typeof output === 'number' || typeof output === 'boolean') {
+    entries.push({
+      key: parentKey + ':',
+      value: String(output),
+    });
+    return entries;
+  }
+
   if (!output || typeof output !== 'object') {
     return entries;
   }
