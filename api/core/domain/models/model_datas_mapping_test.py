@@ -79,6 +79,8 @@ class TestDeprecatedModels:
             ), f"Replacement model {value.replacement_model} is not a ModelData"
 
     def test_that_all_models_that_are_fully_sunset_have_a_replacement_model(self, today: datetime.date):
+        """Check that if a model is fully sunset on all providers, it is a deprecated model and not a ModelData"""
+
         def _check(model: Model):
             for provider_data_by_model in MODEL_PROVIDER_DATAS.values():
                 if model not in provider_data_by_model:
@@ -87,7 +89,7 @@ class TestDeprecatedModels:
                 provider_data = provider_data_by_model[model]
                 if provider_data.replacement_model(today) is None:
                     # We have found a model that has no replacement
-                    # So the model is not sunset
+                    # So the model is not sunset on all providers
                     return
             raise AssertionError(f"Model {model} is fully sunset but has no replacement model")
 

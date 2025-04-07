@@ -2,7 +2,7 @@
 
 import { useRef } from 'react';
 import { Loader } from '@/components/ui/Loader';
-import { useCompatibleAIModels, useTaskSchemaMode } from '@/lib/hooks/useCompatibleAIModels';
+import { useCompatibleAIModels } from '@/lib/hooks/useCompatibleAIModels';
 import { useOrFetchLatestTaskRun, useOrFetchTask, useOrFetchVersions } from '@/store';
 import { useOrFetchCurrentTaskSchema } from '@/store';
 import { PlaygroundContent, PlaygroundContentProps } from './playgroundContent';
@@ -12,7 +12,6 @@ export function PlaygroundContentWrapper(props: PlaygroundContentProps) {
 
   const { taskSchema } = useOrFetchCurrentTaskSchema(tenant, taskId, taskSchemaId);
 
-  const fileFormat = useTaskSchemaMode(taskSchema);
   const {
     compatibleModels,
     allModels,
@@ -41,7 +40,6 @@ export function PlaygroundContentWrapper(props: PlaygroundContentProps) {
       aiModels={compatibleModels}
       allAIModels={allModels}
       versions={versions}
-      fileFormat={fileFormat}
       latestTaskRun={latestTaskRun}
       playgroundOutputRef={playgroundOutputRef}
     />

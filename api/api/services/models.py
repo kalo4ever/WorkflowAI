@@ -179,10 +179,10 @@ class ModelsService:
         )
 
     @classmethod
-    async def preview_models(cls):
+    async def preview_models(cls, typology: TaskTypology | None = None):
         models = await cls._available_models_from_run_endpoint()
         for model in models:
-            if m := cls._build_model_for_task(model, None, None, None, None):
+            if m := cls._build_model_for_task(model, typology, None, None, None):
                 yield m
 
     async def models_for_task(

@@ -301,8 +301,8 @@ def _build_model_datas():
             provider_name=DisplayedProvider.GOOGLE.value,
             supports_tool_calling=True,
         ),
-        Model.GEMINI_2_0_PRO_EXP: ModelData(
-            display_name="Gemini 2.0 Pro Exp",
+        Model.GEMINI_2_5_PRO_EXP_0325: ModelData(
+            display_name="Gemini 2.5 Pro Exp (03-25)",
             supports_json_mode=True,
             supports_input_image=True,
             supports_multiple_images_in_input=True,
@@ -310,17 +310,18 @@ def _build_model_datas():
             supports_input_audio=True,
             supports_structured_output=False,
             max_tokens_data=MaxTokensData(
-                max_tokens=2097152,
-                max_output_tokens=8_192,
+                max_tokens=1_048_576 + 65_536,
+                max_output_tokens=65_536,
                 source="https://ai.google.dev/gemini-api/docs/models/gemini#gemini-2.0-pro",
             ),
             provider_for_pricing=Provider.GOOGLE_GEMINI,
             icon_url="https://workflowai.blob.core.windows.net/workflowai-public/google.svg",
-            release_date=date(2025, 2, 5),
-            quality_index=841,  # MMLU=80.50, GPQA=64.70
+            release_date=date(2025, 3, 25),
+            quality_index=842,  # 1 + GEMINI_2_0_PRO_EXP(MMLU=80.50, GPQA=64.70)
             provider_name=DisplayedProvider.GOOGLE.value,
-            supports_tool_calling=False,
+            supports_tool_calling=True,
         ),
+        Model.GEMINI_2_0_PRO_EXP: DeprecatedModel(replacement_model=Model.GEMINI_2_5_PRO_EXP_0325),
         Model.GEMINI_2_0_FLASH_EXP: DeprecatedModel(replacement_model=Model.GEMINI_2_0_FLASH_001),
         Model.GEMINI_2_0_FLASH_LATEST: LatestModel(
             model=Model.GEMINI_2_0_FLASH_001,
@@ -1090,26 +1091,8 @@ def _build_model_datas():
             provider_name=DisplayedProvider.GOOGLE.value,
             supports_tool_calling=True,
         ),
-        Model.GEMINI_EXP_1206: ModelData(
-            display_name="Gemini Exp (12-06)",
-            supports_json_mode=True,
-            supports_input_image=True,
-            supports_multiple_images_in_input=True,
-            supports_input_pdf=True,
-            supports_input_audio=True,
-            supports_structured_output=False,  # Model supports structured output but we did not activate for Gemini yet
-            max_tokens_data=MaxTokensData(
-                max_tokens=128000,
-                source="https://ai.google.dev/gemini-api/docs/models/experimental-models",
-            ),
-            provider_for_pricing=Provider.GOOGLE_GEMINI,
-            icon_url="https://workflowai.blob.core.windows.net/workflowai-public/google.svg",
-            release_date=date(2024, 12, 6),
-            quality_index=840,  # MMLU=80.50, GPQA=64.70
-            provider_name=DisplayedProvider.GOOGLE.value,
-            supports_tool_calling=False,
-        ),
-        Model.GEMINI_EXP_1121: DeprecatedModel(replacement_model=Model.GEMINI_EXP_1206),
+        Model.GEMINI_EXP_1206: DeprecatedModel(replacement_model=Model.GEMINI_2_5_PRO_EXP_0325),
+        Model.GEMINI_EXP_1121: DeprecatedModel(replacement_model=Model.GEMINI_2_5_PRO_EXP_0325),
         Model.QWEN_QWQ_32B_PREVIEW: ModelData(
             display_name="Qwen QWQ (32B) Preview",
             supports_json_mode=True,
@@ -1166,6 +1149,7 @@ def _build_model_datas():
             quality_index=738,  # MMLU=88.50, GPQA=59.10
             provider_name=DisplayedProvider.FIREWORKS.value,
             supports_tool_calling=True,
+            supports_structured_output=True,
             latest_model=Model.DEEPSEEK_V3_LATEST,
         ),
         # https://fireworks.ai/models/fireworks/deepseek-r1
@@ -1228,6 +1212,7 @@ def _build_model_datas():
             provider_name=DisplayedProvider.FIREWORKS.value,
             supports_tool_calling=True,
             latest_model=Model.DEEPSEEK_V3_LATEST,
+            supports_structured_output=True,
         ),
         Model.DEEPSEEK_V3_LATEST: LatestModel(
             model=Model.DEEPSEEK_V3_0324,

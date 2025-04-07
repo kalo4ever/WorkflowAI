@@ -3,7 +3,6 @@
 import { isEqual } from 'lodash';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useRedirectWithParams } from '@/lib/queryString';
-import { FileFormat } from '@/lib/schemaFileUtils';
 import { SchemaNodeType } from '@/lib/schemaUtils';
 import { useOrFetchTaskRun } from '@/store';
 import { GeneralizedTaskInput, TaskRun } from '@/types';
@@ -44,7 +43,6 @@ type Props = {
   taskRunId1: string | undefined;
   taskRunId2: string | undefined;
   taskRunId3: string | undefined;
-  fileFormat: FileFormat | undefined;
   tenant: TenantID | undefined;
   voidInput: Record<string, unknown> | SchemaNodeType[] | undefined;
   persistedVersionId: string | undefined;
