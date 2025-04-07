@@ -358,6 +358,11 @@ AMAZON_BEDROCK_PROVIDER_DATA: ProviderDataByModel = {
             completion_cost_per_token=0.000_015,
             source="https://aws.amazon.com/bedrock/pricing/",
         ),
+        lifecycle_data=LifecycleData(
+            sunset_date=datetime.date(year=2025, month=7, day=20),
+            source="https://aws.amazon.com/bedrock/pricing/",
+            post_sunset_replacement_model=Model.CLAUDE_3_5_SONNET_20241022,
+        ),
     ),
     Model.CLAUDE_3_HAIKU_20240307: ModelProviderData(
         text_price=TextPricePerToken(

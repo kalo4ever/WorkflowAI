@@ -19,7 +19,7 @@ import { useCopyCurrentUrl } from '@/lib/hooks/useCopy';
 import { useDemoMode } from '@/lib/hooks/useDemoMode';
 import { useIsAllowed } from '@/lib/hooks/useIsAllowed';
 import { useParsedSearchParams, useRedirectWithParams } from '@/lib/queryString';
-import { FileFormat } from '@/lib/schemaFileUtils';
+import { requiresFileSupport } from '@/lib/schemaFileUtils';
 import { InitInputFromSchemaMode, initInputFromSchema } from '@/lib/schemaUtils';
 import { mergeTaskInputAndVoid } from '@/lib/schemaVoidUtils';
 import { scrollTo } from '@/lib/scrollUtils';
@@ -90,7 +90,6 @@ type PlaygroundContentBodyProps = PlaygroundContentProps & {
   latestTaskRun: TaskRun | undefined;
   versions: VersionV1[];
   taskSchema: TaskSchemaResponseWithSchema;
-  fileFormat: FileFormat | undefined;
 };
 
 function getLatestTaskRunFromStoreNotReactive(
@@ -152,12 +151,16 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
     taskId,
     taskSchema: currentTaskSchema,
     taskSchemaId,
-    fileFormat,
     tenant,
     userRunTasks,
   } = props;
 
-  const isInputGenerationSupported = fileFormat === undefined;
+  const isInputGenerationSupported = useMemo(() => {
+    return !requiresFileSupport(
+      currentTaskSchema.input_schema.json_schema,
+      currentTaskSchema.input_schema.json_schema.$defs
+    );
+  }, [currentTaskSchema]);
 
   const [scheduledPlaygroundStateMessage, setScheduledPlaygroundStateMessage] = useState<string | undefined>(undefined);
 
@@ -805,7 +808,6 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
     taskRunId1,
     taskRunId2,
     taskRunId3,
-    fileFormat,
     tenant,
     voidInput,
     persistedVersionId,

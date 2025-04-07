@@ -30,8 +30,6 @@ export function DeploymentsContainer() {
     isInitialized: isVersionsInitialized,
   } = useOrFetchVersions(tenant, taskId);
 
-  const fetchVersions = useVersions((state) => state.fetchVersions);
-
   const [envSchemaIteration, setEnvSchemaIteration] = useState<EditEnvSchemaIterationParams | undefined>();
 
   const onCloseEnvSchemaIteration = useCallback(() => setEnvSchemaIteration(undefined), [setEnvSchemaIteration]);
@@ -142,18 +140,8 @@ export function DeploymentsContainer() {
       providerConfigId
     );
 
-    await fetchVersions(tenant, taskId, undefined);
     onCloseEnvSchemaIteration();
-  }, [
-    deployVersionToEnv,
-    envSchemaIteration,
-    fetchVersions,
-    tenant,
-    taskId,
-    onCloseEnvSchemaIteration,
-    deployedVersions,
-    versions,
-  ]);
+  }, [deployVersionToEnv, envSchemaIteration, onCloseEnvSchemaIteration, deployedVersions, versions]);
 
   const onIterationChange = useCallback(
     (iteration: string) => {
