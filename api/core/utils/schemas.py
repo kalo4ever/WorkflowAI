@@ -429,7 +429,11 @@ def remove_extra_keys(schema: JsonSchema, obj: Any):
 
 
 def remove_optional_nulls_and_empty_strings(schema: JsonSchema, obj: Any):  # noqa: C901
-    """Use with navigate to remove all optional nulls and empty strings from a schema"""
+    """Use with navigate to remove all optional nulls and empty strings from a schema.
+
+    Sometimes models return an empty string or null instead of omitting the field
+    which can sometimes create schema violations.
+    """
     if schema.type != "object":
         return
     if not isinstance(obj, dict):
@@ -437,19 +441,20 @@ def remove_optional_nulls_and_empty_strings(schema: JsonSchema, obj: Any):  # no
 
     required = set(schema.get("required", []))
     for k in list(cast(dict[str, Any], obj).keys()):
+        # We keep required keys
         if k in required:
             continue
-        if obj[k] is None or obj[k] == "":
+        val: Any = obj[k]
+        # For now we remove all optional nulls since they should not happen
+        if val is None:
             del obj[k]
+            continue
 
-        elif isinstance(obj[k], dict):
-            if k in obj and not obj[k]:
+        # We also remove empty strings but only when they have a format
+        # We have seen models return "" for dates for example
+        if val == "":
+            if (child_schema := schema.safe_child_schema(k)) and child_schema.get("format"):
                 del obj[k]
-
-        elif isinstance(obj[k], list):
-            for item in cast(list[Any], obj[k]):
-                if item == {}:
-                    cast(list[Any], obj[k]).remove(item)
 
 
 class IsSchemaOnlyContainingOneFileProperty(NamedTuple):

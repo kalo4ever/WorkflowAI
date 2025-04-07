@@ -212,8 +212,10 @@ def test_strip_empty_strings():
     task_io.enforce(output, strip_opt_none_and_empty_strings=True)
 
     assert output == {
+        "description": "",
         "start_time": {"date": "2023-10-20", "time": "11:00:00", "timezone": "Europe/London"},
         "title": "Quarterly Review Meeting",
+        "end_time": {},
     }
 
 
