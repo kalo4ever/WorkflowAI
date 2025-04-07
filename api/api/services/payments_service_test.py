@@ -26,6 +26,7 @@ def mock_stripe():
         mock.PaymentIntent = Mock(spec=stripe.PaymentIntent)
         mock.Customer = Mock(spec=stripe.Customer)
         mock.PaymentMethod = Mock(spec=stripe.PaymentMethod)
+        mock.CardError = stripe.CardError
 
         yield mock
 
