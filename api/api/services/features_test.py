@@ -12,13 +12,13 @@ from api.services.features import (
     FeatureService,
 )
 from api.services.internal_tasks._internal_tasks_utils import officially_suggested_tools
-from api.agents.agent_input_output_example import SuggestedAgentInputOutputExampleOutput
-from api.agents.agent_output_example import SuggestedAgentOutputExampleInput
-from api.agents.agent_suggestion_validator_agent import (
+from core.agents.agent_input_output_example import SuggestedAgentInputOutputExampleOutput
+from core.agents.agent_output_example import SuggestedAgentOutputExampleInput
+from core.agents.agent_suggestion_validator_agent import (
     SuggestedAgentValidationInput,
     SuggestedAgentValidationOutput,
 )
-from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task import (
+from core.agents.chat_task_schema_generation.chat_task_schema_generation_task import (
     InputGenericFieldConfig,
     InputObjectFieldConfig,
     InputSchemaFieldType,
