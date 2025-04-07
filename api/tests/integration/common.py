@@ -388,6 +388,7 @@ def mock_openai_call(
     httpx_mock: HTTPXMock,
     status_code: int = 200,
     json: dict[str, Any] | None = None,
+    bytes: bytes | None = None,
     text: str | None = None,
     json_content: dict[str, Any] | None = None,
     tool_calls_content: list[dict[str, Any]] | None = None,
@@ -431,9 +432,10 @@ def mock_openai_call(
                 "usage": usage or default_usage,
             }
         )
-        if text is None
+        if (text is None and bytes is None)
         else None,
         text=text,
+        content=bytes,
     )
 
 
@@ -795,6 +797,7 @@ class IntegrationTestClient:
         self,
         status_code: int = 200,
         json: dict[str, Any] | None = None,
+        bytes: bytes | None = None,
         text: str | None = None,
         json_content: dict[str, Any] | None = None,
         tool_calls_content: list[dict[str, Any]] | None = None,
@@ -807,6 +810,7 @@ class IntegrationTestClient:
             self.httpx_mock,
             status_code,
             json,
+            bytes,
             text,
             json_content,
             tool_calls_content,
