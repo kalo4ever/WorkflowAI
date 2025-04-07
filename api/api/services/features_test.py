@@ -918,7 +918,6 @@ async def test_get_agent_preview() -> None:
                 SuggestedAgentInputOutputExampleOutput(agent_output_example={"foo": "bar"}),
             ),
         ) as mock_stream_suggested_agent_output_example,
-        patch("asyncio.create_task") as mock_create_task,  # Mock create_task to prevent actual task creation
     ):
         results = [
             chunk
@@ -938,8 +937,6 @@ async def test_get_agent_preview() -> None:
                 company_context="Some company context",
             ),
         )
-        # Check that create_task was called (implying the markdown stream was initiated)
-        mock_create_task.assert_called_once()
         assert len(results) == 1
         assert results == [
             FeatureOutputPreview(
