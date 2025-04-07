@@ -2,17 +2,13 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { useEnvDeploy } from '@/components/DeployIterationModal/DeployVersionModal';
-import { Button } from '@/components/ui/Button';
 import { PageContainer } from '@/components/v2/PageContainer';
-import { PROVIDER_KEYS_MODAL_OPEN, useQueryParamModal } from '@/lib/globalModal';
 import { useDemoMode } from '@/lib/hooks/useDemoMode';
 import { useTaskSchemaParams } from '@/lib/hooks/useTaskParams';
 import { formatSemverVersion } from '@/lib/versionUtils';
-import { useOrFetchOrganizationSettings, useOrFetchTask, useOrFetchVersions } from '@/store';
-import { useOrganizationSettings } from '@/store/organization_settings';
+import { useOrFetchTask, useOrFetchVersions } from '@/store';
 import { useVersions } from '@/store/versions';
 import { TaskSchemaID } from '@/types/aliases';
-import { VersionV1 } from '@/types/workflowAI';
 import { DeployVersionModal, EditEnvSchemaIterationParams } from './DeployVersionModal';
 import { EnvironmentDeployment } from './EnvironmentDeployment';
 
@@ -71,12 +67,6 @@ export function DeploymentsContainer() {
     [setEnvSchemaIteration, envSchemaIteration]
   );
 
-  const { openModal: openProviderKeysModal } = useQueryParamModal(PROVIDER_KEYS_MODAL_OPEN);
-
-  const handleOpenProviderKeysModal = useCallback(() => {
-    openProviderKeysModal();
-  }, [openProviderKeysModal]);
-
   const { isInDemoMode } = useDemoMode();
 
   const commonProps = {
@@ -95,13 +85,6 @@ export function DeploymentsContainer() {
       showSchema={false}
       isInitialized={isTaskInitialized && isVersionsInitialized}
       documentationLink='https://docs.workflowai.com/features/deployments'
-      rightBarChildren={
-        <div className='flex flex-row items-center gap-2 font-lato'>
-          <Button variant='newDesign' onClick={handleOpenProviderKeysModal} className='min-h-8' disabled={isInDemoMode}>
-            Manage Provider Keys
-          </Button>
-        </div>
-      }
     >
       <div className='flex flex-col h-full w-full overflow-y-auto font-lato'>
         <EnvironmentDeployment
