@@ -1,10 +1,38 @@
-# Workflow AI
+![header](/assets/readme-header.png)
 
-## Usage
+WorkflowAI is an open-source platform where product and engineering teams collaborate to build and iterate on AI features.
+
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+## Demo
+
+[embed video]
+
+## Key Features
+
+- build AI features in a few minutes, no code required.
+- use SDK when you need.
+- playground where you can compare models side-by-side.
+- model agnostic, use any LLM you want.
+- open-source, you can host it on your own infrastructure.
+- observability, automatically logs all the runs.
+- structured outputs, no more parsing JSON.
+- Easy integration with SDKs for Python, Typescript and a REST API.
+- update prompts and models without deploying new code.
+- provider fallback
+- built-in tools (web search, scraping)
+
+## Deploy WorkflowAI
+
+### WorkflowAI Cloud
+
+100% managed, no infrastructure to setup. Free, no markup on LLM calls... SOC2 compliant and running on a [high-availability infrastructure](https://docs.workflowai.com/workflowai-cloud/reliability). No training on your data, ever.
+
+### Self-hosted
 
 ### Quick start
 
-The docker compose file is provided as a quick way to spin up a local instance of WorkflowAI.
+The Docker Compose file is provided as a quick way to spin up a local instance of WorkflowAI.
 It is configured to be self contained viable from the start.
 
 ```sh
@@ -76,3 +104,12 @@ This project supports a variety of LLM providers.
 Each provider has a different set of credentials and configuration. Providers that have the required environment
 variables are loaded by default (see the [sample env](.env.sample) for the available variables). Providers can
 also be configured per tenant through the UI.
+
+
+## Support
+
+To find answers to your questions, please refer to the [Documentation](https://docs.workflowai.com).
+
+## License
+
+WorkflowAI is licensed under the [Apache 2.0 License](./LICENSE).
