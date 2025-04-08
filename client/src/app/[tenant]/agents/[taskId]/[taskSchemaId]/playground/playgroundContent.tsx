@@ -1214,7 +1214,7 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
               />
             </div>
 
-            <div className='fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-4 sm:hidden flex w-full'>
+            <div className='fixed bottom-0 left-0 right-0 z-10 bg-white border-t border-gray-200 p-4 sm:hidden flex w-full'>
               <RunAgentsButton
                 showSaveAllVersions={showSaveAllVersions && !noCreditsLeft}
                 singleTaskLoading={singleTaskLoading}

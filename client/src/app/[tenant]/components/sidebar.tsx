@@ -112,7 +112,7 @@ export function Sidebar() {
 
   return (
     <div
-      className='flex font-lato sm:pt-6 pt-2 sm:pb-6 pb-0 sm:pl-6 pl-0'
+      className='flex font-lato sm:pt-6 pt-2 sm:pb-6 pb-0 sm:pl-6 pl-0 z-20 sm:bg-clear bg-custom-gradient-1'
       style={{
         height: isSidebarOpen ? '100%' : 'fit-content',
       }}
