@@ -4,6 +4,7 @@ from typing import Any, Literal, Optional, Self
 
 from pydantic import BaseModel, Field, model_validator
 
+from core.domain.agent_run import AgentRun, AgentRunBase
 from core.domain.consts import METADATA_KEY_PROVIDER_NAME, METADATA_KEY_USED_PROVIDERS
 from core.domain.error_response import ErrorResponse
 from core.domain.fields.internal_reasoning_steps import InternalReasoningStep
@@ -13,7 +14,6 @@ from core.domain.models import Provider
 from core.domain.search_query import SearchQuery
 from core.domain.task_group import TaskGroup
 from core.domain.task_group_properties import TaskGroupProperties
-from core.domain.task_run import SerializableTaskRun, SerializableTaskRunBase
 from core.domain.task_run_query import SerializableTaskRunField, SerializableTaskRunQuery
 from core.domain.utils import compute_eval_hash
 from core.storage.mongo.models.tool_call_schema import ToolCallResultSchema, ToolCallSchema
@@ -25,7 +25,6 @@ from ..utils import (
     query_set_filter,
 )
 from .base_document import BaseDocumentWithStrID
-from .pyobjectid import PyObjectID
 from .task_metadata import TaskMetadataSchema
 from .task_query import build_task_query_filter
 
@@ -36,10 +35,7 @@ class TaskRunDocument(BaseDocumentWithStrID):
     """A task run represents an instance of a task being executed"""
 
     created_at: datetime = Field(default_factory=datetime_factory)
-    updated_at: datetime | None = None
 
-    start_time: Optional[datetime] = None
-    end_time: Optional[datetime] = None
     duration_seconds: Optional[float] = None
     cost_usd: Optional[float] = None
 
@@ -61,12 +57,6 @@ class TaskRunDocument(BaseDocumentWithStrID):
         tags: list[str] | None = None
 
     group: Group | None = None
-
-    # TODO: deprecate
-    example_id: str | None = None
-
-    # Codec does not support sets so we use a list
-    labels: Optional[list[str]] = None
 
     metadata: dict[str, Any] | None = None
 
@@ -172,13 +162,10 @@ class TaskRunDocument(BaseDocumentWithStrID):
     error: Error | None = None
 
     @classmethod
-    def from_resource(cls, task_run: SerializableTaskRun) -> Self:
+    def from_resource(cls, task_run: AgentRun) -> Self:
         return cls(
             _id=task_run.id,
             created_at=task_run.created_at,
-            updated_at=task_run.updated_at or task_run.created_at,
-            start_time=task_run.start_time or datetime.now(),
-            end_time=task_run.end_time,
             duration_seconds=task_run.duration_seconds,
             cost_usd=task_run.cost_usd,
             task=TaskMetadataSchema(
@@ -198,8 +185,6 @@ class TaskRunDocument(BaseDocumentWithStrID):
                 properties=task_run.group.properties.model_dump(exclude_none=True),
                 tags=task_run.group.tags or [],
             ),
-            example_id=PyObjectID(task_run.example_id) if task_run.example_id else None,
-            labels=list(task_run.labels) if task_run.labels else None,
             llm_completions=safe_map_optional(
                 task_run.llm_completions,
                 cls.LLMCompletion.from_domain,
@@ -222,11 +207,10 @@ class TaskRunDocument(BaseDocumentWithStrID):
             eval_hash=task_run.eval_hash,
         )
 
-    def to_base(self) -> SerializableTaskRunBase:
-        return SerializableTaskRunBase(
+    def to_base(self) -> AgentRunBase:
+        return AgentRunBase(
             id=self.id,
             created_at=self.created_at,
-            updated_at=self.updated_at or self.created_at,
             duration_seconds=self.duration_seconds,
             cost_usd=self.cost_usd,
             task_id=self.task.id if self.task else "",
@@ -246,20 +230,16 @@ class TaskRunDocument(BaseDocumentWithStrID):
             )
             if self.group
             else TaskGroup(),
-            example_id=str(self.example_id) if self.example_id else None,
             status=self.status,
             error=self.error.to_domain() if self.error else None,
             author_tenant=self.author_tenant,
             eval_hash=self.eval_hash or "",
         )
 
-    def to_resource(self) -> SerializableTaskRun:
-        run = SerializableTaskRun(
+    def to_resource(self) -> AgentRun:
+        run = AgentRun(
             id=self.id,
-            start_time=self.start_time,
-            end_time=self.end_time,
             created_at=self.created_at,
-            updated_at=self.updated_at or self.created_at,
             duration_seconds=self.duration_seconds,
             cost_usd=self.cost_usd,
             task_id=self.task.id if self.task else "",
@@ -281,8 +261,6 @@ class TaskRunDocument(BaseDocumentWithStrID):
             )
             if self.group
             else TaskGroup(),
-            example_id=str(self.example_id) if self.example_id else None,
-            labels=set(self.labels) if self.labels else None,
             tool_calls=safe_map_optional(self.tool_calls, ToolCallResultSchema.to_domain, logger=logger),
             tool_call_requests=safe_map_optional(self.tool_call_requests, ToolCallSchema.to_domain, logger=logger),
             metadata=self.metadata,
@@ -551,7 +529,7 @@ class TaskRunDocument(BaseDocumentWithStrID):
         return self
 
 
-def _get_provider_for_run(run: SerializableTaskRun, completion_idx: int | None = None) -> str | None:
+def _get_provider_for_run(run: AgentRun, completion_idx: int | None = None) -> str | None:
     if run.group.properties.provider is not None:
         return run.group.properties.provider
 

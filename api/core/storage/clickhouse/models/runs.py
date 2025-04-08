@@ -7,6 +7,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, ValidationError, field_serializer, field_validator
 
+from core.domain.agent_run import AgentRun
 from core.domain.consts import METADATA_KEY_PROVIDER_NAME
 from core.domain.error_response import ErrorResponse
 from core.domain.errors import BadRequestError, InternalError
@@ -24,7 +25,6 @@ from core.domain.search_query import (
 )
 from core.domain.task_group import TaskGroup
 from core.domain.task_group_properties import TaskGroupProperties
-from core.domain.task_run import SerializableTaskRun
 from core.domain.task_run_query import SerializableTaskRunField, SerializableTaskRunQuery
 from core.domain.tool_call import ToolCall, ToolCallRequestWithID
 from core.domain.utils import compute_eval_hash
@@ -44,7 +44,7 @@ from core.storage.clickhouse.models.utils import (
     validate_int,
 )
 from core.storage.clickhouse.query_builder import W
-from core.utils.fields import date_zero, datetime_zero, uuid_zero
+from core.utils.fields import date_zero, uuid_zero
 from core.utils.hash import compute_obj_hash
 from core.utils.iter_utils import safe_map_optional
 from core.utils.models.dumps import safe_dump_pydantic_model
@@ -165,8 +165,6 @@ class ClickhouseRun(BaseModel):
     def from_duration_ds(cls, duration: int) -> float:
         return duration / 10
 
-    updated_at: datetime = Field(default_factory=datetime_zero)
-
     task_schema_id: Annotated[int, validate_int(MAX_UINT_16)] = 0
     version_id: Annotated[str, validate_fixed()] = ""
     version_model: str = ""
@@ -230,7 +228,7 @@ class ClickhouseRun(BaseModel):
         code: str
 
         @classmethod
-        def from_run(cls, run: SerializableTaskRun):
+        def from_run(cls, run: AgentRun):
             if run.error:
                 if run.status == "success":
                     _logger.warning("Run has an error but status is success", extra={"run_id": run.id})
@@ -513,13 +511,12 @@ class ClickhouseRun(BaseModel):
         return without_result or None, with_result or None
 
     @classmethod
-    def from_domain(cls, tenant: int, run: SerializableTaskRun):
+    def from_domain(cls, tenant: int, run: AgentRun):
         return cls(
             # IDs
             tenant_uid=tenant,
             task_uid=run.task_uid,
             created_at_date=run.created_at.date(),
-            updated_at=run.updated_at,
             run_uuid=cls.sanitize_id(run.id, run.created_at),
             task_schema_id=run.task_schema_id,
             # Version
@@ -567,15 +564,14 @@ class ClickhouseRun(BaseModel):
             llm_completions=safe_map_optional(run.llm_completions, cls._LLMCompletion.from_domain, logger=_logger),
         )
 
-    def to_domain(self, task_id: str) -> SerializableTaskRun:
+    def to_domain(self, task_id: str) -> AgentRun:
         tool_call_requests, tool_calls = self.split_tool_calls()
 
-        return SerializableTaskRun(
+        return AgentRun(
             # IDs
             task_id=task_id,
             id=str(self.run_uuid),
             created_at=uuid7_generation_time(self.run_uuid),
-            updated_at=self.updated_at,
             task_schema_id=self.task_schema_id,
             # Group
             group=self.task_group,
