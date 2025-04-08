@@ -30,7 +30,8 @@ def loops_service(mock_storage: AsyncMock, mock_user_service: AsyncMock):
         patch("core.services.emails.loops_email_service.LoopsEmailService.WAIT_TIME_BETWEEN_RETRIES", 0),
         patch.dict(
             os.environ,
-            {"PAYMENT_FAILURE_EMAIL_ID": "payment_failure_id"},
+            {"PAYMENT_FAILURE_EMAIL_ID": "payment_failure_id", "LOW_CREDITS_EMAIL_ID": "low_credits_id"},
+            clear=True,
         ),
     ):
         yield LoopsEmailService(
