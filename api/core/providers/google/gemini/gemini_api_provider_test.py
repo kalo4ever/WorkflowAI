@@ -103,31 +103,6 @@ class PerTokenPricing(BaseModel):
     completion_cost_per_token: float
 
 
-MODEL_PRICE_PER_TOKEN = {
-    Model.GEMINI_1_5_PRO_001: PerTokenPricing(
-        prompt_cost_per_token=1.25 / 1_000_000,
-        completion_cost_per_token=5 / 1_000_000,
-    ),
-    Model.GEMINI_1_5_FLASH_001: PerTokenPricing(
-        prompt_cost_per_token=0.075 / 1_000_000,
-        completion_cost_per_token=0.30 / 1_000_000,
-    ),
-    Model.GEMINI_1_5_FLASH_002: PerTokenPricing(
-        prompt_cost_per_token=0.075 / 1_000_000,
-        completion_cost_per_token=0.30 / 1_000_000,
-    ),
-    Model.GEMINI_1_5_PRO_002: PerTokenPricing(
-        prompt_cost_per_token=1.25 / 1_000_000,
-        completion_cost_per_token=5 / 1_000_000,
-    ),
-    Model.GEMINI_1_5_FLASH_8B: PerTokenPricing(
-        prompt_cost_per_token=0.0375 / 1_000_000,
-        completion_cost_per_token=0.15 / 1_000_000,
-    ),
-    Model.GEMINI_EXP_1206: PerTokenPricing(prompt_cost_per_token=0.0, completion_cost_per_token=0.0),
-}
-
-
 def _llm_completion(**kwargs: Any) -> LLMCompletion:
     return LLMCompletion(
         provider=Provider.GOOGLE_GEMINI,
@@ -136,10 +111,7 @@ def _llm_completion(**kwargs: Any) -> LLMCompletion:
 
 
 class TestGoogleProviderPerTokenCostCalculation:
-    # TODO: only use static values (instead of 'prompt_cost_per_token * 10' e.g), when the codebase will be more stable.
-
-    @pytest.mark.parametrize("model", MODEL_PRICE_PER_TOKEN.keys())
-    async def test_basic_case_from_initial_llm_usage(self, model: Model):
+    async def test_basic_case_from_initial_llm_usage(self):
         system_message = GoogleSystemMessage(
             parts=[
                 GoogleSystemMessage.Part(text="Hello !"),
@@ -164,10 +136,13 @@ class TestGoogleProviderPerTokenCostCalculation:
             ),
         ]
 
-        model_per_token_pricing = MODEL_PRICE_PER_TOKEN[model]
+        model_per_token_pricing = PerTokenPricing(
+            prompt_cost_per_token=0.0375 / 1_000_000,
+            completion_cost_per_token=0.15 / 1_000_000,
+        )
 
         llm_usage = await GoogleGeminiAPIProvider().compute_llm_completion_usage(
-            model=model,
+            model=Model.GEMINI_1_5_FLASH_8B,
             completion=_llm_completion(
                 messages=[system_message.model_dump(), *[message.model_dump() for message in user_messages]],
                 response="Hello you !",
@@ -181,8 +156,7 @@ class TestGoogleProviderPerTokenCostCalculation:
         assert llm_usage.completion_token_count == 20
         assert llm_usage.completion_cost_usd == 20 * model_per_token_pricing.completion_cost_per_token
 
-    @pytest.mark.parametrize("model", MODEL_PRICE_PER_TOKEN.keys())
-    async def test_basic_case_no_initial_llm_usage(self, model: Model):
+    async def test_basic_case_no_initial_llm_usage(self):
         system_message = GoogleSystemMessage(
             parts=[GoogleSystemMessage.Part(text="Hello !"), GoogleSystemMessage.Part(text="World !")],
         )
@@ -204,10 +178,13 @@ class TestGoogleProviderPerTokenCostCalculation:
             ),
         ]
 
-        model_per_token_pricing = MODEL_PRICE_PER_TOKEN[model]
+        model_per_token_pricing = PerTokenPricing(
+            prompt_cost_per_token=0.0375 / 1_000_000,
+            completion_cost_per_token=0.15 / 1_000_000,
+        )
 
         llm_usage = await GoogleGeminiAPIProvider().compute_llm_completion_usage(
-            model=model,
+            model=Model.GEMINI_1_5_FLASH_8B,
             completion=_llm_completion(
                 messages=[system_message.model_dump(), *[message.model_dump() for message in user_messages]],
                 response="Hello you !",

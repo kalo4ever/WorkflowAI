@@ -745,16 +745,19 @@ GOOGLE_GEMINI_API_PROVIDER_DATA: ProviderDataByModel = {
             audio_input_cost_per_token=0.70 * ONE_MILLION_TH,
         ),
     ),
-    Model.GEMINI_2_5_PRO_EXP_0325: ModelProviderData(
+    Model.GEMINI_2_5_PRO_PREVIEW_0325: ModelProviderData(
         text_price=TextPricePerToken(
-            prompt_cost_per_token=0.0,
-            completion_cost_per_token=0.0,
+            prompt_cost_per_token=1.25 / 1_000_000,
+            completion_cost_per_token=10 / 1_000_000,
             source="https://ai.google.dev/pricing",
+            thresholded_prices=[
+                ThresholdedTextPricePerToken(
+                    threshold=200_000,
+                    prompt_cost_per_token_over_threshold=2.5 / 1_000_000,
+                    completion_cost_per_token_over_threshold=15 / 1_000_000,
+                ),
+            ],
         ),
-        audio_price=AudioPricePerToken(
-            audio_input_cost_per_token=0.0,
-        ),
-        image_price=ImageFixedPrice(cost_per_image=0.0),
     ),
     Model.GEMINI_1_5_FLASH_8B: ModelProviderData(
         text_price=TextPricePerToken(
@@ -786,7 +789,6 @@ GOOGLE_GEMINI_API_PROVIDER_DATA: ProviderDataByModel = {
         ),
     ),
     Model.GEMINI_2_0_FLASH_THINKING_EXP_0121: ModelProviderData(
-        # TODO: Experimental models are free for now
         text_price=TextPricePerToken(
             prompt_cost_per_token=0.0,
             completion_cost_per_token=0.0,
@@ -963,6 +965,20 @@ FIREWORKS_PROVIDER_DATA: ProviderDataByModel = {
         text_price=TextPricePerToken(
             prompt_cost_per_token=1.20 / 1_000_000,
             completion_cost_per_token=1.20 / 1_000_000,
+            source="https://fireworks.ai/pricing",
+        ),
+    ),
+    Model.LLAMA_4_MAVERICK_BASIC: ModelProviderData(
+        text_price=TextPricePerToken(
+            prompt_cost_per_token=0.22 / 1_000_000,
+            completion_cost_per_token=0.88 / 1_000_000,
+            source="https://fireworks.ai/pricing",
+        ),
+    ),
+    Model.LLAMA_4_SCOUT_BASIC: ModelProviderData(
+        text_price=TextPricePerToken(
+            prompt_cost_per_token=0.15 / 1_000_000,
+            completion_cost_per_token=0.60 / 1_000_000,
             source="https://fireworks.ai/pricing",
         ),
     ),
