@@ -4,29 +4,19 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import { useCallback, useMemo } from 'react';
 import { ProviderSettings } from '@/types/workflowAI';
 import { AIProviderMetadata } from '../AIModelsCombobox/utils';
-import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
-import { SimpleTooltip } from '../ui/Tooltip';
 
 dayjs.extend(relativeTime);
 
 type ProviderKeyManagementItemActionsProps = {
   onAddProviderKey: () => void;
   onDeleteKey: () => Promise<void>;
-  supported: boolean;
+
   settingsProvider: ProviderSettings | undefined;
 };
 
 function ProviderKeyManagementItemActions(props: ProviderKeyManagementItemActionsProps) {
-  const { supported, settingsProvider, onAddProviderKey, onDeleteKey } = props;
-
-  if (!supported) {
-    return (
-      <SimpleTooltip content='This provider is not supported yet, please contact support'>
-        <Badge variant='secondary'>Coming Soon!</Badge>
-      </SimpleTooltip>
-    );
-  }
+  const { settingsProvider, onAddProviderKey, onDeleteKey } = props;
 
   if (!settingsProvider) {
     return (
@@ -78,7 +68,6 @@ export function ProviderKeyManagementItem(props: ProviderKeyManagementItemProps)
         <div className='text-[13px] text-gray-900 font-semibold'>{providerMetadata.name}</div>
       </div>
       <ProviderKeyManagementItemActions
-        supported={providerMetadata.providerSupported}
         settingsProvider={settingsProvider}
         onAddProviderKey={onAddProviderKey}
         onDeleteKey={onDeleteKey}

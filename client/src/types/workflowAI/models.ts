@@ -358,14 +358,12 @@ export type CustomerCreatedResponse = {
 
 export type DeployVersionRequest = {
   environment: VersionEnvironment;
-  provider_config_id?: string | null;
 };
 
 export type DeployVersionResponse = {
   task_schema_id: number;
-  version_id: number;
+  version_id: string;
   environment: VersionEnvironment;
-  provider_config_id?: string | null;
   deployed_at: string;
 };
 
@@ -445,7 +443,6 @@ export type DeployedVersionsResponse = {
 
 export type Deployment = {
   environment: VersionEnvironment;
-  provider_config_id?: string | null;
   deployed_at: string;
   deployed_by?: core__domain__users__UserIdentifier | null;
 };
@@ -1164,7 +1161,7 @@ export type Page_RunItemV1_ = {
 };
 
 export type Page_SerializableTaskRun_ = {
-  items: Array<SerializableTaskRun>;
+  items: Array<Run>;
   count?: number | null;
 };
 
@@ -1516,7 +1513,7 @@ export type SerializableTaskIO = {
 /**
  * A task run represents an instance of a task being executed
  */
-export type SerializableTaskRun = {
+export type Run = {
   /**
    * the id of the task run. If not provided a uuid will be generated
    */
@@ -2178,7 +2175,6 @@ export type VersionDeploymentMetadata = {
   environment: VersionEnvironment;
   deployed_at: string;
   deployed_by: api__schemas__user_identifier__UserIdentifier | null;
-  provider_config_id: string | null;
 };
 
 export type VersionEnvironment = 'dev' | 'staging' | 'production';

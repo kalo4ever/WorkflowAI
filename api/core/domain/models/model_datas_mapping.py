@@ -301,8 +301,8 @@ def _build_model_datas():
             provider_name=DisplayedProvider.GOOGLE.value,
             supports_tool_calling=True,
         ),
-        Model.GEMINI_2_5_PRO_EXP_0325: ModelData(
-            display_name="Gemini 2.5 Pro Exp (03-25)",
+        Model.GEMINI_2_5_PRO_PREVIEW_0325: ModelData(
+            display_name="Gemini 2.5 Pro Preview (0325)",
             supports_json_mode=True,
             supports_input_image=True,
             supports_multiple_images_in_input=True,
@@ -312,16 +312,18 @@ def _build_model_datas():
             max_tokens_data=MaxTokensData(
                 max_tokens=1_048_576 + 65_536,
                 max_output_tokens=65_536,
-                source="https://ai.google.dev/gemini-api/docs/models/gemini#gemini-2.0-pro",
+                source="https://ai.google.dev/gemini-api/docs/models#gemini-2.5-pro-preview-03-25",
             ),
             provider_for_pricing=Provider.GOOGLE_GEMINI,
             icon_url="https://workflowai.blob.core.windows.net/workflowai-public/google.svg",
             release_date=date(2025, 3, 25),
-            quality_index=842,  # 1 + GEMINI_2_0_PRO_EXP(MMLU=80.50, GPQA=64.70)
+            # https://www.vals.ai/benchmarks/gpqa-04-04-2025
+            quality_index=842,  # TODO: GEMINI_2_0_PRO_EXP + 1
             provider_name=DisplayedProvider.GOOGLE.value,
             supports_tool_calling=True,
         ),
-        Model.GEMINI_2_0_PRO_EXP: DeprecatedModel(replacement_model=Model.GEMINI_2_5_PRO_EXP_0325),
+        Model.GEMINI_2_5_PRO_EXP_0325: DeprecatedModel(replacement_model=Model.GEMINI_2_5_PRO_PREVIEW_0325),
+        Model.GEMINI_2_0_PRO_EXP: DeprecatedModel(replacement_model=Model.GEMINI_2_5_PRO_PREVIEW_0325),
         Model.GEMINI_2_0_FLASH_EXP: DeprecatedModel(replacement_model=Model.GEMINI_2_0_FLASH_001),
         Model.GEMINI_2_0_FLASH_LATEST: LatestModel(
             model=Model.GEMINI_2_0_FLASH_001,
@@ -407,7 +409,7 @@ def _build_model_datas():
         Model.CLAUDE_3_7_SONNET_LATEST: LatestModel(
             model=Model.CLAUDE_3_7_SONNET_20250219,
             display_name="Claude 3.7 Sonnet (latest)",
-            is_default=True,
+            is_default=False,
         ),
         Model.CLAUDE_3_7_SONNET_20250219: ModelData(
             display_name="Claude 3.7 Sonnet (2025-02-19)",
@@ -1091,8 +1093,8 @@ def _build_model_datas():
             provider_name=DisplayedProvider.GOOGLE.value,
             supports_tool_calling=True,
         ),
-        Model.GEMINI_EXP_1206: DeprecatedModel(replacement_model=Model.GEMINI_2_5_PRO_EXP_0325),
-        Model.GEMINI_EXP_1121: DeprecatedModel(replacement_model=Model.GEMINI_2_5_PRO_EXP_0325),
+        Model.GEMINI_EXP_1206: DeprecatedModel(replacement_model=Model.GEMINI_2_5_PRO_PREVIEW_0325),
+        Model.GEMINI_EXP_1121: DeprecatedModel(replacement_model=Model.GEMINI_2_5_PRO_PREVIEW_0325),
         Model.QWEN_QWQ_32B_PREVIEW: ModelData(
             display_name="Qwen QWQ (32B) Preview",
             supports_json_mode=True,
@@ -1130,6 +1132,48 @@ def _build_model_datas():
             quality_index=598,  # MMLU=73.00, GPQA=46.70
             provider_name=DisplayedProvider.FIREWORKS.value,
             supports_tool_calling=False,
+        ),
+        Model.LLAMA_4_MAVERICK_BASIC: ModelData(
+            display_name="Llama 4 Maverick Basic",
+            supports_json_mode=True,
+            supports_input_image=True,
+            supports_multiple_images_in_input=True,
+            supports_input_pdf=True,
+            supports_input_audio=False,
+            max_tokens_data=MaxTokensData(
+                max_tokens=1_000_000,  # not sure about the exact number
+                source="https://fireworks.ai/models/fireworks/llama4-maverick-instruct-basic",
+            ),
+            provider_for_pricing=Provider.FIREWORKS,
+            icon_url="https://workflowai.blob.core.windows.net/workflowai-public/meta.svg",
+            release_date=date(2025, 4, 5),
+            quality_index=878,  # TODO: same as CLAUDE_3_7_SONNET_20250219 for now
+            provider_name=DisplayedProvider.FIREWORKS.value,
+            supports_tool_calling=False,
+            is_default=True,
+            supports_structured_output=True,
+        ),
+        # https://fireworks.ai/models/fireworks/llama4-scout-instruct-basic
+        Model.LLAMA_4_SCOUT_BASIC: ModelData(
+            display_name="Llama 4 Scout Basic",
+            supports_json_mode=True,
+            supports_input_image=True,
+            supports_multiple_images_in_input=True,
+            supports_input_pdf=True,
+            supports_input_audio=False,
+            max_tokens_data=MaxTokensData(
+                # LLama says 10M but fireworks only supports 128k for now
+                max_tokens=128_000,
+                source="https://fireworks.ai/models/fireworks/llama4-scout-instruct-basic",
+            ),
+            provider_for_pricing=Provider.FIREWORKS,
+            icon_url="https://workflowai.blob.core.windows.net/workflowai-public/meta.svg",
+            release_date=date(2025, 4, 5),
+            # https://ai.meta.com/blog/llama-4-multimodal-intelligence/
+            quality_index=870,  # TODO: a bit less than CLAUDE_3_7_SONNET_20250219 for now
+            provider_name=DisplayedProvider.FIREWORKS.value,
+            supports_tool_calling=False,
+            supports_structured_output=True,
         ),
         # https://fireworks.ai/models/fireworks/deepseek-v3
         Model.DEEPSEEK_V3_2412: ModelData(

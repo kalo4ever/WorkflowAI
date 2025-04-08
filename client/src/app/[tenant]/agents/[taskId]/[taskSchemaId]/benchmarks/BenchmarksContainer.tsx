@@ -22,7 +22,6 @@ import { environmentsForVersion } from '@/lib/versionUtils';
 import {
   useOrFetchAllAiModels,
   useOrFetchEvaluationInputs,
-  useOrFetchLatestRun,
   useOrFetchReviewBenchmark,
   useOrFetchTask,
   useOrFetchVersions,

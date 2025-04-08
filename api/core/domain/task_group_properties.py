@@ -11,6 +11,36 @@ from core.utils.tags import compute_tags
 from core.utils.templates import TemplateManager
 
 
+class FewShotExample(BaseModel):
+    task_input: dict[str, Any]
+    task_output: dict[str, Any]
+
+
+class FewShotConfiguration(BaseModel):
+    count: int | None = Field(
+        default=None,
+        description="The number of few-shot examples to use for the task",
+    )
+
+    selection: Literal["latest", "manual"] | str | None = Field(
+        default=None,
+        description="The selection method to use for few-shot examples",
+    )
+
+    examples: list["FewShotExample"] | None = Field(
+        default=None,
+        description="The few-shot examples used for the task. If provided, count and selection are ignored. "
+        "If not provided, count and selection are used to select examples and the examples list will be set "
+        "in the final group.",
+    )
+
+    def model_hash(self) -> str:
+        return compute_model_hash(self, exclude_none=True)
+
+    def compute_tags(self) -> list[str]:
+        return compute_tags(self.model_dump(exclude_none=True))
+
+
 class TaskGroupProperties(BaseModel):
     """Properties that described a way a task run was executed.
     Although some keys are provided as an example, any key:value are accepted"""
@@ -125,33 +155,3 @@ class TaskGroupProperties(BaseModel):
         return TaskGroupProperties(
             model=self.model,
         )
-
-
-class FewShotConfiguration(BaseModel):
-    count: int | None = Field(
-        default=None,
-        description="The number of few-shot examples to use for the task",
-    )
-
-    selection: Literal["latest", "manual"] | str | None = Field(
-        default=None,
-        description="The selection method to use for few-shot examples",
-    )
-
-    examples: list["FewShotExample"] | None = Field(
-        default=None,
-        description="The few-shot examples used for the task. If provided, count and selection are ignored. "
-        "If not provided, count and selection are used to select examples and the examples list will be set "
-        "in the final group.",
-    )
-
-    def model_hash(self) -> str:
-        return compute_model_hash(self, exclude_none=True)
-
-    def compute_tags(self) -> list[str]:
-        return compute_tags(self.model_dump(exclude_none=True))
-
-
-class FewShotExample(BaseModel):
-    task_input: dict[str, Any]
-    task_output: dict[str, Any]

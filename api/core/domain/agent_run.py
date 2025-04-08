@@ -22,7 +22,7 @@ AIReview = Literal["in_progress", "positive", "negative", "unsure"]
 UserReview = Literal["positive", "negative"]
 
 
-class SerializableTaskRunBase(BaseModel):
+class AgentRunBase(BaseModel):
     id: str = Field(
         ...,
         description="the id of the task run. If not provided a uuid will be generated",
@@ -56,14 +56,7 @@ class SerializableTaskRunBase(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc),
         description="The time the task run was created",
     )
-    updated_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
-        description="The time the task run was last updated",
-    )
-    example_id: Optional[str] = Field(
-        default=None,
-        description="The id of the example that share the same input as the task run",
-    )
+
     user_review: UserReview | None = None
 
     ai_review: AIReview | None = None
@@ -90,7 +83,7 @@ class SerializableTaskRunBase(BaseModel):
                 self.ai_review = review.outcome
 
 
-class SerializableTaskRun(SerializableTaskRunBase):
+class AgentRun(AgentRunBase):
     """A task run represents an instance of a task being executed"""
 
     task_input: TaskInputDict
@@ -98,19 +91,6 @@ class SerializableTaskRun(SerializableTaskRunBase):
 
     # ------------------------------------------
     # Optional properties
-
-    start_time: Optional[datetime] = None
-    end_time: Optional[datetime] = None
-
-    corrections: Optional[dict[str, Any]] = Field(
-        default=None,
-        description="The corrections that were applied to the task output if used as a base for an evaluation",
-    )
-
-    labels: Optional[set[str]] = Field(
-        default=None,
-        description="A set of labels that are attached to the task runs. They are indexed.",
-    )
 
     metadata: dict[str, Any] | None = Field(
         default=None,

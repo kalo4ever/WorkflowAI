@@ -254,14 +254,14 @@ async def test_cost_for_zero_cost_gemini_experimental_model(
 ):
     await create_task(int_api_client, patched_broker, httpx_mock)
 
-    mock_gemini_call(httpx_mock, model="gemini-2.5-pro-exp-03-25")
+    mock_gemini_call(httpx_mock, model="gemini-2.0-flash-thinking-exp-01-21", api_version="v1alpha")
 
     task_run = await run_task_v1(
         int_api_client,
         task_id="greet",
         task_schema_id=1,
         task_input={"name": "John", "age": 30},
-        model="gemini-2.5-pro-exp-03-25",
+        model="gemini-2.0-flash-thinking-exp-01-21",
     )
 
     assert task_run["cost_usd"] == 0
@@ -1984,7 +1984,6 @@ async def test_invalid_base64_data(test_client: IntegrationTestClient):
     assert e.value.response.json()["error"]["code"] == "invalid_file"
 
 
-
 async def test_empty_strings_are_not_stripped(test_client: IntegrationTestClient):
     """Check that we do not strip empty strings from the output when the model explicitly returns them
     except if they have a format
@@ -2004,6 +2003,7 @@ async def test_empty_strings_are_not_stripped(test_client: IntegrationTestClient
     assert res
     assert res["task_output"]["greeting"] == ""
     assert "date" not in res["task_output"]
+
 
 async def test_invalid_unicode_chars(test_client: IntegrationTestClient):
     task = await test_client.create_task()

@@ -222,4 +222,5 @@ class OrganizationDocument(BaseDocumentWithID):
             tenant=self.tenant or "",
             org_id=self.org_id,
             owner_id=self.owner_id,
+            anonymous=self.anonymous,
         )

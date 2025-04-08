@@ -4,8 +4,8 @@ from typing import Any, Optional
 from pydantic import BaseModel, Field
 
 from api.routers.common import DeprecatedVersionReference
+from core.domain.agent_run import AgentRun
 from core.domain.task_group import TaskGroup
-from core.domain.task_run import SerializableTaskRun
 from core.domain.task_variant import SerializableTaskVariant
 from core.utils.fields import datetime_factory
 from core.utils.uuid import uuid7
@@ -32,9 +32,9 @@ class CreateTaskRunRequest(BaseModel):
             return (self.end_time - self.start_time).total_seconds()
         return None
 
-    def build(self, task_variant: SerializableTaskVariant, task_group: TaskGroup) -> SerializableTaskRun:
+    def build(self, task_variant: SerializableTaskVariant, task_group: TaskGroup) -> AgentRun:
         task_variant.enforce(self.task_input, self.task_output)
-        return SerializableTaskRun(
+        return AgentRun(
             id=str(uuid7(ms=lambda: int(self.start_time.timestamp() * 1000))),
             task_id=task_variant.task_id,
             task_schema_id=task_variant.task_schema_id,
@@ -42,8 +42,6 @@ class CreateTaskRunRequest(BaseModel):
             task_input_hash=task_variant.compute_input_hash(self.task_input),
             task_output=self.task_output,
             task_output_hash=task_variant.compute_output_hash(self.task_output),
-            start_time=self.start_time,
-            end_time=self.end_time,
             duration_seconds=self.duration_seconds(),
             cost_usd=self.cost_usd,
             group=task_group,

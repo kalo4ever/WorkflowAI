@@ -161,7 +161,7 @@ async def preview_models() -> Page[ModelResponse]:
     _include_models = {
         Model.DEEPSEEK_R1_2501_BASIC,
         Model.MISTRAL_LARGE_2_LATEST,
-        Model.LLAMA_3_3_70B,
+        Model.LLAMA_4_MAVERICK_BASIC,
     }
 
     # Total number of default models to include
