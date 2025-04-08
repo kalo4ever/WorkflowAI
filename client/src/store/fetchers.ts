@@ -1255,3 +1255,25 @@ export const useScheduledMetaAgentMessages = (
     cancelScheduledPlaygroundMessage,
   };
 };
+
+export const useOrFetchLatestRun = (tenant: TenantID | undefined, taskId: TaskID, taskSchemaId?: TaskSchemaID) => {
+  const scopeKey = buildScopeKey({
+    tenant,
+    taskId,
+    taskSchemaId,
+  });
+
+  const isLoading = useTaskRuns((state) => state.isLatestRunLoadingByScope.get(scopeKey));
+  const latestRun = useTaskRuns((state) => state.latestRunByScope.get(scopeKey));
+
+  const fetchLatestRun = useTaskRuns((state) => state.fetchLatestRun);
+
+  useEffect(() => {
+    fetchLatestRun(tenant, taskId, taskSchemaId);
+  }, [fetchLatestRun, tenant, taskId, taskSchemaId]);
+
+  return {
+    latestRun,
+    isLoading,
+  };
+};
