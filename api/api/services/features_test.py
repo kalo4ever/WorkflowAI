@@ -18,7 +18,6 @@ from core.agents.agent_suggestion_validator_agent import (
     SuggestedAgentValidationInput,
     SuggestedAgentValidationOutput,
 )
-from core.agents.ai_roadmap_generator_agent import GenerateAIRoadmapPresentationOutput
 from core.agents.chat_task_schema_generation.chat_task_schema_generation_task import (
     InputGenericFieldConfig,
     InputObjectFieldConfig,
@@ -887,9 +886,6 @@ async def test_stream_feature_suggestions_with_validation(
         for chunk in input_chunks:
             yield chunk
 
-    async def mock_stream_presentation(*args: Any, **kwargs: Any) -> AsyncIterator[GenerateAIRoadmapPresentationOutput]:
-        yield Mock(output=GenerateAIRoadmapPresentationOutput(roadmap_presentation="Roadmap presentation"))
-
     # Mock _is_agent_validated to return predefined values
     async def mock_is_validated(agent_name: str, instructions: str, validation_decisions: dict[str, bool]) -> bool:
         # Simulate the behavior of caching/calculating
@@ -903,7 +899,6 @@ async def test_stream_feature_suggestions_with_validation(
     with (
         patch("api.services.features.stream_suggest_agents_for_company", mock_stream),
         patch.object(service, "_is_agent_validated", side_effect=mock_is_validated),  # Use side_effect to pass args
-        patch("api.services.features.generate_ai_roadmap_presentation.stream", mock_stream_presentation),
     ):
         mock_input = Mock(spec=SuggestAgentForCompanyInput)
         mock_input.company_context = None
@@ -914,14 +909,10 @@ async def test_stream_feature_suggestions_with_validation(
         ]
 
         # Compare actual outputs with expected outputs
-        assert len(actual_outputs) == len(expected_outputs) + 1  # +1 for the roadmap presentation
+        assert len(actual_outputs) == len(expected_outputs)
         for i, actual in enumerate(actual_outputs):
-            if i < len(expected_outputs):
-                expected = expected_outputs[i]
-                assert actual == expected
-            else:
-                assert actual.features is not None
-                assert actual.features[-1].name == "AI Roadmap Presentation"
+            expected = expected_outputs[i]
+            assert actual == expected
 
 
 async def test_get_agent_preview() -> None:

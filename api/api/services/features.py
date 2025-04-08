@@ -10,10 +10,6 @@ from api.services.internal_tasks._internal_tasks_utils import OFFICIALLY_SUGGEST
 from api.services.slack_notifications import SlackNotificationDestination, get_user_and_org_str, send_slack_notification
 from core.agents.agent_output_example import SuggestedAgentOutputExampleInput, stream_suggested_agent_output_example
 from core.agents.agent_suggestion_validator_agent import SuggestedAgentValidationInput, run_suggested_agent_validation
-from core.agents.ai_roadmap_generator_agent import (
-    GenerateAIRoadmapPresentationInput,
-    generate_ai_roadmap_presentation,
-)
 from core.agents.chat_task_schema_generation.chat_task_schema_generation_task import (
     InputSchemaFieldType,
     OutputSchemaFieldType,
@@ -301,27 +297,6 @@ class FeatureService:
             yield CompanyFeaturePreviewList(
                 company_context=company_context,
                 features=features,
-            )
-
-        # TODO; this is a demo that includes the AI Roadmap Presentation as the latest suggested feature
-        # To integrate better if we want to keep the feature
-        async for chunk in generate_ai_roadmap_presentation.stream(
-            GenerateAIRoadmapPresentationInput(
-                roadmap_agents=features,
-                company_context=input.company_context,
-            ),
-        ):
-            yield CompanyFeaturePreviewList(
-                company_context=company_context,
-                features=features
-                + [
-                    BaseFeature(
-                        name="AI Roadmap Presentation",
-                        tag_line="AI Roadmap Presentation",
-                        description=chunk.output.roadmap_presentation or "",
-                        specifications="",
-                    ),
-                ],
             )
 
     async def _get_company_latest_news(self, company_domain: str) -> str:
