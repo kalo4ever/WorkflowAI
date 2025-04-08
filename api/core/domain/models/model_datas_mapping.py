@@ -409,7 +409,7 @@ def _build_model_datas():
         Model.CLAUDE_3_7_SONNET_LATEST: LatestModel(
             model=Model.CLAUDE_3_7_SONNET_20250219,
             display_name="Claude 3.7 Sonnet (latest)",
-            is_default=False,
+            is_default=True,
         ),
         Model.CLAUDE_3_7_SONNET_20250219: ModelData(
             display_name="Claude 3.7 Sonnet (2025-02-19)",
@@ -1150,7 +1150,6 @@ def _build_model_datas():
             quality_index=878,  # TODO: same as CLAUDE_3_7_SONNET_20250219 for now
             provider_name=DisplayedProvider.FIREWORKS.value,
             supports_tool_calling=False,
-            is_default=True,
             supports_structured_output=True,
         ),
         # https://fireworks.ai/models/fireworks/llama4-scout-instruct-basic
