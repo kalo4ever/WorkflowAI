@@ -271,6 +271,7 @@ class FeatureService:
         features: list[BaseFeature] = []
 
         async for chunk in stream_suggest_agents_for_company(input):
+            features = []
             for agent in chunk.suggested_agents or []:
                 if isinstance(agent, dict):  # pyright: ignore[reportUnnecessaryIsInstance]
                     # For some reason, a dict is sometimes returned instead of a SuggestedAgent
