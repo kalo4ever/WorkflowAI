@@ -4,6 +4,7 @@ from core.domain.error_response import ErrorCode
 from core.domain.errors import InternalError
 
 
+# TODO: duplicate of ObjectNotFoundError, we should use only one of them
 class ObjectNotFoundException(InternalError):
     code: ErrorCode = "object_not_found"
 
