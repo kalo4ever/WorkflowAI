@@ -1,10 +1,13 @@
+from unittest.mock import Mock, patch
+
 from httpx import AsyncClient
 
 from core.domain.models.models import Model
 
 
 class TestPreviewModels:
-    async def test_preview_models(self, test_api_client: AsyncClient):
+    @patch("api.services.models.ModelsService._available_models_from_run_endpoint", return_value=list(Model))
+    async def test_preview_models(self, models_from_run_endpoint: Mock, test_api_client: AsyncClient):
         response = await test_api_client.get("/features/models")
         assert response.status_code == 200
         items = response.json()["items"]
@@ -17,3 +20,4 @@ class TestPreviewModels:
         assert Model.MISTRAL_LARGE_2_LATEST in model_ids
         assert Model.LLAMA_4_MAVERICK_BASIC in model_ids
         assert Model.CLAUDE_3_7_SONNET_LATEST in model_ids
+        models_from_run_endpoint.assert_called_once()
