@@ -23,7 +23,7 @@ from core.storage.reviews_storage import ReviewsStorage
 from core.storage.task_deployments_storage import TaskDeploymentsStorage
 from core.storage.task_group_storage import TaskGroupStorage
 from core.storage.task_input_storage import TaskInputsStorage
-from core.storage.task_run_storage import TaskRunStorage
+from core.storage.task_run_storage import TaskRunStorage, TaskRunSystemStorage
 from core.storage.task_storage import TaskStorage, TaskSystemStorage
 from core.storage.task_variants_storage import TaskVariantsStorage
 from core.storage.transcription_storage import TranscriptionStorage
@@ -43,6 +43,11 @@ class SystemBackendStorage(Protocol):
     @property
     @abstractmethod
     def tasks(self) -> TaskSystemStorage:
+        pass
+
+    @property
+    @abstractmethod
+    def task_runs(self) -> TaskRunSystemStorage:
         pass
 
 
