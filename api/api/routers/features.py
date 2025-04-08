@@ -1,5 +1,5 @@
 from collections.abc import AsyncIterator
-from datetime import date
+from datetime import date, timedelta
 from typing import Annotated
 
 from fastapi import APIRouter, Query
@@ -215,3 +215,21 @@ async def get_weekly_runs(
     current_week = date.today().isocalendar().week
     weekly_runs = await _fetch_weekly_runs(week_count=week_count, current_week=current_week)
     return Page(items=weekly_runs)
+
+
+class UptimeResponse(BaseModel):
+    uptime_percent: float
+    since: date
+    source: str
+
+
+@router.get("/uptimes/workflowai")
+async def get_workflowai_uptime() -> UptimeResponse:
+    from_date = date.today() - timedelta(days=90)
+    return UptimeResponse(uptime_percent=100, since=from_date, source="https://status.workflowai.com")
+
+
+@router.get("/uptimes/openai")
+async def get_openai_uptime() -> UptimeResponse:
+    from_date = date.today() - timedelta(days=90)
+    return UptimeResponse(uptime_percent=99.89, since=from_date, source="https://status.openai.com")
