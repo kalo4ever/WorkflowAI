@@ -92,29 +92,26 @@ class TestGetUsersById:
         httpx_mock.add_response(
             url="https://api.clerk.com/v1/users?user_ids=user1,user2",
             status_code=200,
-            json={
-                "data": [
-                    {
-                        "id": "user1",
-                        "primary_email_address_id": "email1",
-                        "email_addresses": [
-                            {"id": "email1", "email_address": "user1@example.com"},
-                        ],
-                        "first_name": "User",
-                        "last_name": "One",
-                    },
-                    {
-                        "id": "user2",
-                        "primary_email_address_id": "email2",
-                        "email_addresses": [
-                            {"id": "email2", "email_address": "user2@example.com"},
-                        ],
-                        "first_name": "User",
-                        "last_name": "Two",
-                    },
-                ],
-                "total_count": 2,
-            },
+            json=[
+                {
+                    "id": "user1",
+                    "primary_email_address_id": "email1",
+                    "email_addresses": [
+                        {"id": "email1", "email_address": "user1@example.com"},
+                    ],
+                    "first_name": "User",
+                    "last_name": "One",
+                },
+                {
+                    "id": "user2",
+                    "primary_email_address_id": "email2",
+                    "email_addresses": [
+                        {"id": "email2", "email_address": "user2@example.com"},
+                    ],
+                    "first_name": "User",
+                    "last_name": "Two",
+                },
+            ],
         )
 
         async with clerk_user_service._client() as client:  # pyright: ignore [reportPrivateUsage]
@@ -132,7 +129,7 @@ class TestGetOrgAdminIds:
         org_id = "test_org"
         max_users = 5
         httpx_mock.add_response(
-            url=f"https://api.clerk.com/v1/organizations/{org_id}/memberships?role=admin&limit={max_users}",
+            url=f"https://api.clerk.com/v1/organizations/{org_id}/memberships?role=org:admin&limit={max_users}",
             status_code=200,
             json={
                 "data": [
@@ -179,29 +176,26 @@ class TestGetOrgAdmins:
         httpx_mock.add_response(
             url="https://api.clerk.com/v1/users?user_ids=admin1,admin2",
             status_code=200,
-            json={
-                "data": [
-                    {
-                        "id": "admin1",
-                        "primary_email_address_id": "email1",
-                        "email_addresses": [
-                            {"id": "email1", "email_address": "admin1@example.com"},
-                        ],
-                        "first_name": "Admin",
-                        "last_name": "One",
-                    },
-                    {
-                        "id": "admin2",
-                        "primary_email_address_id": "email2",
-                        "email_addresses": [
-                            {"id": "email2", "email_address": "admin2@example.com"},
-                        ],
-                        "first_name": "Admin",
-                        "last_name": "Two",
-                    },
-                ],
-                "total_count": 2,
-            },
+            json=[
+                {
+                    "id": "admin1",
+                    "primary_email_address_id": "email1",
+                    "email_addresses": [
+                        {"id": "email1", "email_address": "admin1@example.com"},
+                    ],
+                    "first_name": "Admin",
+                    "last_name": "One",
+                },
+                {
+                    "id": "admin2",
+                    "primary_email_address_id": "email2",
+                    "email_addresses": [
+                        {"id": "email2", "email_address": "admin2@example.com"},
+                    ],
+                    "first_name": "Admin",
+                    "last_name": "Two",
+                },
+            ],
         )
 
         result = await clerk_user_service.get_org_admins(org_id, max_users)

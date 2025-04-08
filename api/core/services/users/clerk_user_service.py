@@ -32,7 +32,7 @@ class ClerkUserService(UserService):
     async def _get_org_admin_ids(self, client: httpx.AsyncClient, org_id: str, max_users: int) -> list[str]:
         # https://clerk.com/docs/reference/backend-api/tag/Organization-Memberships#operation/ListOrganizationMemberships
 
-        response = await client.get(f"/organizations/{org_id}/memberships?role=admin&limit={max_users}")
+        response = await client.get(f"/organizations/{org_id}/memberships?role=org:admin&limit={max_users}")
         response.raise_for_status()
         data: DataDict[OrganizationMemberShipDict] = response.json()
         if data.get("total_count", 0) != len(data["data"]):
@@ -52,13 +52,15 @@ class ClerkUserService(UserService):
     ) -> list[UserDetails]:
         response = await client.get(f"/users?user_ids={','.join(user_ids)}")
         response.raise_for_status()
-        data: DataDict[ClerkUserDict] = response.json()
-        return [UserDetails(email=_find_primary_email(user), name=_full_name(user)) for user in data["data"]]
+        data: list[ClerkUserDict] = response.json()
+        return [UserDetails(email=_find_primary_email(user), name=_full_name(user)) for user in data]
 
     @override
     async def get_org_admins(self, org_id: str, max_users: int = 5) -> list[UserDetails]:
         async with self._client() as client:
             user_ids = await self._get_org_admin_ids(client, org_id, max_users)
+            if not user_ids:
+                return []
             return await self._get_users_by_id(client, user_ids)
 
 

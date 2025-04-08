@@ -1,6 +1,6 @@
 import asyncio
 import os
-from typing import override
+from typing import Any, override
 
 import httpx
 
@@ -35,12 +35,14 @@ class LoopsEmailService(EmailService):
         retry_count: int,
         idempotency_key: str | None,
     ):
-        payload = {
+        payload: dict[str, Any] = {
             "email": email,
             "transactionalId": transaction_id,
             "addToAudience": False,
-            "dataVariables": variables,
         }
+        if variables:
+            payload["dataVariables"] = variables
+
         if not idempotency_key:
             idempotency_key = str(uuid7())
         errors: list[Exception] = []

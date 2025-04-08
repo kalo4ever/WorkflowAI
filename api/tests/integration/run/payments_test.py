@@ -332,7 +332,7 @@ async def test_automatic_payment_success(
 
 def _prepare_organization_payment_failure_emails(test_client: IntegrationTestClient):
     test_client.httpx_mock.add_response(
-        url=f"{CLERK_BASE_URL}/organizations/{test_client.org['org_id']}/memberships?role=admin&limit=5",
+        url=f"{CLERK_BASE_URL}/organizations/{test_client.org['org_id']}/memberships?role=org:admin&limit=5",
         json=fixtures_json("clerk/membership_list.json"),
     )
     test_client.httpx_mock.add_response(
