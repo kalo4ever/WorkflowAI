@@ -8,7 +8,6 @@ import {
 } from '@fluentui/react-icons';
 import { isEqual } from 'lodash';
 import { useCallback, useMemo, useState } from 'react';
-import { AIModelScrollSelection } from '@/components/AIModelsCombobox/AIModelScrollSelection';
 import { AIModelCombobox } from '@/components/AIModelsCombobox/aiModelCombobox';
 import { Button } from '@/components/ui/Button';
 import { SimpleTooltip } from '@/components/ui/Tooltip';
@@ -139,7 +138,7 @@ function ModelOutput(props: ModelOutputProps) {
   return (
     <div className='flex flex-col flex-1 sm:w-1/3 pt-3 pb-2 sm:pb-4 justify-between overflow-hidden'>
       <div className='flex flex-col w-full'>
-        <div className='hidden sm:flex items-center gap-2 justify-between px-2'>
+        <div className='flex items-center gap-2 justify-between px-2'>
           <AIModelCombobox
             value={currentModel || ''}
             onModelChange={handleModelChange}
@@ -153,14 +152,6 @@ function ModelOutput(props: ModelOutputProps) {
             taskRunner={taskRunner}
             disabled={areInstructionsLoading}
             containsError={!!errorForModel}
-          />
-        </div>
-        <div className='flex sm:hidden w-full'>
-          <AIModelScrollSelection
-            value={currentModel}
-            onModelChange={handleModelChange}
-            modelOptions={aiModels}
-            sort={'price'}
           />
         </div>
       </div>
@@ -285,7 +276,7 @@ export function PlaygroundOutput(props: PlaygroundOutputProps) {
   return (
     <div className='flex flex-col w-full overflow-hidden' style={{ maxHeight }}>
       <div
-        className='w-full flex items-center justify-between px-4 h-[50px] border-b border-dashed border-gray-200'
+        className='w-full flex items-center justify-between px-4 h-[50px] shrink-0 border-b border-dashed border-gray-200'
         onMouseEnter={() => setIsHoveringOverHeader(true)}
         onMouseLeave={() => setIsHoveringOverHeader(false)}
       >
@@ -316,7 +307,7 @@ export function PlaygroundOutput(props: PlaygroundOutputProps) {
           </SimpleTooltip>
           <SimpleTooltip content={show2ColumnLayout ? 'Show third column' : 'Hide third column'}>
             <Button
-              className='w-7 h-7'
+              className='w-7 h-7 sm:block hidden'
               variant='newDesign'
               size='none'
               icon={show2ColumnLayout ? <LayoutColumnThree20Regular /> : <LayoutColumnTwo20Regular />}

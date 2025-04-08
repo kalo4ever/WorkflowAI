@@ -171,7 +171,7 @@ export function PlaygroundModelOutputContent(props: ModelOutputContentProps) {
           showTaskIterationDetails={true}
         />
       </div>
-      <div className={cn('flex items-center justify-between', isHovering ? 'opacity-100' : 'opacity-0')}>
+      <div className={cn('sm:flex hidden items-center justify-between', isHovering ? 'opacity-100' : 'opacity-0')}>
         <div className='flex items-center gap-2'>
           <SimpleTooltip content='Copy Link to Run'>
             <Button

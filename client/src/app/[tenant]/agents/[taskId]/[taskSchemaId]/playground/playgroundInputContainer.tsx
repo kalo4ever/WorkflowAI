@@ -120,7 +120,7 @@ export function PlaygroundInputContainer(props: PlaygroundInputContainerProps) {
         />
       </div>
 
-      <div className='hidden sm:flex sm:flex-1 sm:w-1/2 h-full'>
+      <div className='flex sm:flex-1 sm:w-1/2 h-full sm:border-t-0 border-t sm:pb-0 pb-2 border-gray-200 border-dashed'>
         <PlagroundParametersSelector
           isImproveVersionLoading={isImproveVersionLoading}
           oldInstructions={oldInstructions}

@@ -280,7 +280,7 @@ function SectionButton(props: SectionItem & SectionCommonProps) {
     <SimpleTooltip content={isDisabled ? 'Log in to unlock all features' : undefined}>
       <div
         className={cx(
-          'border-l-[2px] transition-colors duration-200 ease-in-out pl-1.5 z-10 hover:bg-indigo-50 hover:bg-opacity-50',
+          'border-l-[2px] transition-colors duration-200 ease-in-out pl-1.5 sm:ml-0 ml-2 z-10 hover:bg-indigo-50 hover:bg-opacity-50',
           {
             'border-transparent': !selected,
             'border-indigo-700': selected,
@@ -322,7 +322,7 @@ export function SectionBlock(props: Section & SectionCommonProps) {
 
   return (
     <div className='flex flex-col'>
-      <div className='flex text-xs text-indigo-600 font-semibold py-2 pl-2.5 pr-3.5 items-center justify-between border-t border-b border-gray-100'>
+      <div className='flex text-xs text-indigo-600 font-semibold py-2 sm:pl-2.5 pl-4 sm:pr-3.5 pr-4 items-center justify-between border-t border-b border-gray-100'>
         {title}
         {showActivityIndicator && <TaskRunsActivityIndicator isActive={true} />}
       </div>

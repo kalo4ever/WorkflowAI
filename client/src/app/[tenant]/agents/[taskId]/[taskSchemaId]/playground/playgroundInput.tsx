@@ -137,7 +137,7 @@ export function PlaygroundInput(props: PlaygroundInputProps) {
               icon={<ArrowUpload16Regular className='h-4 w-4' />}
               onClick={openImportModal}
               disabled={singleTaskLoading || areInstructionsLoading || inputLoading}
-              className='h-7 w-7 mr-2'
+              className='h-7 w-7 mr-2 sm:block hidden'
               size='none'
             />
 
