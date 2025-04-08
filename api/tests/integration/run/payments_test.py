@@ -757,13 +757,11 @@ async def test_add_payment_method_invalid_card(
 #     assert org["last_payment_failed_at"] is None
 
 
-async def test_automatic_payment_failure_manual_credit_addition(
+async def _setup_an_automatic_payment_failure(
     test_client: IntegrationTestClient,
+    task: dict[str, Any],
     mock_stripe: Mock,
 ):
-    """Test a payment failure with a retry when the user is an organization"""
-    task = await test_client.create_task()
-
     await _setup_automatic_payment(test_client)
 
     # Also prepare for email send, we have an organization so all the admins should get an email
@@ -783,6 +781,16 @@ async def test_automatic_payment_failure_manual_credit_addition(
     assert org["payment_failure"]
     assert org["payment_failure"]["failure_code"] == "payment_failed"
 
+
+async def test_automatic_payment_failure_manual_credit_addition(
+    test_client: IntegrationTestClient,
+    mock_stripe: Mock,
+):
+    """Test a payment failure with a retry when the user is an organization"""
+    task = await test_client.create_task()
+
+    await _setup_an_automatic_payment_failure(test_client, task=task, mock_stripe=mock_stripe)
+
     # Now I trigger a manual payment
     await _mock_stripe_webhook(test_client, mock_stripe, amount=800, trigger="manual")
 
@@ -797,5 +805,83 @@ async def test_automatic_payment_failure_manual_credit_addition(
     await _deplete_credits(test_client, task, 5)
     _assert_payment_created(test_client, mock_stripe, 5.01)
     await _mock_stripe_webhook(test_client, mock_stripe, amount=501)
+    org = await test_client.get_org()
+    assert org["current_credits_usd"] == approx(10, abs=0.01)
+
+
+async def test_automatic_payment_failure_then_add_payment_method(
+    test_client: IntegrationTestClient,
+    mock_stripe: Mock,
+    stripe_payment_method: Mock,
+):
+    """Check that automatic payments are resumed after a payment failure if a payment method is added"""
+    task = await test_client.create_task()
+
+    await _setup_an_automatic_payment_failure(test_client, task=task, mock_stripe=mock_stripe)
+
+    # Reset mocks
+    mock_stripe.PaymentIntent.create_async.reset_mock()
+    mock_stripe.PaymentIntent.confirm_async.reset_mock()
+
+    # Add a payment method
+    stripe_payment_method.id = "pm_1234"
+    res = await test_client.post(
+        "/organization/payments/payment-methods",
+        json={"payment_method_id": "pm_1234"},
+    )
+    assert res["payment_method_id"] == "pm_1234"
+    await test_client.wait_for_completed_tasks()
+
+    _assert_payment_created(test_client, mock_stripe, 8)
+
+    await _mock_stripe_webhook(test_client, mock_stripe, amount=800)
+    org = await test_client.get_org()
+    assert org["current_credits_usd"] == approx(10, abs=0.01)
+    assert org.get("payment_failure") is None
+
+
+async def test_automatic_payment_failure_then_add_payment_method_but_auto_payment_disabled(
+    test_client: IntegrationTestClient,
+    mock_stripe: Mock,
+    stripe_payment_method: Mock,
+):
+    """Check that an automatic payment is not triggered:
+    - after a payment failure
+    - if a payment method is added
+    - but if automatic payments were disabled"""
+    task = await test_client.create_task()
+
+    await _setup_an_automatic_payment_failure(test_client, task=task, mock_stripe=mock_stripe)
+
+    # Reset mocks
+    mock_stripe.PaymentIntent.create_async.reset_mock()
+    mock_stripe.PaymentIntent.confirm_async.reset_mock()
+
+    # Now disable automatic payments
+    await test_client.put(
+        "/organization/payments/automatic-payments",
+        json={"opt_in": False},
+    )
+
+    # Add a new payment method
+    stripe_payment_method.id = "pm_1234"
+    res = await test_client.post(
+        "/organization/payments/payment-methods",
+        json={"payment_method_id": "pm_1234"},
+    )
+    assert res["payment_method_id"] == "pm_1234"
+    await test_client.wait_for_completed_tasks()
+
+    mock_stripe.PaymentIntent.create_async.assert_not_called()
+    mock_stripe.PaymentIntent.confirm_async.assert_not_called()
+
+    org = await test_client.get_org()
+    assert org["automatic_payment_enabled"] is False
+    # Payment failure was cleared since we added a payment method
+    assert not org.get("payment_failure")
+    assert org["current_credits_usd"] == approx(2, abs=0.01)
+
+    # Trigger a manual payment
+    await _mock_stripe_webhook(test_client, mock_stripe, amount=800, trigger="manual")
     org = await test_client.get_org()
     assert org["current_credits_usd"] == approx(10, abs=0.01)

@@ -31,12 +31,15 @@ async def add_payment_method(
     request: PaymentMethodRequest,
     user_org: RequiredUserOrganizationDep,
     required_user: RequiredUserDep,
+    payment_system_service: PaymentSystemServiceDep,
 ) -> PaymentMethodIdResponse:
     payment_method_id = await payment_service.add_payment_method(
         user_org,
         request.payment_method_id,
         required_user.sub,
     )
+    # Triggering an automatic payment only if under the threshold
+    add_background_task(payment_system_service.decrement_credits(user_org.tenant, 0))
     return PaymentMethodIdResponse(
         payment_method_id=payment_method_id,
     )

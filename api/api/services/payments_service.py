@@ -91,6 +91,9 @@ class PaymentService:
             invoice_settings={"default_payment_method": payment_method.id},
         )
 
+        # Clear a payment failure if any
+        await self._org_storage.clear_payment_failure()
+
         return payment_method.id
 
     async def create_customer(self, user_email: str) -> str:
