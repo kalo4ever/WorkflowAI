@@ -149,7 +149,8 @@ class FeatureService:
     async def _stream_company_context(self, company_url: str) -> AsyncIterator[CompanyContext]:
         try:
             async for chunk in stream_perplexity_search(
-                f"What does this company do:{company_url} ? Provide a concise description of the company and its products. Do not add any markdown or formatting (ex: bold, italic, underline, etc.) in the response, except line breaks, punctation and eventual bullet points.",
+                f"""What does this company do:{company_url}? Provide a concise description of the company and its products. Do not add any markdown or formatting (ex: bold, italic, underline, etc.) in the response, except line breaks, punctation and eventual bullet points.
+                Always browse the actual company domain ({company_url}) to get the most accurate and up to date description.""",
             ):
                 yield CompanyContext(public=chunk, private=chunk)
         except Exception as e:
