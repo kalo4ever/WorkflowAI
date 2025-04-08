@@ -232,7 +232,7 @@ INSTUCTIONS = f"""Your role is to generate a comprehensive list of exactly {NUMB
     - Use case related to documentation, compatibility, privacy policies, etc.
     - Content Accessibility Enhancer (too vague)
 
-    Make sure to follow the instructions above, and to avoid the agents mentionned in the 'Agents to AVOID' section.
+    Make sure to follow the instructions above, and to avoid the agents mentioned in the 'Agents to AVOID' section.
 
     # Guidelines for writing the name and description of the suggested agents
     - the 'suggested_agents.name' must follow the following convention: [subject that is acted upon] + [the action], in Title Case. Ex: 'Sentiment Analysis', 'Text Summarization', 'Location Detection'. Avoid using "Generation" in the agent name, as all agents perform generation anyway.
