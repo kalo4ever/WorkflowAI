@@ -303,7 +303,7 @@ class FeatureService:
                 features=features,
             )
 
-        # TODO; this is a demo that included the AI Roadmap Presentation as the latest suggested feature
+        # TODO; this is a demo that includes the AI Roadmap Presentation as the latest suggested feature
         # To integrate better if we want to keep the feature
         async for chunk in generate_ai_roadmap_presentation.stream(
             GenerateAIRoadmapPresentationInput(
