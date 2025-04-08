@@ -1,3 +1,4 @@
+import time
 from typing import Any
 
 from core.domain.consts import METADATA_KEY_INFERENCE_SECONDS
@@ -20,7 +21,12 @@ class TestBuild:
         as opposed to computed on build"""
 
         task = task_variant()
-        builder = TaskRunBuilder(task=task, task_input={"input": "John"}, properties=TaskGroupProperties())
+        builder = TaskRunBuilder(
+            task=task,
+            task_input={"input": "John"},
+            properties=TaskGroupProperties(),
+            start_time=time.time(),
+        )
         assert (
             builder.task_input_hash == "fc494a0457f7c6846dd48a0412274ac0" == task.compute_input_hash(builder.task_input)
         )
@@ -32,7 +38,12 @@ class TestBuild:
         """Check that the inference seconds are computed based on the llm completions at build time"""
 
         task = task_variant()
-        builder = TaskRunBuilder(task=task, task_input={"input": "John"}, properties=TaskGroupProperties())
+        builder = TaskRunBuilder(
+            task=task,
+            task_input={"input": "John"},
+            properties=TaskGroupProperties(),
+            start_time=time.time(),
+        )
         builder.llm_completions.append(
             _llm_completion(duration_seconds=10, messages=[], usage=LLMUsage(completion_token_count=10)),
         )
@@ -44,7 +55,12 @@ class TestBuild:
         """Check that the inference seconds are not set if the duration is None"""
 
         task = task_variant()
-        builder = TaskRunBuilder(task=task, task_input={"input": "John"}, properties=TaskGroupProperties())
+        builder = TaskRunBuilder(
+            task=task,
+            task_input={"input": "John"},
+            properties=TaskGroupProperties(),
+            start_time=time.time(),
+        )
         builder.llm_completions.append(
             _llm_completion(duration_seconds=None, messages=[], usage=LLMUsage(completion_token_count=10)),
         )

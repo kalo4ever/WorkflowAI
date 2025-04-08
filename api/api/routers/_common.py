@@ -1,5 +1,7 @@
 import logging
 import os
+import time
+from contextvars import ContextVar
 from typing import Any, Optional
 
 from pydantic import BaseModel, Field, model_validator
@@ -15,6 +17,20 @@ INCLUDE_PRIVATE_ROUTES = os.getenv("ENV_NAME", "") != "prod"
 PRIVATE_TAGS = ["Private"]
 
 PRIVATE_KWARGS: Any = {"include_in_schema": INCLUDE_PRIVATE_ROUTES, "tags": PRIVATE_TAGS}
+
+
+_request_start_time_context = ContextVar[float]("request_start_time_context")
+
+
+def get_request_start_time() -> float:
+    if r := _request_start_time_context.get():
+        return r
+    _logger.warning("Request start time not set")
+    return time.time()
+
+
+def set_request_start_time(start: float):
+    _request_start_time_context.set(start)
 
 
 class DeprecatedVersionReference(BaseModel):

@@ -2568,6 +2568,7 @@ class TestRun:
                     "url": "https://example.com/image",
                 },
             },
+            start_time=0,
         )
 
         run = await patched_runner.run(builder)
@@ -2596,7 +2597,7 @@ class TestRun:
         patched_provider_factory.gemini.complete.return_value = StructuredOutput(
             {"output": "final"},
         )
-        builder = await patched_runner.task_run_builder({})
+        builder = await patched_runner.task_run_builder({}, start_time=0)
 
         run = await patched_runner.run(builder)
         assert run.task_output == {"output": "final"}

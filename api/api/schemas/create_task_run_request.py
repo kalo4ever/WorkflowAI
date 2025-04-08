@@ -3,7 +3,7 @@ from typing import Any, Optional
 
 from pydantic import BaseModel, Field
 
-from api.routers.common import DeprecatedVersionReference
+from api.routers._common import DeprecatedVersionReference
 from core.domain.agent_run import AgentRun
 from core.domain.task_group import TaskGroup
 from core.domain.task_variant import SerializableTaskVariant

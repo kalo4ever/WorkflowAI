@@ -791,7 +791,6 @@ class TestFetchRunResources:
         ]
         await task_run_col.insert_many([dump_model(a) for a in task_runs])
 
-        """Test label filters for different combination of labels"""
         query = SerializableTaskRunQuery(task_id=TASK_ID, task_schema_id=1, status={"success"})
         runs = [a async for a in task_run_storage.fetch_task_run_resources(0, query)]
         assert len(runs) == 3, "Sanity"

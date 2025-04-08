@@ -1,5 +1,4 @@
 import logging
-import time
 from collections.abc import Callable
 from contextlib import asynccontextmanager
 from typing import Any, AsyncGenerator, Iterable, Optional
@@ -14,7 +13,6 @@ from api.services.groups import GroupService
 from api.services.internal_tasks.moderation_service import capture_content_moderation_error
 from core.domain.agent_run import AgentRun
 from core.domain.analytics_events.analytics_events import RanTaskEventProperties, RunTrigger, SourceType
-from core.domain.consts import METADATA_KEY_OVERHEAD_SECONDS
 from core.domain.error_response import ErrorResponse
 from core.domain.errors import (
     BadRequestError,
@@ -72,7 +70,6 @@ class RunService:
         store_inline: bool,
         source: SourceType | None,
         file_storage: FileStorage | None,
-        overhead: float | None,
     ) -> AsyncGenerator[str, None]:
         try:
             chunk: RunOutput | None = None
@@ -85,7 +82,6 @@ class RunService:
                 store_inline=store_inline,
                 source=source,
                 file_storage=file_storage,
-                overhead=overhead,
             ):
                 if chunk:
                     yield _format_model(chunk_serializer(builder.id, chunk))
@@ -114,10 +110,10 @@ class RunService:
         task_run_id: Optional[str],
         stream_serializer: Callable[[str, RunOutput], BaseModel] | None,
         cache: CacheUsage,
-        labels: Optional[set[str]],
         metadata: Optional[dict[str, Any]],
         trigger: RunTrigger,
         serializer: Callable[[AgentRun], BaseModel],
+        start_time: float,
         author_tenant: TenantTuple | None = None,
         stream_last_chunk: bool = False,
         store_inline: bool = False,
@@ -127,15 +123,13 @@ class RunService:
         source: SourceType | None = None,
         is_different_version: bool = False,
         file_storage: FileStorage | None = None,
-        start: float | None = None,
     ) -> Response:
-        overhead = time.time() - start if start else None
         builder = await runner.task_run_builder(
             input=task_input,
             task_run_id=task_run_id,
-            labels=labels,
             metadata=metadata,
             private_fields=private_fields,
+            start_time=start_time,
         )
         builder.author_uid = author_tenant[1] if author_tenant else None
         builder.author_tenant = author_tenant[0] if author_tenant else None
@@ -152,7 +146,6 @@ class RunService:
                     store_inline=store_inline,
                     source=source,
                     file_storage=file_storage,
-                    overhead=overhead,
                 ),
                 media_type="text/event-stream",
             )
@@ -165,7 +158,6 @@ class RunService:
             store_inline=store_inline,
             source=source,
             file_storage=file_storage,
-            overhead=overhead,
         )
         return JSONResponse(content=serializer(task_run).model_dump(mode="json"))
 
@@ -188,11 +180,10 @@ class RunService:
         tool_calls: Iterable[ToolCallOutput] | None,
         metadata: dict[str, Any] | None,
         serializer: Callable[[AgentRun], BaseModel],
+        start_time: float,
         stream_serializer: Callable[[str, RunOutput], BaseModel] | None = None,
         is_different_version: bool = False,
-        start: float | None = None,
     ):
-        overhead = (time.time() - start) if start else None
         if to_run.status != "success":
             raise BadRequestError("Cannot reply to a non-successful run", capture=True)
         if not to_run.llm_completions:
@@ -218,6 +209,7 @@ class RunService:
             input=runner.task.validate_input(to_run.task_input),
             metadata=metadata,
             reply=reply,
+            start_time=start_time,
         )
         builder.version_changed = is_different_version
         if stream_serializer:
@@ -232,7 +224,6 @@ class RunService:
                     store_inline=False,
                     source=None,  # see comment above, not needed when not storing inline
                     file_storage=None,  # same
-                    overhead=overhead,
                 ),
                 media_type="text/event-stream",
             )
@@ -244,7 +235,6 @@ class RunService:
             trigger="user",
             store_inline=False,
             source=None,  # see comment above, not needed when not storing inline
-            overhead=overhead,
         )
 
         return JSONResponse(content=serializer(task_run).model_dump(mode="json", exclude_none=True))
@@ -258,17 +248,17 @@ class RunService:
         store_inline: bool = True,
         source: SourceType | None = None,
         file_storage: FileStorage | None = None,
-        overhead: float | None = None,
     ):
         # if the run was cached, we don't need to store it but we still send the analytics
         if run.from_cache:
             self._send_run_analytics(run, trigger)
             return run
 
-        if overhead is not None:
-            if run.metadata is None:
-                run.metadata = {}
-            run.metadata[METADATA_KEY_OVERHEAD_SECONDS] = round(overhead, 3)
+        # TODO[latency]
+        # if start_time is not None and end_time is not None:
+        #     if run.metadata is None:
+        #         run.metadata = {}
+        #     run.metadata[METADATA_KEY_OVERHEAD_SECONDS] = round(end_time - start_time, 3)
 
         if store_inline:
             # Soon we will no longer store runs inline + this class will be removed
@@ -310,7 +300,6 @@ class RunService:
         trigger: RunTrigger | None,
         source: SourceType | None,
         file_storage: FileStorage | None,
-        overhead: float | None,
     ):
         try:
             yield
@@ -327,7 +316,6 @@ class RunService:
                     store_inline=store_inline,
                     source=source,
                     file_storage=file_storage,
-                    overhead=overhead,
                 )
                 e.task_run_id = failed_run.id
             else:
@@ -343,7 +331,6 @@ class RunService:
         store_inline: bool = True,
         source: SourceType | None = None,
         file_storage: FileStorage | None = None,
-        overhead: float | None = None,
     ) -> AgentRun:
         async with self._wrap_run(
             builder,
@@ -351,7 +338,6 @@ class RunService:
             store_inline=store_inline,
             source=source,
             file_storage=file_storage,
-            overhead=overhead,
         ):
             task_run = await runner.run(builder, cache=cache)
 
@@ -362,7 +348,6 @@ class RunService:
             store_inline=store_inline,
             source=source,
             file_storage=file_storage,
-            overhead=overhead,
         )
 
     async def stream_from_builder(
@@ -375,7 +360,6 @@ class RunService:
         store_inline: bool = True,
         source: SourceType | None = None,
         file_storage: FileStorage | None = None,
-        overhead: float | None = None,
     ) -> AsyncGenerator[RunOutput, None]:
         chunk: RunOutput | None = None
 
@@ -385,7 +369,6 @@ class RunService:
             store_inline=store_inline,
             source=source,
             file_storage=file_storage,
-            overhead=overhead,
         ):
             async for chunk in runner.stream(builder, cache=cache):
                 yield chunk
@@ -401,7 +384,6 @@ class RunService:
             store_inline=store_inline,
             source=source,
             file_storage=file_storage,
-            overhead=overhead,
         )
         # hack to update the builder task run so that it can be used
         # outside of the stream
