@@ -6,7 +6,6 @@ export const SETUP_MODAL_OPEN = 'setupModalOpen';
 export const DEPLOY_ITERATION_MODAL_OPEN = 'deployIterationModalOpen';
 export const TASK_SETTINGS_MODAL_OPEN = 'taskSettingsModalOpen';
 export const API_KEYS_MODAL_OPEN = 'apiKeysModalOpen';
-export const PROVIDER_KEYS_MODAL_OPEN = 'providerKeysModalOpen';
 
 export function useQueryParamModal<K extends Record<string, string | undefined>>(
   modalName: string,
