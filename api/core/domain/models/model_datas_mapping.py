@@ -1151,6 +1151,7 @@ def _build_model_datas():
             provider_name=DisplayedProvider.FIREWORKS.value,
             supports_tool_calling=False,
             is_default=True,
+            supports_structured_output=True,
         ),
         # https://fireworks.ai/models/fireworks/llama4-scout-instruct-basic
         Model.LLAMA_4_SCOUT_BASIC: ModelData(
@@ -1172,6 +1173,7 @@ def _build_model_datas():
             quality_index=870,  # TODO: a bit less than CLAUDE_3_7_SONNET_20250219 for now
             provider_name=DisplayedProvider.FIREWORKS.value,
             supports_tool_calling=False,
+            supports_structured_output=True,
         ),
         # https://fireworks.ai/models/fireworks/deepseek-v3
         Model.DEEPSEEK_V3_2412: ModelData(
