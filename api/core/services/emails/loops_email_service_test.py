@@ -209,3 +209,41 @@ class TestSendPaymentFailureEmail:
 
         # Verify user service was called with owner_id
         mock_user_service.get_user.assert_called_once_with("test_owner_id")
+
+
+class TestSendLowCreditsEmail:
+    async def test_idempotency_key_per_user_and_call(
+        self,
+        loops_service: LoopsEmailService,
+        mock_storage: AsyncMock,
+        mock_user_service: AsyncMock,
+        httpx_mock: HTTPXMock,
+    ) -> None:
+        # Mock organization storage response
+        mock_storage.public_organization_by_tenant.return_value = PublicOrganizationData(
+            org_id="test_org_id",
+            owner_id=None,
+        )
+
+        # Mock user service response with two admins
+        mock_user_service.get_org_admins.return_value = [
+            UserDetails(email="admin1@example.com", name="Admin One"),
+            UserDetails(email="admin2@example.com", name="Admin Two"),
+        ]
+
+        # Mock Loops API response
+        httpx_mock.add_response(
+            url="https://app.loops.so/api/v1/transactional",
+            status_code=200,
+            method="POST",
+        )
+
+        # Sending two emails
+        await loops_service.send_low_credits_email("test_tenant")
+        await loops_service.send_low_credits_email("test_tenant")
+        first_call_requests = httpx_mock.get_requests()
+        first_call_keys = [request.headers["Idempotency-Key"] for request in first_call_requests]
+
+        assert all(key for key in first_call_keys)
+        # Check that there is no duplicate idempotency key
+        assert len(set(first_call_keys)) == len(first_call_keys)
