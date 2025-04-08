@@ -44,7 +44,7 @@ from core.storage.clickhouse.models.utils import (
     validate_int,
 )
 from core.storage.clickhouse.query_builder import W
-from core.utils.fields import date_zero, datetime_zero, uuid_zero
+from core.utils.fields import date_zero, uuid_zero
 from core.utils.hash import compute_obj_hash
 from core.utils.iter_utils import safe_map_optional
 from core.utils.models.dumps import safe_dump_pydantic_model
@@ -164,8 +164,6 @@ class ClickhouseRun(BaseModel):
     @classmethod
     def from_duration_ds(cls, duration: int) -> float:
         return duration / 10
-
-    updated_at: datetime = Field(default_factory=datetime_zero)
 
     task_schema_id: Annotated[int, validate_int(MAX_UINT_16)] = 0
     version_id: Annotated[str, validate_fixed()] = ""
