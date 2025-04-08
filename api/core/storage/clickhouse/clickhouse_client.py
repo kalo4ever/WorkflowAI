@@ -20,7 +20,7 @@ from core.storage import ObjectNotFoundException, TaskTuple
 from core.storage.clickhouse.models.runs import FIELD_TO_COLUMN, ClickhouseRun
 from core.storage.clickhouse.models.utils import data_and_columns, id_lower_bound
 from core.storage.clickhouse.query_builder import Q, W, WhereAndClause
-from core.storage.task_run_storage import RunAggregate, TaskRunStorage, TokenCounts
+from core.storage.task_run_storage import RunAggregate, TaskRunStorage, TokenCounts, WeeklyRunAggregate
 
 
 class ClickhouseClient(TaskRunStorage):
@@ -502,4 +502,28 @@ class ClickhouseClient(TaskRunStorage):
                 agent_uid=row[0],
                 run_count=row[1],
                 total_cost_usd=ClickhouseRun.from_cost_millionth_usd(row[2]),
+            )
+
+    @override
+    async def weekly_run_aggregate(self, week_count: int):
+        sql = f"""
+SELECT
+    toStartOfWeek(created_at_date) AS week_start,
+    COUNT() AS run_count,
+    AVG(NULLIF(overhead_ms, 0)) AS avg_overhead_ms
+FROM
+    runs
+WHERE
+    created_at_date >= subtractWeeks(today(), {week_count})
+GROUP BY
+    week_start
+ORDER BY
+    week_start
+        """
+        res = await self.query(sql)
+        for row in res.result_rows:
+            yield WeeklyRunAggregate(
+                start_of_week=row[0],
+                run_count=row[1],
+                overhead_ms=int(round(row[2])),
             )

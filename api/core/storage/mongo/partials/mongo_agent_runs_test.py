@@ -12,7 +12,7 @@ from core.storage.mongo.models.task_metadata import TaskMetadataSchema
 from core.storage.mongo.models.task_run_document import TaskRunDocument
 from core.storage.mongo.mongo_storage import MongoStorage
 from core.storage.mongo.mongo_types import AsyncCollection
-from core.storage.mongo.partials.task_runs import MongoTaskRunStorage
+from core.storage.mongo.partials.mongo_agent_runs import MongoTaskRunStorage
 from core.storage.mongo.utils import dump_model
 from core.utils.dicts import get_at_keypath_str
 
