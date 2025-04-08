@@ -23,7 +23,7 @@ from core.agents.meta_agent import PlaygroundState as PlaygroundStateDomain
 from core.domain.documentation_section import DocumentationSection
 from core.domain.events import MetaAgentChatMessagesSent
 from core.domain.task_group_properties import TaskGroupProperties
-from core.domain.task_run import SerializableTaskRun
+from core.domain.task_run import Run
 from core.domain.task_variant import SerializableTaskVariant
 from core.storage.backend_storage import BackendStorage
 from tests.utils import mock_aiter
@@ -127,7 +127,7 @@ class TestMetaAgentService:
     ) -> None:
         # Create a mock storage
         mock_runs_service = Mock(spec=RunsService)
-        mock_task_run = Mock(spec=SerializableTaskRun)
+        mock_task_run = Mock(spec=Run)
         mock_task_run.id = "run_id_1"
         mock_task_run.group = Mock(spec=TaskGroup)
         mock_task_run.group.properties = Mock(spec=TaskGroupProperties)
@@ -291,7 +291,7 @@ class TestMetaAgentService:
 
         mock_event_router = Mock()
         mock_runs_service = Mock(spec=RunsService)
-        mock_task_run = Mock(spec=SerializableTaskRun)
+        mock_task_run = Mock(spec=Run)
         mock_task_run.group = Mock(spec=TaskGroup)
         mock_task_run.group.properties = Mock(spec=TaskGroupProperties)
         mock_task_run.group.properties.model = "mock model"
@@ -481,10 +481,10 @@ class TestMetaAgentService:
         expected_run_id: str,
         expected_warning_calls: int,
     ) -> None:
-        # Create dummy valid runs as mocks mimicking SerializableTaskRun.
+        # Create dummy valid runs as mocks mimicking Run.
         valid_runs: list[Mock] = []
         for cfg in runs_config:
-            dummy_run = Mock(spec=SerializableTaskRun)
+            dummy_run = Mock(spec=Run)
             dummy_run.id = cfg["id"]
             dummy_run.user_review = cfg["user_review"]
             dummy_run.task_output = cfg["task_output"]

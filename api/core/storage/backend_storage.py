@@ -9,7 +9,7 @@ from core.domain.task_example_query import SerializableTaskExampleQuery
 from core.domain.task_group import TaskGroup
 from core.domain.task_group_properties import TaskGroupProperties
 from core.domain.task_input import TaskInput, TaskInputFields
-from core.domain.task_run import SerializableTaskRun
+from core.domain.task_run import Run
 from core.domain.task_variant import SerializableTaskVariant
 from core.domain.users import UserIdentifier
 from core.storage.abstract_storage import AbstractStorage
@@ -229,10 +229,10 @@ class BackendStorage(AbstractStorage):
     async def prepare_task_run(
         self,
         task: SerializableTaskVariant,
-        run: SerializableTaskRun,
+        run: Run,
         user: UserIdentifier | None,
         source: SourceType | None,
-    ) -> SerializableTaskRun:
+    ) -> Run:
         pass
 
     async def get_task_tuple(self, task_id: str):

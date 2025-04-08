@@ -4,9 +4,9 @@ import json
 import logging
 from typing import Any, AsyncIterator, TypeAlias
 
+import workflowai
 from pydantic import BaseModel, Field, model_validator
 from typing_extensions import Literal
-from workflowai import Run
 
 from api.services.documentation_service import DocumentationService
 from api.services.internal_tasks._internal_tasks_utils import internal_tools_description
@@ -36,7 +36,7 @@ from core.agents.meta_agent import (
 )
 from core.domain.events import EventRouter, MetaAgentChatMessagesSent
 from core.domain.fields.file import File
-from core.domain.task_run import SerializableTaskRun
+from core.domain.task_run import Run
 from core.domain.task_variant import SerializableTaskVariant
 from core.domain.url_content import URLContent
 from core.runners.workflowai.utils import extract_files
@@ -315,14 +315,14 @@ class MetaAgentService:
         self.runs_service = runs_service
         self.models_service = models_service
 
-    async def fetch_agent_runs(self, task_tuple: TaskTuple, agent_run_ids: list[str]) -> list[SerializableTaskRun]:
+    async def fetch_agent_runs(self, task_tuple: TaskTuple, agent_run_ids: list[str]) -> list[Run]:
         """Allow to concurrently fetch several concurrently and manage expections"""
 
         agent_runs_results = await asyncio.gather(
             *[self.runs_service.run_by_id(task_tuple, run_id) for run_id in agent_run_ids],
             return_exceptions=True,
         )
-        valid_runs: list[SerializableTaskRun] = []
+        valid_runs: list[Run] = []
         for run_id, result in zip(agent_run_ids, agent_runs_results):
             if isinstance(result, BaseException):
                 self._logger.warning("Meta agent run not found", extra={"run_id": run_id})
@@ -418,7 +418,7 @@ class MetaAgentService:
         messages: list[MetaAgentChatMessage],
         current_agent: SerializableTaskVariant,
         playground_state: PlaygroundState,
-    ) -> tuple[MetaAgentInput, list[SerializableTaskRun]]:
+    ) -> tuple[MetaAgentInput, list[Run]]:
         # Concurrently extract company info and list current agents
         company_description, existing_agents, agent_runs = await asyncio.gather(
             safe_generate_company_description_from_email(user_email),
@@ -510,7 +510,7 @@ class MetaAgentService:
     def dispatch_new_assistant_messages_event(self, messages: list[MetaAgentChatMessage]):
         self.event_router(MetaAgentChatMessagesSent(messages=[message.to_domain() for message in messages]))
 
-    def _sanitize_agent_run_id(self, candidate_agent_run_id: str, valid_agent_runs: list[SerializableTaskRun]) -> str:
+    def _sanitize_agent_run_id(self, candidate_agent_run_id: str, valid_agent_runs: list[Run]) -> str:
         if candidate_agent_run_id in [run.id for run in valid_agent_runs]:
             return candidate_agent_run_id
 
@@ -566,7 +566,7 @@ class MetaAgentService:
     def _extract_tool_call_from_meta_agent_output(
         self,
         meta_agent_output: MetaAgentOutput,
-        agent_runs: list[SerializableTaskRun],
+        agent_runs: list[Run],
         messages: list[MetaAgentChatMessage],
     ) -> MetaAgentToolCallType | None:
         # If is mutually exclusive, because we want to only return one tool call at a time for now.
@@ -660,7 +660,7 @@ class MetaAgentService:
         )
 
         ret: list[MetaAgentChatMessage] = []
-        chunk: Run[MetaAgentOutput] | None = None
+        chunk: "workflowai.Run[MetaAgentOutput] | None" = None
         async for chunk in meta_agent.stream(meta_agent_input, temperature=0.5):
             if chunk.output.content:
                 ret = [

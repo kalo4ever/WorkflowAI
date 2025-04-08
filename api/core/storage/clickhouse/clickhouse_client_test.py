@@ -25,7 +25,7 @@ from core.domain.search_query import (
     SearchQuerySimple,
     SingleValueOperator,
 )
-from core.domain.task_run import SerializableTaskRun
+from core.domain.task_run import Run
 from core.domain.task_run_aggregate_per_day import TaskRunAggregatePerDay
 from core.domain.task_run_query import SerializableTaskRunQuery
 from core.domain.tool_call import ToolCall, ToolCallRequestWithID
@@ -157,7 +157,7 @@ class TestStoreTaskRun:
 
 class TestSearchTaskRun:
     @classmethod
-    async def _insert_runs(cls, clickhouse_client: ClickhouseClient, *args: SerializableTaskRun):
+    async def _insert_runs(cls, clickhouse_client: ClickhouseClient, *args: Run):
         docs = [ClickhouseRun.from_domain(1, r) for r in args]
         for i, doc in enumerate(docs):
             doc.run_uuid = _uuid7(i + 1)

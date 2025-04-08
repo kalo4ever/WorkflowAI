@@ -22,7 +22,7 @@ from core.domain.task_group import TaskGroup, TaskGroupIdentifier
 from core.domain.task_group_properties import TaskGroupProperties
 from core.domain.task_info import TaskInfo
 from core.domain.task_input import TaskInput, TaskInputFields
-from core.domain.task_run import SerializableTaskRun
+from core.domain.task_run import Run
 from core.domain.task_variant import SerializableTaskVariant
 from core.domain.users import UserIdentifier
 from core.domain.version_environment import VersionEnvironment
@@ -633,10 +633,10 @@ class MongoStorage(BackendStorage):
     async def prepare_task_run(
         self,
         task: SerializableTaskVariant,
-        run: SerializableTaskRun,
+        run: Run,
         user: UserIdentifier | None,
         source: SourceType | None,
-    ) -> SerializableTaskRun:
+    ) -> Run:
         # if the task has no schema id, we make sure the task is registered
         if not task.task_schema_id:
             logger.warning("Task schema id not found, storing task")
@@ -1009,9 +1009,9 @@ class MongoStorage(BackendStorage):
     async def store_task_run_resource(
         self,
         task: SerializableTaskVariant,
-        run: SerializableTaskRun,
+        run: Run,
         user: UserIdentifier | None,
         source: SourceType | None,
-    ) -> SerializableTaskRun:
+    ) -> Run:
         run = await self.prepare_task_run(task, run, user, source)
         return await self.task_runs.store_task_run(run)

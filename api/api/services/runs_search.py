@@ -24,7 +24,7 @@ from core.domain.search_query import (
     StatusSearchOptions,
 )
 from core.domain.task_group import TaskGroupQuery
-from core.domain.task_run import SerializableTaskRunBase
+from core.domain.task_run import RunBase
 from core.domain.version_environment import VersionEnvironment
 from core.storage import TaskTuple
 from core.storage.backend_storage import BackendStorage
@@ -482,7 +482,7 @@ class RunsSearchService:
         field_queries: list[FieldQuery] | None,
         limit: int,
         offset: int,
-        map: Callable[[SerializableTaskRunBase], BM],
+        map: Callable[[RunBase], BM],
     ) -> Page[BM]:
         fields = [f async for f in self._process_field_query(task_uid[0], field_queries)] if field_queries else None
 

@@ -20,7 +20,7 @@ from core.domain.run_output import RunOutput
 from core.domain.task_group import TaskGroup
 from core.domain.task_group_properties import TaskGroupProperties
 from core.domain.task_info import TaskInfo
-from core.domain.task_run import SerializableTaskRun
+from core.domain.task_run import Run
 from core.domain.task_run_builder import TaskRunBuilder
 from core.domain.task_variant import SerializableTaskVariant
 from core.domain.tool_call import ToolCall, ToolCallRequestWithID
@@ -179,7 +179,7 @@ class TestDeprecatedRun:
         mock_storage: Mock,
         mock_runner: Mock,
     ):
-        patch_run_from_builder.return_value = SerializableTaskRun(
+        patch_run_from_builder.return_value = Run(
             id="blabla",
             task_id="123",
             task_schema_id=1,
@@ -453,7 +453,7 @@ class TestDeprecatedRun:
         patch_run_from_builder: Mock,
         mock_storage: Mock,
     ):
-        patch_run_from_builder.return_value = SerializableTaskRun(
+        patch_run_from_builder.return_value = Run(
             id="blabla",
             task_id="123",
             task_schema_id=1,
@@ -535,7 +535,7 @@ class TestRun:
     ):
         # Actually testing the underlying run service
         # Because it returns a Response object for now...
-        patch_run_from_builder.return_value = SerializableTaskRun(
+        patch_run_from_builder.return_value = Run(
             id="blabla",
             task_id=hello_task.id,
             task_schema_id=hello_task.task_schema_id,
@@ -612,7 +612,7 @@ class TestReply:
         mock_runs_service: Mock,
         hello_task: SerializableTaskVariant,
     ):
-        mock_runs_service.run_by_id.return_value = SerializableTaskRun(
+        mock_runs_service.run_by_id.return_value = Run(
             id="blabla",
             task_id="123",
             task_schema_id=1,

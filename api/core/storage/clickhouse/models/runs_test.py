@@ -18,7 +18,7 @@ from core.domain.search_query import (
     SimpleSearchField,
     StatusSearchOptions,
 )
-from core.domain.task_run import SerializableTaskRun
+from core.domain.task_run import Run
 from core.domain.task_run_query import SerializableTaskRunField
 from core.domain.tool_call import ToolCall, ToolCallRequestWithID
 from core.storage.clickhouse.models.runs import (
@@ -35,7 +35,7 @@ def task_run():
 
 
 class TestClickhouseRunsValidate:
-    def test_task_uid(self, task_run: SerializableTaskRun):
+    def test_task_uid(self, task_run: Run):
         task_run.task_uid = MAX_UINT_32 + 1
         with pytest.raises(ValueError):
             ClickhouseRun.from_domain(1, task_run)
@@ -43,13 +43,13 @@ class TestClickhouseRunsValidate:
         task_run.task_uid = MAX_UINT_32
         ClickhouseRun.from_domain(1, task_run)
 
-    def test_tenant_uid(self, task_run: SerializableTaskRun):
+    def test_tenant_uid(self, task_run: Run):
         with pytest.raises(ValueError):
             ClickhouseRun.from_domain(MAX_UINT_32 + 1, task_run)
 
         ClickhouseRun.from_domain(MAX_UINT_32, task_run)
 
-    def test_provider_metadata(self, task_run: SerializableTaskRun):
+    def test_provider_metadata(self, task_run: Run):
         task_run.group.properties.provider = "openai"
         task_run.metadata = None
         run = ClickhouseRun.from_domain(1, task_run)
@@ -83,14 +83,14 @@ class TestClickhouseRunsValidate:
             ),
         ],
     )
-    def test_llm_completion(self, task_run: SerializableTaskRun, completions: list[LLMCompletion]):
+    def test_llm_completion(self, task_run: Run, completions: list[LLMCompletion]):
         task_run.llm_completions = completions
         run = ClickhouseRun.from_domain(1, task_run)
         sanity = ClickhouseRun.model_validate_json(run.model_dump_json())
         assert sanity.llm_completions == run.llm_completions
         assert sanity.to_domain("").llm_completions == task_run.llm_completions
 
-    def test_tool_calls(self, task_run: SerializableTaskRun):
+    def test_tool_calls(self, task_run: Run):
         task_run.tool_calls = [
             ToolCall(id="test", tool_name="test", tool_input_dict={"test": "test"}, result="test"),
         ]
@@ -105,7 +105,7 @@ class TestClickhouseRunsValidate:
         assert sanity.tool_calls == task_run.tool_calls
         assert sanity.tool_call_requests == task_run.tool_call_requests
 
-    def test_reasoning_steps(self, task_run: SerializableTaskRun):
+    def test_reasoning_steps(self, task_run: Run):
         task_run.reasoning_steps = [
             InternalReasoningStep(title="test", explaination="test", output="test"),
         ]

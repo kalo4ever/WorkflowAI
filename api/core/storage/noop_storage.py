@@ -4,7 +4,7 @@ from core.domain.analytics_events.analytics_events import SourceType
 from core.domain.task_example import SerializableTaskExample
 from core.domain.task_group import TaskGroup, TaskGroupIdentifier
 from core.domain.task_group_properties import TaskGroupProperties
-from core.domain.task_run import SerializableTaskRun
+from core.domain.task_run import Run
 from core.domain.task_variant import SerializableTaskVariant
 from core.domain.users import UserIdentifier
 from core.domain.version_environment import VersionEnvironment
@@ -28,10 +28,10 @@ class NoopStorage(AbstractStorage):
     async def store_task_run_resource(
         self,
         task: SerializableTaskVariant,
-        run: SerializableTaskRun,
+        run: Run,
         user: UserIdentifier | None,
         source: SourceType | None,
-    ) -> SerializableTaskRun:
+    ) -> Run:
         return run
 
     @override

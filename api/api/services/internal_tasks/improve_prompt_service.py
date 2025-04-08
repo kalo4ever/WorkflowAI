@@ -18,7 +18,7 @@ from core.agents.improve_prompt import (
 from core.domain.task_group import TaskGroup
 from core.domain.task_group_properties import TaskGroupProperties
 from core.domain.task_io import SerializableTaskIO
-from core.domain.task_run import SerializableTaskRun
+from core.domain.task_run import Run
 from core.domain.task_variant import SerializableTaskVariant
 from core.storage import TaskTuple
 from core.storage.backend_storage import BackendStorage
@@ -49,7 +49,7 @@ class ImprovePromptService:
     ):
         """Returns a tuple of ImprovePromptAgentInput, variant and baseline task group properties"""
 
-        run: SerializableTaskRun | None = None
+        run: Run | None = None
         version: TaskGroup | None = None
         if run_id:
             run = await self._storage.task_runs.fetch_task_run_resource(

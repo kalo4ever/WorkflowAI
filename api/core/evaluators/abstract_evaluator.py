@@ -6,7 +6,7 @@ from core.domain.errors import ExampleNotFoundError, TaskRunHasNoExampleError
 from core.domain.evaluator_options import EvaluatorOptions
 from core.domain.task_evaluation import TaskEvaluation
 from core.domain.task_example import SerializableTaskExample
-from core.domain.task_run import SerializableTaskRun
+from core.domain.task_run import Run
 from core.storage import ObjectNotFoundException
 
 EvaluatorOptionsVar = TypeVar("EvaluatorOptionsVar", bound=EvaluatorOptions)
@@ -61,7 +61,7 @@ class AbstractEvaluator(ABC, Generic[EvaluatorOptionsVar]):
     def name(cls) -> str:
         return cls.__name__.removesuffix("Evaluator")
 
-    def can_evaluate(self, run: SerializableTaskRun) -> bool:
+    def can_evaluate(self, run: Run) -> bool:
         """Check if the evaluator can evaluate the given run"""
         if self.requires_example():
             return run.example_id is not None
@@ -74,13 +74,13 @@ class AbstractEvaluator(ABC, Generic[EvaluatorOptionsVar]):
     @abstractmethod
     async def evaluate(
         self,
-        run: SerializableTaskRun,
+        run: Run,
         example: Optional[SerializableTaskExample] = None,
     ) -> "TaskEvaluation":
         """Base method for evaluation. Responsible for building a TaskEvaluation object.
 
         Args:
-            run (SerializableTaskRun): a task run
+            run (Run): a task run
             example (Optional[SerializableTaskExample], optional): An optional example. Defaults to None.
 
         Returns:
@@ -115,20 +115,20 @@ class AbstractEvaluator(ABC, Generic[EvaluatorOptionsVar]):
     @overload
     async def fetch_example(
         self,
-        run: SerializableTaskRun,
+        run: Run,
         required: Literal[True],
     ) -> SerializableTaskExample: ...
 
     @overload
     async def fetch_example(
         self,
-        run: SerializableTaskRun,
+        run: Run,
         required: bool,
     ) -> SerializableTaskExample | None: ...
 
     async def fetch_example(
         self,
-        run: SerializableTaskRun,
+        run: Run,
         required: bool = True,
     ) -> SerializableTaskExample | None:
         if not run.example_id:

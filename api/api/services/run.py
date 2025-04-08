@@ -24,7 +24,7 @@ from core.domain.errors import (
 )
 from core.domain.events import EventRouter, StoreTaskRunEvent
 from core.domain.run_output import RunOutput
-from core.domain.task_run import SerializableTaskRun
+from core.domain.task_run import Run
 from core.domain.task_run_builder import TaskRunBuilder
 from core.domain.task_run_reply import RunReply
 from core.domain.task_variant import SerializableTaskVariant
@@ -68,7 +68,7 @@ class RunService:
         cache: CacheUsage,
         trigger: RunTrigger,
         chunk_serializer: Callable[[str, RunOutput], BaseModel],
-        serializer: Callable[[SerializableTaskRun], BaseModel] | None,
+        serializer: Callable[[Run], BaseModel] | None,
         store_inline: bool,
         source: SourceType | None,
         file_storage: FileStorage | None,
@@ -117,7 +117,7 @@ class RunService:
         labels: Optional[set[str]],
         metadata: Optional[dict[str, Any]],
         trigger: RunTrigger,
-        serializer: Callable[[SerializableTaskRun], BaseModel],
+        serializer: Callable[[Run], BaseModel],
         author_tenant: TenantTuple | None = None,
         stream_last_chunk: bool = False,
         store_inline: bool = False,
@@ -183,11 +183,11 @@ class RunService:
     async def reply(
         self,
         runner: AbstractRunner[Any],
-        to_run: SerializableTaskRun,
+        to_run: Run,
         user_message: str | None,
         tool_calls: Iterable[ToolCallOutput] | None,
         metadata: dict[str, Any] | None,
-        serializer: Callable[[SerializableTaskRun], BaseModel],
+        serializer: Callable[[Run], BaseModel],
         stream_serializer: Callable[[str, RunOutput], BaseModel] | None = None,
         is_different_version: bool = False,
         start: float | None = None,
@@ -252,7 +252,7 @@ class RunService:
     async def _store_task_run(
         self,
         task: SerializableTaskVariant,
-        run: SerializableTaskRun,
+        run: Run,
         trigger: RunTrigger | None,
         user: UserIdentifier | None = None,
         store_inline: bool = True,
@@ -299,7 +299,7 @@ class RunService:
 
         return task_run
 
-    def _send_run_analytics(self, run: SerializableTaskRun, trigger: RunTrigger | None):
+    def _send_run_analytics(self, run: Run, trigger: RunTrigger | None):
         self.analytics_service.send_event(lambda: RanTaskEventProperties.from_task_run(run, trigger=trigger))
 
     @asynccontextmanager
@@ -344,7 +344,7 @@ class RunService:
         source: SourceType | None = None,
         file_storage: FileStorage | None = None,
         overhead: float | None = None,
-    ) -> SerializableTaskRun:
+    ) -> Run:
         async with self._wrap_run(
             builder,
             trigger=trigger,

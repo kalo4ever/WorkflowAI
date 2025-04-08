@@ -9,7 +9,7 @@ from core.domain.llm_completion import LLMCompletion
 from core.domain.run_output import RunOutput
 from core.domain.task_group import TaskGroup
 from core.domain.task_group_properties import TaskGroupProperties
-from core.domain.task_run import SerializableTaskRun
+from core.domain.task_run import Run
 from core.domain.task_run_reply import RunReply
 from core.domain.task_variant import SerializableTaskVariant
 from core.domain.types import TaskInputDict
@@ -41,7 +41,7 @@ class TaskRunBuilder(BaseModel):
     tags: list[str] = Field(default_factory=list, description="A list of tags to associate with the run group.")
 
     # The built task run
-    _task_run: SerializableTaskRun | None = None
+    _task_run: Run | None = None
 
     labels: Optional[set[str]] = None
 
@@ -83,7 +83,7 @@ class TaskRunBuilder(BaseModel):
         return self
 
     @property
-    def task_run(self) -> SerializableTaskRun | None:
+    def task_run(self) -> Run | None:
         return self._task_run
 
     def build(
@@ -92,7 +92,7 @@ class TaskRunBuilder(BaseModel):
         from_cache: bool = False,
         end_time: Optional[datetime] = None,
         error: Optional[ErrorResponse.Error] = None,
-    ) -> SerializableTaskRun:
+    ) -> Run:
         """
         Builds the task run object
         """
@@ -113,7 +113,7 @@ class TaskRunBuilder(BaseModel):
             if seconds:
                 metadata[METADATA_KEY_INFERENCE_SECONDS] = seconds
 
-        self._task_run = SerializableTaskRun(
+        self._task_run = Run(
             id=self.id,
             version_changed=self.version_changed,
             start_time=self.start_time,

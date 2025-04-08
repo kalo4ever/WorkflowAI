@@ -15,7 +15,7 @@ from core.domain.analytics_events.analytics_events import (
 from core.domain.fields.chat_message import ChatMessage
 from core.domain.review import Review
 from core.domain.task_group_properties import TaskGroupProperties
-from core.domain.task_run import SerializableTaskRun
+from core.domain.task_run import Run
 from core.domain.task_variant import SerializableTaskVariant
 from core.domain.users import UserIdentifier
 
@@ -48,13 +48,13 @@ class Event(BaseModel):
 
 
 class StoreTaskRunEvent(Event):
-    run: SerializableTaskRun
+    run: Run
     task: SerializableTaskVariant
     trigger: RunTrigger | None
 
 
 class RunCreatedEvent(Event):
-    run: SerializableTaskRun
+    run: Run
 
 
 class TaskEvent(Event):

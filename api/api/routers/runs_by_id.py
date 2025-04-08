@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from api.dependencies.services import InternalTasksServiceDep, RunsServiceDep
 from api.dependencies.task_info import TaskTupleDep
-from core.domain.task_run import SerializableTaskRun
+from core.domain.task_run import Run
 from core.domain.task_variant import SerializableTaskVariant
 from core.runners.workflowai.utils import FileWithKeyPath, extract_files
 from core.storage import ObjectNotFoundException
@@ -20,12 +20,12 @@ async def task_run_dependency(
     runs_service: RunsServiceDep,
     task_tuple: TaskTupleDep,
     run_id: str = Path(title="The id of the run"),
-) -> SerializableTaskRun:
+) -> Run:
     # Passing an empty set to exclude to avoid the default exclusion of tool calls and LLM completions
     return await runs_service.run_by_id(task_tuple, run_id, exclude=set())
 
 
-SerializableTaskRunDep = Annotated[SerializableTaskRun, Depends(task_run_dependency)]
+SerializableTaskRunDep = Annotated[Run, Depends(task_run_dependency)]
 
 
 async def task_version_dependency(storage: StorageDep, run: SerializableTaskRunDep) -> SerializableTaskVariant:
@@ -39,7 +39,7 @@ SerializableTaskVariantDep = Annotated[SerializableTaskVariant, Depends(task_ver
 
 
 @router.get("")
-async def get_run(run: SerializableTaskRunDep) -> SerializableTaskRun:
+async def get_run(run: SerializableTaskRunDep) -> Run:
     return run
 
 

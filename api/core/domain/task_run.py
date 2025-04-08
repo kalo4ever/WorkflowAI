@@ -22,7 +22,7 @@ AIReview = Literal["in_progress", "positive", "negative", "unsure"]
 UserReview = Literal["positive", "negative"]
 
 
-class SerializableTaskRunBase(BaseModel):
+class RunBase(BaseModel):
     id: str = Field(
         ...,
         description="the id of the task run. If not provided a uuid will be generated",
@@ -90,7 +90,7 @@ class SerializableTaskRunBase(BaseModel):
                 self.ai_review = review.outcome
 
 
-class SerializableTaskRun(SerializableTaskRunBase):
+class Run(RunBase):
     """A task run represents an instance of a task being executed"""
 
     task_input: TaskInputDict

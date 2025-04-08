@@ -3,13 +3,13 @@ import pytest
 from core.domain.task_group import TaskGroup
 from core.domain.task_group_properties import TaskGroupProperties
 from core.domain.task_io import SerializableTaskIO
-from core.domain.task_run import SerializableTaskRun
+from core.domain.task_run import Run
 from core.domain.task_variant import SerializableTaskVariant
 
 
 @pytest.fixture(scope="function")
-def task_run_resource() -> SerializableTaskRun:
-    return SerializableTaskRun(
+def task_run_resource() -> Run:
+    return Run(
         id="run_id",
         task_id="task_id",
         task_schema_id=1,

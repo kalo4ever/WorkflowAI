@@ -24,7 +24,7 @@ from core.domain.search_query import (
 )
 from core.domain.task_group import TaskGroup
 from core.domain.task_group_properties import TaskGroupProperties
-from core.domain.task_run import SerializableTaskRun
+from core.domain.task_run import Run
 from core.domain.task_run_query import SerializableTaskRunField, SerializableTaskRunQuery
 from core.domain.tool_call import ToolCall, ToolCallRequestWithID
 from core.domain.utils import compute_eval_hash
@@ -230,7 +230,7 @@ class ClickhouseRun(BaseModel):
         code: str
 
         @classmethod
-        def from_run(cls, run: SerializableTaskRun):
+        def from_run(cls, run: Run):
             if run.error:
                 if run.status == "success":
                     _logger.warning("Run has an error but status is success", extra={"run_id": run.id})
@@ -513,7 +513,7 @@ class ClickhouseRun(BaseModel):
         return without_result or None, with_result or None
 
     @classmethod
-    def from_domain(cls, tenant: int, run: SerializableTaskRun):
+    def from_domain(cls, tenant: int, run: Run):
         return cls(
             # IDs
             tenant_uid=tenant,
@@ -567,10 +567,10 @@ class ClickhouseRun(BaseModel):
             llm_completions=safe_map_optional(run.llm_completions, cls._LLMCompletion.from_domain, logger=_logger),
         )
 
-    def to_domain(self, task_id: str) -> SerializableTaskRun:
+    def to_domain(self, task_id: str) -> Run:
         tool_call_requests, tool_calls = self.split_tool_calls()
 
-        return SerializableTaskRun(
+        return Run(
             # IDs
             task_id=task_id,
             id=str(self.run_uuid),

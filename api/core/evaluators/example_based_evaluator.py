@@ -5,7 +5,7 @@ from typing_extensions import override
 
 from core.domain.task_evaluation import TaskEvaluation
 from core.domain.task_example import SerializableTaskExample
-from core.domain.task_run import SerializableTaskRun
+from core.domain.task_run import Run
 
 from .abstract_evaluator import AbstractEvaluator, EvaluatorOptionsVar
 
@@ -27,7 +27,7 @@ class ExampleBasedEvaluator(AbstractEvaluator[EvaluatorOptionsVar]):
 
     async def evaluate_with_example(
         self,
-        run: SerializableTaskRun,
+        run: Run,
         example: SerializableTaskExample,
         definition: TaskEvaluation.Evaluator,
     ) -> "TaskEvaluation":
@@ -40,7 +40,7 @@ class ExampleBasedEvaluator(AbstractEvaluator[EvaluatorOptionsVar]):
     @override
     async def evaluate(
         self,
-        run: SerializableTaskRun,
+        run: Run,
         example: Optional[SerializableTaskExample] = None,
     ) -> "TaskEvaluation":
         definition = self.definition

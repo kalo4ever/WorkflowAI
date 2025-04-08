@@ -12,7 +12,7 @@ from core.domain.task_example import SerializableTaskExample
 from core.domain.task_group import TaskGroup
 from core.domain.task_group_properties import TaskGroupProperties
 from core.domain.task_io import SerializableTaskIO
-from core.domain.task_run import SerializableTaskRun
+from core.domain.task_run import Run
 from core.domain.task_variant import SerializableTaskVariant
 from core.domain.tool_call import ToolCallRequestWithID
 from core.domain.users import UserIdentifier
@@ -42,7 +42,7 @@ def task_run_ser(
     task_uid: int | None = None,
     model: str | None = None,
     **kwargs: Any,
-) -> SerializableTaskRun:
+) -> Run:
     if not group:
         final_kwargs = group_kwargs or {}
         if "schema_id" not in final_kwargs:
@@ -52,7 +52,7 @@ def task_run_ser(
             properties["model"] = model
         group = task_group(group_id=group_id, **final_kwargs)
 
-    base = SerializableTaskRun(
+    base = Run(
         id="run_id",
         task_uid=task_uid or 0,
         task_id=task.task_id if task else task_id,
@@ -68,7 +68,7 @@ def task_run_ser(
         tool_call_requests=tool_call_requests or None,
     )
 
-    return SerializableTaskRun.model_validate({**base.model_dump(exclude_none=True, exclude={"eval_hash"}), **kwargs})
+    return Run.model_validate({**base.model_dump(exclude_none=True, exclude={"eval_hash"}), **kwargs})
 
 
 def task_example_ser(**kwargs: Any) -> SerializableTaskExample:

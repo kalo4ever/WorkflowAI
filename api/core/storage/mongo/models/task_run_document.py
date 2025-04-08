@@ -13,7 +13,7 @@ from core.domain.models import Provider
 from core.domain.search_query import SearchQuery
 from core.domain.task_group import TaskGroup
 from core.domain.task_group_properties import TaskGroupProperties
-from core.domain.task_run import SerializableTaskRun, SerializableTaskRunBase
+from core.domain.task_run import Run, RunBase
 from core.domain.task_run_query import SerializableTaskRunField, SerializableTaskRunQuery
 from core.domain.utils import compute_eval_hash
 from core.storage.mongo.models.tool_call_schema import ToolCallResultSchema, ToolCallSchema
@@ -172,7 +172,7 @@ class TaskRunDocument(BaseDocumentWithStrID):
     error: Error | None = None
 
     @classmethod
-    def from_resource(cls, task_run: SerializableTaskRun) -> Self:
+    def from_resource(cls, task_run: Run) -> Self:
         return cls(
             _id=task_run.id,
             created_at=task_run.created_at,
@@ -222,8 +222,8 @@ class TaskRunDocument(BaseDocumentWithStrID):
             eval_hash=task_run.eval_hash,
         )
 
-    def to_base(self) -> SerializableTaskRunBase:
-        return SerializableTaskRunBase(
+    def to_base(self) -> RunBase:
+        return RunBase(
             id=self.id,
             created_at=self.created_at,
             updated_at=self.updated_at or self.created_at,
@@ -253,8 +253,8 @@ class TaskRunDocument(BaseDocumentWithStrID):
             eval_hash=self.eval_hash or "",
         )
 
-    def to_resource(self) -> SerializableTaskRun:
-        run = SerializableTaskRun(
+    def to_resource(self) -> Run:
+        run = Run(
             id=self.id,
             start_time=self.start_time,
             end_time=self.end_time,
@@ -551,7 +551,7 @@ class TaskRunDocument(BaseDocumentWithStrID):
         return self
 
 
-def _get_provider_for_run(run: SerializableTaskRun, completion_idx: int | None = None) -> str | None:
+def _get_provider_for_run(run: Run, completion_idx: int | None = None) -> str | None:
     if run.group.properties.provider is not None:
         return run.group.properties.provider
 
