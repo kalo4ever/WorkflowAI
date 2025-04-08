@@ -10,6 +10,10 @@ from api.services.internal_tasks._internal_tasks_utils import OFFICIALLY_SUGGEST
 from api.services.slack_notifications import SlackNotificationDestination, get_user_and_org_str, send_slack_notification
 from core.agents.agent_output_example import SuggestedAgentOutputExampleInput, stream_suggested_agent_output_example
 from core.agents.agent_suggestion_validator_agent import SuggestedAgentValidationInput, run_suggested_agent_validation
+from core.agents.ai_roadmap_generator_agent import (
+    GenerateAIRoadmapPresentationInput,
+    generate_ai_roadmap_presentation,
+)
 from core.agents.chat_task_schema_generation.chat_task_schema_generation_task import (
     InputSchemaFieldType,
     OutputSchemaFieldType,
@@ -21,6 +25,9 @@ from core.agents.chat_task_schema_generation.schema_generation_agent import (
 )
 from core.agents.company_agent_suggestion_agent import (
     INSTUCTIONS as AGENT_SUGGESTION_INSTRUCTIONS,
+)
+from core.agents.company_agent_suggestion_agent import (
+    CompanyContext as CompanyContextInput,
 )
 from core.agents.company_agent_suggestion_agent import (
     SuggestAgentForCompanyInput,
@@ -210,7 +217,7 @@ class FeatureService:
                 ],
                 SuggestAgentForCompanyInput.ToolDescription.from_internal_tool,
             ),
-            company_context=SuggestAgentForCompanyInput.CompanyContext(
+            company_context=CompanyContextInput(
                 company_url=company_domain,
                 company_url_content=company_context,
                 # Existing agent are deactivate for now as I felt they were perturbating generation pertinence in some cases.
@@ -261,9 +268,9 @@ class FeatureService:
         input: SuggestAgentForCompanyInput,
     ) -> AsyncIterator[CompanyFeaturePreviewList]:
         validation_decisions: dict[str, bool] = {}
+        features: list[BaseFeature] = []
 
         async for chunk in stream_suggest_agents_for_company(input):
-            features: list[BaseFeature] = []
             for agent in chunk.suggested_agents or []:
                 if isinstance(agent, dict):  # pyright: ignore[reportUnnecessaryIsInstance]
                     # For some reason, a dict is sometimes returned instead of a SuggestedAgent
@@ -293,6 +300,27 @@ class FeatureService:
             yield CompanyFeaturePreviewList(
                 company_context=company_context,
                 features=features,
+            )
+
+        # TODO; this is a demo that included the AI Roadmap Presentation as the latest suggested feature
+        # To integrate better if we want to keep the feature
+        async for chunk in generate_ai_roadmap_presentation.stream(
+            GenerateAIRoadmapPresentationInput(
+                roadmap_agents=features,
+                company_context=input.company_context,
+            ),
+        ):
+            yield CompanyFeaturePreviewList(
+                company_context=company_context,
+                features=features
+                + [
+                    BaseFeature(
+                        name="AI Roadmap Presentation",
+                        tag_line="AI Roadmap Presentation",
+                        description=chunk.output.roadmap_presentation or "",
+                        specifications="",
+                    ),
+                ],
             )
 
     async def _get_company_latest_news(self, company_domain: str) -> str:

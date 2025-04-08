@@ -31,6 +31,9 @@ from core.agents.chat_task_schema_generation.schema_generation_agent import (
     SchemaBuilderOutput,
 )
 from core.agents.company_agent_suggestion_agent import (
+    CompanyContext as CompanyContextInput,
+)
+from core.agents.company_agent_suggestion_agent import (
     SuggestAgentForCompanyInput,
     SuggestAgentForCompanyOutput,
     SuggestedAgent,
@@ -436,7 +439,7 @@ async def test_get_features_by_domain_e2e(  # noqa: C901
             supported_agent_input_types=[],
             supported_agent_output_types=[],
             available_tools=[],
-            company_context=SuggestAgentForCompanyInput.CompanyContext(
+            company_context=CompanyContextInput(
                 company_url=company_domain,
                 company_url_content=company_context_chunks[0].private,
                 existing_agents=[],
