@@ -83,7 +83,7 @@ class ClickhouseClient(TaskRunStorage):
     async def insert_models(self, table: str, models: Sequence[BaseModel], settings: InsertSettings | None = None):
         if not models:
             return
-        columns = list(models[0].model_fields.keys())
+        columns = list(models[0].__class__.model_fields.keys())
 
         def _row(model: BaseModel):
             dumped = model.model_dump()

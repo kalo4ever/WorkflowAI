@@ -14,10 +14,10 @@ strict = ["**/*.py"]
 
 pythonVersion = "3.12"
 pythonPlatform = "Linux"
-extraPaths = ["api"]
+extraPaths = ["api", "scripts"]
 
 [tool.ruff]
-src = ["api"]
+src = ["api", "scripts"]
 # Exclude a variety of commonly ignored directories.
 line-length = 120
 exclude = [
