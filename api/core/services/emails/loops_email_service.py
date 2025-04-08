@@ -103,8 +103,8 @@ class LoopsEmailService(EmailService):
         self,
         transaction_id: str,
         emails_and_variables: list[tuple[str, dict[str, str | int | float] | None]],
+        idempotency_key: str,
         retry_count: int = 3,
-        idempotency_key: str | None = None,
     ):
         errors: list[Exception] = []
         async with self._client() as client:
@@ -127,8 +127,11 @@ class LoopsEmailService(EmailService):
                 errors,
             )
 
-    async def _send_emails_to_tenant(self, tenant: str, transaction_id: str):
+    async def _send_emails_to_tenant(self, tenant: str, transaction_id: str, idempotency_key: str):
         org = await self._organization_storage.public_organization_by_tenant(tenant=tenant)
+        if org.anonymous:
+            # Skipping all anonymous organizations
+            return
 
         try:
             if org.org_id:
@@ -145,6 +148,7 @@ class LoopsEmailService(EmailService):
         await self.send_emails(
             transaction_id=transaction_id,
             emails_and_variables=[(email, None) for email in emails],
+            idempotency_key=idempotency_key,
         )
 
     @override
@@ -153,7 +157,7 @@ class LoopsEmailService(EmailService):
         if not email_id:
             raise EmailSendError("PAYMENT_FAILURE_EMAIL_ID is not set")
 
-        await self._send_emails_to_tenant(tenant, email_id)
+        await self._send_emails_to_tenant(tenant, email_id, idempotency_key=str(uuid7()))
 
     @override
     async def send_low_credits_email(self, tenant: str):
@@ -161,4 +165,4 @@ class LoopsEmailService(EmailService):
         if not email_id:
             raise EmailSendError("LOW_CREDITS_EMAIL_ID is not set")
 
-        await self._send_emails_to_tenant(tenant, email_id)
+        await self._send_emails_to_tenant(tenant, email_id, idempotency_key=str(uuid7()))

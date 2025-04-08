@@ -52,10 +52,18 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
         doc = await self._find_one({}, projection=self._projection(None))
         return doc.to_domain(self.encryption)
 
-    async def get_public_org(self, filter: dict[str, Any]):
+    async def _get_public_org(self, filter: dict[str, Any]):
         doc = await self._collection.find_one(
             filter,
-            projection={"tenant": 1, "slug": 1, "display_name": 1, "uid": 1, "org_id": 1, "owner_id": 1},
+            projection={
+                "tenant": 1,
+                "slug": 1,
+                "display_name": 1,
+                "uid": 1,
+                "org_id": 1,
+                "owner_id": 1,
+                "anonymous": 1,
+            },
         )
         if doc is None:
             raise ObjectNotFoundException("Organization  not found", code="organization_not_found")
@@ -73,11 +81,11 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
             # New slugs are URL safe and do not contain dots
             filter = {"slug": slug}
 
-        return await self.get_public_org(filter)
+        return await self._get_public_org(filter)
 
     @override
     async def public_organization_by_tenant(self, tenant: str) -> PublicOrganizationData:
-        return await self.get_public_org({"tenant": tenant})
+        return await self._get_public_org({"tenant": tenant})
 
     @override
     async def update_slug(

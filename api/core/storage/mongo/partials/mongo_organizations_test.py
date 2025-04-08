@@ -1744,3 +1744,72 @@ class TestCheckUnlockedPaymentFailure:
         # Check for payment failure - should return None since organization is locked
         with pytest.raises(ObjectNotFoundException):
             await organization_storage.check_unlocked_payment_failure(TENANT)
+
+
+class TestPublicOrganizationByTenant:
+    async def test_success(
+        self,
+        organization_storage: MongoOrganizationStorage,
+        org_col: AsyncCollection,
+    ) -> None:
+        # Insert an organization with public data
+        org_settings = OrganizationDocument(
+            tenant=TENANT,
+            slug="test_slug",
+            uid=1,
+            org_id="o1",
+            owner_id="owner1",
+        )
+        await org_col.insert_one(dump_model(org_settings))
+
+        # Get the public organization data
+        org = await organization_storage.public_organization_by_tenant(TENANT)
+
+        # Verify the returned data
+        assert org.tenant == TENANT
+        assert org.slug == "test_slug"
+        assert org.uid == 1
+        assert org.org_id == "o1"
+        assert org.owner_id == "owner1"
+
+    async def test_not_found(
+        self,
+        organization_storage: MongoOrganizationStorage,
+        org_col: AsyncCollection,
+    ) -> None:
+        # Insert an organization for a different tenant
+        org_settings = OrganizationDocument(
+            tenant="other_tenant",
+            slug="other_slug",
+            uid=2,
+            org_id="o2",
+            owner_id="owner2",
+        )
+        await org_col.insert_one(dump_model(org_settings))
+
+        # Try to get public organization data for non-existent tenant
+        with pytest.raises(ObjectNotFoundException):
+            await organization_storage.public_organization_by_tenant(TENANT)
+
+    async def test_anonymous_organization(
+        self,
+        organization_storage: MongoOrganizationStorage,
+        org_col: AsyncCollection,
+    ) -> None:
+        # Insert an organization with minimal required data
+        org_settings = OrganizationDocument(
+            tenant=TENANT,
+            uid=3,
+            anonymous=True,
+        )
+        await org_col.insert_one(dump_model(org_settings))
+
+        # Get the public organization data
+        org = await organization_storage.public_organization_by_tenant(TENANT)
+
+        # Verify the returned data
+        assert org.tenant == TENANT
+        assert org.uid == 3
+        assert org.org_id is None
+        assert org.owner_id is None
+        assert org.anonymous is True
