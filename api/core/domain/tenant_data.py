@@ -25,12 +25,12 @@ class PublicOrganizationData(BaseModel):
     name: str | None = None
     org_id: str | None = None
     owner_id: str | None = None
+    anonymous: bool | None = Field(default=None)
 
 
 class TenantData(PublicOrganizationData):
     owner_id: str | None = Field(default=None)
     anonymous_user_id: str | None = Field(default=None)
-    anonymous: bool | None = Field(default=None)
     stripe_customer_id: str | None = None
     providers: list[ProviderSettings] = Field(default_factory=list, description="List of provider configurations")
     added_credits_usd: float = Field(default=0.0, description="Total credits added to the organization")
