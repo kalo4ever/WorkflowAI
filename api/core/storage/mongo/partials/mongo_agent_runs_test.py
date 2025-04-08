@@ -690,6 +690,7 @@ class TestSearchRunsInclude:
         includes = task_run_storage._search_run_include()  # pyright: ignore [reportPrivateUsage]
         includes.remove("user_review")
         includes.remove("ai_review")
+        includes.remove("overhead_seconds")
         # We should get all fields with None values
         dumped = TaskRunDocument(task=TaskMetadataSchema()).model_dump(by_alias=True)
 
