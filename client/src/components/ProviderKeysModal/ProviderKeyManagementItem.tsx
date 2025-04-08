@@ -4,9 +4,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import { useCallback, useMemo } from 'react';
 import { ProviderSettings } from '@/types/workflowAI';
 import { AIProviderMetadata } from '../AIModelsCombobox/utils';
-import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
-import { SimpleTooltip } from '../ui/Tooltip';
 
 dayjs.extend(relativeTime);
 

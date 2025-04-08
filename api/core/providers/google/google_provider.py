@@ -22,6 +22,7 @@ from core.providers.google.google_provider_domain import (
     message_or_system_message,
 )
 
+# TODO: switch to having models multi region by default
 # https://cloud.google.com/vertex-ai/generative-ai/docs/learn/locations#available-regions
 _MIXED_REGION_MODELS = {
     # Model.GEMINI_2_0_FLASH_EXP,

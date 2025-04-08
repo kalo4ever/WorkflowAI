@@ -20,7 +20,8 @@ from api.services.internal_tasks.instructions_service import InstructionsService
 from api.services.internal_tasks.moderation_service import ModerationService
 from api.services.internal_tasks.task_input_service import TaskInputService
 from api.services.tasks import list_agent_summaries
-from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task import (
+from core.agents.audio_transcription_task import AudioTranscriptionTask, AudioTranscriptionTaskInput
+from core.agents.chat_task_schema_generation.chat_task_schema_generation_task import (
     AgentBuilderInput,
     AgentBuilderOutput,
     AgentSchemaJson,
@@ -29,57 +30,72 @@ from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task impo
     OutputObjectFieldConfig,
     agent_builder,
 )
-from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task_utils import (
+from core.agents.chat_task_schema_generation.chat_task_schema_generation_task_utils import (
     build_json_schema_with_defs,
     sanitize_agent_name,
 )
-from api.tasks.describe_images import DescribeImagesWithContextTaskInput, describe_images_with_context
-from api.tasks.evaluate_output import EvaluateOutputTaskInput, evaluate_output
-from api.tasks.extract_company_info_from_domain_task import safe_generate_company_description_from_email
-from api.tasks.generate_changelog import (
+from core.agents.describe_images import DescribeImagesWithContextTaskInput, describe_images_with_context
+from core.agents.evaluate_output import EvaluateOutputTaskInput, evaluate_output
+from core.agents.extract_company_info_from_domain_task import safe_generate_company_description_from_email
+from core.agents.generate_changelog import (
     GenerateChangelogFromPropertiesTaskInput,
     Properties,
     Schema,
     TaskGroupWithSchema,
     generate_changelog_from_properties,
 )
-from api.tasks.generate_task_preview import (
+from core.agents.generate_task_preview import (
     GenerateTaskPreviewTaskInput,
     GenerateTaskPreviewTaskOutput,
     stream_generate_task_preview,
 )
-from api.tasks.input_generation_instructions_agent import (
+from core.agents.input_generation_instructions_agent import (
     InputGenerationInstructionsInput,
     run_input_generation_instructions,
 )
-from api.tasks.task_description_generation.task_description_generation_task import (
+from core.agents.reformat_instructions_task import (
+    TaskInstructionsReformatingTaskInput,
+    format_instructions,
+)
+from core.agents.task_description_generation_task import (
     TaskDescriptionGenerationTaskInput,
     stream_task_description_generation,
 )
-from api.tasks.task_instruction_generation.task_instructions_generation_task import (
+from core.agents.task_input_example.task_input_example_task import (
+    TaskInputExampleTaskInput,
+    TaskInputExampleTaskOutput,
+    run_task_input_example_task,
+    stream_task_input_example_task,
+)
+from core.agents.task_input_example.task_input_migration_task import (
+    TaskInputMigrationTaskInput,
+    run_task_input_migration_task,
+    stream_task_input_migration_task,
+)
+from core.agents.task_instruction_generation.task_instructions_generation_task import (
     TaskInstructionsGenerationTaskInput,
     generate_task_instructions,
     stream_task_instructions_generation,
 )
-from api.tasks.task_instruction_generation.task_schema_comparison_task import (
+from core.agents.task_instruction_generation.task_schema_comparison_task import (
     TaskSchemaComparisonTask,
     TaskSchemaComparisonTaskInput,
 )
-from api.tasks.task_instruction_required_tools_picking.task_instructions_required_tools_picking_task import (
+from core.agents.task_instruction_required_tools_picking.task_instructions_required_tools_picking_task import (
     TaskInstructionsRequiredToolsPickingTaskInput,
     run_task_instructions_required_tools_picking,
 )
-from api.tasks.task_instructions_migration.task_instructions_migration_task import (
+from core.agents.task_instructions_migration_task import (
     TaskInstructionsMigrationTaskInput,
     stream_task_instructions_update,
     update_task_instructions,
 )
-from api.tasks.update_correct_outputs_and_instructions import (
+from core.agents.update_correct_outputs_and_instructions import (
     PreviousEvaluationResult,
     UpdateCorrectOutputsAndInstructionsTaskInput,
     update_correct_outputs_and_instructions,
 )
-from api.tasks.url_finder_agent import URLFinderAgentInput, url_finder_agent
+from core.agents.url_finder_agent import URLFinderAgentInput, url_finder_agent
 from core.deprecated.workflowai import WorkflowAI
 from core.domain.changelogs import VersionChangelog
 from core.domain.deprecated.task import Task, TaskInput, TaskOutput
@@ -102,22 +118,6 @@ from core.domain.version_reference import VersionReference
 from core.runners.workflowai.utils import FileWithKeyPath
 from core.runners.workflowai.workflowai_runner import WorkflowAIRunner
 from core.storage.backend_storage import BackendStorage
-from core.tasks.audio_transcription.audio_transcription_task import AudioTranscriptionTask, AudioTranscriptionTaskInput
-from core.tasks.reformat_instructions.reformat_instructions_task import (
-    TaskInstructionsReformatingTaskInput,
-    format_instructions,
-)
-from core.tasks.task_input_example.task_input_example_task import (
-    TaskInputExampleTaskInput,
-    TaskInputExampleTaskOutput,
-    run_task_input_example_task,
-    stream_task_input_example_task,
-)
-from core.tasks.task_input_example.task_input_migration_task import (
-    TaskInputMigrationTaskInput,
-    run_task_input_migration_task,
-    stream_task_input_migration_task,
-)
 from core.tools import ToolKind
 from core.utils.schema_sanitation import streamline_schema
 from core.utils.schemas import EXPLAINATION_KEY, schema_needs_explanation, strip_json_schema_metadata_keys

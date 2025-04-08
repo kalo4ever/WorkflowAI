@@ -1,4 +1,4 @@
-from api.tasks.task_instruction_required_tools_picking.task_instructions_required_tools_picking_task import (
+from core.agents.task_instruction_required_tools_picking.task_instructions_required_tools_picking_task import (
     TaskInstructionsRequiredToolsPickingTaskOutput,
 )
 

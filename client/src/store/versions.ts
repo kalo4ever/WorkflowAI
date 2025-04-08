@@ -309,7 +309,7 @@ export const useVersions = create<VersionsState>((set, get) => ({
     );
 
     const version = await get().fetchVersion(tenant, taskId, versionId);
-    get().fetchVersions(tenant, taskId, undefined);
+    await get().fetchVersions(tenant, taskId, undefined);
 
     return version;
   },

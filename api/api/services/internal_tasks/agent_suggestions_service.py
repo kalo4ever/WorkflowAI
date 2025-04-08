@@ -6,28 +6,28 @@ from typing_extensions import Literal
 
 from api.services.internal_tasks.internal_tasks_service import InternalTasksService
 from api.services.tasks import list_agent_summaries
-from api.tasks.agent_input_output_example import (
+from core.agents.agent_input_output_example import (
     SuggestedAgentInputOutputExampleInput,
     SuggestedAgentInputOutputExampleOutput,
     stream_suggested_agent_input_output_example,
 )
-from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task import (
+from core.agents.chat_task_schema_generation.chat_task_schema_generation_task import (
     AgentBuilderInput,
     ChatMessageWithExtractedURLContent,
     InputSchemaFieldType,
     OutputSchemaFieldType,
     agent_builder,
 )
-from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task_utils import build_json_schema_with_defs
-from api.tasks.detect_company_domain_task import (
+from core.agents.chat_task_schema_generation.chat_task_schema_generation_task_utils import build_json_schema_with_defs
+from core.agents.detect_company_domain_task import (
     DetectCompanyDomainTaskInput,
     run_detect_company_domain_task,
 )
-from api.tasks.extract_company_info_from_domain_task import (
+from core.agents.extract_company_info_from_domain_task import (
     safe_extract_company_domain,
     safe_generate_company_description_from_domain,
 )
-from api.tasks.suggest_llm_features_for_company_agent import (
+from core.agents.suggest_llm_features_for_company_agent import (
     AgentSuggestionChatMessage,
     SuggestedAgent,
     SuggestLlmAgentForCompanyInput,

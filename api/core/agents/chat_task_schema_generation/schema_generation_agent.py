@@ -1,7 +1,7 @@
 import workflowai
 from pydantic import BaseModel, Field
 
-from api.tasks.chat_task_schema_generation.chat_task_schema_generation_task import (
+from .chat_task_schema_generation_task import (
     InputObjectFieldConfig,
     OutputObjectFieldConfig,
 )

@@ -1,4 +1,4 @@
-from core.tasks.task_input_example.task_input_example_task import TaskInputExampleTaskInput
+from core.agents.task_input_example.task_input_example_task import TaskInputExampleTaskInput
 
 
 class TestInputLabel:

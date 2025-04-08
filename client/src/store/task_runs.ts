@@ -24,6 +24,9 @@ export interface TaskRunsState {
   isRunV1LoadingById: Map<string, boolean>;
   isRunV1InitializedById: Map<string, boolean>;
 
+  isLatestRunLoadingByScope: Map<string, boolean>;
+  latestRunByScope: Map<string, RunV1>;
+
   fetchTaskRuns(params: {
     tenant: TenantID | undefined;
     taskId: TaskID;
@@ -39,6 +42,7 @@ export interface TaskRunsState {
   }): Promise<void>;
   fetchTaskRun(tenant: TenantID | undefined, taskId: TaskID, taskRunId: string): Promise<TaskRun | undefined>;
   fetchRunV1(tenant: TenantID | undefined, taskId: TaskID, runId: string): Promise<RunV1 | undefined>;
+  fetchLatestRun(tenant: TenantID | undefined, taskId: TaskID, taskSchemaId?: TaskSchemaID): Promise<void>;
 }
 
 export const useTaskRuns = create<TaskRunsState>((set, get) => ({
@@ -50,6 +54,9 @@ export const useTaskRuns = create<TaskRunsState>((set, get) => ({
   isLoadingById: new Map<string, boolean>(),
   isLoadingByScope: new Map<string, boolean>(),
   countByScope: new Map<string, number>(),
+
+  isLatestRunLoadingByScope: new Map<string, boolean>(),
+  latestRunByScope: new Map<string, RunV1>(),
 
   runV1ById: new Map<string, RunV1>(),
   isRunV1LoadingById: new Map<string, boolean>(),
@@ -198,5 +205,40 @@ export const useTaskRuns = create<TaskRunsState>((set, get) => ({
       })
     );
     return runV1;
+  },
+
+  fetchLatestRun: async (tenant: TenantID | undefined, taskId: TaskID, taskSchemaId?: TaskSchemaID) => {
+    const scope = buildScopeKey({ tenant, taskId, taskSchemaId });
+
+    if (get().isLatestRunLoadingByScope.get(scope)) {
+      return;
+    }
+
+    set(
+      produce((state: TaskRunsState) => {
+        state.isLatestRunLoadingByScope.set(scope, true);
+      })
+    );
+
+    const params = new URLSearchParams();
+    if (taskSchemaId) params.set('schema_id', taskSchemaId);
+
+    try {
+      const runV1 = await client.get<RunV1>(taskSubPath(tenant, taskId, `/runs/latest`, true), params);
+
+      set(
+        produce((state) => {
+          state.latestRunByScope.set(scope, runV1);
+        })
+      );
+    } catch (error) {
+      console.error('Failed to fetch latest AI agents run', error);
+    }
+
+    set(
+      produce((state: TaskRunsState) => {
+        state.isLatestRunLoadingByScope.set(scope, false);
+      })
+    );
   },
 }));

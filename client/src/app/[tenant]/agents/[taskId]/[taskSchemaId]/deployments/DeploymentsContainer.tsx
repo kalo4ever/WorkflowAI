@@ -7,7 +7,6 @@ import { useDemoMode } from '@/lib/hooks/useDemoMode';
 import { useTaskSchemaParams } from '@/lib/hooks/useTaskParams';
 import { formatSemverVersion } from '@/lib/versionUtils';
 import { useOrFetchTask, useOrFetchVersions } from '@/store';
-import { useVersions } from '@/store/versions';
 import { TaskSchemaID } from '@/types/aliases';
 import { DeployVersionModal, EditEnvSchemaIterationParams } from './DeployVersionModal';
 import { EnvironmentDeployment } from './EnvironmentDeployment';
@@ -22,8 +21,6 @@ export function DeploymentsContainer() {
     versionsPerEnvironment,
     isInitialized: isVersionsInitialized,
   } = useOrFetchVersions(tenant, taskId);
-
-  const fetchVersions = useVersions((state) => state.fetchVersions);
 
   const [envSchemaIteration, setEnvSchemaIteration] = useState<EditEnvSchemaIterationParams | undefined>();
 
@@ -53,9 +50,8 @@ export function DeploymentsContainer() {
 
     await deployVersionToEnv(envSchemaIteration.environment, versionId, versionText);
 
-    await fetchVersions(tenant, taskId, undefined);
     onCloseEnvSchemaIteration();
-  }, [deployVersionToEnv, envSchemaIteration, fetchVersions, tenant, taskId, onCloseEnvSchemaIteration, versions]);
+  }, [deployVersionToEnv, envSchemaIteration, onCloseEnvSchemaIteration, versions]);
 
   const onIterationChange = useCallback(
     (iteration: string) => {

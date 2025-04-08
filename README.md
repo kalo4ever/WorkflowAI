@@ -9,7 +9,7 @@ It is configured to be self contained viable from the start.
 
 ```sh
 # Create a base environment file that will be used by the docker compose
-# You should likely update the .env file to include some provider keys
+# You should likely update the .env file to include some provider keys, see Configuring Provider keys below
 cp .env.sample .env
 # Build the client and api docker image
 # By default the docker compose builds development images, see the `target` keys
@@ -33,8 +33,26 @@ docker-compose up
 > latencies for development. Detailed setup for both the [client](./client/README.md) and [api](./api/README.md)
 > are provided in their respective READMEs.
 
-> For now, we rely on public read access to the storage in the frontend. The URLs are not discoverable though so it should be ok until we implement temporary leases for files.
-> On minio that's possible with the following commands
+#### Configuring Provider keys
+
+WorkflowAI connects to a variety of providers (see [the Provider enum](./api/core/domain/models/providers.py)). There
+are two ways to configure providers:
+
+- Globally, using environment variables. The provider [environment sample](./.env.sample) provides information
+  on requirements for each provider.
+
+- Per tenant, through the UI, by navigating to `../organization/settings/providers`
+
+> Several features of the website rely on providers being configured either globally or for the
+> tenant that is used internally. For example, at the time of writing, the
+> [agent that allows building agents with natural language](./api/core/agents/chat_task_schema_generation/chat_task_schema_generation_task.py)
+> uses Claude 3.7 so either Anthropic or Bedrock should be configured. All the agents that
+> WorkflowAI uses are located in the [agents directory](./api/core/agents/)
+
+#### Additional MinIO setup
+
+For now, we rely on public read access to the storage in the frontend. The URLs are not discoverable though so it should be ok until we implement temporary leases for files.
+On minio that's possible with the following commands
 
 ```sh
 # Run sh inside the running minio container

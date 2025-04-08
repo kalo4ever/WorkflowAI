@@ -75,3 +75,42 @@ def safe_b64decode(input_str: str | None) -> bytes | None:
     with contextlib.suppress(Exception):
         return base64.b64decode(input_str)
     return None
+
+
+def is_valid_unicode(b: str):
+    if len(b) != 2:
+        raise ValueError("Expected exactly two bytes.")
+    # Convert bytes to an integer.
+    code_point = int(b, 16)
+
+    # Check that it's in the valid Unicode range and not a surrogate.
+    if 0 <= code_point <= 0x10FFFF and not (0xD800 <= code_point <= 0xDFFF):
+        return chr(code_point).encode()
+    return None
+
+
+def clean_unicode_chars(input_str: str) -> str:
+    # Sometimes models return invalid unicode characters
+    # For example \ud83d or \u0000e9
+    # First we strip encode in utf8 by ingoring all errors
+    encoded = input_str.encode(errors="ignore")
+    # Double null bytes is a special case, we check if we can
+    # "Fix" them. We should really not have null bytes in the first place so they can be removed
+    splits = encoded.split(b"\x00")
+    if len(splits) == 1:
+        return encoded.decode()
+
+    enumerated = enumerate(splits)
+    next(enumerated)  # we skip the first one
+    for i, val in enumerated:
+        first_two_bytes = val[:2]
+        # Check if \x[first two bytes] is a valid unicode character
+        if c := is_valid_unicode(first_two_bytes.decode()):
+            # We have a valid unicode character so we can
+            # Replace the first two bytes with the valid character
+            splits[i] = c + val[2:]
+        else:
+            # We don't have a valid unicode character so we just remove the first two bytes
+            splits[i] = val[2:]
+
+    return b"".join(splits).decode()

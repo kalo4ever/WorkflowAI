@@ -247,21 +247,21 @@ async def test_usage_for_per_token_model(
     assert usage["model_context_window_size"] == 128000  # from model
 
 
-async def test_cost_for_zero_cost_gemini_model(
+async def test_cost_for_zero_cost_gemini_experimental_model(
     httpx_mock: HTTPXMock,
     int_api_client: AsyncClient,
     patched_broker: InMemoryBroker,
 ):
     await create_task(int_api_client, patched_broker, httpx_mock)
 
-    mock_gemini_call(httpx_mock, model="gemini-exp-1206")
+    mock_gemini_call(httpx_mock, model="gemini-2.5-pro-exp-03-25")
 
     task_run = await run_task_v1(
         int_api_client,
         task_id="greet",
         task_schema_id=1,
         task_input={"name": "John", "age": 30},
-        model="gemini-exp-1206",
+        model="gemini-2.5-pro-exp-03-25",
     )
 
     assert task_run["cost_usd"] == 0
@@ -1982,3 +1982,38 @@ async def test_invalid_base64_data(test_client: IntegrationTestClient):
 
     assert e.value.response.status_code == 400
     assert e.value.response.json()["error"]["code"] == "invalid_file"
+
+
+
+async def test_empty_strings_are_not_stripped(test_client: IntegrationTestClient):
+    """Check that we do not strip empty strings from the output when the model explicitly returns them
+    except if they have a format
+    """
+    # Create a task with an output schema with an optional string
+    task = await test_client.create_task(
+        output_schema={
+            "properties": {
+                "greeting": {"type": "string"},
+                "date": {"type": "string", "format": "date"},
+            },
+        },
+    )
+    test_client.mock_openai_call(json_content={"greeting": "", "date": ""})
+
+    res = await test_client.run_task_v1(task, model=Model.GPT_4O_2024_11_20, task_input={"name": "John"})
+    assert res
+    assert res["task_output"]["greeting"] == ""
+    assert "date" not in res["task_output"]
+
+async def test_invalid_unicode_chars(test_client: IntegrationTestClient):
+    task = await test_client.create_task()
+    test_client.mock_openai_call(bytes=fixture_bytes("openai", "invalid_unicode_chars.json"))
+
+    res = await test_client.run_task_v1(task, model=Model.GPT_4O_2024_11_20)
+    assert res["task_output"]["greeting"] == "The🐀 meaning of life is Préparation de co😁mmande."
+
+    # Checking that the run was properly stored
+    # Trying to make sure we din't get a surrogate not allowed
+    # It would be nice to test with invalid surrogates, but it is hard to reproduce a failing payload
+    fetched = await test_client.fetch_run(task, run_id=res["id"])
+    assert fetched["task_output"]["greeting"] == "The🐀 meaning of life is Préparation de co😁mmande."

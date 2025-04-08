@@ -7,7 +7,7 @@ from pydantic import field_serializer
 from typing_extensions import override
 from workflowai import Run as ExternalTaskRun
 
-from api.tasks.evaluate_output import (
+from core.agents.evaluate_output import (
     EvaluateOutputTaskInput,
     EvaluateOutputTaskOutput,
 )
