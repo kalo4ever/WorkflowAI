@@ -8,10 +8,10 @@ from httpx import AsyncClient
 
 from api.dependencies.security import final_tenant_data, url_public_organization, user_organization
 from api.routers.task_schemas import UpdateTaskInstructionsRequest
+from core.domain.agent_run import AgentRun
 from core.domain.page import Page
 from core.domain.task_info import TaskInfo
 from core.domain.task_preview import TaskPreview
-from core.domain.task_run import Run
 from core.domain.task_run_query import SerializableTaskRunQuery
 from core.domain.tenant_data import PublicOrganizationData, TenantData
 from core.domain.users import User
@@ -410,7 +410,7 @@ class TestListRuns:
         mock_storage: Mock,
     ):
         mock_storage.tasks.get_task_info.return_value = TaskInfo(task_id="task_id", uid=1)
-        mock_runs_service.list_runs.return_value = Page[Run](
+        mock_runs_service.list_runs.return_value = Page[AgentRun](
             items=[],
             count=0,
         )

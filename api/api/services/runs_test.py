@@ -5,6 +5,7 @@ import pytest
 from pytest_httpx import HTTPXMock
 
 from api.services.runs import LLMCompletionTypedMessages, RunsService
+from core.domain.agent_run import AgentRun
 from core.domain.analytics_events.analytics_events import RanTaskEventProperties
 from core.domain.events import RunCreatedEvent
 from core.domain.llm_completion import LLMCompletion
@@ -13,7 +14,6 @@ from core.domain.models import Model, Provider
 from core.domain.task_group import TaskGroup
 from core.domain.task_group_properties import TaskGroupProperties
 from core.domain.task_io import SerializableTaskIO
-from core.domain.task_run import Run
 from core.domain.task_run_query import SerializableTaskRunQuery
 from core.domain.task_variant import SerializableTaskVariant
 from core.domain.tool_call import ToolCallRequestWithID
@@ -151,7 +151,7 @@ class TestStoreTaskRun:
 
     @pytest.fixture()
     def non_legacy_task_run(self):
-        return Run(
+        return AgentRun(
             task_id="test_task",
             task_input={
                 "image": {
@@ -175,7 +175,7 @@ class TestStoreTaskRun:
         )
 
     @pytest.fixture()
-    def legacy_task_run(self, non_legacy_task_run: Run):
+    def legacy_task_run(self, non_legacy_task_run: AgentRun):
         non_legacy_task_run.task_input["image"] = {
             "data": "1234",
             "name": "test_name",
@@ -187,7 +187,7 @@ class TestStoreTaskRun:
     def mock_store_task_run_resource(self, mock_storage: Mock):
         async def store(
             task_variant: SerializableTaskVariant,
-            task_run: Run,
+            task_run: AgentRun,
             *args: Any,
             **kwargs: Any,
         ):
@@ -198,7 +198,7 @@ class TestStoreTaskRun:
     async def test_store_task_run_with_files(
         self,
         non_legacy_task: SerializableTaskVariant,
-        non_legacy_task_run: Run,
+        non_legacy_task_run: AgentRun,
         runs_service: RunsService,
         mock_storage: Mock,
         mock_file_storage: Mock,
@@ -228,7 +228,7 @@ class TestStoreTaskRun:
         mock_storage.store_task_run_resource.assert_awaited_once()
 
         stored_task_run = mock_storage.store_task_run_resource.call_args[0][1]
-        assert isinstance(stored_task_run, Run)
+        assert isinstance(stored_task_run, AgentRun)
         assert stored_task_run.llm_completions
         assert stored_task_run.llm_completions[0].usage.prompt_cost_usd == 1
         assert stored_task_run.llm_completions[0].usage.completion_cost_usd == 2
@@ -256,7 +256,7 @@ class TestStoreTaskRun:
         mock_storage: Mock,
         mock_file_storage: Mock,
         non_legacy_task: SerializableTaskVariant,
-        non_legacy_task_run: Run,
+        non_legacy_task_run: AgentRun,
     ):
         non_legacy_task.input_schema.json_schema = {"type": "object", "properties": {"text": {"type": "string"}}}
         non_legacy_task_run.task_input = {"text": "hello"}
@@ -282,7 +282,7 @@ class TestStoreTaskRun:
     async def test_store_task_run_with_legacy_task(
         self,
         legacy_task: SerializableTaskVariant,
-        legacy_task_run: Run,
+        legacy_task_run: AgentRun,
         runs_service: RunsService,
         mock_storage: Mock,
         mock_file_storage: Mock,

@@ -30,6 +30,7 @@ from api.utils import error_json_response
 from core.agents.task_instruction_tool_update_task import (
     TaskInstructionsToolUpdateTaskOutput,
 )
+from core.domain.agent_run import AgentRun
 from core.domain.analytics_events.analytics_events import (
     GeneratedInputProperties,
     ImportedTaskRunEventProperties,
@@ -44,7 +45,6 @@ from core.domain.task_group import TaskGroup
 from core.domain.task_group_properties import TaskGroupProperties
 from core.domain.task_input import TaskInput, TaskInputFields
 from core.domain.task_io import SerializableTaskIO
-from core.domain.task_run import Run
 from core.domain.types import TaskInputDict
 from core.domain.users import UserIdentifier
 from core.domain.version_environment import VersionEnvironment
@@ -142,7 +142,7 @@ async def list_task_runs(
     runs_service: RunsServiceDep,
     query: TaskRunQueryDep,
     task_uid: TaskTupleDep,
-) -> Page[Run]:
+) -> Page[AgentRun]:
     # Restricting the limit to 20 if no limit is provided
     if query.limit is None:
         query.limit = 20
@@ -163,7 +163,7 @@ async def create_task_run(
     analytics_service: AnalyticsServiceDep,
     user: UserDep,
     user_org: UserOrganizationDep,
-) -> Run:
+) -> AgentRun:
     # By default, groups created directly from the API are external
     if request.group.is_external is None:
         request.group.is_external = True

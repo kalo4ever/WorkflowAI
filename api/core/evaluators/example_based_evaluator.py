@@ -3,9 +3,9 @@ from typing import Any, Optional
 
 from typing_extensions import override
 
+from core.domain.agent_run import AgentRun
 from core.domain.task_evaluation import TaskEvaluation
 from core.domain.task_example import SerializableTaskExample
-from core.domain.task_run import Run
 
 from .abstract_evaluator import AbstractEvaluator, EvaluatorOptionsVar
 
@@ -27,7 +27,7 @@ class ExampleBasedEvaluator(AbstractEvaluator[EvaluatorOptionsVar]):
 
     async def evaluate_with_example(
         self,
-        run: Run,
+        run: AgentRun,
         example: SerializableTaskExample,
         definition: TaskEvaluation.Evaluator,
     ) -> "TaskEvaluation":
@@ -40,7 +40,7 @@ class ExampleBasedEvaluator(AbstractEvaluator[EvaluatorOptionsVar]):
     @override
     async def evaluate(
         self,
-        run: Run,
+        run: AgentRun,
         example: Optional[SerializableTaskExample] = None,
     ) -> "TaskEvaluation":
         definition = self.definition

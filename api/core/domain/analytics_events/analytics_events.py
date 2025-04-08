@@ -5,9 +5,9 @@ from typing import Annotated, Literal, TypeAlias
 
 from pydantic import BaseModel, Field
 
+from core.domain.agent_run import AgentRun
 from core.domain.llm_completion import total_tokens_count
 from core.domain.task_group import TaskGroup
-from core.domain.task_run import Run
 from core.domain.tenant_data import PublicOrganizationData, TenantData
 from core.domain.users import UserIdentifier
 from core.utils.fields import datetime_factory, id_factory
@@ -160,7 +160,7 @@ class RanTaskEventProperties(BaseModel):
     from_cache: bool | None = Field(default=None, description="Whether the task run was from cache")
 
     @classmethod
-    def from_task_run(cls, task_run: Run, trigger: RunTrigger | None):
+    def from_task_run(cls, task_run: AgentRun, trigger: RunTrigger | None):
         input_tokens, output_tokens = total_tokens_count(task_run.llm_completions)
 
         return cls(

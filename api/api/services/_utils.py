@@ -1,7 +1,7 @@
 import logging
 from collections.abc import Sequence
 
-from core.domain.task_run import RunBase
+from core.domain.agent_run import AgentRunBase
 from core.storage.reviews_storage import ReviewsStorage
 
 
@@ -9,7 +9,7 @@ from core.storage.reviews_storage import ReviewsStorage
 async def apply_reviews(
     storage: ReviewsStorage,
     task_id: str | None,
-    runs: Sequence[RunBase],
+    runs: Sequence[AgentRunBase],
     logger: logging.Logger,
 ):
     """Retrieve corresponding reviews for runs and assign them"""
@@ -17,7 +17,7 @@ async def apply_reviews(
         logger.warning("No task id provided, skipping reviews assignment")
         return
 
-    by_eval_hashes: dict[str, list[RunBase]] = {}
+    by_eval_hashes: dict[str, list[AgentRunBase]] = {}
     for run in runs:
         by_eval_hashes.setdefault(run.eval_hash, []).append(run)
 

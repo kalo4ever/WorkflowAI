@@ -12,11 +12,11 @@ from api.schemas.reasoning_step import ReasoningStep
 from api.schemas.version_properties import ShortVersionProperties
 from api.services.runs import LLMCompletionsResponse
 from api.tags import RouteTags
+from core.domain.agent_run import AgentRun, AgentRunBase
 from core.domain.error_response import ErrorCode, ErrorResponse
 from core.domain.page import Page
 from core.domain.search_query import FieldQuery, SearchOperator
 from core.domain.task_group import TaskGroup
-from core.domain.task_run import Run, RunBase
 from core.domain.types import TaskInputDict, TaskOutputDict
 from core.storage import ObjectNotFoundException
 from core.utils.iter_utils import safe_map_optional
@@ -106,7 +106,7 @@ class RunItemV1(_BaseRunV1):
     error: Error | None
 
     @classmethod
-    def from_domain(cls, run: RunBase, feedback_token: str):
+    def from_domain(cls, run: AgentRunBase, feedback_token: str):
         return cls(
             id=run.id,
             task_id=run.task_id,
@@ -170,7 +170,7 @@ class RunV1(_BaseRunV1):
     )
 
     @classmethod
-    def from_domain_task_run(cls, run: Run, feedback_token: str):
+    def from_domain_task_run(cls, run: AgentRun, feedback_token: str):
         return cls(
             id=run.id,
             task_id=run.task_id,

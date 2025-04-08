@@ -34,9 +34,9 @@ from core.agents.meta_agent import (
 from core.agents.meta_agent import (
     PlaygroundState as PlaygroundStateDomain,
 )
+from core.domain.agent_run import AgentRun
 from core.domain.events import EventRouter, MetaAgentChatMessagesSent
 from core.domain.fields.file import File
-from core.domain.task_run import Run
 from core.domain.task_variant import SerializableTaskVariant
 from core.domain.url_content import URLContent
 from core.runners.workflowai.utils import extract_files
@@ -315,14 +315,14 @@ class MetaAgentService:
         self.runs_service = runs_service
         self.models_service = models_service
 
-    async def fetch_agent_runs(self, task_tuple: TaskTuple, agent_run_ids: list[str]) -> list[Run]:
+    async def fetch_agent_runs(self, task_tuple: TaskTuple, agent_run_ids: list[str]) -> list[AgentRun]:
         """Allow to concurrently fetch several concurrently and manage expections"""
 
         agent_runs_results = await asyncio.gather(
             *[self.runs_service.run_by_id(task_tuple, run_id) for run_id in agent_run_ids],
             return_exceptions=True,
         )
-        valid_runs: list[Run] = []
+        valid_runs: list[AgentRun] = []
         for run_id, result in zip(agent_run_ids, agent_runs_results):
             if isinstance(result, BaseException):
                 self._logger.warning("Meta agent run not found", extra={"run_id": run_id})
@@ -418,7 +418,7 @@ class MetaAgentService:
         messages: list[MetaAgentChatMessage],
         current_agent: SerializableTaskVariant,
         playground_state: PlaygroundState,
-    ) -> tuple[MetaAgentInput, list[Run]]:
+    ) -> tuple[MetaAgentInput, list[AgentRun]]:
         # Concurrently extract company info and list current agents
         company_description, existing_agents, agent_runs = await asyncio.gather(
             safe_generate_company_description_from_email(user_email),
@@ -510,7 +510,7 @@ class MetaAgentService:
     def dispatch_new_assistant_messages_event(self, messages: list[MetaAgentChatMessage]):
         self.event_router(MetaAgentChatMessagesSent(messages=[message.to_domain() for message in messages]))
 
-    def _sanitize_agent_run_id(self, candidate_agent_run_id: str, valid_agent_runs: list[Run]) -> str:
+    def _sanitize_agent_run_id(self, candidate_agent_run_id: str, valid_agent_runs: list[AgentRun]) -> str:
         if candidate_agent_run_id in [run.id for run in valid_agent_runs]:
             return candidate_agent_run_id
 
@@ -566,7 +566,7 @@ class MetaAgentService:
     def _extract_tool_call_from_meta_agent_output(
         self,
         meta_agent_output: MetaAgentOutput,
-        agent_runs: list[Run],
+        agent_runs: list[AgentRun],
         messages: list[MetaAgentChatMessage],
     ) -> MetaAgentToolCallType | None:
         # If is mutually exclusive, because we want to only return one tool call at a time for now.

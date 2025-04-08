@@ -12,6 +12,7 @@ from pydantic import ValidationError
 from pymongo.errors import DuplicateKeyError, ServerSelectionTimeoutError
 from typing_extensions import deprecated, override
 
+from core.domain.agent_run import AgentRun
 from core.domain.analytics_events.analytics_events import SourceType
 from core.domain.errors import InternalError
 from core.domain.events import EventRouter, TaskGroupCreated
@@ -22,7 +23,6 @@ from core.domain.task_group import TaskGroup, TaskGroupIdentifier
 from core.domain.task_group_properties import TaskGroupProperties
 from core.domain.task_info import TaskInfo
 from core.domain.task_input import TaskInput, TaskInputFields
-from core.domain.task_run import Run
 from core.domain.task_variant import SerializableTaskVariant
 from core.domain.users import UserIdentifier
 from core.domain.version_environment import VersionEnvironment
@@ -633,10 +633,10 @@ class MongoStorage(BackendStorage):
     async def prepare_task_run(
         self,
         task: SerializableTaskVariant,
-        run: Run,
+        run: AgentRun,
         user: UserIdentifier | None,
         source: SourceType | None,
-    ) -> Run:
+    ) -> AgentRun:
         # if the task has no schema id, we make sure the task is registered
         if not task.task_schema_id:
             logger.warning("Task schema id not found, storing task")
@@ -995,9 +995,9 @@ class MongoStorage(BackendStorage):
     async def store_task_run_resource(
         self,
         task: SerializableTaskVariant,
-        run: Run,
+        run: AgentRun,
         user: UserIdentifier | None,
         source: SourceType | None,
-    ) -> Run:
+    ) -> AgentRun:
         run = await self.prepare_task_run(task, run, user, source)
         return await self.task_runs.store_task_run(run)

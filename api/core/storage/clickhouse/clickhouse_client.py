@@ -9,11 +9,11 @@ from clickhouse_connect.driver.asyncclient import AsyncClient
 from clickhouse_connect.driver.external import ExternalData
 from pydantic import BaseModel
 
+from core.domain.agent_run import AgentRun
 from core.domain.errors import InternalError
 from core.domain.search_query import (
     SearchQuery,
 )
-from core.domain.task_run import Run
 from core.domain.task_run_aggregate_per_day import TaskRunAggregatePerDay
 from core.domain.task_run_query import SerializableTaskRunField, SerializableTaskRunQuery
 from core.storage import ObjectNotFoundException, TaskTuple
@@ -94,7 +94,7 @@ class ClickhouseClient(TaskRunStorage):
         await client.insert(table=table, column_names=columns, data=rows, settings=cast(dict[str, Any], settings))
 
     @override
-    async def store_task_run(self, task_run: Run, settings: InsertSettings | None = None):
+    async def store_task_run(self, task_run: AgentRun, settings: InsertSettings | None = None):
         clickhouse_run = ClickhouseRun.from_domain(self.tenant_uid, task_run)
         data, columns = data_and_columns(clickhouse_run)
         client = await self.client()
@@ -239,7 +239,7 @@ class ClickhouseClient(TaskRunStorage):
         id: str,
         include: set[SerializableTaskRunField] | None = None,
         exclude: set[SerializableTaskRunField] | None = None,
-    ) -> Run:
+    ) -> AgentRun:
         w = ClickhouseRun.where_by_id(task_id[1], id)
         columns = ClickhouseRun.columns(include, exclude)
         results = await self._runs(task_id[0], columns, w, limit=1)
@@ -256,7 +256,7 @@ class ClickhouseClient(TaskRunStorage):
         group_id: str,
         timeout_ms: int | None,
         success_only: bool = True,
-    ) -> Run | None:
+    ) -> AgentRun | None:
         async with asyncio.timeout(timeout_ms):
             cache_hash = ClickhouseRun.compute_cache_hash(
                 self.tenant_uid,
@@ -303,7 +303,7 @@ class ClickhouseClient(TaskRunStorage):
         task_uid: int,
         query: SerializableTaskRunQuery,
         timeout_ms: int | None = None,
-    ) -> AsyncIterator[Run]:
+    ) -> AsyncIterator[AgentRun]:
         async with asyncio.timeout(timeout_ms):
             w = ClickhouseRun.where_for_query(self.tenant_uid, task_uid, query)
             columns = ClickhouseRun.columns(query.include_fields, query.exclude_fields)

@@ -11,6 +11,7 @@ from core.agents.evaluate_output import (
     EvaluateOutputTaskInput,
     EvaluateOutputTaskOutput,
 )
+from core.domain.agent_run import TaskRunIO
 from core.domain.errors import DefaultError
 from core.domain.evaluator_options import EvaluatorOptions
 from core.domain.input_evaluation import InputEvaluation
@@ -18,7 +19,6 @@ from core.domain.run_identifier import RunIdentifier
 from core.domain.task_evaluation import TaskEvaluation
 from core.domain.task_evaluator import EvalV2Evaluator
 from core.domain.task_example import SerializableTaskExample
-from core.domain.task_run import TaskRunIO
 from core.domain.task_variant import SerializableTaskVariant
 from core.domain.types import TaskInputDict, TaskOutputDict
 from core.evaluators.abstract_evaluator import AbstractEvaluator, InvalidEvaluationError

@@ -4,9 +4,9 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 from api.schemas.version_properties import ShortVersionProperties
+from core.domain.agent_run import AgentRunBase
 from core.domain.error_response import ErrorCode, ErrorResponse
 from core.domain.task_group import TaskGroup
-from core.domain.task_run import RunBase
 
 
 class TaskRunItem(BaseModel):
@@ -53,7 +53,7 @@ class TaskRunItem(BaseModel):
     author_uid: int | None
 
     @classmethod
-    def from_domain(cls, run: RunBase):
+    def from_domain(cls, run: AgentRunBase):
         return cls(
             id=run.id,
             task_id=run.task_id,

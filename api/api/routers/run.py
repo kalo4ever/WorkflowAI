@@ -30,11 +30,11 @@ from api.routers.common import DeprecatedVersionReference
 from api.schemas.api_tool_call_request import APIToolCallRequest
 from api.schemas.reasoning_step import ReasoningStep
 from api.tags import RouteTags
+from core.domain.agent_run import AgentRun
 from core.domain.major_minor import MajorMinor
 from core.domain.run_output import RunOutput
 from core.domain.task_group import TaskGroupIdentifier
 from core.domain.task_group_properties import TaskGroupProperties
-from core.domain.task_run import Run
 from core.domain.tool_call import ToolCall, ToolCallOutput
 from core.domain.types import CacheUsage
 from core.domain.version_environment import VersionEnvironment
@@ -176,7 +176,7 @@ class RunResponse(_RunResponseCommon):
     )
 
     @classmethod
-    def from_domain(cls, task_run: Run, feedback_token: str):
+    def from_domain(cls, task_run: AgentRun, feedback_token: str):
         """
         Converts a domain object to a stored task run
         """
@@ -451,7 +451,7 @@ _DEPRECATED_RUN_RESPONSE: dict[int | str, dict[str, Any]] = {
     200: {
         "content": {
             "application/json": {
-                "schema": Run.model_json_schema(),
+                "schema": AgentRun.model_json_schema(),
             },
             "text/event-stream": {
                 "schema": RunTaskStreamChunk.model_json_schema(),

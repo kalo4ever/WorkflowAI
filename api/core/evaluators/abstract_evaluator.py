@@ -2,10 +2,10 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Any, Generic, Literal, Optional, TypeVar, overload
 
+from core.domain.agent_run import AgentRun
 from core.domain.evaluator_options import EvaluatorOptions
 from core.domain.task_evaluation import TaskEvaluation
 from core.domain.task_example import SerializableTaskExample
-from core.domain.task_run import Run
 
 EvaluatorOptionsVar = TypeVar("EvaluatorOptionsVar", bound=EvaluatorOptions)
 
@@ -59,7 +59,7 @@ class AbstractEvaluator(ABC, Generic[EvaluatorOptionsVar]):
     def name(cls) -> str:
         return cls.__name__.removesuffix("Evaluator")
 
-    def can_evaluate(self, run: Run) -> bool:
+    def can_evaluate(self, run: AgentRun) -> bool:
         """Check if the evaluator can evaluate the given run"""
         if self.requires_example():
             raise NotImplementedError("Examples are no longer supported")
@@ -72,7 +72,7 @@ class AbstractEvaluator(ABC, Generic[EvaluatorOptionsVar]):
     @abstractmethod
     async def evaluate(
         self,
-        run: Run,
+        run: AgentRun,
         example: Optional[SerializableTaskExample] = None,
     ) -> "TaskEvaluation":
         """Base method for evaluation. Responsible for building a TaskEvaluation object.
@@ -113,20 +113,20 @@ class AbstractEvaluator(ABC, Generic[EvaluatorOptionsVar]):
     @overload
     async def fetch_example(
         self,
-        run: Run,
+        run: AgentRun,
         required: Literal[True],
     ) -> SerializableTaskExample: ...
 
     @overload
     async def fetch_example(
         self,
-        run: Run,
+        run: AgentRun,
         required: bool,
     ) -> SerializableTaskExample | None: ...
 
     async def fetch_example(
         self,
-        run: Run,
+        run: AgentRun,
         required: bool = True,
     ) -> SerializableTaskExample | None:
         raise NotImplementedError("Examples are no longer supported")

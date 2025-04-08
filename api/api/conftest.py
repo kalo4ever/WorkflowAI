@@ -1,15 +1,15 @@
 import pytest
 
+from core.domain.agent_run import AgentRun
 from core.domain.task_group import TaskGroup
 from core.domain.task_group_properties import TaskGroupProperties
 from core.domain.task_io import SerializableTaskIO
-from core.domain.task_run import Run
 from core.domain.task_variant import SerializableTaskVariant
 
 
 @pytest.fixture(scope="function")
-def task_run_resource() -> Run:
-    return Run(
+def task_run_resource() -> AgentRun:
+    return AgentRun(
         id="run_id",
         task_id="task_id",
         task_schema_id=1,

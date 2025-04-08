@@ -6,11 +6,11 @@ from typing import Any, Generic, Literal, Optional, Protocol, TypeVar
 
 from pydantic import BaseModel, ValidationError
 
+from core.domain.agent_run import AgentRun
 from core.domain.errors import InvalidRunnerOptionsError, MissingCacheError, ProviderError
 from core.domain.metrics import send_counter
 from core.domain.run_output import RunOutput
 from core.domain.task_group_properties import TaskGroupProperties
-from core.domain.task_run import Run
 from core.domain.task_run_builder import TaskRunBuilder
 from core.domain.task_run_reply import RunReply
 from core.domain.task_variant import SerializableTaskVariant
@@ -35,7 +35,7 @@ class CacheFetcher(Protocol):
         task_input_hash: str,
         group_id: str,
         timeout_ms: int | None,
-    ) -> Run | None: ...
+    ) -> AgentRun | None: ...
 
 
 class AbstractRunner(
@@ -131,7 +131,7 @@ class AbstractRunner(
         self,
         input: TaskInputDict,
         timeout: float | None = 0.1,  # noqa: ASYNC109
-    ) -> Optional[Run]:
+    ) -> Optional[AgentRun]:
         """
         Retrieve the output from the cache if it exists
         """
@@ -156,7 +156,7 @@ class AbstractRunner(
         self,
         input: TaskInputDict,
         timeout: float | None = 0.1,  # noqa: ASYNC109
-    ) -> Run | None:
+    ) -> AgentRun | None:
         """
         Retrieve the output from the cache if it exists, with a timeout of 100ms.
         """
@@ -217,7 +217,7 @@ class AbstractRunner(
         self,
         input: TaskInputDict,
         cache: CacheUsage,
-    ) -> Run | None:
+    ) -> AgentRun | None:
         if not self._should_use_cache(cache):
             return None
         from_cache = await self.from_cache(input, timeout=None)
@@ -273,7 +273,7 @@ class AbstractRunner(
         self,
         builder: TaskRunBuilder,
         cache: CacheUsage = "auto",
-    ) -> Run:
+    ) -> AgentRun:
         """
         The main runner function that is called when an input is provided
         """

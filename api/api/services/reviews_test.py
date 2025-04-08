@@ -8,11 +8,11 @@ from api.services.reviews import (
     ReviewsService,
     _InternalTasks,  # pyright: ignore [reportPrivateUsage]
 )
+from core.domain.agent_run import TaskRunIO
 from core.domain.events import RecomputeReviewBenchmarkEvent
 from core.domain.input_evaluation import InputEvaluation
 from core.domain.review import Review, ReviewOutcome
 from core.domain.task_evaluation import TaskEvaluation
-from core.domain.task_run import TaskRunIO
 from core.domain.users import UserIdentifier
 from core.evaluators.abstract_evaluator import AbstractEvaluator
 from core.storage.review_benchmark_storage import RunReviewAggregateWithIteration

@@ -1,6 +1,7 @@
 from abc import abstractmethod
 from typing import AsyncIterator, Optional, Protocol
 
+from core.domain.agent_run import AgentRun
 from core.domain.analytics_events.analytics_events import SourceType
 from core.domain.errors import InternalError
 from core.domain.task import SerializableTask
@@ -9,7 +10,6 @@ from core.domain.task_example_query import SerializableTaskExampleQuery
 from core.domain.task_group import TaskGroup
 from core.domain.task_group_properties import TaskGroupProperties
 from core.domain.task_input import TaskInput, TaskInputFields
-from core.domain.task_run import Run
 from core.domain.task_variant import SerializableTaskVariant
 from core.domain.users import UserIdentifier
 from core.storage.abstract_storage import AbstractStorage
@@ -229,10 +229,10 @@ class BackendStorage(AbstractStorage):
     async def prepare_task_run(
         self,
         task: SerializableTaskVariant,
-        run: Run,
+        run: AgentRun,
         user: UserIdentifier | None,
         source: SourceType | None,
-    ) -> Run:
+    ) -> AgentRun:
         pass
 
     async def get_task_tuple(self, task_id: str):

@@ -4,6 +4,7 @@ from typing import Any, Literal, Optional, Self
 
 from pydantic import BaseModel, Field, model_validator
 
+from core.domain.agent_run import AgentRun, AgentRunBase
 from core.domain.consts import METADATA_KEY_PROVIDER_NAME, METADATA_KEY_USED_PROVIDERS
 from core.domain.error_response import ErrorResponse
 from core.domain.fields.internal_reasoning_steps import InternalReasoningStep
@@ -13,7 +14,6 @@ from core.domain.models import Provider
 from core.domain.search_query import SearchQuery
 from core.domain.task_group import TaskGroup
 from core.domain.task_group_properties import TaskGroupProperties
-from core.domain.task_run import Run, RunBase
 from core.domain.task_run_query import SerializableTaskRunField, SerializableTaskRunQuery
 from core.domain.utils import compute_eval_hash
 from core.storage.mongo.models.tool_call_schema import ToolCallResultSchema, ToolCallSchema
@@ -162,7 +162,7 @@ class TaskRunDocument(BaseDocumentWithStrID):
     error: Error | None = None
 
     @classmethod
-    def from_resource(cls, task_run: Run) -> Self:
+    def from_resource(cls, task_run: AgentRun) -> Self:
         return cls(
             _id=task_run.id,
             created_at=task_run.created_at,
@@ -207,8 +207,8 @@ class TaskRunDocument(BaseDocumentWithStrID):
             eval_hash=task_run.eval_hash,
         )
 
-    def to_base(self) -> RunBase:
-        return RunBase(
+    def to_base(self) -> AgentRunBase:
+        return AgentRunBase(
             id=self.id,
             created_at=self.created_at,
             duration_seconds=self.duration_seconds,
@@ -236,8 +236,8 @@ class TaskRunDocument(BaseDocumentWithStrID):
             eval_hash=self.eval_hash or "",
         )
 
-    def to_resource(self) -> Run:
-        run = Run(
+    def to_resource(self) -> AgentRun:
+        run = AgentRun(
             id=self.id,
             created_at=self.created_at,
             duration_seconds=self.duration_seconds,
@@ -529,7 +529,7 @@ class TaskRunDocument(BaseDocumentWithStrID):
         return self
 
 
-def _get_provider_for_run(run: Run, completion_idx: int | None = None) -> str | None:
+def _get_provider_for_run(run: AgentRun, completion_idx: int | None = None) -> str | None:
     if run.group.properties.provider is not None:
         return run.group.properties.provider
 
