@@ -173,13 +173,11 @@ class TestSendPaymentFailureEmail:
             "email": "admin1@example.com",
             "transactionalId": "payment_failure_id",
             "addToAudience": False,
-            "dataVariables": None,
         }
         assert contents[1] == {
             "email": "admin2@example.com",
             "transactionalId": "payment_failure_id",
             "addToAudience": False,
-            "dataVariables": None,
         }
 
     async def test_success_with_owner_id(

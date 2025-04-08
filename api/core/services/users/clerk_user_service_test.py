@@ -157,7 +157,7 @@ class TestGetOrgAdmins:
 
         # Mock the organization memberships response
         httpx_mock.add_response(
-            url=f"https://api.clerk.com/v1/organizations/{org_id}/memberships?role=admin&limit={max_users}",
+            url=f"https://api.clerk.com/v1/organizations/{org_id}/memberships?role=org:admin&limit={max_users}",
             status_code=200,
             json={
                 "data": [
