@@ -26,7 +26,7 @@ function ManageCardsInner(props: ManageCardsProps) {
 
   const automaticPaymentsAreSet = organizationSettings?.automatic_payment_enabled;
 
-  const automaticPaymentsFailed = !!organizationSettings?.last_payment_failed_at;
+  const automaticPaymentsFailure = organizationSettings?.payment_failure?.failure_reason;
 
   const { user } = useAuth();
   const userId = user?.id;
@@ -45,7 +45,7 @@ function ManageCardsInner(props: ManageCardsProps) {
     !isPaymentMethodAvailable && isInitialized && !dismissForcedTooltipNoPaymentMethod;
 
   const shouldForceTooltipBecausePaymentsFailed =
-    automaticPaymentsFailed && isInitialized && !dismissForcedTooltipPaymentsFailed;
+    !!automaticPaymentsFailure && isInitialized && !dismissForcedTooltipPaymentsFailed;
 
   const [showAddPaymentMethod, setShowAddPaymentMethod] = useState(false);
   const [showEnableAutoRecharge, setShowEnableAutoRecharge] = useState(false);
@@ -73,8 +73,8 @@ function ManageCardsInner(props: ManageCardsProps) {
       return 'Payment method missing.\n\nTap the Credits section to add one\nand so you can continue using\nWorkflowAI once your free credits\nare used.';
     }
 
-    if (automaticPaymentsFailed) {
-      return 'Auto Recharge failed. You may run\nout of credits soon.\n\nTap the Credits section to update\nyour payment method.';
+    if (automaticPaymentsFailure) {
+      return `Auto Recharge failed:\n${automaticPaymentsFailure}\n\nYou may run out of credits soon.\n\nTap the Credits section to update\nyour payment method.`;
     }
 
     if (automaticPaymentsAreSet) {
@@ -82,7 +82,7 @@ function ManageCardsInner(props: ManageCardsProps) {
     }
 
     return 'Auto recharge is OFF.\n\nTap to view and manage billing details';
-  }, [isPaymentMethodAvailable, automaticPaymentsFailed, automaticPaymentsAreSet]);
+  }, [isPaymentMethodAvailable, automaticPaymentsFailure, automaticPaymentsAreSet]);
 
   const { addCredits } = useStripePayments();
   const deletePaymentMethod = usePayments((state) => state.deletePaymentMethod);
@@ -163,7 +163,7 @@ function ManageCardsInner(props: ManageCardsProps) {
           setAmountToAdd={setAmountToAdd}
           isAddCreditsButtonActive={isAddCreditsButtonActive}
           deletePaymentMethod={onDeletePaymentMethod}
-          automaticPaymentsFailed={automaticPaymentsFailed}
+          automaticPaymentsFailure={automaticPaymentsFailure}
         />
       </DialogContent>
     </Dialog>

@@ -23,7 +23,7 @@ type ManageCardsContentProps = {
   setAmountToAdd: (amount: number | undefined) => void;
   isAddCreditsButtonActive: boolean;
   deletePaymentMethod: () => Promise<void>;
-  automaticPaymentsFailed: boolean;
+  automaticPaymentsFailure: string | undefined;
 };
 
 export function ManageCardsContent(props: ManageCardsContentProps) {
@@ -42,7 +42,7 @@ export function ManageCardsContent(props: ManageCardsContentProps) {
     setAmountToAdd,
     isAddCreditsButtonActive,
     deletePaymentMethod,
-    automaticPaymentsFailed,
+    automaticPaymentsFailure,
   } = props;
 
   if (showAddPaymentMethod) {
@@ -74,7 +74,7 @@ export function ManageCardsContent(props: ManageCardsContentProps) {
       />
       <AmountToAddSection amountToAdd={amountToAdd} setAmountToAdd={setAmountToAdd} />
       <AutomaticPaymentsSection
-        automaticPaymentsFailed={automaticPaymentsFailed}
+        automaticPaymentsFailure={automaticPaymentsFailure}
         organizationSettings={organizationSettings}
         onEnableAutoRecharge={() => setShowEnableAutoRecharge(true)}
       />
