@@ -4,32 +4,29 @@ import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/Dialog';
 import { SimpleTooltip } from '@/components/ui/Tooltip';
 import { useAuth } from '@/lib/AuthContext';
 import { STRIPE_PUBLISHABLE_KEY } from '@/lib/constants';
-import { useOrFetchPayments } from '@/store/fetchers';
-import { usePayments } from '@/store/payments';
-import { TenantID } from '@/types/aliases';
+import { useOrFetchPayments, usePayments } from '@/store/payments';
 import { TenantData } from '@/types/workflowAI';
 import { ManageCardsContent } from './ManageCardsContent';
 import { ManageCardsTooltipContent } from './ManageCardsTooltipContent';
 import { useStripePayments } from './hooks/useStripePayments';
 
 type ManageCardsProps = {
-  tenant: TenantID | undefined;
   children: React.ReactNode;
   organizationSettings: TenantData | undefined;
 };
 
 function ManageCardsInner(props: ManageCardsProps) {
-  const { tenant, children, organizationSettings } = props;
+  const { children, organizationSettings } = props;
   const [isOpen, setIsOpen] = useState(false);
 
-  const { paymentMethod, isInitialized } = useOrFetchPayments(tenant);
+  const { paymentMethod, isInitialized } = useOrFetchPayments();
 
   const balance = organizationSettings?.current_credits_usd;
   const isPaymentMethodAvailable = !!paymentMethod?.payment_method_id;
 
   const automaticPaymentsAreSet = organizationSettings?.automatic_payment_enabled;
 
-  const automaticPaymentsFailed = !!organizationSettings?.last_payment_failed_at;
+  const automaticPaymentsFailure = organizationSettings?.payment_failure?.failure_reason;
 
   const { user } = useAuth();
   const userId = user?.id;
@@ -48,7 +45,7 @@ function ManageCardsInner(props: ManageCardsProps) {
     !isPaymentMethodAvailable && isInitialized && !dismissForcedTooltipNoPaymentMethod;
 
   const shouldForceTooltipBecausePaymentsFailed =
-    automaticPaymentsFailed && isInitialized && !dismissForcedTooltipPaymentsFailed;
+    !!automaticPaymentsFailure && isInitialized && !dismissForcedTooltipPaymentsFailed;
 
   const [showAddPaymentMethod, setShowAddPaymentMethod] = useState(false);
   const [showEnableAutoRecharge, setShowEnableAutoRecharge] = useState(false);
@@ -76,8 +73,8 @@ function ManageCardsInner(props: ManageCardsProps) {
       return 'Payment method missing.\n\nTap the Credits section to add one\nand so you can continue using\nWorkflowAI once your free credits\nare used.';
     }
 
-    if (automaticPaymentsFailed) {
-      return 'Auto Recharge failed. You may run\nout of credits soon.\n\nTap the Credits section to update\nyour payment method.';
+    if (automaticPaymentsFailure) {
+      return `Auto Recharge failed:\n${automaticPaymentsFailure}\n\nYou may run out of credits soon.\n\nTap the Credits section to update\nyour payment method.`;
     }
 
     if (automaticPaymentsAreSet) {
@@ -85,7 +82,7 @@ function ManageCardsInner(props: ManageCardsProps) {
     }
 
     return 'Auto recharge is OFF.\n\nTap to view and manage billing details';
-  }, [isPaymentMethodAvailable, automaticPaymentsFailed, automaticPaymentsAreSet]);
+  }, [isPaymentMethodAvailable, automaticPaymentsFailure, automaticPaymentsAreSet]);
 
   const { addCredits } = useStripePayments();
   const deletePaymentMethod = usePayments((state) => state.deletePaymentMethod);
@@ -94,18 +91,18 @@ function ManageCardsInner(props: ManageCardsProps) {
     if (!amountToAdd) {
       return;
     }
-    const result = await addCredits(tenant, amountToAdd);
+    const result = await addCredits(amountToAdd);
 
     if (result) {
       reset();
       setIsOpen(false);
     }
-  }, [addCredits, amountToAdd, reset, tenant, setIsOpen]);
+  }, [addCredits, amountToAdd, reset, setIsOpen]);
 
   const onDeletePaymentMethod = useCallback(async () => {
-    await deletePaymentMethod(tenant);
+    await deletePaymentMethod();
     reset();
-  }, [deletePaymentMethod, reset, tenant]);
+  }, [deletePaymentMethod, reset]);
 
   const onDismissForcedTooltip = useCallback(
     (event: React.MouseEvent) => {
@@ -152,7 +149,6 @@ function ManageCardsInner(props: ManageCardsProps) {
 
       <DialogContent className='max-w-[400px] p-0'>
         <ManageCardsContent
-          tenant={tenant}
           paymentMethod={paymentMethod}
           isPaymentMethodAvailable={isPaymentMethodAvailable}
           organizationSettings={organizationSettings}
@@ -167,7 +163,7 @@ function ManageCardsInner(props: ManageCardsProps) {
           setAmountToAdd={setAmountToAdd}
           isAddCreditsButtonActive={isAddCreditsButtonActive}
           deletePaymentMethod={onDeletePaymentMethod}
-          automaticPaymentsFailed={automaticPaymentsFailed}
+          automaticPaymentsFailure={automaticPaymentsFailure}
         />
       </DialogContent>
     </Dialog>

@@ -430,3 +430,7 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
             projection={"payment_failure": 1},
         )
         return doc.payment_failure
+
+    @override
+    async def clear_payment_failure(self) -> None:
+        await self._update_one({}, {"$unset": {"payment_failure": ""}})

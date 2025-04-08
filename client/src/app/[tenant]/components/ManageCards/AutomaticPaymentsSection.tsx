@@ -4,23 +4,23 @@ import { TenantData } from '@/types/workflowAI';
 import { InfoLabel } from './InfoLabel';
 
 type AutomaticPaymentsSectionProps = {
-  automaticPaymentsFailed: boolean;
+  automaticPaymentsFailure: string | undefined;
   organizationSettings: TenantData;
   onEnableAutoRecharge: () => void;
 };
 
 export function AutomaticPaymentsSection(props: AutomaticPaymentsSectionProps) {
-  const { organizationSettings, onEnableAutoRecharge, automaticPaymentsFailed } = props;
+  const { organizationSettings, onEnableAutoRecharge, automaticPaymentsFailure } = props;
 
   const isAutomaticPaymentsEnabled = organizationSettings.automatic_payment_enabled;
 
   return (
     <div className='flex flex-col px-4 py-2 gap-1'>
       <div className='text-gray-900 font-medium text-[13px]'>Automatic Payments</div>
-      {automaticPaymentsFailed && (
+      {automaticPaymentsFailure && (
         <InfoLabel
-          text='Auto Recharge payment failed. You may run out of credits soon. Please update your payment method. '
-          className='py-3 flex w-full'
+          text={`Auto Recharge payment failed:\n${automaticPaymentsFailure}\nYou may run out of credits soon. Please update your payment method.`}
+          className='py-3 flex w-full whitespace-pre-line'
         />
       )}
       {isAutomaticPaymentsEnabled ? (

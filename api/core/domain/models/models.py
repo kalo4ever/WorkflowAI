@@ -14,7 +14,7 @@ class Model(StrEnum):
     # Default model order
     GPT_4O_LATEST = "gpt-4o-latest"
     GEMINI_2_0_FLASH_LATEST = "gemini-2.0-flash-latest"
-    LLAMA_4_MAVERICK_BASIC = "llama4-maverick-instruct-basic"
+    CLAUDE_3_7_SONNET_LATEST = "claude-3-7-sonnet-latest"
 
     # --------------------------------------------------------------------------
     # OpenAI Models
@@ -80,7 +80,7 @@ class Model(StrEnum):
     # --------------------------------------------------------------------------
     # Claude Models
     # --------------------------------------------------------------------------
-    CLAUDE_3_7_SONNET_LATEST = "claude-3-7-sonnet-latest"
+    # CLAUDE_3_7_SONNET_LATEST = "claude-3-7-sonnet-latest"
     CLAUDE_3_7_SONNET_20250219 = "claude-3-7-sonnet-20250219"
     CLAUDE_3_5_SONNET_LATEST = "claude-3-5-sonnet-latest"
     CLAUDE_3_5_SONNET_20241022 = "claude-3-5-sonnet-20241022"
@@ -94,7 +94,7 @@ class Model(StrEnum):
     # --------------------------------------------------------------------------
     # Llama Models
     # --------------------------------------------------------------------------
-    # LLAMA_4_MAVERICK_BASIC = "llama4-maverick-instruct-basic"
+    LLAMA_4_MAVERICK_BASIC = "llama4-maverick-instruct-basic"
     LLAMA_4_SCOUT_BASIC = "llama4-scout-instruct-basic"
     LLAMA_3_3_70B = "llama-3.3-70b"
     LLAMA_3_2_90B = "llama-3.2-90b"
