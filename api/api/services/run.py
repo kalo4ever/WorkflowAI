@@ -355,9 +355,6 @@ class RunService:
         ):
             task_run = await runner.run(builder, cache=cache)
 
-        if builder.example_id:
-            task_run.example_id = builder.example_id
-
         return await self._store_task_run(
             task=builder.task,
             run=task_run,

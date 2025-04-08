@@ -2,12 +2,10 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Any, Generic, Literal, Optional, TypeVar, overload
 
-from core.domain.errors import ExampleNotFoundError, TaskRunHasNoExampleError
 from core.domain.evaluator_options import EvaluatorOptions
 from core.domain.task_evaluation import TaskEvaluation
 from core.domain.task_example import SerializableTaskExample
 from core.domain.task_run import Run
-from core.storage import ObjectNotFoundException
 
 EvaluatorOptionsVar = TypeVar("EvaluatorOptionsVar", bound=EvaluatorOptions)
 
@@ -64,7 +62,7 @@ class AbstractEvaluator(ABC, Generic[EvaluatorOptionsVar]):
     def can_evaluate(self, run: Run) -> bool:
         """Check if the evaluator can evaluate the given run"""
         if self.requires_example():
-            return run.example_id is not None
+            raise NotImplementedError("Examples are no longer supported")
         return True
 
     def _evaluator_properties(self) -> dict[str, Any]:
@@ -131,18 +129,4 @@ class AbstractEvaluator(ABC, Generic[EvaluatorOptionsVar]):
         run: Run,
         required: bool = True,
     ) -> SerializableTaskExample | None:
-        if not run.example_id:
-            if required:
-                raise TaskRunHasNoExampleError(f"Examples are required by {self.name()}")
-            return None
-
-        from core.deprecated.workflowai import WorkflowAI
-
-        wai = WorkflowAI.from_ctx()
-
-        try:
-            return await wai.storage.example_resource_by_id(run.example_id)
-        except ObjectNotFoundException:
-            if required:
-                raise ExampleNotFoundError(f"Example with id {run.example_id} not found")
-            return None
+        raise NotImplementedError("Examples are no longer supported")

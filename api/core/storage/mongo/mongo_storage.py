@@ -4,7 +4,7 @@ import logging
 import os
 from typing import Any, AsyncIterator, Optional
 
-from bson import CodecOptions, ObjectId
+from bson import CodecOptions
 from motor.motor_asyncio import (
     AsyncIOMotorClient,
 )
@@ -655,19 +655,6 @@ class MongoStorage(BackendStorage):
         run.task_schema_id = task_document.schema_id
         run.task_uid = task.task_uid
 
-        if run.example_id:
-            example_id: Optional[ObjectId] = object_id(run.example_id)
-        else:
-            existing_example = await self._task_examples_collections.find_one(
-                {
-                    "task.id": run.task_id,
-                    "task.schema_id": run.task_schema_id,
-                    "task_input_hash": run.task_input_hash,
-                    **self._tenant_filter(),
-                },
-            )
-            example_id = existing_example["_id"] if existing_example else None
-
         run_is_external = run.author_tenant is not None and run.author_tenant != self._tenant
 
         group = TaskGroupDocument.from_resource(
@@ -682,7 +669,6 @@ class MongoStorage(BackendStorage):
         run.group = group.to_resource()
         run.is_active = source.is_active if source else None
         run.is_external = run_is_external
-        run.example_id = str(example_id) if example_id else None
 
         return run
 

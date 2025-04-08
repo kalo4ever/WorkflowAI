@@ -42,8 +42,6 @@ class CreateTaskRunRequest(BaseModel):
             task_input_hash=task_variant.compute_input_hash(self.task_input),
             task_output=self.task_output,
             task_output_hash=task_variant.compute_output_hash(self.task_output),
-            start_time=self.start_time,
-            end_time=self.end_time,
             duration_seconds=self.duration_seconds(),
             cost_usd=self.cost_usd,
             group=task_group,

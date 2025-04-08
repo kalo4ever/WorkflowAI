@@ -47,9 +47,6 @@ class TaskRunItem(BaseModel):
     duration_seconds: float | None
     cost_usd: float | None
     created_at: datetime = Field(description="The time the task run was created")
-    updated_at: datetime = Field(description="The time the task run was last updated")
-
-    example_id: str | None = Field(description="The id of the example that share the same input as the task run")
 
     user_review: Literal["positive", "negative"] | None
     ai_review: Literal["positive", "negative", "unsure", "in_progress"] | None
@@ -69,8 +66,6 @@ class TaskRunItem(BaseModel):
             duration_seconds=run.duration_seconds,
             cost_usd=run.cost_usd,
             created_at=run.created_at,
-            updated_at=run.updated_at,
-            example_id=run.example_id,
             user_review=run.user_review,
             ai_review=run.ai_review,
             author_uid=run.author_uid,

@@ -519,7 +519,6 @@ class ClickhouseRun(BaseModel):
             tenant_uid=tenant,
             task_uid=run.task_uid,
             created_at_date=run.created_at.date(),
-            updated_at=run.updated_at,
             run_uuid=cls.sanitize_id(run.id, run.created_at),
             task_schema_id=run.task_schema_id,
             # Version
@@ -575,7 +574,6 @@ class ClickhouseRun(BaseModel):
             task_id=task_id,
             id=str(self.run_uuid),
             created_at=uuid7_generation_time(self.run_uuid),
-            updated_at=self.updated_at,
             task_schema_id=self.task_schema_id,
             # Group
             group=self.task_group,
