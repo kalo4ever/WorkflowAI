@@ -36,6 +36,25 @@ class SuggestedAgent(BaseModel):
     )
 
 
+class CompanyContext(BaseModel):
+    company_url: str | None = Field(
+        default=None,
+        description="An URL provided by the client in order for they to get agent suggestions",
+    )
+    company_url_content: str | None = Field(
+        default=None,
+        description="The content of the 'company_url'",
+    )
+    latest_news: str | None = Field(
+        default=None,
+        description="A description of the latest news for the company (ex: new product launch, new features, acquisitions, new regulations, industry trends, competitors news)",
+    )
+    existing_agents: list[str] | None = Field(
+        default=None,
+        description="The list of existing agents for the company",
+    )
+
+
 class SuggestAgentForCompanyInput(BaseModel):
     supported_agent_input_types: list[str] | None = Field(
         default=None,
@@ -66,24 +85,6 @@ class SuggestAgentForCompanyInput(BaseModel):
         default=None,
         description="The list of available tools that can be used by suggested agents",
     )
-
-    class CompanyContext(BaseModel):
-        company_url: str | None = Field(
-            default=None,
-            description="An URL provided by the client in order for they to get agent suggestions",
-        )
-        company_url_content: str | None = Field(
-            default=None,
-            description="The content of the 'company_url'",
-        )
-        latest_news: str | None = Field(
-            default=None,
-            description="A description of the latest news for the company (ex: new product launch, new features, acquisitions, new regulations, industry trends, competitors news)",
-        )
-        existing_agents: list[str] | None = Field(
-            default=None,
-            description="The list of existing agents for the company",
-        )
 
     company_context: CompanyContext | None = Field(
         default=None,
@@ -231,7 +232,7 @@ INSTUCTIONS = f"""Your role is to generate a comprehensive list of exactly {NUMB
     - Use case related to documentation, compatibility, privacy policies, etc.
     - Content Accessibility Enhancer (too vague)
 
-    Think step by step before proposing an agent. Make sure to follow the instructions and the examples and avoid the agents to avoid.
+    Make sure to follow the instructions above, and to avoid the agents mentioned in the 'Agents to AVOID' section.
 
     # Guidelines for writing the name and description of the suggested agents
     - the 'suggested_agents.name' must follow the following convention: [subject that is acted upon] + [the action], in Title Case. Ex: 'Sentiment Analysis', 'Text Summarization', 'Location Detection'. Avoid using "Generation" in the agent name, as all agents perform generation anyway.
