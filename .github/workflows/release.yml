@@ -1,9 +1,10 @@
-name: Main
+name: Release
 
 on:
   push:
     branches:
-      - main
+      - 'release/**'
+      - 'hotfix/**'
 
 permissions:
   contents: read
@@ -19,9 +20,9 @@ jobs:
   api-build:
     uses: ./.github/workflows/.build.yml
     with:
-      env: staging
-      registry_suffix: staging
-      app_name: workflowai-api-staging
+      env: prod-preview
+      registry_suffix: ''
+      app_name: workflowai-api-preview
       service: api
     secrets:
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
@@ -34,11 +35,11 @@ jobs:
   client-build:
     uses: ./.github/workflows/.build.yml
     with:
-      env: staging
-      registry_suffix: staging
-      app_name: workflowai-app-staging
+      env: prod-preview
+      registry_suffix: ''
+      app_name: workflowai-app-preview
       service: client
-      tag_suffix: -staging
+      tag_suffix: -preview
     secrets:
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
@@ -47,58 +48,27 @@ jobs:
       SENTRY_HOOK: ${{ secrets.SENTRY_CLIENT_HOOK }}
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       build_args: |
-        ENV_NAME=staging
+        ENV_NAME=prod-preview
         API_URL=${{ secrets.API_URL }}
         NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
         NEXT_PUBLIC_AMPLITUDE_API_KEY=${{ secrets.NEXT_PUBLIC_AMPLITUDE_API_KEY }}
         NEXT_PUBLIC_SENTRY_DSN=${{ secrets.SENTRY_CLIENT_DSN }}
         NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
 
-  api-deploy-api:
+  # There is a single container in prod preview
+  api-deploy:
     needs: [api-quality, api-build]
     uses: ./.github/workflows/.deploy.yml
-    secrets: inherit
     with:
       image_name: ${{ needs.api-build.outputs.image_name }}
-      env: staging
-      full_app_name: workflowai-api-staging
-
-  api-deploy-worker:
-    needs: [api-quality, api-build]
-    uses: ./.github/workflows/.deploy.yml
+      env: prod-preview
+      full_app_name: workflowai-api-preview
     secrets: inherit
-    with:
-      image_name: ${{ needs.api-build.outputs.image_name }}
-      env: staging
-      full_app_name: workflowai-worker-staging
-      label: latest
-
-  api-deploy-run:
-    needs: [api-quality, api-build]
-    uses: ./.github/workflows/.deploy.yml
-    secrets: inherit
-    with:
-      image_name: ${{ needs.api-build.outputs.image_name }}
-      env: staging
-      full_app_name: workflowai-run-staging
-      label: latest
-
-  api-deploy-run1:
-    needs: [api-quality, api-build]
-    uses: ./.github/workflows/.deploy.yml
-    secrets: inherit
-    with:
-      image_name: ${{ needs.api-build.outputs.image_name }}
-      env: staging
-      full_app_name: workflowai-run1-staging
-      label: latest
-
   client-deploy:
     needs: [client-quality, client-build]
     uses: ./.github/workflows/.deploy.yml
     secrets: inherit
     with:
       image_name: ${{ needs.client-build.outputs.image_name }}
-      env: staging
-      full_app_name: workflowai-app-staging
-      label: latest
+      env: prod-preview
+      full_app_name: workflowai-app-preview
