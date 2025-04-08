@@ -24,6 +24,7 @@ from core.domain.page import Page
 from core.domain.task_typology import TaskTypology
 from core.storage.task_run_storage import WeeklyRunAggregate
 from core.utils.email_utils import safe_domain_from_email
+from core.utils.redis_cache import redis_cached
 from core.utils.stream_response_utils import safe_streaming_response
 
 router = APIRouter(prefix="/features")
@@ -203,7 +204,14 @@ async def get_weekly_runs(
     system_storage: SystemStorageDep,
     week_count: Annotated[int, Query(ge=1, le=10)],
 ) -> Page[WeeklyRunsResponse]:
-    weekly_runs = [
-        WeeklyRunsResponse.from_domain(r) async for r in system_storage.task_runs.weekly_run_aggregate(week_count)
-    ]
+    # Caching the result for 10 minutes
+    # Passing the current week as an argument to avoid cache hits when the week changes
+    @redis_cached(expiration_seconds=60 * 10)
+    async def _fetch_weekly_runs(week_count: int, current_week: int):
+        return [
+            WeeklyRunsResponse.from_domain(r) async for r in system_storage.task_runs.weekly_run_aggregate(week_count)
+        ]
+
+    current_week = date.today().isocalendar().week
+    weekly_runs = await _fetch_weekly_runs(week_count=week_count, current_week=current_week)
     return Page(items=weekly_runs)
