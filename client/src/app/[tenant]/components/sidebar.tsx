@@ -256,7 +256,7 @@ export function Sidebar() {
                   openOrganizationProfile={openOrganizationProfile}
                   signOut={signOut}
                 />
-                <CreditsSection tenant={tenant} isSignedIn={!!isSignedIn} />
+                <CreditsSection isSignedIn={!!isSignedIn} />
               </div>
             </div>
           </>
