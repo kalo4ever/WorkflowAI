@@ -6,11 +6,11 @@ from typing import Any, Generic, Literal, Optional, Protocol, TypeVar
 
 from pydantic import BaseModel, ValidationError
 
+from core.domain.agent_run import AgentRun
 from core.domain.errors import InvalidRunnerOptionsError, MissingCacheError, ProviderError
 from core.domain.metrics import send_counter
 from core.domain.run_output import RunOutput
 from core.domain.task_group_properties import TaskGroupProperties
-from core.domain.task_run import SerializableTaskRun
 from core.domain.task_run_builder import TaskRunBuilder
 from core.domain.task_run_reply import RunReply
 from core.domain.task_variant import SerializableTaskVariant
@@ -35,7 +35,7 @@ class CacheFetcher(Protocol):
         task_input_hash: str,
         group_id: str,
         timeout_ms: int | None,
-    ) -> SerializableTaskRun | None: ...
+    ) -> AgentRun | None: ...
 
 
 class AbstractRunner(
@@ -131,7 +131,7 @@ class AbstractRunner(
         self,
         input: TaskInputDict,
         timeout: float | None = 0.1,  # noqa: ASYNC109
-    ) -> Optional[SerializableTaskRun]:
+    ) -> Optional[AgentRun]:
         """
         Retrieve the output from the cache if it exists
         """
@@ -156,7 +156,7 @@ class AbstractRunner(
         self,
         input: TaskInputDict,
         timeout: float | None = 0.1,  # noqa: ASYNC109
-    ) -> SerializableTaskRun | None:
+    ) -> AgentRun | None:
         """
         Retrieve the output from the cache if it exists, with a timeout of 100ms.
         """
@@ -184,8 +184,8 @@ class AbstractRunner(
     async def task_run_builder(
         self,
         input: TaskInputDict,
+        start_time: float,
         task_run_id: Optional[str] = None,
-        labels: Optional[set[str]] = None,
         metadata: Optional[dict[str, Any]] = None,
         private_fields: Optional[set[str]] = None,
         reply: RunReply | None = None,
@@ -198,10 +198,10 @@ class AbstractRunner(
             task_input=input,
             properties=self.properties,
             tags=self.group_tags(),
-            labels=labels,
             metadata=self._merge_metadata(metadata),
             private_fields=private_fields,
             reply=reply,
+            start_time=start_time,
         )
 
     def _should_use_cache(self, cache: CacheUsage) -> bool:
@@ -217,7 +217,7 @@ class AbstractRunner(
         self,
         input: TaskInputDict,
         cache: CacheUsage,
-    ) -> SerializableTaskRun | None:
+    ) -> AgentRun | None:
         if not self._should_use_cache(cache):
             return None
         from_cache = await self.from_cache(input, timeout=None)
@@ -273,7 +273,7 @@ class AbstractRunner(
         self,
         builder: TaskRunBuilder,
         cache: CacheUsage = "auto",
-    ) -> SerializableTaskRun:
+    ) -> AgentRun:
         """
         The main runner function that is called when an input is provided
         """

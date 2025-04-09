@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Any
 
 from api.services._utils import apply_reviews
+from core.domain.agent_run import AgentRunBase
 from core.domain.errors import BadRequestError
 from core.domain.major_minor import MajorMinor
 from core.domain.models import Model
@@ -24,7 +25,6 @@ from core.domain.search_query import (
     StatusSearchOptions,
 )
 from core.domain.task_group import TaskGroupQuery
-from core.domain.task_run import SerializableTaskRunBase
 from core.domain.version_environment import VersionEnvironment
 from core.storage import TaskTuple
 from core.storage.backend_storage import BackendStorage
@@ -482,7 +482,7 @@ class RunsSearchService:
         field_queries: list[FieldQuery] | None,
         limit: int,
         offset: int,
-        map: Callable[[SerializableTaskRunBase], BM],
+        map: Callable[[AgentRunBase], BM],
     ) -> Page[BM]:
         fields = [f async for f in self._process_field_query(task_uid[0], field_queries)] if field_queries else None
 

@@ -5,6 +5,7 @@ from typing import Any, Optional, Sequence, TypeVar
 
 from typing_extensions import override
 
+from core.domain.agent_run import AgentRun
 from core.domain.evaluator_options import EvaluatorOptions
 from core.domain.field_based_evaluation_config import (
     ArrayComparisonOptions,
@@ -18,7 +19,6 @@ from core.domain.field_based_evaluation_config import (
 from core.domain.task_evaluation import TaskEvaluation
 from core.domain.task_example import SerializableTaskExample
 from core.domain.task_group_properties import TaskGroupProperties
-from core.domain.task_run import SerializableTaskRun
 from core.domain.task_variant import SerializableTaskVariant
 from core.domain.version_reference import VersionReference
 from core.domain.workflowai_interface import WorkflowAIInterface
@@ -425,7 +425,7 @@ class FieldBasedCompare(ExampleBasedEvaluator[FieldBasedCompareOptions]):
     @override
     async def evaluate_with_example(
         self,
-        run: SerializableTaskRun,
+        run: AgentRun,
         example: SerializableTaskExample,
         definition: TaskEvaluation.Evaluator,
     ) -> TaskEvaluation:

@@ -7,8 +7,8 @@ from pydantic import ValidationError
 
 from api.routers.runs_v1 import SearchTaskRunsRequest
 from api.services.version_test import mock_aiter
+from core.domain.agent_run import AgentRun
 from core.domain.task_info import TaskInfo
-from core.domain.task_run import SerializableTaskRun
 from core.domain.task_run_query import SerializableTaskRunQuery
 from core.utils.uuid import uuid7
 from tests.models import task_run_ser
@@ -43,7 +43,7 @@ class TestLatestRun:
         self,
         test_api_client: AsyncClient,
         mock_storage: Mock,
-        returned_run: SerializableTaskRun,
+        returned_run: AgentRun,
     ):
         response = await test_api_client.get("/v1/_/agents/bla/runs/latest")
         assert response.status_code == 200
@@ -61,7 +61,7 @@ class TestLatestRun:
     async def test_latest_run_with_status(
         self,
         test_api_client: AsyncClient,
-        returned_run: SerializableTaskRun,
+        returned_run: AgentRun,
         mock_storage: Mock,
     ):
         response = await test_api_client.get("/v1/_/agents/bla/runs/latest?is_success=true")
@@ -81,7 +81,7 @@ class TestLatestRun:
     async def test_latest_with_schema_id(
         self,
         test_api_client: AsyncClient,
-        returned_run: SerializableTaskRun,
+        returned_run: AgentRun,
         mock_storage: Mock,
     ):
         response = await test_api_client.get("/v1/_/agents/bla/runs/latest?schema_id=1")

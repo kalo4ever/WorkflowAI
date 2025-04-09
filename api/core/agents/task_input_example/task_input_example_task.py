@@ -67,15 +67,16 @@ async def run_task_input_example_task(
 def stream_task_input_example_task(
     input: TaskInputExampleTaskInput,
 ) -> AsyncIterator[TaskInputExampleTaskOutput]:
-    """The goal here is to a generate realistic, lengthy and articulate 'task_input' (enforcing 'input_json_schema') for a task whose goal is to produce valid outputs (enforcing 'output_json_schema').
-    Step 1: Analyze the 'output_json_schema' and 'input_json_schema'. Analyze what is the goal of the task in order to generate a meaningful input.
-    Step 2: Generate a 'task_input' for a task based on the task's 'input_json_schema'.
-    Do not repeat the 'examples' included in the schema, but rather use those as an inspiration for what a correct value looks like. Consider the 'previous_task_inputs' to avoid generating the same inputs.
+    """The goal here is to generate realistic, lengthy, and articulate 'task_input' (enforcing 'input_json_schema') for a task whose goal is to produce valid outputs (enforcing 'output_json_schema').
+    Step 1: Analyze the 'output_json_schema' and 'input_json_schema'. Determine the goal of the task to generate a meaningful input.
+    Step 2: Generate a 'task_input' for the task based on the task's 'input_json_schema'.
+    Do not repeat the 'examples' included in the schema; instead, use them as inspiration for what correct values look like. Consider the 'previous_task_inputs' to avoid generating duplicate inputs.
 
-    Also, generate inputs that:
-    - Don't be lazy and generate output with realistic length. Recomended lenght: for email 5-20 lines, for transcripts 10-20 back and forths, for songs 3-6 verse + chorus, etc. Use your best judgement to find a length that suits the use case, but DO NOT BE LAZY, generate data that look real.
+    Additionally, generate inputs that:
+    - Are realistic in length and detail. Recommended length: for email 5-20 lines, for transcripts 10-20 back and forths, for songs 3-6 verses + choruses, etc. Use your best judgment to choose a length appropriate for the use case, but DO NOT BE LAZY; generate data that look real.
     - Have datetime values that are close to the current datetime, unless otherwise specified.
-    - Look realistic, e.g., a call transcript must include a back and forth between two persons, etc.
-    - Will be able to yield various outputs and explore the space of possible outputs. E.g., for classification tasks, generate inputs that can be classified into multiple categories as well as positive and negative examples.
-    - Are nicely formatted, in order to ease reading."""
+    - Appear realistic, e.g., a call transcript must include a back and forth between two persons, etc.
+    - Allow for various outputs and exploration of possible outputs. For example, for classification tasks, generate inputs that can be classified into multiple categories as well as positive and negative examples.
+    - Are well-formatted to ease reading.
+    - When generating email content, it is required to generate only ONE email, unless specifically required to generate a 'thread'."""
     ...

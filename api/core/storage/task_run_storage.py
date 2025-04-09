@@ -1,9 +1,9 @@
 from collections.abc import Sequence
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any, AsyncIterator, NamedTuple, NotRequired, Protocol, TypedDict
 
+from core.domain.agent_run import AgentRun, AgentRunBase
 from core.domain.search_query import SearchQuery
-from core.domain.task_run import SerializableTaskRun, SerializableTaskRunBase
 from core.domain.task_run_aggregate_per_day import TaskRunAggregatePerDay
 from core.domain.task_run_query import SerializableTaskRunField, SerializableTaskRunQuery
 from core.storage import TaskTuple
@@ -23,7 +23,17 @@ class RunAggregate(TypedDict):
     eval_hashes: Sequence[str]
 
 
-class TaskRunStorage(Protocol):
+class WeeklyRunAggregate(NamedTuple):
+    start_of_week: date
+    run_count: int
+    overhead_ms: int
+
+
+class TaskRunSystemStorage(Protocol):
+    def weekly_run_aggregate(self, week_count: int) -> AsyncIterator[WeeklyRunAggregate]: ...
+
+
+class TaskRunStorage(TaskRunSystemStorage):
     def aggregate_task_run_costs(
         self,
         task_uid: int | None,
@@ -47,7 +57,7 @@ class TaskRunStorage(Protocol):
         limit: int,
         offset: int,
         timeout_ms: int = 60_000,
-    ) -> AsyncIterator[SerializableTaskRunBase]: ...
+    ) -> AsyncIterator[AgentRunBase]: ...
 
     async def count_filtered_task_runs(
         self,
@@ -76,7 +86,7 @@ class TaskRunStorage(Protocol):
         """
         ...
 
-    async def store_task_run(self, task_run: SerializableTaskRun) -> SerializableTaskRun: ...
+    async def store_task_run(self, task_run: AgentRun) -> AgentRun: ...
 
     async def fetch_task_run_resource(
         self,
@@ -84,14 +94,14 @@ class TaskRunStorage(Protocol):
         id: str,
         include: set[SerializableTaskRunField] | None = None,
         exclude: set[SerializableTaskRunField] | None = None,
-    ) -> SerializableTaskRun: ...
+    ) -> AgentRun: ...
 
     def fetch_task_run_resources(
         self,
         task_uid: int,
         query: SerializableTaskRunQuery,
         timeout_ms: int | None = None,
-    ) -> AsyncIterator[SerializableTaskRun]:
+    ) -> AsyncIterator[AgentRun]:
         """Fetch task runs based on the provided query. The query page token should be updated in page"""
         ...
 
@@ -109,7 +119,7 @@ class TaskRunStorage(Protocol):
         group_id: str,
         timeout_ms: int | None,
         success_only: bool = True,
-    ) -> SerializableTaskRun | None: ...
+    ) -> AgentRun | None: ...
 
     class VersionRunCount(NamedTuple):
         version_id: str

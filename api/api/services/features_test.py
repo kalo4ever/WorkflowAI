@@ -14,6 +14,10 @@ from api.services.features import (
 from api.services.internal_tasks._internal_tasks_utils import officially_suggested_tools
 from core.agents.agent_input_output_example import SuggestedAgentInputOutputExampleOutput
 from core.agents.agent_output_example import SuggestedAgentOutputExampleInput
+from core.agents.agent_suggestion_validator_agent import (
+    SuggestedAgentValidationInput,
+    SuggestedAgentValidationOutput,
+)
 from core.agents.chat_task_schema_generation.chat_task_schema_generation_task import (
     InputGenericFieldConfig,
     InputObjectFieldConfig,
@@ -25,6 +29,9 @@ from core.agents.chat_task_schema_generation.schema_generation_agent import (
     NewAgentSchema,
     SchemaBuilderInput,
     SchemaBuilderOutput,
+)
+from core.agents.company_agent_suggestion_agent import (
+    CompanyContext as CompanyContextInput,
 )
 from core.agents.company_agent_suggestion_agent import (
     SuggestAgentForCompanyInput,
@@ -232,11 +239,13 @@ class TestFeatureService:
                             features=[
                                 BaseFeature(
                                     name="Feature 1",
+                                    tag_line="Feature 1",
                                     description="Description 1",
                                     specifications="Spec 1",
                                 ),
                                 FeatureWithImage(
                                     name="Feature 2",
+                                    tag_line="Feature 2",
                                     description="Description 2",
                                     specifications="Spec 2",
                                     image_url="https://example.com/image.jpg",
@@ -258,11 +267,13 @@ class TestFeatureService:
             [
                 BaseFeature(
                     name="Feature 1",
+                    tag_line="Feature 1",
                     description="Description 1",
                     specifications="Spec 1",
                 ),
                 FeatureWithImage(
                     name="Feature 2",
+                    tag_line="Feature 2",
                     description="Description 2",
                     specifications="Spec 2",
                     image_url="https://example.com/image.jpg",
@@ -279,6 +290,7 @@ class TestFeatureService:
                             features=[
                                 BaseFeature(
                                     name="Feature 1",
+                                    tag_line="Feature 1",
                                     description="Description 1",
                                     specifications="Spec 1",
                                 ),
@@ -327,8 +339,8 @@ async def test_search_features_by_tag(
             [
                 SuggestAgentForCompanyOutput(
                     suggested_agents=[
-                        SuggestedAgent(name="Feature A", description="Description A"),
-                        SuggestedAgent(name="Feature B", description="Description B"),
+                        SuggestedAgent(name="Feature A", description="Description A", tag_line="Tag A"),
+                        SuggestedAgent(name="Feature B", description="Description B", tag_line="Tag B"),
                     ],
                 ),
             ],
@@ -340,8 +352,8 @@ async def test_search_features_by_tag(
                 CompanyFeaturePreviewList(
                     company_context="Example company info",
                     features=[
-                        BaseFeature(name="Feature A", description="Description A", specifications=""),
-                        BaseFeature(name="Feature B", description="Description B", specifications=""),
+                        BaseFeature(name="Tag A", description="Description A", specifications="", tag_line="Tag A"),
+                        BaseFeature(name="Tag B", description="Description B", specifications="", tag_line="Tag B"),
                     ],
                 ),
             ],
@@ -357,7 +369,11 @@ async def test_search_features_by_tag(
             [
                 SuggestAgentForCompanyOutput(
                     suggested_agents=[
-                        SuggestedAgent(name="Generic Feature", description="Generic Description"),
+                        SuggestedAgent(
+                            name="Generic Feature",
+                            tag_line="Generic Tag",
+                            description="Generic Description",
+                        ),
                     ],
                 ),
             ],
@@ -369,7 +385,12 @@ async def test_search_features_by_tag(
                 CompanyFeaturePreviewList(
                     company_context="Could not get context from nocompany.com, we'll fallback on generic features suggestions",
                     features=[
-                        BaseFeature(name="Generic Feature", description="Generic Description", specifications=""),
+                        BaseFeature(
+                            name="Generic Tag",
+                            description="Generic Description",
+                            specifications="",
+                            tag_line="Generic Tag",
+                        ),
                     ],
                 ),
             ],
@@ -391,12 +412,20 @@ async def test_get_features_by_domain_e2e(  # noqa: C901
         for chunk in company_context_chunks:
             yield chunk
 
-    async def mock_stream_feature_suggestions(*args: Any, **kwargs: Any) -> AsyncIterator[CompanyFeaturePreviewList]:
+    async def mock_stream_feature_suggestions(
+        *args: Any,
+        **kwargs: Any,
+    ) -> AsyncIterator[CompanyFeaturePreviewList]:
         for chunk in feature_suggestion_chunks:
             features: list[BaseFeature] = [
-                BaseFeature(name=agent.name, description=agent.description or "", specifications="")
+                BaseFeature(
+                    name=agent.tag_line,
+                    description=agent.description or "",
+                    specifications="",
+                    tag_line=agent.tag_line,
+                )
                 for agent in chunk.suggested_agents or []
-                if agent.name
+                if agent.name and agent.tag_line and agent.description
             ]
 
             yield CompanyFeaturePreviewList(
@@ -410,10 +439,11 @@ async def test_get_features_by_domain_e2e(  # noqa: C901
             supported_agent_input_types=[],
             supported_agent_output_types=[],
             available_tools=[],
-            company_context=SuggestAgentForCompanyInput.CompanyContext(
+            company_context=CompanyContextInput(
                 company_url=company_domain,
                 company_url_content=company_context_chunks[0].private,
                 existing_agents=[],
+                latest_news="",
             ),
         )
 
@@ -421,28 +451,23 @@ async def test_get_features_by_domain_e2e(  # noqa: C901
         patch.object(service, "_stream_company_context", mock_stream_company_context),
         patch.object(service, "_build_agent_suggestion_input", mock_build_agent_suggestion_input),
         patch.object(service, "_stream_feature_suggestions", mock_stream_feature_suggestions),
+        patch.object(service, "_get_company_latest_news", AsyncMock(return_value="")),
+        # Ensure validation passes for simplicity in this e2e test
+        patch.object(service, "_is_agent_validated", AsyncMock(return_value=True)),
     ):
         # Collect all outputs from the generator
-        actual_outputs = [output async for output in service.get_features_by_domain(company_domain, Mock())]
+        mock_event_router = Mock()
+        actual_outputs = [output async for output in service.get_features_by_domain(company_domain, mock_event_router)]
 
         # Compare with expected outputs
         assert len(actual_outputs) == len(expected_outputs)
         for i, actual in enumerate(actual_outputs):
             expected = expected_outputs[i]
-            assert actual.company_context == expected.company_context
-
-            # Check feature previews
-            if expected.features:
-                assert len(actual.features or []) == len(expected.features)
-                for j, feature in enumerate(actual.features or []):
-                    assert feature.name == expected.features[j].name
-                    assert feature.description == expected.features[j].description
-            else:
-                assert not actual.features or len(actual.features) == 0
+            assert actual == expected
 
 
 @pytest.mark.parametrize(
-    "company_domain, company_context, storage_available, expected_agent_types, expected_existing_agents",
+    "company_domain, company_context, storage_available, expected_agent_types, expected_existing_agents, latest_news",
     [
         (
             "example.com",
@@ -450,6 +475,7 @@ async def test_get_features_by_domain_e2e(  # noqa: C901
             True,
             ["type1", "type2"],  # Simplified for test
             ["agent1", "agent2"],
+            "Latest news example",
         ),
         (
             "example.com",
@@ -457,6 +483,7 @@ async def test_get_features_by_domain_e2e(  # noqa: C901
             False,
             ["type1", "type2"],
             [],  # No storage means no existing agents
+            "",
         ),
     ],
 )
@@ -466,6 +493,7 @@ async def test_build_agent_suggestion_input(
     storage_available: bool,
     expected_agent_types: list[str],
     expected_existing_agents: list[str],
+    latest_news: str,
 ) -> None:
     """
     Test the _build_agent_suggestion_input method with various configurations.
@@ -475,14 +503,13 @@ async def test_build_agent_suggestion_input(
         patch("api.services.features.get_supported_task_input_types", return_value=expected_agent_types),
         patch("api.services.features.get_supported_task_output_types", return_value=expected_agent_types),
         patch("api.services.features.safe_map", return_value=[]),
-        patch("api.services.features.list_agent_summaries", return_value=expected_existing_agents),
     ):
         # Create service with or without storage
         mock_storage = Mock() if storage_available else None
         service = FeatureService(storage=mock_storage)
 
         # Call the method
-        result = await service._build_agent_suggestion_input(company_domain, company_context)  # pyright: ignore[reportPrivateUsage]
+        result = await service._build_agent_suggestion_input(company_domain, company_context, latest_news)  # pyright: ignore[reportPrivateUsage]
 
         # Verify the result
         assert result.supported_agent_input_types == expected_agent_types
@@ -490,112 +517,402 @@ async def test_build_agent_suggestion_input(
         assert result.company_context
         assert result.company_context.company_url == company_domain
         assert result.company_context.company_url_content == company_context
+        assert result.company_context.latest_news == latest_news
 
-        if storage_available:
-            assert result.company_context.existing_agents == expected_existing_agents
-        else:
-            assert result.company_context.existing_agents == []
+        # Mocking storage directly, so existing_agents should always be empty based on current implementation
+        assert result.company_context.existing_agents == []
 
 
 @pytest.mark.parametrize(
-    "company_context, input_agents, expected_outputs",
+    "agent_name, instructions, validation_decisions, mock_validation_result, expected_result, expected_final_decisions",
     [
         (
-            "Example company",
+            "AgentA",
+            "instr",
+            {},
+            SuggestedAgentValidationOutput(
+                enforces_instructions=True,
+                is_customer_facing=True,
+                requires_llm_capabilities=True,
+            ),
+            True,
+            {"AgentA": True},
+        ),
+        (
+            "AgentB",
+            "instr",
+            {"AgentB": False},
+            None,  # Should not be called
+            False,
+            {"AgentB": False},
+        ),
+        (
+            "AgentC",
+            "instr",
+            {},
+            SuggestedAgentValidationOutput(
+                enforces_instructions=False,
+                is_customer_facing=True,
+                requires_llm_capabilities=True,
+            ),
+            False,
+            {"AgentC": False},
+        ),
+        (
+            "AgentD",
+            "instr",
+            {},
+            SuggestedAgentValidationOutput(
+                enforces_instructions=True,
+                is_customer_facing=False,
+                requires_llm_capabilities=True,
+            ),
+            False,
+            {"AgentD": False},
+        ),
+        (
+            "AgentE",
+            "instr",
+            {},
+            SuggestedAgentValidationOutput(
+                enforces_instructions=True,
+                is_customer_facing=True,
+                requires_llm_capabilities=False,
+            ),
+            False,
+            {"AgentE": False},
+        ),
+        (
+            "AgentF",
+            "instr",
+            {},
+            SuggestedAgentValidationOutput(
+                enforces_instructions=False,
+                is_customer_facing=False,
+                requires_llm_capabilities=False,
+            ),
+            False,
+            {"AgentF": False},
+        ),
+        (
+            "AgentG",
+            "instr",
+            {},
+            Exception("Validation error"),  # Simulate exception
+            True,  # Should default to True on error
+            {"AgentG": True},
+        ),
+        (
+            "AgentH",
+            "instr",
+            {"AgentA": True},  # Test with existing unrelated decisions
+            SuggestedAgentValidationOutput(
+                enforces_instructions=True,
+                is_customer_facing=True,
+                requires_llm_capabilities=True,
+            ),
+            True,
+            {"AgentA": True, "AgentH": True},
+        ),
+    ],
+)
+async def test_is_agent_validated(
+    agent_name: str,
+    instructions: str,
+    validation_decisions: dict[str, bool],
+    mock_validation_result: SuggestedAgentValidationOutput | Exception | None,
+    expected_result: bool,
+    expected_final_decisions: dict[str, bool],
+) -> None:
+    """Test the _is_agent_validated method."""
+    service = FeatureService()
+    initial_decisions = validation_decisions.copy()  # Preserve initial state
+
+    mock_validator = AsyncMock()
+    if isinstance(mock_validation_result, Exception):
+        mock_validator.side_effect = mock_validation_result
+    else:
+        mock_validator.return_value = mock_validation_result
+
+    with patch("api.services.features.run_suggested_agent_validation", mock_validator):
+        result = await service._is_agent_validated(agent_name, instructions, initial_decisions)  # pyright: ignore[reportPrivateUsage]
+
+        assert result == expected_result
+        assert initial_decisions == expected_final_decisions  # Check if the dict was updated correctly
+
+        if mock_validation_result is None:  # Cache hit case
+            mock_validator.assert_not_called()
+        elif agent_name not in validation_decisions:  # Cache miss case
+            mock_validator.assert_called_once_with(
+                SuggestedAgentValidationInput(
+                    instructions=instructions,
+                    proposed_agent_name=agent_name,
+                ),
+            )
+
+
+@pytest.mark.parametrize(
+    "company_context, input_chunks, validation_map, expected_outputs",
+    [
+        # Basic case: one valid agent
+        (
+            "Context 1",
             [
                 SuggestAgentForCompanyOutput(
                     suggested_agents=[
-                        SuggestedAgent(name="Feature 1", description="Description 1"),
-                        SuggestedAgent(name="Feature 2", description="Description 2"),
+                        SuggestedAgent(
+                            name="ValidAgent",
+                            tag_line="Tag Valid",
+                            description="Desc Valid",
+                        ),
                     ],
                 ),
             ],
+            {"ValidAgent": True},
             [
                 CompanyFeaturePreviewList(
-                    company_context="Example company",
+                    company_context="Context 1",
                     features=[
-                        BaseFeature(name="Feature 1", description="Description 1", specifications=""),
-                        BaseFeature(name="Feature 2", description="Description 2", specifications=""),
+                        BaseFeature(
+                            name="Tag Valid",
+                            tag_line="Tag Valid",
+                            description="Desc Valid",
+                            specifications="",
+                        ),
                     ],
                 ),
             ],
         ),
+        # Case: one invalid agent
         (
-            "Example company",
+            "Context 2",
             [
                 SuggestAgentForCompanyOutput(
                     suggested_agents=[
-                        # Simulate a bug in the SDK
-                        {"name": "Feature Dict", "description": "Description Dict"},  # pyright: ignore[reportArgumentType]
-                        SuggestedAgent(name="Feature Object", description="Description Object"),
+                        SuggestedAgent(
+                            name="InvalidAgent",
+                            tag_line="Tag Invalid",
+                            description="Desc Invalid",
+                        ),
                     ],
                 ),
             ],
+            {"InvalidAgent": False},
+            [CompanyFeaturePreviewList(company_context="Context 2", features=[])],
+        ),
+        # Case: one valid, one invalid
+        (
+            "Context 3",
+            [
+                SuggestAgentForCompanyOutput(
+                    suggested_agents=[
+                        SuggestedAgent(
+                            name="ValidAgent",
+                            tag_line="Tag Valid",
+                            description="Desc Valid",
+                        ),
+                        SuggestedAgent(
+                            name="InvalidAgent",
+                            tag_line="Tag Invalid",
+                            description="Desc Invalid",
+                        ),
+                    ],
+                ),
+            ],
+            {"ValidAgent": True, "InvalidAgent": False},
             [
                 CompanyFeaturePreviewList(
-                    company_context="Example company",
+                    company_context="Context 3",
                     features=[
-                        BaseFeature(name="Feature Dict", description="Description Dict", specifications=""),
-                        BaseFeature(name="Feature Object", description="Description Object", specifications=""),
+                        BaseFeature(
+                            name="Tag Valid",
+                            tag_line="Tag Valid",
+                            description="Desc Valid",
+                            specifications="",
+                        ),
                     ],
                 ),
             ],
         ),
+        # Case: Agent becomes valid across chunks (name/tagline first, then description) - Should only appear when fully formed AND valid
         (
-            "Example company",
+            "Context 4",
             [
                 SuggestAgentForCompanyOutput(
                     suggested_agents=[
-                        SuggestedAgent(name="", description="Missing name"),  # Should be skipped
-                        SuggestedAgent(name="Valid", description=None),  # Empty description
+                        SuggestedAgent(
+                            name="AgentStream",
+                            tag_line="Tag Stream",
+                            description=None,  # Description missing initially
+                        ),
+                    ],
+                ),
+                SuggestAgentForCompanyOutput(
+                    suggested_agents=[
+                        SuggestedAgent(
+                            name="AgentStream",
+                            tag_line="Tag Stream",
+                            description="Desc Stream",  # Description added
+                        ),
                     ],
                 ),
             ],
+            {"AgentStream": True},
             [
                 CompanyFeaturePreviewList(
-                    company_context="Example company",
+                    company_context="Context 4",
                     features=[
-                        BaseFeature(name="Valid", description="", specifications=""),
+                        BaseFeature(
+                            name="Tag Stream",
+                            tag_line="Tag Stream",
+                            description="",
+                            specifications="",
+                        ),
+                    ],
+                ),  # Yielded in second chunk
+                CompanyFeaturePreviewList(
+                    company_context="Context 4",
+                    features=[
+                        BaseFeature(
+                            name="Tag Stream",
+                            tag_line="Tag Stream",
+                            description="Desc Stream",
+                            specifications="",
+                        ),
+                    ],
+                ),  # Yielded in second chunk
+            ],
+        ),
+        # Case: Agent completes but is invalid
+        (
+            "Context 5",
+            [
+                SuggestAgentForCompanyOutput(
+                    suggested_agents=[
+                        SuggestedAgent(
+                            name="InvalidAgentComplete",
+                            tag_line="Tag Invalid Complete",
+                            description="Desc Invalid Complete",
+                        ),
                     ],
                 ),
+            ],
+            {"InvalidAgentComplete": False},
+            [CompanyFeaturePreviewList(company_context="Context 5", features=[])],  # Never yielded
+        ),
+        # Case: Agent completes but validation fails with exception (should be included)
+        (
+            "Context 6",
+            [
+                SuggestAgentForCompanyOutput(
+                    suggested_agents=[
+                        SuggestedAgent(
+                            name="ErrorAgent",
+                            tag_line="Tag Error",
+                            description="Desc Error",
+                        ),
+                    ],
+                ),
+            ],
+            {"ErrorAgent": True},  # _is_agent_validated returns True on exception
+            [
+                CompanyFeaturePreviewList(
+                    company_context="Context 6",
+                    features=[
+                        BaseFeature(
+                            name="Tag Error",
+                            tag_line="Tag Error",
+                            description="Desc Error",
+                            specifications="",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        # Case: Multiple agents, mix of valid/invalid/streaming
+        (
+            "Context 7",
+            [
+                SuggestAgentForCompanyOutput(
+                    suggested_agents=[
+                        SuggestedAgent(name="Valid1", tag_line="TagV1", description=None),  # Starts valid
+                        SuggestedAgent(
+                            name="Invalid1",
+                            tag_line="TagI1",
+                            description="DescI1",
+                        ),  # Invalid from start
+                    ],
+                ),
+                SuggestAgentForCompanyOutput(
+                    suggested_agents=[
+                        SuggestedAgent(name="Valid1", tag_line="TagV1", description="DescV1"),  # Completes valid
+                        SuggestedAgent(name="Valid2", tag_line="TagV2", description="DescV2"),  # New valid
+                    ],
+                ),
+            ],
+            {"Valid1": True, "Invalid1": False, "Valid2": True},
+            [
+                CompanyFeaturePreviewList(
+                    company_context="Context 7",
+                    features=[
+                        BaseFeature(name="TagV1", description="", specifications="", tag_line="TagV1"),
+                    ],
+                ),  # Chunk 1: Valid1 incomplete, Invalid1 filtered
+                CompanyFeaturePreviewList(
+                    company_context="Context 7",
+                    features=[
+                        BaseFeature(name="TagV1", description="DescV1", specifications="", tag_line="TagV1"),
+                        BaseFeature(name="TagV2", description="DescV2", specifications="", tag_line="TagV2"),
+                    ],
+                ),  # Chunk 2: Valid1 complete, Valid2 complete
             ],
         ),
     ],
 )
-async def test_stream_feature_suggestions(
+async def test_stream_feature_suggestions_with_validation(
     company_context: str,
-    input_agents: list[SuggestAgentForCompanyOutput],
+    input_chunks: list[SuggestAgentForCompanyOutput],
+    validation_map: dict[str, bool],
     expected_outputs: list[CompanyFeaturePreviewList],
 ) -> None:
     """
-    Test the _stream_feature_suggestions method with various inputs.
+    Test the _stream_feature_suggestions method, specifically focusing on the
+    interaction with _is_agent_validated.
     """
     service = FeatureService()
 
     # Mock the stream_suggest_agents_for_company function
     async def mock_stream(*args: Any, **kwargs: Any) -> AsyncIterator[SuggestAgentForCompanyOutput]:
-        for agent_output in input_agents:
-            yield agent_output
+        for chunk in input_chunks:
+            yield chunk
 
-    with patch("api.services.features.stream_suggest_agents_for_company", mock_stream):
-        # Call the method with any input (it will be ignored due to our mock)
-        mock_input = Mock()
+    # Mock _is_agent_validated to return predefined values
+    async def mock_is_validated(agent_name: str, instructions: str, validation_decisions: dict[str, bool]) -> bool:
+        # Simulate the behavior of caching/calculating
+        if agent_name not in validation_decisions:
+            validation_decisions[agent_name] = validation_map.get(
+                agent_name,
+                False,
+            )  # Default to False if not in map
+        return validation_decisions[agent_name]
 
-        # Collect all outputs
-        actual_outputs = [output async for output in service._stream_feature_suggestions(company_context, mock_input)]  # pyright: ignore[reportPrivateUsage]
+    with (
+        patch("api.services.features.stream_suggest_agents_for_company", mock_stream),
+        patch.object(service, "_is_agent_validated", side_effect=mock_is_validated),  # Use side_effect to pass args
+    ):
+        mock_input = Mock(spec=SuggestAgentForCompanyInput)
+        mock_input.company_context = None
 
-        # Compare with expected outputs
+        actual_outputs = [
+            output
+            async for output in service._stream_feature_suggestions(company_context, mock_input)  # pyright: ignore[reportPrivateUsage]
+        ]
+
+        # Compare actual outputs with expected outputs
         assert len(actual_outputs) == len(expected_outputs)
         for i, actual in enumerate(actual_outputs):
             expected = expected_outputs[i]
-            assert actual.company_context == expected.company_context
-
-            # Check feature previews
-            assert len(actual.features or []) == len(expected.features or [])
-            for j, feature in enumerate(actual.features or []):
-                assert expected.features is not None
-                assert feature.name == expected.features[j].name
-                assert feature.description == expected.features[j].description
+            assert actual == expected
 
 
 async def test_get_agent_preview() -> None:

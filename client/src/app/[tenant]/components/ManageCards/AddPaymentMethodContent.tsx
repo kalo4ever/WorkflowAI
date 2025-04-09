@@ -1,16 +1,14 @@
 import { AddressElement, CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import { useCallback, useState } from 'react';
-import { TenantID } from '@/types/aliases';
 import { BottomButtonBar } from './BottomButtonBar';
 import { useStripePayments } from './hooks/useStripePayments';
 
 type AddPaymentMethodContentProps = {
-  tenant: TenantID | undefined;
   setIsOpen: (isOpen: boolean) => void;
 };
 
 export function AddPaymentMethodContent(props: AddPaymentMethodContentProps) {
-  const { tenant, setIsOpen } = props;
+  const { setIsOpen } = props;
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -27,7 +25,7 @@ export function AddPaymentMethodContent(props: AddPaymentMethodContentProps) {
       setIsLoading(true);
 
       try {
-        await createPaymentMethod(tenant, elements);
+        await createPaymentMethod(elements);
         setIsOpen(false);
       } catch (error) {
         console.error(error);
@@ -35,7 +33,7 @@ export function AddPaymentMethodContent(props: AddPaymentMethodContentProps) {
         setIsLoading(false);
       }
     },
-    [createPaymentMethod, elements, setIsOpen, stripe, tenant]
+    [createPaymentMethod, elements, setIsOpen, stripe]
   );
 
   return (

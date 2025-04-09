@@ -1,6 +1,7 @@
 from abc import abstractmethod
 from typing import AsyncIterator, Optional, Protocol
 
+from core.domain.agent_run import AgentRun
 from core.domain.analytics_events.analytics_events import SourceType
 from core.domain.errors import InternalError
 from core.domain.task import SerializableTask
@@ -9,7 +10,6 @@ from core.domain.task_example_query import SerializableTaskExampleQuery
 from core.domain.task_group import TaskGroup
 from core.domain.task_group_properties import TaskGroupProperties
 from core.domain.task_input import TaskInput, TaskInputFields
-from core.domain.task_run import SerializableTaskRun
 from core.domain.task_variant import SerializableTaskVariant
 from core.domain.users import UserIdentifier
 from core.storage.abstract_storage import AbstractStorage
@@ -23,7 +23,7 @@ from core.storage.reviews_storage import ReviewsStorage
 from core.storage.task_deployments_storage import TaskDeploymentsStorage
 from core.storage.task_group_storage import TaskGroupStorage
 from core.storage.task_input_storage import TaskInputsStorage
-from core.storage.task_run_storage import TaskRunStorage
+from core.storage.task_run_storage import TaskRunStorage, TaskRunSystemStorage
 from core.storage.task_storage import TaskStorage, TaskSystemStorage
 from core.storage.task_variants_storage import TaskVariantsStorage
 from core.storage.transcription_storage import TranscriptionStorage
@@ -43,6 +43,11 @@ class SystemBackendStorage(Protocol):
     @property
     @abstractmethod
     def tasks(self) -> TaskSystemStorage:
+        pass
+
+    @property
+    @abstractmethod
+    def task_runs(self) -> TaskRunSystemStorage:
         pass
 
 
@@ -229,10 +234,10 @@ class BackendStorage(AbstractStorage):
     async def prepare_task_run(
         self,
         task: SerializableTaskVariant,
-        run: SerializableTaskRun,
+        run: AgentRun,
         user: UserIdentifier | None,
         source: SourceType | None,
-    ) -> SerializableTaskRun:
+    ) -> AgentRun:
         pass
 
     async def get_task_tuple(self, task_id: str):

@@ -1,0 +1,75 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - 'release/**'
+      - 'hotfix/**'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  api-quality:
+    uses: ./.github/workflows/.api-quality.yml
+
+  client-quality:
+    uses: ./.github/workflows/.client-quality.yml
+
+  api-build:
+    uses: ./.github/workflows/.build.yml
+    with:
+      env: prod-preview
+      registry_suffix: ''
+      app_name: workflowai-api-preview
+      service: api
+    secrets:
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      SENTRY_HOOK: ${{ secrets.SENTRY_API_HOOK }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+
+  client-build:
+    uses: ./.github/workflows/.build.yml
+    with:
+      env: prod-preview
+      registry_suffix: ''
+      app_name: workflowai-app-preview
+      service: client
+      tag_suffix: -preview
+    secrets:
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      SENTRY_HOOK: ${{ secrets.SENTRY_CLIENT_HOOK }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      build_args: |
+        ENV_NAME=prod-preview
+        APP_URL=${{ secrets.APP_URL }}
+        API_URL=${{ secrets.API_URL }}
+        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+        NEXT_PUBLIC_AMPLITUDE_API_KEY=${{ secrets.NEXT_PUBLIC_AMPLITUDE_API_KEY }}
+        NEXT_PUBLIC_SENTRY_DSN=${{ secrets.SENTRY_CLIENT_DSN }}
+        NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+
+  # There is a single container in prod preview
+  api-deploy:
+    needs: [api-quality, api-build]
+    uses: ./.github/workflows/.deploy.yml
+    with:
+      image_name: ${{ needs.api-build.outputs.image_name }}
+      env: prod-preview
+      full_app_name: workflowai-api-preview
+    secrets: inherit
+  client-deploy:
+    needs: [client-quality, client-build]
+    uses: ./.github/workflows/.deploy.yml
+    secrets: inherit
+    with:
+      image_name: ${{ needs.client-build.outputs.image_name }}
+      env: prod-preview
+      full_app_name: workflowai-app-preview

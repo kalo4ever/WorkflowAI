@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from collections import defaultdict
 from collections.abc import AsyncIterator
@@ -5,18 +6,24 @@ from typing import Any, NamedTuple
 
 from pydantic import BaseModel
 
-from api.services.internal_tasks._internal_tasks_utils import officially_suggested_tools
-from api.services.internal_tasks.agent_suggestions_service import (
-    get_supported_task_input_types,
-    get_supported_task_output_types,
-)
+from api.services.internal_tasks._internal_tasks_utils import OFFICIALLY_SUGGESTED_TOOLS, officially_suggested_tools
 from api.services.slack_notifications import SlackNotificationDestination, get_user_and_org_str, send_slack_notification
-from api.services.tasks import list_agent_summaries
 from core.agents.agent_output_example import SuggestedAgentOutputExampleInput, stream_suggested_agent_output_example
+from core.agents.agent_suggestion_validator_agent import SuggestedAgentValidationInput, run_suggested_agent_validation
+from core.agents.chat_task_schema_generation.chat_task_schema_generation_task import (
+    InputSchemaFieldType,
+    OutputSchemaFieldType,
+)
 from core.agents.chat_task_schema_generation.chat_task_schema_generation_task_utils import build_json_schema_with_defs
 from core.agents.chat_task_schema_generation.schema_generation_agent import (
     SchemaBuilderInput,
     run_agent_schema_generation,
+)
+from core.agents.company_agent_suggestion_agent import (
+    INSTUCTIONS as AGENT_SUGGESTION_INSTRUCTIONS,
+)
+from core.agents.company_agent_suggestion_agent import (
+    CompanyContext as CompanyContextInput,
 )
 from core.agents.company_agent_suggestion_agent import (
     SuggestAgentForCompanyInput,
@@ -38,6 +45,15 @@ from core.tools.browser_text.browser_text_tool import fetch_url_content_scraping
 from core.tools.search.run_perplexity_search import stream_perplexity_search
 from core.utils.iter_utils import safe_map
 from core.utils.schema_utils import json_schema_from_json
+
+
+def get_supported_task_input_types() -> list[str]:
+    return [type.value for type in InputSchemaFieldType] + ["enum", "array", "object"]
+
+
+def get_supported_task_output_types() -> list[str]:
+    return [type.value for type in OutputSchemaFieldType] + ["enum", "array", "object"]
+
 
 _logger = logging.getLogger(__name__)
 
@@ -133,6 +149,10 @@ class FeatureService:
                 if feature_tag.name.lower() == tag.lower():
                     for feature in feature_tag.features:
                         accumulated_features.append(feature)
+
+                        if feature.tag_line is None:
+                            # TODO: generate taglines for the static features ?
+                            feature.tag_line = feature.name
                         yield accumulated_features
                     return
 
@@ -141,7 +161,8 @@ class FeatureService:
     async def _stream_company_context(self, company_url: str) -> AsyncIterator[CompanyContext]:
         try:
             async for chunk in stream_perplexity_search(
-                f"What does this company do:{company_url} ? Provide a concise description of the company and its products. Do not add any markdown in the response.",
+                f"""What does this company do:{company_url}? Provide a concise description of the company and its products. Do not add any markdown or formatting (ex: bold, italic, underline, etc.) in the response, except line breaks, punctation and eventual bullet points.
+                Always browse the actual company domain ({company_url}) to get the most accurate and up to date description.""",
             ):
                 yield CompanyContext(public=chunk, private=chunk)
         except Exception as e:
@@ -179,30 +200,74 @@ class FeatureService:
         self,
         company_domain: str,
         company_context: str,
+        latest_news: str,
     ) -> SuggestAgentForCompanyInput:
         return SuggestAgentForCompanyInput(
             supported_agent_input_types=get_supported_task_input_types(),
             supported_agent_output_types=get_supported_task_output_types(),
             available_tools=safe_map(
-                WorkflowAIRunner.internal_tools.values(),
+                [
+                    tool
+                    for tool_kind, tool in WorkflowAIRunner.internal_tools.items()
+                    if tool_kind in OFFICIALLY_SUGGESTED_TOOLS
+                ],
                 SuggestAgentForCompanyInput.ToolDescription.from_internal_tool,
             ),
-            company_context=SuggestAgentForCompanyInput.CompanyContext(
+            company_context=CompanyContextInput(
                 company_url=company_domain,
                 company_url_content=company_context,
-                existing_agents=[str(a) for a in await list_agent_summaries(self.storage, limit=10)]
-                if self.storage
-                else [],
+                # Existing agent are deactivate for now as I felt they were perturbating generation pertinence in some cases.
+                # TODO: plug back existing agent for existing users and rework instructions based on that.
+                existing_agents=[],
+                latest_news=latest_news,
             ),
         )
+
+    async def _is_agent_validated(
+        self,
+        agent_name: str,
+        instructions: str,
+        validation_decisions: dict[str, bool],
+    ) -> bool:
+        """
+        Runs a "LLM as judge" agent that double check suggested agents are enforcing the instructions.
+        """
+
+        if agent_name not in validation_decisions:
+            try:
+                decision = await run_suggested_agent_validation(
+                    SuggestedAgentValidationInput(
+                        instructions=instructions,
+                        proposed_agent_name=agent_name,
+                    ),
+                )
+
+                # The agent must enforce all validation criteria to be considered valid
+                validation_decisions[agent_name] = (
+                    decision.enforces_instructions is True
+                    and decision.is_customer_facing is True
+                    and decision.requires_llm_capabilities is True
+                )
+
+            except Exception as e:
+                _logger.exception("Error validating suggested agent", exc_info=e)
+
+                # If anything goes wrong, we log an excetion and we consider the agent as valid
+                # because if the agent validation agent is completely down, we still want to display a list of (unvalidated in this case) agents.
+                validation_decisions[agent_name] = True
+
+        return validation_decisions[agent_name]
 
     async def _stream_feature_suggestions(
         self,
         company_context: str,
         input: SuggestAgentForCompanyInput,
     ) -> AsyncIterator[CompanyFeaturePreviewList]:
+        validation_decisions: dict[str, bool] = {}
+        features: list[BaseFeature] = []
+
         async for chunk in stream_suggest_agents_for_company(input):
-            features: list[BaseFeature] = []
+            features = []
             for agent in chunk.suggested_agents or []:
                 if isinstance(agent, dict):  # pyright: ignore[reportUnnecessaryIsInstance]
                     # For some reason, a dict is sometimes returned instead of a SuggestedAgent
@@ -210,10 +275,20 @@ class FeatureService:
                     safe_agent = SuggestedAgent.model_validate(agent)
                 else:
                     safe_agent = agent
-                if safe_agent.name:
+
+                if (
+                    safe_agent.name
+                    and safe_agent.tag_line  # That means the name is done streaming.
+                    and await self._is_agent_validated(
+                        safe_agent.name,
+                        AGENT_SUGGESTION_INSTRUCTIONS,
+                        validation_decisions,
+                    )
+                ):
                     features.append(
                         BaseFeature(
-                            name=safe_agent.name,
+                            name=safe_agent.tag_line,  # TODO: use name=safe_agent.tag_line when the frontend will display the tag line instead of the name
+                            tag_line=safe_agent.tag_line,
                             description=safe_agent.description or "",
                             specifications="",  # Specifications are not used for company-specific features
                         ),
@@ -224,12 +299,30 @@ class FeatureService:
                 features=features,
             )
 
+    async def _get_company_latest_news(self, company_domain: str) -> str:
+        LATEST_NEWS_INSTRUCTIONS = f"""You are a world-class expert in software market intelligence with an emphasis on tech startups and artificial intelligence. You goal is to gather and summarize the latest news for {company_domain}, especially new product and new features. Any product or feature mentioned must also explain what the feature/product does. Focus on software oriented features and products. Stay concise and to the point."""
+
+        try:
+            result = ""
+            async for chunk in stream_perplexity_search(
+                max_tokens=250,
+                query=LATEST_NEWS_INSTRUCTIONS,
+            ):
+                result = chunk
+            return result
+        except Exception as e:
+            _logger.exception("Error getting company latest news", exc_info=e)
+            return ""
+
     async def get_features_by_domain(
         self,
         company_domain: str,
         event_router: EventRouter,
     ) -> AsyncIterator[CompanyFeaturePreviewList]:
         event_router(FeaturesByDomainGenerationStarted(company_domain=company_domain))
+
+        # Start collecting AI features in the background
+        company_latest_news_task = asyncio.create_task(self._get_company_latest_news(company_domain))
 
         company_context: CompanyContext = CompanyContext(public="", private="")
         async for chunk in self._stream_company_context(company_domain):
@@ -239,7 +332,14 @@ class FeatureService:
                 features=[],
             )
 
-        agent_suggestion_input = await self._build_agent_suggestion_input(company_domain, company_context.private)
+        # Wait for AI features collection to complete
+        company_latest_news = await company_latest_news_task
+
+        agent_suggestion_input = await self._build_agent_suggestion_input(
+            company_domain,
+            company_context.private,
+            company_latest_news,
+        )
 
         async for chunk in self._stream_feature_suggestions(company_context.public, agent_suggestion_input):
             yield chunk

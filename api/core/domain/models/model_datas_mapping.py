@@ -301,8 +301,8 @@ def _build_model_datas():
             provider_name=DisplayedProvider.GOOGLE.value,
             supports_tool_calling=True,
         ),
-        Model.GEMINI_2_0_PRO_EXP: ModelData(
-            display_name="Gemini 2.0 Pro Exp",
+        Model.GEMINI_2_5_PRO_PREVIEW_0325: ModelData(
+            display_name="Gemini 2.5 Pro Preview (0325)",
             supports_json_mode=True,
             supports_input_image=True,
             supports_multiple_images_in_input=True,
@@ -310,17 +310,20 @@ def _build_model_datas():
             supports_input_audio=True,
             supports_structured_output=False,
             max_tokens_data=MaxTokensData(
-                max_tokens=2097152,
-                max_output_tokens=8_192,
-                source="https://ai.google.dev/gemini-api/docs/models/gemini#gemini-2.0-pro",
+                max_tokens=1_048_576 + 65_536,
+                max_output_tokens=65_536,
+                source="https://ai.google.dev/gemini-api/docs/models#gemini-2.5-pro-preview-03-25",
             ),
             provider_for_pricing=Provider.GOOGLE_GEMINI,
             icon_url="https://workflowai.blob.core.windows.net/workflowai-public/google.svg",
-            release_date=date(2025, 2, 5),
-            quality_index=841,  # MMLU=80.50, GPQA=64.70
+            release_date=date(2025, 3, 25),
+            # https://www.vals.ai/benchmarks/gpqa-04-04-2025
+            quality_index=842,  # TODO: GEMINI_2_0_PRO_EXP + 1
             provider_name=DisplayedProvider.GOOGLE.value,
-            supports_tool_calling=False,
+            supports_tool_calling=True,
         ),
+        Model.GEMINI_2_5_PRO_EXP_0325: DeprecatedModel(replacement_model=Model.GEMINI_2_5_PRO_PREVIEW_0325),
+        Model.GEMINI_2_0_PRO_EXP: DeprecatedModel(replacement_model=Model.GEMINI_2_5_PRO_PREVIEW_0325),
         Model.GEMINI_2_0_FLASH_EXP: DeprecatedModel(replacement_model=Model.GEMINI_2_0_FLASH_001),
         Model.GEMINI_2_0_FLASH_LATEST: LatestModel(
             model=Model.GEMINI_2_0_FLASH_001,
@@ -1090,26 +1093,8 @@ def _build_model_datas():
             provider_name=DisplayedProvider.GOOGLE.value,
             supports_tool_calling=True,
         ),
-        Model.GEMINI_EXP_1206: ModelData(
-            display_name="Gemini Exp (12-06)",
-            supports_json_mode=True,
-            supports_input_image=True,
-            supports_multiple_images_in_input=True,
-            supports_input_pdf=True,
-            supports_input_audio=True,
-            supports_structured_output=False,  # Model supports structured output but we did not activate for Gemini yet
-            max_tokens_data=MaxTokensData(
-                max_tokens=128000,
-                source="https://ai.google.dev/gemini-api/docs/models/experimental-models",
-            ),
-            provider_for_pricing=Provider.GOOGLE_GEMINI,
-            icon_url="https://workflowai.blob.core.windows.net/workflowai-public/google.svg",
-            release_date=date(2024, 12, 6),
-            quality_index=840,  # MMLU=80.50, GPQA=64.70
-            provider_name=DisplayedProvider.GOOGLE.value,
-            supports_tool_calling=False,
-        ),
-        Model.GEMINI_EXP_1121: DeprecatedModel(replacement_model=Model.GEMINI_EXP_1206),
+        Model.GEMINI_EXP_1206: DeprecatedModel(replacement_model=Model.GEMINI_2_5_PRO_PREVIEW_0325),
+        Model.GEMINI_EXP_1121: DeprecatedModel(replacement_model=Model.GEMINI_2_5_PRO_PREVIEW_0325),
         Model.QWEN_QWQ_32B_PREVIEW: ModelData(
             display_name="Qwen QWQ (32B) Preview",
             supports_json_mode=True,
@@ -1148,6 +1133,47 @@ def _build_model_datas():
             provider_name=DisplayedProvider.FIREWORKS.value,
             supports_tool_calling=False,
         ),
+        Model.LLAMA_4_MAVERICK_BASIC: ModelData(
+            display_name="Llama 4 Maverick Basic",
+            supports_json_mode=True,
+            supports_input_image=True,
+            supports_multiple_images_in_input=True,
+            supports_input_pdf=True,
+            supports_input_audio=False,
+            max_tokens_data=MaxTokensData(
+                max_tokens=1_000_000,  # not sure about the exact number
+                source="https://fireworks.ai/models/fireworks/llama4-maverick-instruct-basic",
+            ),
+            provider_for_pricing=Provider.FIREWORKS,
+            icon_url="https://workflowai.blob.core.windows.net/workflowai-public/meta.svg",
+            release_date=date(2025, 4, 5),
+            quality_index=878,  # TODO: same as CLAUDE_3_7_SONNET_20250219 for now
+            provider_name=DisplayedProvider.FIREWORKS.value,
+            supports_tool_calling=False,
+            supports_structured_output=True,
+        ),
+        # https://fireworks.ai/models/fireworks/llama4-scout-instruct-basic
+        Model.LLAMA_4_SCOUT_BASIC: ModelData(
+            display_name="Llama 4 Scout Basic",
+            supports_json_mode=True,
+            supports_input_image=True,
+            supports_multiple_images_in_input=True,
+            supports_input_pdf=True,
+            supports_input_audio=False,
+            max_tokens_data=MaxTokensData(
+                # LLama says 10M but fireworks only supports 128k for now
+                max_tokens=128_000,
+                source="https://fireworks.ai/models/fireworks/llama4-scout-instruct-basic",
+            ),
+            provider_for_pricing=Provider.FIREWORKS,
+            icon_url="https://workflowai.blob.core.windows.net/workflowai-public/meta.svg",
+            release_date=date(2025, 4, 5),
+            # https://ai.meta.com/blog/llama-4-multimodal-intelligence/
+            quality_index=870,  # TODO: a bit less than CLAUDE_3_7_SONNET_20250219 for now
+            provider_name=DisplayedProvider.FIREWORKS.value,
+            supports_tool_calling=False,
+            supports_structured_output=True,
+        ),
         # https://fireworks.ai/models/fireworks/deepseek-v3
         Model.DEEPSEEK_V3_2412: ModelData(
             display_name="DeepSeek V3 (24-12) (US hosted)",
@@ -1166,6 +1192,7 @@ def _build_model_datas():
             quality_index=738,  # MMLU=88.50, GPQA=59.10
             provider_name=DisplayedProvider.FIREWORKS.value,
             supports_tool_calling=True,
+            supports_structured_output=True,
             latest_model=Model.DEEPSEEK_V3_LATEST,
         ),
         # https://fireworks.ai/models/fireworks/deepseek-r1
@@ -1228,6 +1255,7 @@ def _build_model_datas():
             provider_name=DisplayedProvider.FIREWORKS.value,
             supports_tool_calling=True,
             latest_model=Model.DEEPSEEK_V3_LATEST,
+            supports_structured_output=True,
         ),
         Model.DEEPSEEK_V3_LATEST: LatestModel(
             model=Model.DEEPSEEK_V3_0324,

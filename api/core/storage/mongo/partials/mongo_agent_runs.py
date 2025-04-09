@@ -5,10 +5,10 @@ from pydantic import ValidationError
 from pymongo.errors import ExecutionTimeout
 from typing_extensions import Any, override
 
+from core.domain.agent_run import AgentRun, AgentRunBase
 from core.domain.errors import OperationTimeout
 from core.domain.search_query import SearchQuery
 from core.domain.task_evaluation import TaskEvaluation
-from core.domain.task_run import SerializableTaskRun, SerializableTaskRunBase
 from core.domain.task_run_aggregate_per_day import TaskRunAggregatePerDay
 from core.domain.task_run_query import (
     SerializableTaskRunField,
@@ -20,7 +20,7 @@ from core.storage.mongo.models.task_run_document import TaskRunDocument
 from core.storage.mongo.mongo_types import AsyncCollection, UpdateType
 from core.storage.mongo.partials.base_partial_storage import PartialStorage
 from core.storage.mongo.utils import projection, query_set_filter
-from core.storage.task_run_storage import RunAggregate, TaskRunStorage, TokenCounts
+from core.storage.task_run_storage import RunAggregate, TaskRunStorage, TokenCounts, WeeklyRunAggregate
 
 
 class MongoTaskRunStorage(PartialStorage[TaskRunDocument], TaskRunStorage):
@@ -190,7 +190,7 @@ class MongoTaskRunStorage(PartialStorage[TaskRunDocument], TaskRunStorage):
         _excludes = {"author_uid", "task_uid"}
         return {
             _mapping.get(field_name, field_name)
-            for field_name in SerializableTaskRunBase.model_fields.keys()
+            for field_name in AgentRunBase.model_fields.keys()
             if field_name not in _excludes
         }
 
@@ -201,7 +201,7 @@ class MongoTaskRunStorage(PartialStorage[TaskRunDocument], TaskRunStorage):
         limit: int,
         offset: int,
         timeout_ms: int = 60_000,
-    ) -> AsyncIterator[SerializableTaskRunBase]:
+    ) -> AsyncIterator[AgentRunBase]:
         filter = TaskRunDocument.build_search_filter(self._tenant, task_uid[0], search_fields)
         project = projection(self._search_run_include())
 
@@ -344,7 +344,7 @@ class MongoTaskRunStorage(PartialStorage[TaskRunDocument], TaskRunStorage):
             hint="input_output_hashes",
         )
 
-    async def store_task_run(self, task_run: SerializableTaskRun) -> SerializableTaskRun:
+    async def store_task_run(self, task_run: AgentRun) -> AgentRun:
         doc = TaskRunDocument.from_resource(task_run)
         model = await self._insert_one(doc)
         return model.to_resource()
@@ -399,7 +399,7 @@ class MongoTaskRunStorage(PartialStorage[TaskRunDocument], TaskRunStorage):
         timeout_ms: int | None = None,
         # A hint to the query planner to use a specific index
         hint: str | None = None,
-    ) -> AsyncIterator[SerializableTaskRun]:
+    ) -> AsyncIterator[AgentRun]:
         filter = TaskRunDocument.build_filter(self._tenant, query)
 
         project = TaskRunDocument.build_project(include=query.include_fields, exclude=query.exclude_fields)
@@ -464,7 +464,7 @@ class MongoTaskRunStorage(PartialStorage[TaskRunDocument], TaskRunStorage):
         id: str,
         include: set[SerializableTaskRunField] | None = None,
         exclude: set[SerializableTaskRunField] | None = None,
-    ) -> SerializableTaskRun:
+    ) -> AgentRun:
         doc = await self._find_one(
             {"_id": id},
             projection=TaskRunDocument.build_project(include=include, exclude=exclude),
@@ -479,7 +479,7 @@ class MongoTaskRunStorage(PartialStorage[TaskRunDocument], TaskRunStorage):
         group_id: str,
         timeout_ms: int | None,
         success_only: bool = True,
-    ) -> SerializableTaskRun | None:
+    ) -> AgentRun | None:
         query = SerializableTaskRunQuery(
             task_id=task_id[0],
             task_schema_id=task_schema_id,
@@ -503,4 +503,8 @@ class MongoTaskRunStorage(PartialStorage[TaskRunDocument], TaskRunStorage):
 
     @override
     def run_count_by_agent_uid(self, from_date: datetime) -> AsyncIterator[TaskRunStorage.AgentRunCount]:
+        raise NotImplementedError()
+
+    @override
+    def weekly_run_aggregate(self, week_count: int) -> AsyncIterator[WeeklyRunAggregate]:
         raise NotImplementedError()

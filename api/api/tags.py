@@ -16,8 +16,6 @@ class RouteTags(str, Enum):
     API_KEYS = "API Keys"
     REVIEWS = "Reviews"
     UPLOAD = "Upload Files"
-    HOME_AGENT = "Home Agent"
-    NEW_AGENT = "New Agent"
     VERSIONS = "Versions"
     PAYMENTS = "Payments"
     NEW_TOOL_AGENT = "New Tool Agent"

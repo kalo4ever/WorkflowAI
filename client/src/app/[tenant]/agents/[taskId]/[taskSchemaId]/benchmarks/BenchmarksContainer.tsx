@@ -19,11 +19,18 @@ import { useTaskSchemaParams } from '@/lib/hooks/useTaskParams';
 import { useRedirectWithParams } from '@/lib/queryString';
 import { Params, taskApiRoute, taskRunsRoute, taskSchemaRoute } from '@/lib/routeFormatter';
 import { environmentsForVersion } from '@/lib/versionUtils';
-import { useOrFetchAllAiModels, useOrFetchReviewBenchmark, useOrFetchTask, useOrFetchVersions } from '@/store';
+import {
+  useOrFetchAllAiModels,
+  useOrFetchEvaluationInputs,
+  useOrFetchReviewBenchmark,
+  useOrFetchTask,
+  useOrFetchVersions,
+} from '@/store';
 import { useReviewBenchmark } from '@/store/task_review_benchmark';
 import { useVersions } from '@/store/versions';
 import { UNDEFINED_MODEL } from '@/types/aliases';
 import { VersionResult, VersionV1 } from '@/types/workflowAI';
+import { EmptyStateComponent } from '../reviews/EmptyStateComponent';
 import { BenchmarkGraph } from './BenchmarkGraph';
 import { BenchmarkVersionSelection } from './BenchmarkVersionSelection';
 import { BenchmarksGroupTable } from './BenchmarksGroupTable';
@@ -37,7 +44,11 @@ export function BenchmarksContainer() {
   const fetchBenchmark = useReviewBenchmark((state) => state.fetchBenchmark);
   const updateBenchmark = useReviewBenchmark((state) => state.updateBenchmark);
 
-  const { versions, versionsPerEnvironment } = useOrFetchVersions(tenant, taskId, taskSchemaId);
+  const {
+    versions,
+    versionsPerEnvironment,
+    isLoading: isVersionsLoading,
+  } = useOrFetchVersions(tenant, taskId, taskSchemaId);
 
   const versionById = useMemo(() => keyBy(versions, 'id'), [versions]);
   const versionByIteration = useMemo(() => keyBy(versions, 'iteration'), [versions]);
@@ -218,6 +229,66 @@ export function BenchmarksContainer() {
   });
 
   const { isInDemoMode } = useDemoMode();
+
+  const { evaluationInputs, isLoading: isEvaluationInputsLoading } = useOrFetchEvaluationInputs(
+    tenant,
+    taskId,
+    taskSchemaId
+  );
+
+  const areThereAnyReviews = !!evaluationInputs && evaluationInputs.length > 0;
+  const numberOfVersions = !!versions ? versions.length : 0;
+
+  const entriesForEmptyState = useMemo(() => {
+    const areThereAnyRuns = areThereAnyReviews;
+    const isThereMoreThenOneVersion = versions?.length > 1;
+
+    return [
+      {
+        title: 'Review Runs',
+        subtitle: 'We recommend starting with 10–20 evaluated runs, depending on the complexity of your AI feature.',
+        imageURL: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/EmptyPageImage2.jpg',
+        state: areThereAnyRuns,
+      },
+      {
+        title: 'Save at Least Two Versions',
+        subtitle: 'Save versions to be able to benchmark and easily find them again.',
+        imageURL: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/EmptyPageImage4.jpg',
+        state: isThereMoreThenOneVersion,
+      },
+      {
+        title: '🎉 Compare Versions',
+        subtitle: 'You’ll see clearly how the versions stack up against each other in accuracy, price, and latency.',
+        imageURL: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/EmptyPageImage5.jpg',
+        state: undefined,
+      },
+    ];
+  }, [versions, areThereAnyReviews]);
+
+  if (numberOfVersions < 2 || !areThereAnyReviews) {
+    return (
+      <PageContainer
+        task={task}
+        isInitialized={isInitialized}
+        name='Benchmarks'
+        showCopyLink={true}
+        showBottomBorder={true}
+        documentationLink='https://docs.workflowai.com/features/benchmarks'
+      >
+        <EmptyStateComponent
+          title='Benchmarks'
+          subtitle='Compares versions to find the most effective based on accuracy, cost, and latency. Your thumbs up or down helps build the benchmark for that version.'
+          info='After Runs have been reviewed and at least two versions saved, you’ll be able to start benchmarking '
+          documentationLink='https://docs.workflowai.com/features/benchmarks'
+          entries={entriesForEmptyState}
+        />
+      </PageContainer>
+    );
+  }
+
+  if (isEvaluationInputsLoading || isVersionsLoading) {
+    return <Loader centered />;
+  }
 
   return (
     <PageContainer

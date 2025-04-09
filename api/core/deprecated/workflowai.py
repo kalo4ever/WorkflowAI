@@ -1,10 +1,12 @@
 import logging
+import time
 from collections.abc import Callable
 from contextlib import asynccontextmanager
 from contextvars import ContextVar
 from functools import wraps
 from typing import Any, AsyncGenerator, Optional, Protocol, TypeVar
 
+from core.domain.agent_run import AgentRun
 from core.domain.analytics_events.analytics_events import (
     RunTrigger,
     SourceType,
@@ -15,7 +17,6 @@ from core.domain.errors import (
 )
 from core.domain.run_output import RunOutput
 from core.domain.task_group_properties import TaskGroupProperties
-from core.domain.task_run import SerializableTaskRun
 from core.domain.task_run_builder import TaskRunBuilder
 from core.domain.types import CacheUsage
 from core.domain.users import UserIdentifier
@@ -55,7 +56,7 @@ class _RunServiceProt(Protocol):
         store_inline: bool = True,
         source: SourceType | None = None,
         file_storage: FileStorage | None = None,
-    ) -> SerializableTaskRun: ...
+    ) -> AgentRun: ...
 
     async def stream_from_builder(
         self,
@@ -155,7 +156,6 @@ class WorkflowAI:
         group: Optional[VersionReference] = None,
         task_run_id: Optional[str] = None,
         cache: CacheUsage = "auto",
-        labels: Optional[set[str]] = None,
         metadata: Optional[dict[str, Any]] = None,
         trigger: RunTrigger | None = None,
         store_inline: bool = True,
@@ -164,8 +164,8 @@ class WorkflowAI:
         builder = await runner.task_run_builder(
             input.model_dump(mode="json"),
             task_run_id=task_run_id,
-            labels=labels,
             metadata=metadata,
+            start_time=time.time(),
         )
         run = await self._run_service.run_from_builder(
             builder,

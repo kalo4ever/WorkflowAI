@@ -9,8 +9,8 @@ import typer
 from dotenv import load_dotenv
 from rich import print
 
+from core.domain.agent_run import AgentRun
 from core.domain.consts import METADATA_KEY_DEPLOYMENT_ENVIRONMENT, METADATA_KEY_DEPLOYMENT_ENVIRONMENT_DEPRECATED
-from core.domain.task_run import SerializableTaskRun
 from core.storage.clickhouse.clickhouse_client import ClickhouseClient
 from core.storage.clickhouse.models.runs import CLICKHOUSE_RUN_VERSION, ClickhouseRun
 from core.storage.mongo.models.task_run_document import TaskRunDocument
@@ -94,7 +94,7 @@ class Importer:
             self._task_uid_cache[(tenant, task_id)] = task_uid
             return task_uid
 
-    async def _convert_run_to_columns(self, tenant: str, run: SerializableTaskRun):
+    async def _convert_run_to_columns(self, tenant: str, run: AgentRun):
         tenant_uid = await self.get_tenant_uid(tenant)
         task_uid = await self.get_task_uid(tenant, run.task_id)
         if task_uid == 0:
@@ -116,7 +116,7 @@ class Importer:
         dumped = clickhouse_run.model_dump()
         return [dumped[column] for column in self._columns]
 
-    async def store_runs_on_clickhouse(self, runs: list[tuple[str, SerializableTaskRun]], commit: bool):
+    async def store_runs_on_clickhouse(self, runs: list[tuple[str, AgentRun]], commit: bool):
         # We could do a gather here, but it would require making the
         data = await asyncio.gather(
             *(self._convert_run_to_columns(tenant, run) for tenant, run in runs),
@@ -158,7 +158,7 @@ class Importer:
         batch_size: int,
     ):
         count = 0
-        agg: list[tuple[str, SerializableTaskRun]] = []
+        agg: list[tuple[str, AgentRun]] = []
         async for current_tenant, run in self.list_runs(
             tenant,
             from_date,

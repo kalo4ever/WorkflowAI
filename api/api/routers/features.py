@@ -1,11 +1,13 @@
 from collections.abc import AsyncIterator
+from datetime import date, timedelta
+from typing import Annotated
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from api.dependencies.event_router import EventRouterDep
-from api.dependencies.security import UserDep
+from api.dependencies.security import SystemStorageDep, UserDep
 from api.dependencies.storage import StorageDep
 from api.schemas.models import ModelResponse
 from api.services.features import (
@@ -17,8 +19,12 @@ from api.services.features import (
 )
 from api.services.models import ModelsService
 from core.domain.features import BaseFeature, DirectToAgentBuilderFeature, FeatureWithImage
+from core.domain.models.models import Model
 from core.domain.page import Page
+from core.domain.task_typology import TaskTypology
+from core.storage.task_run_storage import WeeklyRunAggregate
 from core.utils.email_utils import safe_domain_from_email
+from core.utils.redis_cache import redis_cached
 from core.utils.stream_response_utils import safe_streaming_response
 
 router = APIRouter(prefix="/features")
@@ -155,5 +161,75 @@ async def get_feature_schemas(
     description="Preview available models and their associated data",
 )
 async def preview_models() -> Page[ModelResponse]:
-    models = [ModelResponse.from_service(m) async for m in ModelsService.preview_models() if m.is_default]
+    # Models to be included that are not default
+    _include_models = {
+        Model.DEEPSEEK_R1_2501_BASIC,
+        Model.MISTRAL_LARGE_2_LATEST,
+        Model.LLAMA_4_MAVERICK_BASIC,
+    }
+
+    # Total number of default models to include
+    include_default_models_count = 3
+
+    models: list[ModelResponse] = []
+    typology = TaskTypology()  # the default typology, aka text only
+    async for model in ModelsService.preview_models(typology=typology):
+        if model.is_default and not model.is_not_supported_reason and include_default_models_count > 0:
+            models.append(ModelResponse.from_service(model))
+            include_default_models_count -= 1
+            continue
+
+        if model.id in _include_models:
+            models.append(ModelResponse.from_service(model))
+
     return Page(items=models)
+
+
+class WeeklyRunsResponse(BaseModel):
+    start_of_week: date
+    run_count: int
+    overhead_ms: int
+
+    @classmethod
+    def from_domain(cls, weekly_run: WeeklyRunAggregate):
+        return cls(
+            start_of_week=weekly_run.start_of_week,
+            run_count=weekly_run.run_count,
+            overhead_ms=weekly_run.overhead_ms,
+        )
+
+
+@router.get("/weekly-runs")
+async def get_weekly_runs(
+    system_storage: SystemStorageDep,
+    week_count: Annotated[int, Query(ge=1, le=10)],
+) -> Page[WeeklyRunsResponse]:
+    # Caching the result for 10 minutes
+    # Passing the current week as an argument to avoid cache hits when the week changes
+    @redis_cached(expiration_seconds=60 * 10)
+    async def _fetch_weekly_runs(week_count: int, current_week: int):
+        return [
+            WeeklyRunsResponse.from_domain(r) async for r in system_storage.task_runs.weekly_run_aggregate(week_count)
+        ]
+
+    current_week = date.today().isocalendar().week
+    weekly_runs = await _fetch_weekly_runs(week_count=week_count, current_week=current_week)
+    return Page(items=weekly_runs)
+
+
+class UptimeResponse(BaseModel):
+    uptime_percent: float
+    since: date
+    source: str
+
+
+@router.get("/uptimes/workflowai")
+async def get_workflowai_uptime() -> UptimeResponse:
+    from_date = date.today() - timedelta(days=90)
+    return UptimeResponse(uptime_percent=100, since=from_date, source="https://status.workflowai.com")
+
+
+@router.get("/uptimes/openai")
+async def get_openai_uptime() -> UptimeResponse:
+    from_date = date.today() - timedelta(days=90)
+    return UptimeResponse(uptime_percent=99.89, since=from_date, source="https://status.openai.com")

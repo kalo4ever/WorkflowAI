@@ -23,11 +23,14 @@ def _add_schema_to_output_schema(
         logger.exception("Output schema has no properties, skipping schema addition")
         return
     if property_name in output_schema["properties"]:
+        # TODO: there is currently a bug that tries to add the same property twice when tools are used.
+        # Warning is commented to avoid spam.
+        # When it's fixed we can uncomment the following logger.warning.
         # Very unlikely to happen, but we need to handle this case.
-        logger.warning(
-            "Property already in output schema, skipping",
-            extra={"property_name": property_name},
-        )
+        # logger.warning(
+        #     "Property already in output schema, skipping",
+        #     extra={"property_name": property_name},
+        # )
         return
 
     # Merge JSON schemas

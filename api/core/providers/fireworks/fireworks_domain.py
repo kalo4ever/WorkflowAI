@@ -3,7 +3,7 @@ from typing import Annotated, Any, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from core.domain.errors import ModelDoesNotSupportMode, UnpriceableRunError
+from core.domain.errors import UnpriceableRunError
 from core.domain.fields.file import File
 from core.domain.llm_usage import LLMUsage
 from core.domain.message import Message
@@ -122,10 +122,8 @@ class FireworksMessage(BaseModel):
 
         if message.content:
             content.append(TextContent(text=message.content))
-        for file in message.files or []:
-            if file.is_image is False and file.is_audio is False:
-                raise ModelDoesNotSupportMode("OpenAI only supports image and audio files in messages")
-            content.append(ImageContent.from_file(file))
+        if message.files:
+            content.extend((ImageContent.from_file(file) for file in message.files))
 
         tool_calls: list[FireworksToolCall] | None = None
         if message.tool_call_requests:

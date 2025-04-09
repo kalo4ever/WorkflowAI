@@ -1,13 +1,19 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Loader } from '@/components/ui/Loader';
 import { PageContainer } from '@/components/v2/PageContainer';
 import { useDemoMode } from '@/lib/hooks/useDemoMode';
 import { useTaskSchemaParams } from '@/lib/hooks/useTaskParams';
 import { useOrFetchTask } from '@/store';
-import { useOrFetchCurrentTaskSchema, useOrFetchEvaluation, useOrFetchEvaluationInputs } from '@/store/fetchers';
+import {
+  useOrFetchCurrentTaskSchema,
+  useOrFetchEvaluation,
+  useOrFetchEvaluationInputs,
+  useOrFetchLatestRun,
+} from '@/store/fetchers';
 import { useTaskEvaluation } from '@/store/task_evaluation';
+import { EmptyStateComponent } from './EmptyStateComponent';
 import { ReviewEntry } from './ReviewEntry';
 import { ReviewMainInstructions } from './ReviewMainInstructions';
 import { ReviewsHeader } from './ReviewsHeader';
@@ -44,10 +50,58 @@ export default function ReviewsContainer() {
     [tenant, taskId, taskSchemaId, updateEvaluation]
   );
 
+  const { latestRun, isLoading: isLatestRunLoading } = useOrFetchLatestRun(tenant, taskId, taskSchemaId);
+
   const { isInDemoMode } = useDemoMode();
 
-  if (!task || !isTaskSchemaInitialized || !isEvaluationInitialized || !isEvaluationInputsInitialized) {
+  const entriesForEmptyState = useMemo(() => {
+    const areThereAnyRuns = !!latestRun;
+
+    return [
+      {
+        title: 'Run AI Feature',
+        subtitle: 'Run your AI Feature with different inputs to see how it performs',
+        imageURL: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/EmptyPageImage1.jpg',
+        state: areThereAnyRuns,
+      },
+      {
+        title: 'Review Runs',
+        subtitle:
+          'Each review you leave will be recorded on your AI Feature’s Review page and used to Benchmark different versions’ performance',
+        imageURL: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/EmptyPageImage2.jpg',
+        state: false,
+      },
+      {
+        title: '🎉 Continue Adding to Your Dataset',
+        subtitle: 'We recommend starting with 10–20 evaluated runs to create a solid dataset.',
+        imageURL: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/EmptyPageImage3.jpg',
+        state: undefined,
+      },
+    ];
+  }, [latestRun]);
+
+  if (
+    !task ||
+    !isTaskSchemaInitialized ||
+    !isEvaluationInitialized ||
+    !isEvaluationInputsInitialized ||
+    isLatestRunLoading
+  ) {
     return <Loader centered />;
+  }
+
+  if (!sortedEvaluationInputs || sortedEvaluationInputs.length === 0) {
+    return (
+      <PageContainer task={task} isInitialized={isTaskInitialized} name='Reviews' showCopyLink={true}>
+        <EmptyStateComponent
+          title='Reviews'
+          subtitle='Reviews rate whether a run’s output is correct or not. They help measure an AI feature’s accuracy and improve Benchmarking. The more reviews you add, the more accurate the Benchmarks become.'
+          info='Once at least one review is added, you’ll see the content here'
+          documentationLink={undefined}
+          entries={entriesForEmptyState}
+        />
+      </PageContainer>
+    );
   }
 
   return (

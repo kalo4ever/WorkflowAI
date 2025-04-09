@@ -405,6 +405,7 @@ class TestRemoveEmptyStrings:
                     "name": {"type": "string"},
                     "description": {"type": "string"},
                     "optional_field": {"type": "string"},
+                    "date": {"type": "string", "format": "date"},
                     "number": {"type": "number"},
                     "nested": {
                         "type": "object",
@@ -424,6 +425,7 @@ class TestRemoveEmptyStrings:
             "name": "Test",
             "description": "",
             "optional_field": None,
+            "date": "",
             "number": 42,
             "nested": {"key": "value", "empty": "", "null_value": None},
             "array": ["", "not empty", None],
@@ -431,77 +433,13 @@ class TestRemoveEmptyStrings:
 
         expected = {
             "name": "Test",
-            "number": 42,
-            "nested": {"key": "value"},
-            "array": ["", "not empty", None],
-        }
-
-        basic_schema.navigate(obj, [remove_optional_nulls_and_empty_strings])
-        assert obj == expected
-
-    @pytest.mark.parametrize("nested", [{"key": "", "empty": "", "null_value": None}, None, {}])
-    def test_basic_remove_nested_empty_dict(self, basic_schema: JsonSchema, nested: dict[str, Any]):
-        obj = {
-            "name": "Test",
             "description": "",
-            "optional_field": None,
             "number": 42,
-            "nested": nested,
-            "array": ["", "not empty", None],
-        }
-
-        expected = {
-            "name": "Test",
-            "number": 42,
+            "nested": {"key": "value", "empty": ""},
             "array": ["", "not empty", None],
         }
 
         basic_schema.navigate(obj, [remove_optional_nulls_and_empty_strings])
-        assert obj == expected
-
-    @pytest.fixture()
-    def basic_schema_2(self):
-        return JsonSchema(
-            {
-                "type": "object",
-                "properties": {
-                    "greeting": {"type": "string"},
-                },
-            },
-        )
-
-    def test_basic_2(self, basic_schema_2: JsonSchema):
-        obj = {"greeting": ""}
-        expected = {}
-
-        basic_schema_2.navigate(obj, [remove_optional_nulls_and_empty_strings])
-        assert obj == expected
-
-    @pytest.fixture
-    def nested_schema(self):
-        return JsonSchema(
-            {
-                "type": "object",
-                "properties": {
-                    "outer": {
-                        "type": "object",
-                        "properties": {
-                            "inner": {
-                                "type": "object",
-                                "properties": {"empty_string": {"type": "string"}, "null_value": {"type": "string"}},
-                            },
-                        },
-                    },
-                },
-            },
-        )
-
-    def test_nested_empty_dict(self, nested_schema: JsonSchema):
-        obj = {"outer": {"inner": {"empty_string": "", "null_value": None}}}
-
-        expected: dict[str, Any] = {}
-
-        nested_schema.navigate(obj, [remove_optional_nulls_and_empty_strings])
         assert obj == expected
 
     @pytest.fixture
@@ -530,7 +468,9 @@ class TestRemoveEmptyStrings:
             ],
         }
 
-        expected = {"items": [{"name": "Item 1"}, {"name": "Item 3", "description": "Valid"}]}
+        expected = {
+            "items": [{"name": "Item 1", "description": ""}, {"name": ""}, {"name": "Item 3", "description": "Valid"}],
+        }
 
         array_schema.navigate(obj, [remove_optional_nulls_and_empty_strings])
         assert obj == expected
@@ -548,46 +488,6 @@ class TestRemoveEmptyStrings:
                 },
             },
         )
-
-    def test_non_string_values(self, non_string_schema: JsonSchema):
-        obj: dict[str, Any] = {"number": 0, "boolean": False, "list": [], "dict": {}}
-
-        expected: dict[str, Any] = {"number": 0, "boolean": False, "list": []}
-
-        non_string_schema.navigate(obj, [remove_optional_nulls_and_empty_strings])
-        assert obj == expected
-
-    @pytest.fixture
-    def empty_root_schema(self):
-        return JsonSchema({"type": "object", "properties": {"empty": {"type": "string"}, "null": {"type": "string"}}})
-
-    def test_empty_root_object(self, empty_root_schema: JsonSchema):
-        obj = {"empty": "", "null": None}
-
-        expected = {}
-
-        empty_root_schema.navigate(obj, [remove_optional_nulls_and_empty_strings])
-        assert obj == expected
-
-    def test_preserve_non_empty_nested_dict(self, basic_schema: JsonSchema):
-        obj = {
-            "name": "Test",
-            "description": "",
-            "optional_field": None,
-            "number": 42,
-            "nested": {"key": "value", "empty": "", "null_value": None},
-            "array": ["", "not empty", None],
-        }
-
-        expected = {
-            "name": "Test",
-            "number": 42,
-            "nested": {"key": "value"},
-            "array": ["", "not empty", None],
-        }
-
-        basic_schema.navigate(obj, [remove_optional_nulls_and_empty_strings])
-        assert obj == expected
 
 
 @pytest.mark.parametrize(

@@ -9,18 +9,18 @@ from clickhouse_connect.driver.asyncclient import AsyncClient
 from clickhouse_connect.driver.external import ExternalData
 from pydantic import BaseModel
 
+from core.domain.agent_run import AgentRun
 from core.domain.errors import InternalError
 from core.domain.search_query import (
     SearchQuery,
 )
-from core.domain.task_run import SerializableTaskRun
 from core.domain.task_run_aggregate_per_day import TaskRunAggregatePerDay
 from core.domain.task_run_query import SerializableTaskRunField, SerializableTaskRunQuery
 from core.storage import ObjectNotFoundException, TaskTuple
 from core.storage.clickhouse.models.runs import FIELD_TO_COLUMN, ClickhouseRun
 from core.storage.clickhouse.models.utils import data_and_columns, id_lower_bound
 from core.storage.clickhouse.query_builder import Q, W, WhereAndClause
-from core.storage.task_run_storage import RunAggregate, TaskRunStorage, TokenCounts
+from core.storage.task_run_storage import RunAggregate, TaskRunStorage, TokenCounts, WeeklyRunAggregate
 
 
 class ClickhouseClient(TaskRunStorage):
@@ -83,7 +83,7 @@ class ClickhouseClient(TaskRunStorage):
     async def insert_models(self, table: str, models: Sequence[BaseModel], settings: InsertSettings | None = None):
         if not models:
             return
-        columns = list(models[0].model_fields.keys())
+        columns = list(models[0].__class__.model_fields.keys())
 
         def _row(model: BaseModel):
             dumped = model.model_dump()
@@ -94,7 +94,7 @@ class ClickhouseClient(TaskRunStorage):
         await client.insert(table=table, column_names=columns, data=rows, settings=cast(dict[str, Any], settings))
 
     @override
-    async def store_task_run(self, task_run: SerializableTaskRun, settings: InsertSettings | None = None):
+    async def store_task_run(self, task_run: AgentRun, settings: InsertSettings | None = None):
         clickhouse_run = ClickhouseRun.from_domain(self.tenant_uid, task_run)
         data, columns = data_and_columns(clickhouse_run)
         client = await self.client()
@@ -239,7 +239,7 @@ class ClickhouseClient(TaskRunStorage):
         id: str,
         include: set[SerializableTaskRunField] | None = None,
         exclude: set[SerializableTaskRunField] | None = None,
-    ) -> SerializableTaskRun:
+    ) -> AgentRun:
         w = ClickhouseRun.where_by_id(task_id[1], id)
         columns = ClickhouseRun.columns(include, exclude)
         results = await self._runs(task_id[0], columns, w, limit=1)
@@ -256,7 +256,7 @@ class ClickhouseClient(TaskRunStorage):
         group_id: str,
         timeout_ms: int | None,
         success_only: bool = True,
-    ) -> SerializableTaskRun | None:
+    ) -> AgentRun | None:
         async with asyncio.timeout(timeout_ms):
             cache_hash = ClickhouseRun.compute_cache_hash(
                 self.tenant_uid,
@@ -303,7 +303,7 @@ class ClickhouseClient(TaskRunStorage):
         task_uid: int,
         query: SerializableTaskRunQuery,
         timeout_ms: int | None = None,
-    ) -> AsyncIterator[SerializableTaskRun]:
+    ) -> AsyncIterator[AgentRun]:
         async with asyncio.timeout(timeout_ms):
             w = ClickhouseRun.where_for_query(self.tenant_uid, task_uid, query)
             columns = ClickhouseRun.columns(query.include_fields, query.exclude_fields)
@@ -502,4 +502,28 @@ class ClickhouseClient(TaskRunStorage):
                 agent_uid=row[0],
                 run_count=row[1],
                 total_cost_usd=ClickhouseRun.from_cost_millionth_usd(row[2]),
+            )
+
+    @override
+    async def weekly_run_aggregate(self, week_count: int):
+        sql = f"""
+SELECT
+    toStartOfWeek(created_at_date) AS week_start,
+    COUNT() AS run_count,
+    AVG(NULLIF(overhead_ms, 0)) AS avg_overhead_ms
+FROM
+    runs
+WHERE
+    created_at_date >= subtractWeeks(today(), {week_count})
+GROUP BY
+    week_start
+ORDER BY
+    week_start
+        """
+        res = await self.query(sql)
+        for row in res.result_rows:
+            yield WeeklyRunAggregate(
+                start_of_week=row[0],
+                run_count=row[1],
+                overhead_ms=int(round(row[2])),
             )

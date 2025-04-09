@@ -169,7 +169,6 @@ def _task_run(
         task_output_hash=str(uuid.uuid4()),
         task_output=task_output,
         created_at=created_at,
-        updated_at=updated_at,
         group=TaskRunDocument.Group(
             alias=version_id or "group_alias",
             hash=version_id or "group_hash",
@@ -345,26 +344,6 @@ class TestPrepareTaskRun:
             USER,
             SourceType.API,
         )
-        assert stored.example_id is None
-        assert stored.is_active is True
-
-    async def test_with_example(
-        self,
-        storage: MongoStorage,
-        task_example_col: AsyncCollection,
-    ):
-        task_run = _task_run()
-        inserted = await task_example_col.insert_one(
-            dump_model(_task_example(task_input_hash=task_run.task_input_hash)),
-        )
-
-        stored = await storage.prepare_task_run(
-            _task_variant().to_resource(),
-            task_run.to_resource(),
-            USER,
-            SourceType.API,
-        )
-        assert stored.example_id == str(inserted.inserted_id)
 
         assert stored.is_active is True
 
@@ -480,10 +459,6 @@ class TestDeleteExample:
         deleted = await storage.delete_example(example_id)
         assert deleted
         assert deleted.id == str(inserted_examples[0].id)
-
-        run_doc = await task_run_col.find_one({"_id": task_run.id})
-        run = TaskRunDocument.model_validate(run_doc)
-        assert run.example_id is None
 
         patched_task_inputs.detach_example.assert_called_once_with(
             task_id=TASK_ID,

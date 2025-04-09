@@ -58,66 +58,40 @@ export function replaceFileData(
   return innerReplaceFileDataWithURL(schema, schema.$defs, obj, replacer) as Record<string, unknown>;
 }
 
-export type FileFormat = 'audio' | 'image' | 'text' | 'document';
-
-function appendToFormats(
+export function requiresFileSupport(
   schema: JsonValueSchema | undefined,
-  defs: JsonSchemaDefinitions | undefined,
-  formats: Set<FileFormat>
-) {
+  defs: JsonSchemaDefinitions | undefined
+): boolean {
   if (schema === undefined || defs === undefined) {
-    return;
+    return false;
   }
 
-  if (schema.followedRefName === 'Image') {
-    formats.add('image');
-  }
-
-  if (schema.followedRefName === 'File') {
-    switch (schema.format) {
-      case 'audio':
-        formats.add('audio');
-        break;
-      case 'image':
-        formats.add('image');
-        break;
-      case 'pdf':
-      case 'text':
-      case 'document':
-        formats.add('document');
-        break;
-      default:
-        // TODO: how should we handle a file without a format?
-        break;
-    }
+  if (schema.followedRefName && FILE_REF_NAMES.includes(schema.followedRefName)) {
+    return true;
   }
 
   if ('properties' in schema && schema.properties) {
     for (const key in schema.properties) {
       const subSchema = getSubSchema(schema, defs, key);
-      appendToFormats(subSchema, defs, formats);
+      if (requiresFileSupport(subSchema, defs)) {
+        return true;
+      }
     }
   }
 
   if ('items' in schema && schema.items) {
     if (Array.isArray(schema.items)) {
       for (const idx in schema.items) {
-        appendToFormats(getSubSchema(schema, defs, idx), defs, formats);
+        if (requiresFileSupport(getSubSchema(schema, defs, idx), defs)) {
+          return true;
+        }
       }
     } else {
-      appendToFormats(getSubSchema(schema, defs, '0'), defs, formats);
+      if (requiresFileSupport(getSubSchema(schema, defs, '0'), defs)) {
+        return true;
+      }
     }
   }
-}
 
-export function extractFormats(schema: JsonSchema | undefined | null): FileFormat[] | undefined {
-  if (schema === undefined || schema === null) {
-    return undefined;
-  }
-  const formats = new Set<FileFormat>();
-  appendToFormats(schema, schema.$defs, formats);
-  if (formats.size === 0) {
-    return undefined;
-  }
-  return Array.from(formats);
+  return false;
 }
