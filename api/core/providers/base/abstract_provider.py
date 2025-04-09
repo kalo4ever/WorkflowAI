@@ -615,6 +615,12 @@ class AbstractProvider(ABC, Generic[ProviderConfigVar, ProviderRequestVar]):
         e.task_run_id = self._run_id()
         return e
 
+    def _config_label(self, tenant: str | None):
+        """A label that describes the config"""
+        if self._config_id:
+            return f"custom_{tenant}"
+        return f"workflowai_{self._index}"
+
     @asynccontextmanager
     async def _wrap_for_metric(self, model: Model, tenant: str | None):
         status = "success"
@@ -633,6 +639,7 @@ class AbstractProvider(ABC, Generic[ProviderConfigVar, ProviderRequestVar]):
                 provider=self.name(),
                 tenant=tenant or "unknown",
                 status=status,
+                config=self._config_label(tenant),
             )
 
     async def _retryable_complete(
