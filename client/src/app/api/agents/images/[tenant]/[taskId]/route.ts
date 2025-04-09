@@ -80,7 +80,7 @@ export async function GET(request: Request, { params }: { params: { tenant: stri
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
-            paddingTop: '50px',
+            paddingTop: '70px',
             paddingLeft: '130px',
             paddingRight: '130px',
             overflow: 'hidden',
@@ -106,7 +106,7 @@ export async function GET(request: Request, { params }: { params: { tenant: stri
           // Entry 0
           React.createElement(
             'div',
-            { style: { color: '#6B7280', zIndex: 1, textAlign: 'left', paddingTop: '30px' } },
+            { style: { color: '#6B7280', zIndex: 1, textAlign: 'left' } },
             entries[0]?.key || ''
           ),
           React.createElement(
