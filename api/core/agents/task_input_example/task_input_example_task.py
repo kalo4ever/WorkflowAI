@@ -6,6 +6,8 @@ from workflowai import Model, agent
 from core.domain.url_content import URLContent
 from core.utils.hash import compute_obj_hash
 
+TASK_INPUT_EXAMPLE_TASK_ID = "task-input-example"
+
 
 class TaskInputExampleTaskInput(BaseModel):
     current_datetime: str | None = Field(default=None, description="The current datetime in ISO format")
@@ -45,7 +47,7 @@ class TaskInputExampleTaskOutput(BaseModel):
     )
 
 
-@agent(id="task-input-example", model=Model.GEMINI_2_0_FLASH_EXP)
+@agent(id=TASK_INPUT_EXAMPLE_TASK_ID, model=Model.GEMINI_2_0_FLASH_EXP)
 async def run_task_input_example_task(
     input: TaskInputExampleTaskInput,
 ) -> TaskInputExampleTaskOutput:
@@ -63,7 +65,7 @@ async def run_task_input_example_task(
     ...
 
 
-@agent(id="task-input-example", model=Model.GEMINI_2_0_FLASH_EXP.value)
+@agent(id=TASK_INPUT_EXAMPLE_TASK_ID, model=Model.GEMINI_2_0_FLASH_EXP.value)
 def stream_task_input_example_task(
     input: TaskInputExampleTaskInput,
 ) -> AsyncIterator[TaskInputExampleTaskOutput]:

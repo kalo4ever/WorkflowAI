@@ -62,6 +62,7 @@ from core.agents.task_description_generation_task import (
     stream_task_description_generation,
 )
 from core.agents.task_input_example.task_input_example_task import (
+    TASK_INPUT_EXAMPLE_TASK_ID,
     TaskInputExampleTaskInput,
     TaskInputExampleTaskOutput,
     run_task_input_example_task,
@@ -720,6 +721,15 @@ class InternalTasksService:
     # ----------------------------------------
     # Generate inputs
 
+    async def _get_task_input_example_task(self) -> SerializableTaskVariant | None:
+        try:
+            return await self.storage.task_variants.get_latest_task_variant(
+                TASK_INPUT_EXAMPLE_TASK_ID,
+            )
+        except Exception as e:
+            self.logger.exception("Error while fetching task input example task", exc_info=e)
+            return None
+
     async def _fetch_previous_task_inputs(
         self,
         task: SerializableTaskVariant,
@@ -731,8 +741,13 @@ class InternalTasksService:
         # Ultimately we should integrate the fetching to the SDK. `run_task_input_example_task.list_runs`
         # To ensure that we always fetch from the same environment.
 
+        task_input_example_task = await self._get_task_input_example_task()
+        if not task_input_example_task:
+            self.logger.exception("Can't find the task input example task")
+            return None
+
         previous_run_query = SerializableTaskRunQuery(
-            task_id="task-input-example",
+            task_id=TASK_INPUT_EXAMPLE_TASK_ID,
             task_schema_id=None,
             limit=10,
             status={"success"},
@@ -741,7 +756,11 @@ class InternalTasksService:
         )
 
         validated = list[dict[str, Any]]()
-        async for run in self.storage.task_runs.fetch_task_run_resources(task.task_uid, previous_run_query):
+        async for run in self.storage.task_runs.fetch_task_run_resources(
+            # Specifically looking for runs of the task input example agent NOT from the task we are generating inputs for
+            task_input_example_task.task_uid,
+            previous_run_query,
+        ):
             try:
                 output = TaskInputExampleTaskOutput.model_validate(run.task_output)
                 if output.task_input:

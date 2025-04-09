@@ -1,7 +1,7 @@
 import asyncio
 from datetime import datetime, timezone
-from typing import Generator
-from unittest.mock import AsyncMock, Mock, patch
+from typing import Any, Generator
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
 
@@ -1914,3 +1914,63 @@ class TestFeedValidationError:
 
         # Assert
         assert agent_input.current_preview_output_validation_error is None
+
+
+@pytest.mark.parametrize(
+    "task_input_example_task_exists,expected_result",
+    [
+        (True, [{"name": "example1"}, {"name": "example2"}]),
+        (False, None),
+    ],
+)
+async def test_fetch_previous_task_inputs(
+    internal_tasks_service: InternalTasksService,
+    mock_storage: Mock,
+    task_variant: SerializableTaskVariant,
+    task_input_example_task_exists: bool,
+    expected_result: list[dict[str, Any]],
+):
+    # Arrange
+    mock_task_uid = "test-task-uid-123"
+
+    # Mock the _get_task_input_example_task method
+    if task_input_example_task_exists:
+        example_task = MagicMock()
+        example_task.task_uid = mock_task_uid
+        internal_tasks_service._get_task_input_example_task = AsyncMock(return_value=example_task)  # pyright: ignore[reportPrivateUsage]
+    else:
+        internal_tasks_service._get_task_input_example_task = AsyncMock(return_value=None)  # pyright: ignore[reportPrivateUsage]
+
+    # Set up the fetch_task_run_resources mock
+    if task_input_example_task_exists:
+        mock_runs: list[Any] = []
+        for example in expected_result:
+            mock_run = MagicMock()
+            mock_run.task_output = {"task_input": example}
+            mock_runs.append(mock_run)
+
+        mock_storage.task_runs.fetch_task_run_resources.return_value = mock_aiter(*mock_runs)
+
+    # Act
+    metadata = {"test_key": "test_value"}
+    result = await internal_tasks_service._fetch_previous_task_inputs(task_variant, metadata)  # pyright: ignore[reportPrivateUsage]
+
+    # Assert
+    assert result == expected_result
+
+    # Verify fetch_task_run_resources was called with the correct task_uid
+    if task_input_example_task_exists:
+        mock_storage.task_runs.fetch_task_run_resources.assert_called_once()
+        args = mock_storage.task_runs.fetch_task_run_resources.call_args.args
+        assert args[0] == mock_task_uid  # Verify the task_uid is passed correctly
+
+        # Verify the query parameters (second positional argument)
+        query = args[1]
+        assert query.task_id == "task-input-example"
+        assert query.task_schema_id is None
+        assert query.limit == 10
+        assert query.status == {"success"}
+        assert query.metadata == metadata
+        assert query.include_fields == {"task_output"}
+    else:
+        mock_storage.task_runs.fetch_task_run_resources.assert_not_called()
