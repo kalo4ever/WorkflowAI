@@ -361,28 +361,28 @@ class AnthropicProvider(HTTPXProvider[AnthropicConfig, CompletionResponse]):
         ]
 
     @override
-    async def _extract_and_log_rate_limits(self, response: Response, model: Model):
+    async def _extract_and_log_rate_limits(self, response: Response, options: ProviderOptions):
         await self._log_rate_limit_remaining(
             "requests",
-            model=model,
             remaining=response.headers.get("anthropic-ratelimit-requests-remaining"),
             total=response.headers.get("anthropic-ratelimit-requests-limit"),
+            options=options,
         )
         await self._log_rate_limit_remaining(
             "tokens",
-            model=model,
             remaining=response.headers.get("anthropic-ratelimit-tokens-remaining"),
             total=response.headers.get("anthropic-ratelimit-tokens-limit"),
+            options=options,
         )
         await self._log_rate_limit_remaining(
             "input_tokens",
-            model=model,
             remaining=response.headers.get("anthropic-ratelimit-input-tokens-remaining"),
             total=response.headers.get("anthropic-ratelimit-input-tokens-limit"),
+            options=options,
         )
         await self._log_rate_limit_remaining(
             "output_tokens",
-            model=model,
             remaining=response.headers.get("anthropic-ratelimit-output-tokens-remaining"),
             total=response.headers.get("anthropic-ratelimit-output-tokens-limit"),
+            options=options,
         )

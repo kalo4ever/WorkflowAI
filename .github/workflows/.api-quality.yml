@@ -101,7 +101,7 @@ jobs:
           - 8123:8123
           - 9000:9000
         env:
-          CLICKHOUSE_DB: db_test
+          CLICKHOUSE_DB: db_int_test
           CLICKHOUSE_PASSWORD: admin
           CLICKHOUSE_USER: default
     # No need to wait for mongo to be ready here

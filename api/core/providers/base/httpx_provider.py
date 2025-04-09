@@ -255,7 +255,7 @@ class HTTPXProvider(AbstractProvider[ProviderConfigVar, dict[str, Any]], Generic
 
         return body, raw
 
-    async def _extract_and_log_rate_limits(self, response: Response, model: Model):
+    async def _extract_and_log_rate_limits(self, response: Response, options: ProviderOptions):
         """Use _log_rate_limit from the base class to track rate limits"""
         pass
 
@@ -279,7 +279,7 @@ class HTTPXProvider(AbstractProvider[ProviderConfigVar, dict[str, Any]], Generic
                     headers=headers,
                     timeout=options.timeout,
                 )
-                add_background_task(self._extract_and_log_rate_limits(response, options.model))
+                add_background_task(self._extract_and_log_rate_limits(response, options=options))
                 response.raise_for_status()
                 response_status_200 = True
                 return self._parse_response(response, output_factory=output_factory, raw_completion=raw_completion)
@@ -415,7 +415,7 @@ class HTTPXProvider(AbstractProvider[ProviderConfigVar, dict[str, Any]], Generic
                     headers=headers,
                     timeout=options.timeout,
                 ) as response:
-                    add_background_task(self._extract_and_log_rate_limits(response, options.model))
+                    add_background_task(self._extract_and_log_rate_limits(response, options))
                     if not response.is_success:
                         # We need to read the response to get the error message
                         await response.aread()
