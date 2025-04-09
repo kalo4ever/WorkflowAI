@@ -232,6 +232,10 @@ export async function GET(request: Request, { params }: { params: { tenant: stri
             weight: 400,
           },
         ],
+        headers: {
+          'Content-Type': 'image/png',
+          'Cache-Control': 'public, immutable',
+        },
       }
     );
   } catch {
