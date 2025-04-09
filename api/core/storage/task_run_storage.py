@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any, AsyncIterator, NamedTuple, NotRequired, Protocol, TypedDict
 
 from core.domain.agent_run import AgentRun, AgentRunBase
@@ -23,7 +23,17 @@ class RunAggregate(TypedDict):
     eval_hashes: Sequence[str]
 
 
-class TaskRunStorage(Protocol):
+class WeeklyRunAggregate(NamedTuple):
+    start_of_week: date
+    run_count: int
+    overhead_ms: int
+
+
+class TaskRunSystemStorage(Protocol):
+    def weekly_run_aggregate(self, week_count: int) -> AsyncIterator[WeeklyRunAggregate]: ...
+
+
+class TaskRunStorage(TaskRunSystemStorage):
     def aggregate_task_run_costs(
         self,
         task_uid: int | None,

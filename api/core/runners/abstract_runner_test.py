@@ -33,7 +33,7 @@ async def test_builder_context_run_present(dummy_runner: DummyRunner, hello_task
         mock.side_effect = assert_builder_not_empty
 
         res = await dummy_runner.run(
-            TaskRunBuilder(task=hello_task, task_input={}, properties=TaskGroupProperties()),
+            TaskRunBuilder(task=hello_task, task_input={}, properties=TaskGroupProperties(), start_time=0),
         )
         assert res.task_output == {"say_hello": "bla"}
 
@@ -45,7 +45,7 @@ async def test_builder_context_stream_present(dummy_runner: DummyRunner, hello_t
 
     assert builder_context.get() is None
 
-    builder = TaskRunBuilder(task=hello_task, task_input={}, properties=TaskGroupProperties())
+    builder = TaskRunBuilder(task=hello_task, task_input={}, properties=TaskGroupProperties(), start_time=0)
 
     with patch.object(dummy_runner, "_build_task_output") as mock:
         mock.side_effect = assert_builder_not_empty
@@ -242,5 +242,5 @@ class TestTaskRunBuilder:
         with pytest.raises(JSONSchemaValidationError):
             dummy_runner.task.validate_input(task_input)
 
-        builder = await dummy_runner.task_run_builder(input=task_input)
+        builder = await dummy_runner.task_run_builder(input=task_input, start_time=0)
         assert builder.task_input == task_input

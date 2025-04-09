@@ -82,7 +82,6 @@ async def test_run_with_metadata(test_client: IntegrationTestClient):
 
     fetched_task_run = await test_client.get(f"/chiefofstaff.ai/agents/greet/runs/{task_run['id']}")
 
-    assert fetched_task_run["metadata"]["workflowai.overhead_seconds"]
     assert fetched_task_run["metadata"]["workflowai.inference_seconds"]
 
     assert fetched_task_run["metadata"]["key1"] == "value1"

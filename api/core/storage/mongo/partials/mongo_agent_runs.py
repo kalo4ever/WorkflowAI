@@ -20,7 +20,7 @@ from core.storage.mongo.models.task_run_document import TaskRunDocument
 from core.storage.mongo.mongo_types import AsyncCollection, UpdateType
 from core.storage.mongo.partials.base_partial_storage import PartialStorage
 from core.storage.mongo.utils import projection, query_set_filter
-from core.storage.task_run_storage import RunAggregate, TaskRunStorage, TokenCounts
+from core.storage.task_run_storage import RunAggregate, TaskRunStorage, TokenCounts, WeeklyRunAggregate
 
 
 class MongoTaskRunStorage(PartialStorage[TaskRunDocument], TaskRunStorage):
@@ -503,4 +503,8 @@ class MongoTaskRunStorage(PartialStorage[TaskRunDocument], TaskRunStorage):
 
     @override
     def run_count_by_agent_uid(self, from_date: datetime) -> AsyncIterator[TaskRunStorage.AgentRunCount]:
+        raise NotImplementedError()
+
+    @override
+    def weekly_run_aggregate(self, week_count: int) -> AsyncIterator[WeeklyRunAggregate]:
         raise NotImplementedError()

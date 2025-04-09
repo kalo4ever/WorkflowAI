@@ -24,7 +24,7 @@ from api.dependencies.services import (
 )
 from api.dependencies.task_info import TaskTupleDep
 from api.errors import prettify_errors
-from api.routers.common import DeprecatedVersionReference
+from api.routers._common import DeprecatedVersionReference
 from api.services.python_gen import RunCode, generate_full_run_code
 from api.utils import error_json_response
 from core.agents.task_instruction_tool_update_task import (

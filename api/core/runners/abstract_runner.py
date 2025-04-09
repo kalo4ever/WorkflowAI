@@ -184,8 +184,8 @@ class AbstractRunner(
     async def task_run_builder(
         self,
         input: TaskInputDict,
+        start_time: float,
         task_run_id: Optional[str] = None,
-        labels: Optional[set[str]] = None,
         metadata: Optional[dict[str, Any]] = None,
         private_fields: Optional[set[str]] = None,
         reply: RunReply | None = None,
@@ -198,10 +198,10 @@ class AbstractRunner(
             task_input=input,
             properties=self.properties,
             tags=self.group_tags(),
-            labels=labels,
             metadata=self._merge_metadata(metadata),
             private_fields=private_fields,
             reply=reply,
+            start_time=start_time,
         )
 
     def _should_use_cache(self, cache: CacheUsage) -> bool:

@@ -1,10 +1,9 @@
 import logging
-import time
 import uuid
 from collections.abc import Sequence
 from typing import Any, Literal, override
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Request, Response
 from pydantic import BaseModel, Field, TypeAdapter, field_validator, model_validator
 
 from api.dependencies.analytics import UserPropertiesDep
@@ -26,10 +25,11 @@ from api.dependencies.services import (
 from api.dependencies.task_ban import check_task_banned_dependency
 from api.dependencies.task_info import TaskTupleDep
 from api.errors import prettify_errors
-from api.routers.common import DeprecatedVersionReference
+from api.routers._common import DeprecatedVersionReference
 from api.schemas.api_tool_call_request import APIToolCallRequest
 from api.schemas.reasoning_step import ReasoningStep
 from api.tags import RouteTags
+from api.utils import get_start_time
 from core.domain.agent_run import AgentRun
 from core.domain.major_minor import MajorMinor
 from core.domain.run_output import RunOutput
@@ -97,12 +97,6 @@ class RunRequest(BaseModel):
     use_cache: CacheUsage = "auto"
 
     metadata: dict[str, Any] | None = Field(default=None, description="Additional metadata to store with the task run.")
-
-    labels: set[str] | None = Field(
-        default=None,
-        description="A list of labels for the task run. Labels are indexed and searchable",
-        deprecated=True,
-    )
 
     private_fields: set[Literal["task_input", "task_input"] | str] | None = Field(
         default=None,
@@ -290,7 +284,7 @@ _RUN_RESPONSE_V1: dict[int | str, dict[str, Any]] = {
     response_model_exclude_none=True,
 )
 async def run_task(
-    request: RunRequest,
+    body: RunRequest,
     task_id: TaskID,
     task_schema_id: TaskSchemaID,
     run_service: RunServiceDep,
@@ -299,10 +293,9 @@ async def run_task(
     provider_settings: ProviderSettingsDep,
     user_org: UserOrganizationDep,
     feedback_token_generator: RunFeedbackGeneratorDep,
+    request: Request,
 ) -> Response:
-    reference = version_reference_to_domain(request.version)
-
-    start = time.time()
+    reference = version_reference_to_domain(body.version)
 
     with prettify_errors(user_org, task_id, task_schema_id, reference):
         runner, is_different_version = await groups_service.sanitize_groups_for_internal_runner(
@@ -313,22 +306,21 @@ async def run_task(
         )
 
     return await run_service.run(
-        task_input=request.task_input,
+        task_input=body.task_input,
         runner=runner,
-        task_run_id=request.id,
-        cache=request.use_cache,
-        labels=request.labels,
-        metadata=request.metadata,
+        task_run_id=body.id,
+        cache=body.use_cache,
+        metadata=body.metadata,
         trigger="user",
         author_tenant=author_tenant,
         serializer=lambda run: RunResponse.from_domain(run, feedback_token_generator(run.id)),
         stream_last_chunk=True,
-        stream_serializer=RunResponseStreamChunk.from_stream if request.stream else None,
+        stream_serializer=RunResponseStreamChunk.from_stream if body.stream else None,
         store_inline=False,
-        private_fields=request.private_fields,
+        private_fields=body.private_fields,
         # We don't pass the source here, it is only used when storing the run inline
         is_different_version=is_different_version,
-        start=start,
+        start_time=get_start_time(request),
     )
 
 
@@ -369,7 +361,7 @@ class RunReplyRequest(BaseModel):
     "requested run and a new run is triggered with the updated messages.",
 )
 async def reply_to_run(
-    request: RunReplyRequest,
+    body: RunReplyRequest,
     run_service: RunServiceDep,
     groups_service: GroupServiceDep,
     runs_service: RunsServiceDep,
@@ -378,11 +370,11 @@ async def reply_to_run(
     user_org: UserOrganizationDep,
     provider_settings: ProviderSettingsDep,
     feedback_token_generator: RunFeedbackGeneratorDep,
+    request: Request,
 ):
-    start = time.time()
     previous_run = await runs_service.run_by_id(task_tuple, run_id, exclude={"task_output"}, max_wait_ms=400)
-    if request.version:
-        reference = version_reference_to_domain(request.version)
+    if body.version:
+        reference = version_reference_to_domain(body.version)
     else:
         reference = DomainVersionReference(properties=previous_run.group.properties)
 
@@ -400,13 +392,13 @@ async def reply_to_run(
     return await run_service.reply(
         runner=runner,
         to_run=previous_run,
-        user_message=request.user_message,
-        tool_calls=[r.to_domain() for r in request.tool_results] if request.tool_results else None,
-        metadata=request.metadata,
-        stream_serializer=RunResponseStreamChunk.from_stream if request.stream else None,
+        user_message=body.user_message,
+        tool_calls=[r.to_domain() for r in body.tool_results] if body.tool_results else None,
+        metadata=body.metadata,
+        stream_serializer=RunResponseStreamChunk.from_stream if body.stream else None,
         serializer=lambda run: RunResponse.from_domain(run, feedback_token_generator(run.id)),
         is_different_version=is_different_version,
-        start=start,
+        start_time=get_start_time(request),
     )
 
 
@@ -439,11 +431,6 @@ class DeprecatedRunRequest(BaseModel):
 
     use_cache: CacheUsage = "auto"
 
-    labels: set[str] | None = Field(
-        default=None,
-        description="A list of labels for the task run. Labels are indexed and searchable",
-    )
-
     metadata: dict[str, Any] | None = Field(default=None, description="Additional metadata to store with the task run.")
 
 
@@ -475,7 +462,7 @@ _DEPRECATED_RUN_RESPONSE: dict[int | str, dict[str, Any]] = {
     deprecated=True,
 )
 async def run_schema(
-    request: DeprecatedRunRequest,
+    body: DeprecatedRunRequest,
     task_id: TaskID,
     task_schema_id: TaskSchemaID,
     run_service: RunServiceDep,
@@ -485,8 +472,11 @@ async def run_schema(
     user_properties: UserPropertiesDep,
     user_org: UserOrganizationDep,
     file_storage: FileStorageDep,
+    request: Request,
 ) -> Response:
-    version_ref = request.group.to_domain()
+    _logger.warning("Deprecated run endpoint used")
+
+    version_ref = body.group.to_domain()
 
     with prettify_errors(user_org, task_id, task_schema_id, version_ref):
         runner, _ = await groups_service.sanitize_groups_for_internal_runner(
@@ -497,19 +487,19 @@ async def run_schema(
         )
 
     return await run_service.run(
-        task_input=request.task_input,
+        task_input=body.task_input,
         runner=runner,
-        task_run_id=request.id,
-        cache=request.use_cache,
-        labels=request.labels,
-        metadata=request.metadata,
+        task_run_id=body.id,
+        cache=body.use_cache,
+        metadata=body.metadata,
         trigger="user",
         author_tenant=author_tenant,
         source=user_properties.client_source,
-        stream_serializer=RunTaskStreamChunk.from_stream if request.stream else None,
+        stream_serializer=RunTaskStreamChunk.from_stream if body.stream else None,
         serializer=lambda run: run,
         file_storage=file_storage,
         store_inline=True,
+        start_time=get_start_time(request),
     )
 
 
