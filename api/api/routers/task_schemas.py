@@ -3,6 +3,7 @@
 import asyncio
 import json
 import logging
+from collections.abc import AsyncIterator
 from datetime import datetime
 from typing import Annotated, Any, AsyncGenerator, Literal, Self
 
@@ -51,6 +52,7 @@ from core.domain.version_environment import VersionEnvironment
 from core.storage.models import TaskUpdate
 from core.tools import ToolKind
 from core.utils.file_utils.file_utils import extract_text_from_file_base64
+from core.utils.stream_response_utils import safe_streaming_response
 from core.utils.streams import format_model_for_sse
 
 from ..dependencies.storage import StorageDep
@@ -669,12 +671,12 @@ async def update_task_instructions(
             media_type="text/event-stream",
         )
 
-    async def _stream():
+    async def _stream() -> AsyncIterator[BaseModel]:
         async for chunk in await internal_tasks.instructions.update_task_instructions(
             task_variant=task,
             instructions=request.instructions,
             selected_tools=request.selected_tools or [],
         ):
-            yield format_model_for_sse(chunk)
+            yield chunk
 
-    return StreamingResponse(_stream(), media_type="text/event-stream")
+    return safe_streaming_response(_stream, media_type="text/event-stream")
