@@ -375,6 +375,9 @@ export const useFeatureSchemas = create<FeatureSchemasState>((set, get) => ({
           return;
         }
         state.isLoadingByScope.set(scopeKey, true);
+        if (resultsAreEmpty) {
+          state.isInitializedByScope.set(scopeKey, false);
+        }
       })
     );
 
