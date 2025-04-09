@@ -80,7 +80,7 @@ export async function GET(request: Request, { params }: { params: { tenant: stri
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
-            paddingTop: '60px',
+            paddingTop: '50px',
             paddingLeft: '130px',
             paddingRight: '130px',
             overflow: 'hidden',
@@ -234,8 +234,11 @@ export async function GET(request: Request, { params }: { params: { tenant: stri
         ],
         headers: {
           'Content-Type': 'image/png',
-          'Cache-Control': 'public, immutable',
+          'Cache-Control': 'public, immutable, no-transform',
+          'X-Content-Type-Options': 'nosniff',
         },
+        emoji: 'twemoji',
+        debug: false,
       }
     );
   } catch {
