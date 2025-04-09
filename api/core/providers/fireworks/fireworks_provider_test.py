@@ -1224,7 +1224,7 @@ class TestExtractAndLogRateLimits:
                 "x-ratelimit-limit-tokens-generated": "1000",
             },
         )
-        await fireworks_provider._extract_and_log_rate_limits(response, Model.LLAMA_3_3_70B)  # pyright: ignore[reportPrivateUsage]
+        await fireworks_provider._extract_and_log_rate_limits(response, ProviderOptions(model=Model.LLAMA_3_3_70B))  # pyright: ignore[reportPrivateUsage]
 
         assert patch_metric_send.call_count == 3
         metrics = sorted(
@@ -1235,6 +1235,7 @@ class TestExtractAndLogRateLimits:
         assert all(metric.name == "provider_rate_limit" for metric in metrics)
         assert all(metric.tags["provider"] == "fireworks" for metric in metrics)
         assert all(metric.tags["model"] == "llama-3.3-70b" for metric in metrics)
+        assert all(metric.tags["config"] == "workflowai_0" for metric in metrics)
 
         assert metrics[0].tags["limit_name"] == "input_tokens"
         assert metrics[0].gauge == 0.99

@@ -784,14 +784,15 @@ class AbstractProvider(ABC, Generic[ProviderConfigVar, ProviderRequestVar]):
         """An opportunity for the provider to override the model data. Object should be updated in place"""
         pass
 
-    async def _log_rate_limit(self, limit_name: str, percentage: float, model: Model):
+    async def _log_rate_limit(self, limit_name: str, percentage: float, options: ProviderOptions):
         """Percentage is a float between 0 and 1"""
         await send_gauge(
             "provider_rate_limit",
             percentage,
             provider=self.name(),
             limit_name=limit_name,
-            model=model.value,
+            model=options.model.value,
+            config=self._config_label(options.tenant),
         )
 
     async def _log_rate_limit_remaining(
@@ -799,12 +800,12 @@ class AbstractProvider(ABC, Generic[ProviderConfigVar, ProviderRequestVar]):
         limit_name: str,
         remaining: int | float | str | None,
         total: int | float | str | None,
-        model: Model,
+        options: ProviderOptions,
     ):
         if remaining is None or total is None:
             self.logger.warning(
                 "Rate limit remaining or total is None while logging rate limit",
-                extra={"remaining": remaining, "total": total, "model": model.value},
+                extra={"remaining": remaining, "total": total, "model": options.model.value},
             )
             return
         try:
@@ -813,8 +814,8 @@ class AbstractProvider(ABC, Generic[ProviderConfigVar, ProviderRequestVar]):
         except (ValueError, TypeError):
             self.logger.exception(
                 "Could not parse rate limit remaining and total",
-                extra={"remaining": remaining, "total": total, "model": model.value},
+                extra={"remaining": remaining, "total": total, "model": options.model.value},
             )
             return
 
-        await self._log_rate_limit(limit_name, 1 - (remaining / total), model)
+        await self._log_rate_limit(limit_name, 1 - (remaining / total), options)
