@@ -37,14 +37,14 @@ export function PagePath(props: PagePathProps) {
     name,
   } = props;
   return (
-    <div className='flex sm:w-fit w-full flex-row items-center pl-4'>
+    <div className='flex sm:w-fit w-full flex-row items-center pl-4 sm:pr-0 pr-4'>
       <TaskSwitcherContainer
         mode={TaskSwitcherMode.TASKS}
         tasks={tasks}
         open={taskPopoverOpen}
         setOpen={setTaskPopoverOpen}
         trigger={
-          <div>
+          <div className='flex flex-1 overflow-x-hidden'>
             <TaskSection
               task={task}
               organizationName={showOrganization ? organization?.name : undefined}

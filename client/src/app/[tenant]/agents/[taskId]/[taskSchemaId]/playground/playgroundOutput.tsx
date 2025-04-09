@@ -136,7 +136,7 @@ function ModelOutput(props: ModelOutputProps) {
   const [openModelCombobox, setOpenModelCombobox] = useState(false);
 
   return (
-    <div className='flex flex-col flex-1 sm:w-1/3 pt-3 pb-2 sm:pb-4 justify-between overflow-hidden'>
+    <div className='flex flex-col sm:flex-1 sm:w-1/3 pt-3 pb-2 sm:pb-4 justify-between overflow-hidden'>
       <div className='flex flex-col w-full'>
         <div className='flex items-center gap-2 justify-between px-2'>
           <AIModelCombobox
@@ -155,14 +155,14 @@ function ModelOutput(props: ModelOutputProps) {
           />
         </div>
       </div>
-      <div className='flex flex-col w-full flex-1 overflow-hidden'>
+      <div className='flex flex-col w-full sm:flex-1 overflow-hidden'>
         {!!errorForModel ? (
           <ModelOutputErrorInformation
             errorForModel={errorForModel}
             onOpenChangeModalPopover={() => setOpenModelCombobox(true)}
           />
         ) : (
-          <div className='flex flex-col w-full flex-1 px-2 overflow-hidden'>
+          <div className='flex flex-col w-full sm:flex-1 px-2 overflow-hidden'>
             <PlaygroundModelOutputContent
               currentAIModel={currentAIModel}
               minimumCostAIModel={minimumCostAIModel}

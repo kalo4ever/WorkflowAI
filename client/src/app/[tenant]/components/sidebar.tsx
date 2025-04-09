@@ -107,6 +107,10 @@ export function Sidebar() {
     setIsSidebarOpen(!isMobile);
   }, [isMobile]);
 
+  useEffect(() => {
+    setIsSidebarOpen(false);
+  }, [pathname]);
+
   const margin = !isMobile ? 24 : 0;
   const borderColor = !isMobile ? 'gray-100' : 'clear';
 

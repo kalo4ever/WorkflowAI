@@ -87,7 +87,7 @@ export function PageContainer(props: PageContainerProps) {
             rightBarChildren={rightBarChildren}
           />
         </PageHeader>
-        <div className='flex h-[calc(100%-60px)] w-full'>{children}</div>
+        <div className='flex sm:h-[calc(100%-60px)] h-[calc(100%-126px)] w-full'>{children}</div>
       </ExtendedBordersContainer>
     </div>
   );

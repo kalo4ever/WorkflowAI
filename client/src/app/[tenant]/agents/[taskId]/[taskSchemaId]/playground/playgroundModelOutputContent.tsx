@@ -131,9 +131,9 @@ export function PlaygroundModelOutputContent(props: ModelOutputContentProps) {
     <div
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
-      className='flex flex-col w-full h-full'
+      className='flex flex-col w-full sm:h-full'
     >
-      <div className='flex flex-col flex-1 rounded-[2px] overflow-hidden my-3 border border-gray-200'>
+      <div className='flex flex-col sm:flex-1 rounded-[2px] overflow-hidden my-3 border border-gray-200'>
         <TaskOutputViewer
           schema={outputSchema}
           value={taskOutput}
@@ -141,7 +141,7 @@ export function PlaygroundModelOutputContent(props: ModelOutputContentProps) {
           defs={outputSchema?.$defs}
           textColor='text-gray-900'
           className={cn(
-            'flex flex-1 w-full border-b border-gray-200 border-dashed bg-white overflow-y-scroll',
+            'flex sm:flex-1 w-full border-b border-gray-200 border-dashed bg-white sm:overflow-y-scroll',
             !!taskOutput && 'min-h-[150px]'
           )}
           showTypes={emptyMode}
