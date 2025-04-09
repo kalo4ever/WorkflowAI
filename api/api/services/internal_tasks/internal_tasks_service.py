@@ -721,11 +721,11 @@ class InternalTasksService:
     # ----------------------------------------
     # Generate inputs
 
-    async def _get_task_input_example_task(self) -> SerializableTaskVariant | None:
+    async def _get_task_input_example_task_uid(self) -> int | None:
         try:
-            return await self.storage.task_variants.get_latest_task_variant(
-                TASK_INPUT_EXAMPLE_TASK_ID,
-            )
+            if not stream_task_input_example_task.agent_uid:
+                await stream_task_input_example_task.register()
+            return stream_task_input_example_task.agent_uid
         except Exception as e:
             self.logger.exception("Error while fetching task input example task", exc_info=e)
             return None
@@ -741,8 +741,8 @@ class InternalTasksService:
         # Ultimately we should integrate the fetching to the SDK. `run_task_input_example_task.list_runs`
         # To ensure that we always fetch from the same environment.
 
-        task_input_example_task = await self._get_task_input_example_task()
-        if not task_input_example_task:
+        task_input_example_task_uid = await self._get_task_input_example_task_uid()
+        if not task_input_example_task_uid:
             self.logger.exception("Can't find the task input example task")
             return None
 
@@ -758,8 +758,8 @@ class InternalTasksService:
         validated = list[dict[str, Any]]()
         async for run in self.storage.task_runs.fetch_task_run_resources(
             # Specifically looking for runs of the task input example agent NOT from the task we are generating inputs for
-            task_input_example_task.task_uid,
-            previous_run_query,
+            task_uid=task_input_example_task_uid,
+            query=previous_run_query,
         ):
             try:
                 output = TaskInputExampleTaskOutput.model_validate(run.task_output)

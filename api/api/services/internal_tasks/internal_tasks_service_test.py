@@ -1931,15 +1931,13 @@ async def test_fetch_previous_task_inputs(
     expected_result: list[dict[str, Any]],
 ):
     # Arrange
-    mock_task_uid = "test-task-uid-123"
+    mock_task_uid = 123
 
     # Mock the _get_task_input_example_task method
     if task_input_example_task_exists:
-        example_task = MagicMock()
-        example_task.task_uid = mock_task_uid
-        internal_tasks_service._get_task_input_example_task = AsyncMock(return_value=example_task)  # pyright: ignore[reportPrivateUsage]
+        internal_tasks_service._get_task_input_example_task_uid = AsyncMock(return_value=mock_task_uid)  # pyright: ignore[reportPrivateUsage]
     else:
-        internal_tasks_service._get_task_input_example_task = AsyncMock(return_value=None)  # pyright: ignore[reportPrivateUsage]
+        internal_tasks_service._get_task_input_example_task_uid = AsyncMock(return_value=None)  # pyright: ignore[reportPrivateUsage]
 
     # Set up the fetch_task_run_resources mock
     if task_input_example_task_exists:
@@ -1961,11 +1959,10 @@ async def test_fetch_previous_task_inputs(
     # Verify fetch_task_run_resources was called with the correct task_uid
     if task_input_example_task_exists:
         mock_storage.task_runs.fetch_task_run_resources.assert_called_once()
-        args = mock_storage.task_runs.fetch_task_run_resources.call_args.args
-        assert args[0] == mock_task_uid  # Verify the task_uid is passed correctly
+        assert mock_storage.task_runs.fetch_task_run_resources.call_args.kwargs["task_uid"] == 123
 
         # Verify the query parameters (second positional argument)
-        query = args[1]
+        query = mock_storage.task_runs.fetch_task_run_resources.call_args.kwargs["query"]
         assert query.task_id == "task-input-example"
         assert query.task_schema_id is None
         assert query.limit == 10
