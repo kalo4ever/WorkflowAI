@@ -11,12 +11,7 @@ permissions:
   id-token: write
 
 jobs:
-  api-quality:
-    uses: ./.github/workflows/.api-quality.yml
-
-  client-quality:
-    uses: ./.github/workflows/.client-quality.yml
-
+  # Not running the quality checks since they will be ran on pull requests
   api-build:
     uses: ./.github/workflows/.build.yml
     with:
@@ -58,15 +53,16 @@ jobs:
 
   # There is a single container in prod preview
   api-deploy:
-    needs: [api-quality, api-build]
+    needs: [api-build]
     uses: ./.github/workflows/.deploy.yml
     with:
       image_name: ${{ needs.api-build.outputs.image_name }}
       env: prod-preview
       full_app_name: workflowai-api-preview
     secrets: inherit
+
   client-deploy:
-    needs: [client-quality, client-build]
+    needs: [client-build]
     uses: ./.github/workflows/.deploy.yml
     secrets: inherit
     with:
