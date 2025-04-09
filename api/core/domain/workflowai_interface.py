@@ -16,7 +16,6 @@ class WorkflowAIInterface(Protocol):
         group: Optional[VersionReference] = None,
         task_run_id: Optional[str] = None,
         cache: CacheUsage = "auto",
-        labels: Optional[set[str]] = None,
         metadata: Optional[dict[str, Any]] = None,
         trigger: RunTrigger | None = None,
     ) -> TaskOutput: ...

@@ -107,10 +107,6 @@ export const taskDeploymentsRoute = (tenant: TenantID, taskId: TaskID, taskSchem
 export const taskSampleRoute = (tenant: TenantID, taskId: TaskID, taskSchemaId: TaskSchemaID, taskSampleId: string) =>
   `${taskSchemaRoute(tenant, taskId, taskSchemaId)}/examples/${taskSampleId}`;
 
-export function taskImageNextURL(tenant: TenantID, taskId: TaskID) {
-  return `/api/tasks/images/${tenant}/${taskId}`;
-}
-
 export function taskRunRoute(tenant: TenantID, taskId: TaskID, taskSchemaId: TaskSchemaID, taskRunId: string) {
   return `/${decodeURIComponent(tenant)}/agents/${taskId}/${taskSchemaId}/runs?taskRunId=${taskRunId}`;
 }

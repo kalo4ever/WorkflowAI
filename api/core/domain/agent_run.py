@@ -50,6 +50,7 @@ class AgentRunBase(BaseModel):
     error: ErrorResponse.Error | None = None
 
     duration_seconds: Optional[float] = None
+    overhead_seconds: Optional[float] = None
     cost_usd: Optional[float] = None
 
     created_at: datetime = Field(

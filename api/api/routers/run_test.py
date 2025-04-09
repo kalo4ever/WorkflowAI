@@ -9,7 +9,7 @@ from freezegun import freeze_time
 from httpx import AsyncClient
 
 from api.dependencies.security import user_organization
-from api.routers.run import DeprecatedVersionReference, RunRequest, version_reference_to_domain
+from api.routers.run import DeprecatedVersionReference, version_reference_to_domain
 from core.domain.agent_run import AgentRun
 from core.domain.ban import Ban
 from core.domain.errors import InvalidGenerationError, ProviderRateLimitError
@@ -65,16 +65,6 @@ class TestDeprecatedVersionReferenceToDomain:
     )
     def test_environment_alias(self, version: DeprecatedVersionReference, expected: VersionReference):
         assert version.to_domain() == expected
-
-
-def test_run_request_labels_deprecated_are_parsed() -> None:
-    run_request: RunRequest = RunRequest(
-        task_input={"param": "value"},
-        version=1,
-        id="test_id",
-        labels={"deprecated_label"},
-    )
-    assert run_request.labels == {"deprecated_label"}
 
 
 class TestRunModelsNotAuthenticated:
@@ -162,7 +152,6 @@ class TestDeprecatedRun:
             json={
                 "task_input": {"input": 1},
                 "group": {"iteration": 1},
-                "labels": ["label"],
                 "metadata": {"meta": "data"},
             },
         )
@@ -197,7 +186,6 @@ class TestDeprecatedRun:
                 "group": {
                     "iteration": 1,
                 },
-                "labels": ["label"],
                 "metadata": {"meta": "data"},
             },
         )
@@ -230,7 +218,6 @@ class TestDeprecatedRun:
                 "group": {
                     "iteration": 1,
                 },
-                "labels": ["label"],
                 "metadata": {"meta": "data"},
             },
         )
@@ -265,7 +252,6 @@ class TestDeprecatedRun:
                 "group": {
                     "iteration": 1,
                 },
-                "labels": ["label"],
                 "metadata": {"meta": "data"},
             },
         )
@@ -291,7 +277,6 @@ class TestDeprecatedRun:
                 "group": {
                     "iteration": 1,
                 },
-                "labels": ["label"],
                 "metadata": {"meta": "data"},
                 "stream": True,
             },
@@ -481,7 +466,6 @@ class TestDeprecatedRun:
                 "group": {
                     "iteration": 1,
                 },
-                "labels": ["label"],
                 "metadata": {"meta": "data"},
             },
         )
@@ -513,7 +497,6 @@ class TestDeprecatedRun:
                 "group": {
                     "iteration": 1,
                 },
-                "labels": ["label"],
                 "metadata": {"meta": "data"},
             },
         )

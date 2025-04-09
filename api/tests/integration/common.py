@@ -128,7 +128,6 @@ async def run_task(
     model: str = "gpt-4o-2024-11-20",
     tenant: str | None = None,
     task_input: dict[str, Any] | None = None,
-    labels: list[str] | None = None,
     metadata: dict[str, Any] | None = None,
     headers: dict[str, Any] | None = None,
     use_cache: CacheUsage = "auto",
@@ -138,8 +137,7 @@ async def run_task(
         "task_input": task_input or {"name": "John", "age": 30},
         "use_cache": use_cache,
     }
-    if labels is not None:
-        payload["labels"] = labels
+
     if metadata is not None:
         payload["metadata"] = metadata
 
@@ -213,7 +211,6 @@ async def stream_run_task(
     task_input: dict[str, Any],
     group: dict[str, Any],
     tenant: str = "_",
-    labels: list[str] | None = None,
     metadata: dict[str, Any] | None = None,
 ):
     payload: dict[str, Any] = {
@@ -221,8 +218,7 @@ async def stream_run_task(
         "task_input": task_input,
         "stream": True,
     }
-    if labels is not None:
-        payload["labels"] = labels
+
     if metadata is not None:
         payload["metadata"] = metadata
 
@@ -279,7 +275,6 @@ async def import_task_run(
     task_output: dict[str, Any],
     group: dict[str, Any],
     tenant: str = "_",
-    labels: list[str] | None = None,
     metadata: dict[str, Any] | None = None,
     cost_usd: float | None = None,
 ) -> dict[str, Any]:
@@ -288,8 +283,7 @@ async def import_task_run(
         "task_input": task_input,
         "task_output": task_output,
     }
-    if labels is not None:
-        payload["labels"] = labels
+
     if metadata is not None:
         payload["metadata"] = metadata
     if cost_usd is not None:

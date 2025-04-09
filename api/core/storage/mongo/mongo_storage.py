@@ -210,7 +210,7 @@ class MongoStorage(BackendStorage):
     @property
     @override
     def task_runs(self) -> TaskRunStorage:
-        from core.storage.mongo.partials.task_runs import MongoTaskRunStorage
+        from core.storage.mongo.partials.mongo_agent_runs import MongoTaskRunStorage
 
         return MongoTaskRunStorage(self._tenant_tuple, self._task_runs_collection)
 

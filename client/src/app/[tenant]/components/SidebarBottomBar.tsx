@@ -64,11 +64,10 @@ export function SidebarLinks() {
 
 type SidebarBottomBarProps = {
   isLoggedOut: boolean;
-  tenant: TenantID | undefined;
 };
 
 export function SidebarBottomBar(props: SidebarBottomBarProps) {
-  const { isLoggedOut, tenant } = props;
+  const { isLoggedOut } = props;
 
   const { isSignedIn, user, orgState } = useAuth();
   const { openModal: openNewTaskModal } = useQueryParamModal(NEW_TASK_MODAL_OPEN);
@@ -126,7 +125,7 @@ export function SidebarBottomBar(props: SidebarBottomBarProps) {
                 openOrganizationProfile={openOrganizationProfile}
                 signOut={signOut}
               />
-              <CreditsSection tenant={tenant} isSignedIn={!!isSignedIn} />
+              <CreditsSection isSignedIn={!!isSignedIn} />
             </div>
           </div>
         </>

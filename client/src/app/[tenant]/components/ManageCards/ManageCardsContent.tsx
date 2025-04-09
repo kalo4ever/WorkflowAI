@@ -1,4 +1,3 @@
-import { TenantID } from '@/types/aliases';
 import { PaymentMethodResponse, TenantData } from '@/types/workflowAI';
 import { AddPaymentMethodContent } from './AddPaymentMethodContent';
 import { AmountToAddSection } from './AmountToAddSection';
@@ -10,7 +9,6 @@ import { InfoLabel } from './InfoLabel';
 import { PaymentMethodSection } from './PaymentMethodSection';
 
 type ManageCardsContentProps = {
-  tenant: TenantID | undefined;
   isPaymentMethodAvailable: boolean;
   organizationSettings: TenantData;
   paymentMethod: PaymentMethodResponse | undefined;
@@ -25,12 +23,11 @@ type ManageCardsContentProps = {
   setAmountToAdd: (amount: number | undefined) => void;
   isAddCreditsButtonActive: boolean;
   deletePaymentMethod: () => Promise<void>;
-  automaticPaymentsFailed: boolean;
+  automaticPaymentsFailure: string | undefined;
 };
 
 export function ManageCardsContent(props: ManageCardsContentProps) {
   const {
-    tenant,
     isPaymentMethodAvailable,
     organizationSettings,
     paymentMethod,
@@ -45,17 +42,16 @@ export function ManageCardsContent(props: ManageCardsContentProps) {
     setAmountToAdd,
     isAddCreditsButtonActive,
     deletePaymentMethod,
-    automaticPaymentsFailed,
+    automaticPaymentsFailure,
   } = props;
 
   if (showAddPaymentMethod) {
-    return <AddPaymentMethodContent tenant={tenant} setIsOpen={() => setShowAddPaymentMethod(false)} />;
+    return <AddPaymentMethodContent setIsOpen={() => setShowAddPaymentMethod(false)} />;
   }
 
   if (showEnableAutoRecharge) {
     return (
       <EnableAutoRechargeContent
-        tenant={tenant}
         organizationSettings={organizationSettings}
         setIsOpen={() => setShowEnableAutoRecharge(false)}
       />
@@ -78,7 +74,7 @@ export function ManageCardsContent(props: ManageCardsContentProps) {
       />
       <AmountToAddSection amountToAdd={amountToAdd} setAmountToAdd={setAmountToAdd} />
       <AutomaticPaymentsSection
-        automaticPaymentsFailed={automaticPaymentsFailed}
+        automaticPaymentsFailure={automaticPaymentsFailure}
         organizationSettings={organizationSettings}
         onEnableAutoRecharge={() => setShowEnableAutoRecharge(true)}
       />

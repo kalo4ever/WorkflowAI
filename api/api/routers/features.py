@@ -1,11 +1,13 @@
 from collections.abc import AsyncIterator
+from datetime import date, timedelta
+from typing import Annotated
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from api.dependencies.event_router import EventRouterDep
-from api.dependencies.security import UserDep
+from api.dependencies.security import SystemStorageDep, UserDep
 from api.dependencies.storage import StorageDep
 from api.schemas.models import ModelResponse
 from api.services.features import (
@@ -20,7 +22,9 @@ from core.domain.features import BaseFeature, DirectToAgentBuilderFeature, Featu
 from core.domain.models.models import Model
 from core.domain.page import Page
 from core.domain.task_typology import TaskTypology
+from core.storage.task_run_storage import WeeklyRunAggregate
 from core.utils.email_utils import safe_domain_from_email
+from core.utils.redis_cache import redis_cached
 from core.utils.stream_response_utils import safe_streaming_response
 
 router = APIRouter(prefix="/features")
@@ -179,3 +183,53 @@ async def preview_models() -> Page[ModelResponse]:
             models.append(ModelResponse.from_service(model))
 
     return Page(items=models)
+
+
+class WeeklyRunsResponse(BaseModel):
+    start_of_week: date
+    run_count: int
+    overhead_ms: int
+
+    @classmethod
+    def from_domain(cls, weekly_run: WeeklyRunAggregate):
+        return cls(
+            start_of_week=weekly_run.start_of_week,
+            run_count=weekly_run.run_count,
+            overhead_ms=weekly_run.overhead_ms,
+        )
+
+
+@router.get("/weekly-runs")
+async def get_weekly_runs(
+    system_storage: SystemStorageDep,
+    week_count: Annotated[int, Query(ge=1, le=10)],
+) -> Page[WeeklyRunsResponse]:
+    # Caching the result for 10 minutes
+    # Passing the current week as an argument to avoid cache hits when the week changes
+    @redis_cached(expiration_seconds=60 * 10)
+    async def _fetch_weekly_runs(week_count: int, current_week: int):
+        return [
+            WeeklyRunsResponse.from_domain(r) async for r in system_storage.task_runs.weekly_run_aggregate(week_count)
+        ]
+
+    current_week = date.today().isocalendar().week
+    weekly_runs = await _fetch_weekly_runs(week_count=week_count, current_week=current_week)
+    return Page(items=weekly_runs)
+
+
+class UptimeResponse(BaseModel):
+    uptime_percent: float
+    since: date
+    source: str
+
+
+@router.get("/uptimes/workflowai")
+async def get_workflowai_uptime() -> UptimeResponse:
+    from_date = date.today() - timedelta(days=90)
+    return UptimeResponse(uptime_percent=100, since=from_date, source="https://status.workflowai.com")
+
+
+@router.get("/uptimes/openai")
+async def get_openai_uptime() -> UptimeResponse:
+    from_date = date.today() - timedelta(days=90)
+    return UptimeResponse(uptime_percent=99.89, since=from_date, source="https://status.openai.com")

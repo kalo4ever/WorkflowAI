@@ -169,7 +169,7 @@ export function Sidebar() {
             />
           </>
         )}
-        {isSidebarOpen && <SidebarBottomBar isLoggedOut={isLoggedOut} tenant={tenant} />}
+        {isSidebarOpen && <SidebarBottomBar isLoggedOut={isLoggedOut} />}
       </ExtendedBordersContainer>
     </div>
   );

@@ -1813,3 +1813,85 @@ class TestPublicOrganizationByTenant:
         assert org.org_id is None
         assert org.owner_id is None
         assert org.anonymous is True
+
+
+class TestClearPaymentFailure:
+    async def test_clear_payment_failure_success(
+        self,
+        organization_storage: MongoOrganizationStorage,
+        org_col: AsyncCollection,
+    ) -> None:
+        # Insert an organization with a payment failure
+        now = datetime.now(timezone.utc).replace(microsecond=0)
+        await org_col.insert_many(
+            [
+                dump_model(d)
+                for d in [
+                    OrganizationDocument(
+                        tenant=TENANT,
+                        current_credits_usd=10,
+                        added_credits_usd=20,
+                        payment_failure=PaymentFailureSchema(
+                            failure_code="payment_failed",
+                            failure_reason="Test failure",
+                            failure_date=now,
+                        ),
+                    ),
+                    OrganizationDocument(
+                        tenant="other_tenant",
+                        current_credits_usd=10,
+                        added_credits_usd=20,
+                        payment_failure=PaymentFailureSchema(
+                            failure_code="payment_failed1",
+                            failure_reason="Test failure 1",
+                            failure_date=now,
+                        ),
+                    ),
+                ]
+            ],
+        )
+
+        # Clear the payment failure
+        await organization_storage.clear_payment_failure()
+
+        # Verify the payment failure was cleared
+        doc = await org_col.find_one({"tenant": TENANT})
+        assert doc is not None
+        assert "payment_failure" not in doc
+
+        # Verify we can get the tenant and see no payment failure
+        tenant = await organization_storage.get_organization()
+        assert tenant.payment_failure is None
+
+        # Verify the other tenant's payment failure was not cleared
+        doc = await org_col.find_one({"tenant": "other_tenant"})
+        assert doc is not None
+        assert "payment_failure" in doc
+
+    async def test_clear_payment_failure_no_failure(
+        self,
+        organization_storage: MongoOrganizationStorage,
+        org_col: AsyncCollection,
+    ) -> None:
+        # Insert an organization without any payment failure
+        await org_col.insert_one(
+            dump_model(
+                OrganizationDocument(
+                    tenant=TENANT,
+                    current_credits_usd=10,
+                    added_credits_usd=20,
+                ),
+            ),
+        )
+
+        # Clear the payment failure (should be a no-op)
+        await organization_storage.clear_payment_failure()
+
+        # Verify the document remains unchanged
+        doc = await org_col.find_one({"tenant": TENANT})
+        assert doc is not None
+        assert "payment_failure" not in doc
+
+        # Verify we can get the tenant and see no payment failure
+        tenant = await organization_storage.get_organization()
+        assert tenant.payment_failure is None

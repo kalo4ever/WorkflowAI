@@ -31,6 +31,7 @@ from core.domain.utils import compute_eval_hash
 from core.domain.version_environment import VersionEnvironment
 from core.storage import ObjectNotFoundException
 from core.storage.clickhouse.models.utils import (
+    MAX_UINT_8,
     MAX_UINT_16,
     MAX_UINT_32,
     RoundedFloat,
@@ -216,6 +217,7 @@ class ClickhouseRun(BaseModel):
         return value
 
     duration_ds: Annotated[int, validate_int(MAX_UINT_16, "duration_ds")] = 0
+    overhead_ms: Annotated[int, validate_int(MAX_UINT_8, "overhead_ms")] = 0
     cost_millionth_usd: Annotated[int, validate_int(MAX_UINT_32, "cost_millionth_usd")] = 0
     input_token_count: Annotated[int, validate_int(MAX_UINT_32, "input_token_count")] = 0
     output_token_count: Annotated[int, validate_int(MAX_UINT_32, "output_token_count")] = 0
@@ -541,6 +543,7 @@ class ClickhouseRun(BaseModel):
             output=run.task_output,
             # Duration and cost
             duration_ds=_duration_ds(run.duration_seconds),
+            overhead_ms=int(round(run.overhead_seconds * 1000)) if run.overhead_seconds else 0,
             cost_millionth_usd=_cost_millionth_usd(run.cost_usd),
             input_token_count=run.input_token_count or 0,
             output_token_count=run.output_token_count or 0,
@@ -585,6 +588,7 @@ class ClickhouseRun(BaseModel):
             task_output_preview=self.output_preview,
             # Duration and cost
             duration_seconds=self.from_duration_ds(self.duration_ds) or None,
+            overhead_seconds=self.overhead_ms / 1000 if self.overhead_ms else None,
             cost_usd=self.from_cost_millionth_usd(self.cost_millionth_usd),
             # Status
             status="success" if not self.error_payload else "failure",

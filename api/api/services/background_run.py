@@ -1,4 +1,5 @@
 import logging
+import time
 from datetime import datetime
 from typing import Any
 
@@ -242,7 +243,7 @@ class BackgroundRunService:
         # To allow re-using failed runs
         cached_run_id: str | None = None
         try:
-            builder = await runner.task_run_builder(task_input, task_run_id=run_id)
+            builder = await runner.task_run_builder(task_input, task_run_id=run_id, start_time=time.time())
             run = await self._run_service.run_from_builder(
                 builder,
                 runner=runner,
