@@ -48,6 +48,7 @@ jobs:
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       build_args: |
         ENV_NAME=prod
+        APP_URL=${{ secrets.APP_URL }}
         API_URL=${{ secrets.API_URL }}
         NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
         NEXT_PUBLIC_AMPLITUDE_API_KEY=${{ secrets.NEXT_PUBLIC_AMPLITUDE_API_KEY }}
@@ -72,7 +73,6 @@ jobs:
       image_name: ${{ needs.api-build.outputs.image_name }}
       env: prod
       full_app_name: workflowai-worker
-      label: latest
 
   api-deploy-run:
     needs: [api-quality, api-build]

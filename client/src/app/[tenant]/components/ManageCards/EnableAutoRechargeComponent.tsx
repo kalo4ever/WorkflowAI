@@ -1,19 +1,17 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Switch } from '@/components/ui/Switch';
 import { usePayments } from '@/store/payments';
-import { TenantID } from '@/types/aliases';
 import { TenantData } from '@/types/workflowAI';
 import { BottomButtonBar } from './BottomButtonBar';
 import { CurrencyInput } from './CurrencyInput';
 
 type EnableAutoRechargeContentProps = {
-  tenant: TenantID | undefined;
   organizationSettings: TenantData;
   setIsOpen: (isOpen: boolean) => void;
 };
 
 export function EnableAutoRechargeContent(props: EnableAutoRechargeContentProps) {
-  const { tenant, organizationSettings, setIsOpen } = props;
+  const { organizationSettings, setIsOpen } = props;
 
   const [isOn, setIsOn] = useState<boolean>(organizationSettings.automatic_payment_enabled ?? false);
 
@@ -70,10 +68,10 @@ export function EnableAutoRechargeContent(props: EnableAutoRechargeContentProps)
     const thresholdToSend = isOn ? automaticPaymentThreshold ?? null : null;
     const balanceToMaintainToSend = isOn ? balanceToMaintain ?? null : null;
 
-    await updateAutomaticPayment(tenant, isOn, thresholdToSend, balanceToMaintainToSend);
+    await updateAutomaticPayment(isOn, thresholdToSend, balanceToMaintainToSend);
 
     setIsOpen(false);
-  }, [tenant, isOn, automaticPaymentThreshold, balanceToMaintain, updateAutomaticPayment, setIsOpen]);
+  }, [isOn, automaticPaymentThreshold, balanceToMaintain, updateAutomaticPayment, setIsOpen]);
 
   return (
     <div className='flex flex-col h-full w-full overflow-hidden bg-custom-gradient-1 rounded-[2px]'>
