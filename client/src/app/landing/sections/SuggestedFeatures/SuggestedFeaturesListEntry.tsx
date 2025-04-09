@@ -39,7 +39,7 @@ export function SuggestedFeaturesListEntry(props: SuggestedFeaturesListEntryProp
     !!scopeKey ? state.isInitializedByScope.get(scopeKey) : false
   );
 
-  const isReadyToCreateTask = !!schemasInitialized;
+  const isReadyToCreateTask = !!schemasInitialized && !!schemas;
   const [isHoveringOver, setIsHoveringOver] = useState(false);
 
   const [waitForSchemas, setWaitForSchemas] = useState(false);
@@ -52,7 +52,7 @@ export function SuggestedFeaturesListEntry(props: SuggestedFeaturesListEntryProp
   const { fetchFeatureSchemasIfNeeded } = useFeatureSchemas();
 
   const onCreateAgent = useCallback(async () => {
-    if (!schemas || !schemasInitialized || !schemas) {
+    if (!schemas || !schemasInitialized) {
       setWaitForSchemas(true);
       fetchFeatureSchemasIfNeeded(feature, companyURL, true);
       return;
