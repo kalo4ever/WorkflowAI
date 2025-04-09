@@ -188,7 +188,7 @@ class ProviderPipeline:
 
         for provider, configs in configs_by_provider.items():
             if not self.model_data.supported_by_provider(provider):
-                pass
+                continue
             yield from self._single_provider_iterator(self._build_custom_providers(configs), self.model_data, provider)
 
     def provider_iterator(self) -> Iterator[PipelineProviderData]:
