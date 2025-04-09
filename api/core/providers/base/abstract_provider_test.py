@@ -255,6 +255,7 @@ class TestComplete:
             "provider": "openai",
             "tenant": "tenant1",
             "status": "unknown_provider_error",
+            "config": "workflowai_0",
         }
 
     async def test_complete_with_tool_calls(self, mocked_provider: _MockedProvider, builder_context: BuilderInterface):
@@ -306,6 +307,7 @@ class TestStream:
             "provider": "openai",
             "tenant": "tenant1",
             "status": "unknown_provider_error",
+            "config": "workflowai_0",
         }
 
     async def test_stream_with_tool_calls(self, mocked_provider: _MockedProvider, builder_context: BuilderInterface):
