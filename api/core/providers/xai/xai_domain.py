@@ -456,12 +456,7 @@ class StreamedResponse(BaseModel):
 
 
 class XAIError(BaseModel):
-    class Payload(BaseModel):
-        code: str | None = None
-        message: str
-        type: str | None = None
-        param: str | None = None
+    error: str
+    code: str | None = None
 
-        model_config = ConfigDict(extra="allow")
-
-    error: Payload
+    model_config = ConfigDict(extra="allow")
