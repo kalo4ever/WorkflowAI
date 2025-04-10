@@ -551,6 +551,5 @@ class ClickhouseClient(TaskRunStorage):
                 zipped: dict[str, Any] = dict(zip(query_res.column_names, row))  # pyright: ignore [reportUnknownArgumentType, reportUnknownMemberType]
                 return ClickhouseRun.model_validate(zipped).to_domain("")
 
-            result = [_map_row(row) for row in query_res.result_rows]
-            for row in result:
-                yield row
+            for row in query_res.result_rows:
+                yield _map_row(row)
