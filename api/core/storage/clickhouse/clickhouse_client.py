@@ -1,8 +1,7 @@
 import asyncio
 import logging
-from collections.abc import AsyncIterator
 from datetime import datetime, timedelta
-from typing import Any, Literal, NotRequired, Sequence, TypedDict, cast, override
+from typing import Any, AsyncIterator, Literal, NotRequired, Sequence, TypedDict, cast, override
 
 from clickhouse_connect.driver import create_async_client  # pyright: ignore[reportUnknownVariableType]
 from clickhouse_connect.driver.asyncclient import AsyncClient
@@ -503,3 +502,55 @@ class ClickhouseClient(TaskRunStorage):
                 run_count=row[1],
                 total_cost_usd=ClickhouseRun.from_cost_millionth_usd(row[2]),
             )
+
+    async def list_runs_for_memory_id(
+        self,
+        tenant_uid: int,
+        task_uid: int,
+        memory_id: str,
+        limit: int = 10,
+        timeout_ms: int | None = None,
+    ) -> AsyncIterator[SerializableTaskRun]:
+        async with asyncio.timeout(timeout_ms):
+            where = (
+                W("tenant_uid", type="UInt32", value=tenant_uid)
+                & W("task_uid", type="UInt32", value=task_uid)
+                & W(
+                    "metadata['memory_id']",
+                    operator="=",
+                    type="String",
+                    value=memory_id,
+                )
+                & W("error_payload", type="String", value="")
+                & W(
+                    "output",
+                    type="String",
+                    value="",
+                    operator="!=",
+                )
+            )
+            columns = ClickhouseRun.columns(
+                include={"task_output"},
+            )
+            q, parameters = Q(
+                "runs",
+                select=columns,
+                where=where,
+                limit=limit,
+                offset=None,
+                order_by=self._default_order_by(),
+                distincts=None,
+            )
+
+            query_res = await self.query(
+                q,
+                parameters=parameters,
+            )
+
+            def _map_row(row: Sequence[Any]):
+                zipped: dict[str, Any] = dict(zip(query_res.column_names, row))  # pyright: ignore [reportUnknownArgumentType, reportUnknownMemberType]
+                return ClickhouseRun.model_validate(zipped).to_domain("")
+
+            result = [_map_row(row) for row in query_res.result_rows]
+            for row in result:
+                yield row

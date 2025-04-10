@@ -14,7 +14,7 @@ from sentry_sdk import capture_exception, new_scope
 from api.dependencies.event_router import EventRouterDep
 from api.dependencies.latest_task_variant import TaskVariantDep
 from api.dependencies.path_params import TaskID, TaskSchemaID
-from api.dependencies.security import TenantDep, UserDep, UserOrganizationDep
+from api.dependencies.security import SystemStorageDep, TenantDep, UserDep, UserOrganizationDep
 from api.dependencies.services import (
     AnalyticsServiceDep,
     GroupServiceDep,
@@ -242,6 +242,7 @@ async def generate_input(
     task: TaskVariantDep,
     internal_tasks_service: InternalTasksServiceDep,
     analytics_service: AnalyticsServiceDep,
+    system_storage: SystemStorageDep,
 ) -> Response:
     analytics_service.send_event(
         lambda: GeneratedInputProperties(
@@ -255,6 +256,7 @@ async def generate_input(
             task,
             request.instructions,
             base_input=request.base_input,
+            system_storage=system_storage,
             stream=False,
         )
         if not generated:
@@ -267,6 +269,7 @@ async def generate_input(
                 task,
                 request.instructions,
                 base_input=request.base_input,
+                system_storage=system_storage,
                 stream=True,
             )
             async for chunk in iterator:

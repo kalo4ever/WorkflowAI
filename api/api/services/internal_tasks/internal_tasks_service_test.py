@@ -7,6 +7,7 @@ import pytest
 
 from api.services.internal_tasks.internal_tasks_service import (
     AUDIO_TRANSCRIPTION_MODEL,
+    AgentUids,
     InternalTasksService,
 )
 from api.services.tasks import AgentSummary
@@ -675,6 +676,7 @@ class TestGenerateTaskInputs:
             task=_api_task,
             input_instructions="",
             base_input=None,
+            system_storage=Mock(),
             stream=False,
         )
         assert result == {"name": "4"}
@@ -702,6 +704,7 @@ class TestGenerateTaskInputs:
             task=_api_task,
             input_instructions="",
             base_input=None,
+            system_storage=Mock(),
             stream=True,
         )
         result = [chunk async for chunk in iter]
@@ -755,6 +758,7 @@ class TestGenerateTaskInputs:
             task=_api_task,
             input_instructions="",
             base_input=base_input,
+            system_storage=Mock(),
             stream=False,
         )
 
@@ -791,6 +795,7 @@ class TestGenerateTaskInputs:
                 task=_api_task,
                 input_instructions="",
                 base_input=base_input,
+                system_storage=Mock(),
                 stream=True,
             )
 
@@ -1932,42 +1937,35 @@ async def test_fetch_previous_task_inputs(
 ):
     # Arrange
     mock_task_uid = 123
+    mock_tenant_uid = 456
 
     # Mock the _get_task_input_example_task method
     if task_input_example_task_exists:
-        internal_tasks_service._get_task_input_example_task_uid = AsyncMock(return_value=mock_task_uid)  # pyright: ignore[reportPrivateUsage]
-    else:
-        internal_tasks_service._get_task_input_example_task_uid = AsyncMock(return_value=None)  # pyright: ignore[reportPrivateUsage]
+        internal_tasks_service._get_input_gen_task_uid_and_tenant_uid = AsyncMock(  # pyright: ignore[reportPrivateUsage]
+            return_value=AgentUids(agent_uid=mock_task_uid, tenant_uid=mock_tenant_uid),
+        )
 
-    # Set up the fetch_task_run_resources mock
-    if task_input_example_task_exists:
         mock_runs: list[Any] = []
         for example in expected_result:
             mock_run = MagicMock()
             mock_run.task_output = {"task_input": example}
             mock_runs.append(mock_run)
 
-        mock_storage.task_runs.fetch_task_run_resources.return_value = mock_aiter(*mock_runs)
+        mock_storage.task_runs.list_runs_for_memory_id.return_value = mock_aiter(*mock_runs)
+    else:
+        internal_tasks_service._get_input_gen_task_uid_and_tenant_uid = AsyncMock(return_value=None)  # pyright: ignore[reportPrivateUsage]
 
     # Act
-    metadata = {"test_key": "test_value"}
-    result = await internal_tasks_service._fetch_previous_task_inputs(task_variant, metadata)  # pyright: ignore[reportPrivateUsage]
+    result = await internal_tasks_service._fetch_previous_task_inputs(task_variant, mock_storage, "some_memory_id")  # pyright: ignore[reportPrivateUsage]
 
     # Assert
     assert result == expected_result
 
     # Verify fetch_task_run_resources was called with the correct task_uid
     if task_input_example_task_exists:
-        mock_storage.task_runs.fetch_task_run_resources.assert_called_once()
-        assert mock_storage.task_runs.fetch_task_run_resources.call_args.kwargs["task_uid"] == 123
-
-        # Verify the query parameters (second positional argument)
-        query = mock_storage.task_runs.fetch_task_run_resources.call_args.kwargs["query"]
-        assert query.task_id == "task-input-example"
-        assert query.task_schema_id is None
-        assert query.limit == 10
-        assert query.status == {"success"}
-        assert query.metadata == metadata
-        assert query.include_fields == {"task_output"}
+        mock_storage.task_runs.list_runs_for_memory_id.assert_called_once()
+        assert mock_storage.task_runs.list_runs_for_memory_id.call_args.kwargs["task_uid"] == 123
+        assert mock_storage.task_runs.list_runs_for_memory_id.call_args.kwargs["tenant_uid"] == 456
+        assert mock_storage.task_runs.list_runs_for_memory_id.call_args.kwargs["memory_id"] == "some_memory_id"
     else:
-        mock_storage.task_runs.fetch_task_run_resources.assert_not_called()
+        mock_storage.task_runs.list_runs_for_memory_id.assert_not_called()

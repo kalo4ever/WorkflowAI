@@ -23,7 +23,18 @@ class RunAggregate(TypedDict):
     eval_hashes: Sequence[str]
 
 
-class TaskRunStorage(Protocol):
+class TaskRunSystemStorage(Protocol):
+    def list_runs_for_memory_id(
+        self,
+        tenant_uid: int,
+        task_uid: int,
+        memory_id: str,
+        limit: int = 10,
+        timeout_ms: int | None = None,
+    ) -> AsyncIterator[SerializableTaskRun]: ...
+
+
+class TaskRunStorage(TaskRunSystemStorage):
     def aggregate_task_run_costs(
         self,
         task_uid: int | None,
