@@ -82,18 +82,6 @@ function getOriginalBadgeText(
   return formatSemverVersion(orginalVersion);
 }
 
-function isSelected(
-  environment: VersionEnvironment,
-  version: VersionV1 | undefined,
-  versionsPerEnvironment: VersionsPerEnvironment | undefined
-) {
-  const versionFromEnvironment = versionsPerEnvironment?.[environment]?.[0];
-  if (!versionFromEnvironment) {
-    return false;
-  }
-  return versionFromEnvironment.id === version?.id;
-}
-
 function isAlreadyDeployed(
   environment: VersionEnvironment,
   version: VersionV1 | undefined,
@@ -109,12 +97,12 @@ function isAlreadyDeployed(
 type DeployCardsProps = {
   version: VersionV1 | undefined;
   versionsPerEnvironment: VersionsPerEnvironment | undefined;
-  originalVersionsPerEnvironment: VersionsPerEnvironment | undefined;
-  onDeployToggle: (environment: VersionEnvironment) => void;
+  selectedEnvironment: VersionEnvironment | undefined;
+  setSelectedEnvironment: (environment: VersionEnvironment) => void;
 };
 
 function DeployCards(props: DeployCardsProps) {
-  const { onDeployToggle, version, versionsPerEnvironment, originalVersionsPerEnvironment } = props;
+  const { selectedEnvironment, setSelectedEnvironment, version, versionsPerEnvironment } = props;
 
   const environments: VersionEnvironment[] = ['dev', 'staging', 'production'];
 
@@ -124,10 +112,10 @@ function DeployCards(props: DeployCardsProps) {
         <DeployCard
           key={environment}
           environment={environment}
-          isSelected={isSelected(environment, version, versionsPerEnvironment)}
-          isAlreadyDeployed={isAlreadyDeployed(environment, version, originalVersionsPerEnvironment)}
-          originalBadgeText={getOriginalBadgeText(environment, version, originalVersionsPerEnvironment)}
-          onDeployToggle={onDeployToggle}
+          isSelected={environment === selectedEnvironment}
+          isAlreadyDeployed={isAlreadyDeployed(environment, version, versionsPerEnvironment)}
+          originalBadgeText={getOriginalBadgeText(environment, version, versionsPerEnvironment)}
+          onDeployToggle={setSelectedEnvironment}
         />
       ))}
     </div>
@@ -138,13 +126,14 @@ type DeployVersionContentProps = {
   version: VersionV1 | undefined;
   isInitialized: boolean;
   versionsPerEnvironment: VersionsPerEnvironment | undefined;
-  originalVersionsPerEnvironment: VersionsPerEnvironment | undefined;
   onClose: () => void;
-  onDeploy: (environment: VersionEnvironment) => void;
+  selectedEnvironment: VersionEnvironment | undefined;
+  setSelectedEnvironment: (environment: VersionEnvironment) => void;
 };
 
 export function DeployVersionContent(props: DeployVersionContentProps) {
-  const { version, isInitialized, versionsPerEnvironment, originalVersionsPerEnvironment, onClose, onDeploy } = props;
+  const { version, isInitialized, versionsPerEnvironment, onClose, selectedEnvironment, setSelectedEnvironment } =
+    props;
 
   if (!isInitialized) {
     return <Loader centered />;
@@ -173,9 +162,9 @@ export function DeployVersionContent(props: DeployVersionContentProps) {
         <div className='flex w-full px-4 pb-4'>
           <DeployCards
             versionsPerEnvironment={versionsPerEnvironment}
-            originalVersionsPerEnvironment={originalVersionsPerEnvironment}
             version={version}
-            onDeployToggle={onDeploy}
+            selectedEnvironment={selectedEnvironment}
+            setSelectedEnvironment={setSelectedEnvironment}
           />
         </div>
       </div>
