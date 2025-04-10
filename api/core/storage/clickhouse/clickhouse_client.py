@@ -525,5 +525,5 @@ ORDER BY
             yield WeeklyRunAggregate(
                 start_of_week=row[0],
                 run_count=row[1],
-                overhead_ms=int(round(row[2])),
+                overhead_ms=int(round(row[2] or 0)),
             )

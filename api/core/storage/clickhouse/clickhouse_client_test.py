@@ -1213,12 +1213,19 @@ class TestWeeklyRunAggregate:
         """Check that the overhead is ignored when it is 0"""
         base_date = datetime_factory()
         runs = [
+            # Week with a run with no overhead
             _ck_run(created_at=base_date, overhead_ms=0),
             _ck_run(created_at=base_date, overhead_seconds=0.1),
+            # Creating a week with only 0 overhead
+            _ck_run(created_at=base_date - datetime.timedelta(days=8), overhead_seconds=0),
         ]
         await clickhouse_client.insert_models("runs", runs, {"async_insert": 0, "wait_for_async_insert": 0})
 
         results = [r async for r in clickhouse_client.weekly_run_aggregate(1)]
-        assert len(results) == 1
-        assert results[0].run_count == 2
-        assert results[0].overhead_ms == 100
+
+        assert len(results) == 2
+        assert results[0].run_count == 1
+        assert results[0].overhead_ms == 0
+
+        assert results[1].run_count == 2
+        assert results[1].overhead_ms == 100
