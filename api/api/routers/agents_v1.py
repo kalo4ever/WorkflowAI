@@ -5,7 +5,7 @@ from fastapi import APIRouter, Query
 from pydantic import BaseModel, Field, model_validator
 
 from api.dependencies.event_router import EventRouterDep
-from api.dependencies.security import UserOrganizationDep
+from api.dependencies.security import RequiredUserOrganizationDep
 from api.dependencies.services import AnalyticsServiceDep
 from api.dependencies.storage import StorageDep
 from api.tags import RouteTags
@@ -72,6 +72,7 @@ class CreateAgentResponse(BaseModel):
     name: str = Field(description="The name of the agent")
     schema_id: int = Field(description="The id of the created schema")
     variant_id: str = Field(description="The id of the created variant")
+    tenant_uid: int = Field(description="The uid of the connected tenant")
 
 
 # TODO: all code below should go into a service
@@ -88,7 +89,7 @@ async def create_agent(
     storage: StorageDep,
     event_router: EventRouterDep,
     analytics_service: AnalyticsServiceDep,
-    user_org: UserOrganizationDep,
+    user_org: RequiredUserOrganizationDep,
 ) -> CreateAgentResponse:
     output_schema = SerializableTaskIO.from_json_schema(request.output_schema, streamline=request.sanitize_schemas)
     if schema_contains_file(output_schema.json_schema):
@@ -132,6 +133,7 @@ async def create_agent(
         schema_id=stored.task_schema_id,
         variant_id=stored.id,
         uid=stored.task_uid,
+        tenant_uid=user_org.uid,
     )
 
 
