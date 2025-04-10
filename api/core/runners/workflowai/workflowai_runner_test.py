@@ -1267,6 +1267,11 @@ Total : 650 kcal, 105g de glucides, 28g de protéines, 7g de lipides""",
         assert raw.reasoning_steps is None
         assert raw.agent_run_result is None
 
+    def test_invalid_unicode_chars(self, patched_runner: WorkflowAIRunner):
+        txt = '{"hello": "hello\\u000009"}'
+        output = patched_runner.output_factory(txt)
+        assert output.output == {"hello": "hello\t"}
+
 
 class TestInit:
     @pytest.mark.parametrize("disable_fallback", [False, True])

@@ -2009,11 +2009,13 @@ async def test_invalid_unicode_chars(test_client: IntegrationTestClient):
     task = await test_client.create_task()
     test_client.mock_openai_call(bytes=fixture_bytes("openai", "invalid_unicode_chars.json"))
 
+    expected_str = "The🐀 meaning of life is Préparation de co😁mmande."
+
     res = await test_client.run_task_v1(task, model=Model.GPT_4O_2024_11_20)
-    assert res["task_output"]["greeting"] == "The🐀 meaning of life is Préparation de co😁mmande."
+    assert res["task_output"]["greeting"] == expected_str, "invalid output from run"
 
     # Checking that the run was properly stored
     # Trying to make sure we din't get a surrogate not allowed
     # It would be nice to test with invalid surrogates, but it is hard to reproduce a failing payload
     fetched = await test_client.fetch_run(task, run_id=res["id"])
-    assert fetched["task_output"]["greeting"] == "The🐀 meaning of life is Préparation de co😁mmande."
+    assert fetched["task_output"]["greeting"] == expected_str, "invalid output from fetch"

@@ -32,7 +32,7 @@
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "{\n  \"greeting\": \"The\ud83d\udc00 meaning of life is Pr\u0000e9paration de co😁mmande.\"\n}"
+        "content": "{\n  \"greeting\": \"The\\ud83d\\udc00 meaning of life is Pr\\u0000e9paration de co😁mmande.\"\n}"
       },
       "content_filter_results": {
         "hate": {
