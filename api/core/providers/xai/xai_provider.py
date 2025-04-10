@@ -9,8 +9,8 @@ from core.domain.errors import (
     ContentModerationError,
     FailedGenerationError,
     MaxTokensExceededError,
-    ModelDoesNotSupportMode,
-    StructuredGenerationError,
+    ProviderError,
+    UnknownProviderError,
 )
 from core.domain.llm_usage import LLMUsage
 from core.domain.message import Message
@@ -194,37 +194,10 @@ class XAIProvider(HTTPXProvider[XAIConfig, CompletionResponse]):
     def _extract_usage(self, response: CompletionResponse) -> LLMUsage | None:
         return response.usage.to_domain() if response.usage else None
 
-    def _invalid_request_error(self, payload: XAIError, response: Response):
-        if payload.error.param == "response_format":
-            if "Invalid schema" in payload.error.message:
-                return StructuredGenerationError(
-                    msg=payload.error.message,
-                    response=response,
-                )
-        # Azure started returning an error with very little information about
-        # a model not supporting structured generation
-        if "response_format" in payload.error.message and "json_schema" in payload.error.message:
-            return StructuredGenerationError(
-                msg=payload.error.message,
-                response=response,
-            )
-        if "tools is not supported in this model" in payload.error.message:
-            return ModelDoesNotSupportMode(
-                msg=payload.error.message,
-                response=response,
-                capture=True,
-            )
-
-        return None
-
     @override
     def _unknown_error_message(self, response: Response):
-        try:
-            payload = XAIError.model_validate_json(response.text)
-            return payload.error.message or "Unknown error"
-        except Exception:
-            self.logger.exception("failed to parse Fireworks AI error response", extra={"response": response.text})
-            return super()._unknown_error_message(response)
+        self.logger.warning("Unknown error message should not be used for XAI", extra={"response": response.text})
+        return super()._unknown_error_message(response)
 
     @override
     @classmethod
@@ -324,7 +297,7 @@ class XAIProvider(HTTPXProvider[XAIConfig, CompletionResponse]):
         self,
         messages: list[dict[str, Any]],
     ) -> int:
-        # OpenAI includes image usage in the prompt token count, so we do not need to add those separately
+        # XAI includes image usage in the prompt token count, so we do not need to add those separately
         return 0
 
     async def _compute_prompt_audio_token_count(
@@ -341,7 +314,7 @@ class XAIProvider(HTTPXProvider[XAIConfig, CompletionResponse]):
             ToolCallRequestWithID(
                 id=tool_call.id,
                 tool_name=native_tool_name_to_internal(tool_call.function.name),
-                # OpenAI returns the tool call arguments as a string, so we need to parse it
+                # XAI returns the tool call arguments as a string, so we need to parse it
                 tool_input_dict=parse_tool_call_or_raise(tool_call.function.arguments) or {},
             )
             for tool_call in choice.message.tool_calls or []
@@ -362,3 +335,29 @@ class XAIProvider(HTTPXProvider[XAIConfig, CompletionResponse]):
             total=response.headers.get("x-ratelimit-limit-tokens"),
             options=options,
         )
+
+    def _invalid_argument_error(self, payload: XAIError, response: Response) -> ProviderError:
+        message = payload.error
+        match message:
+            case m if "maximum prompt length" in m:
+                error_cls = MaxTokensExceededError
+            case _:
+                error_cls = UnknownProviderError
+        return error_cls(msg=message, response=response)
+
+    @override
+    def _unknown_error(self, response: Response) -> ProviderError:
+        try:
+            payload = XAIError.model_validate_json(response.text)
+
+            match payload.code:
+                case "Client specified an invalid argument":
+                    return self._invalid_argument_error(payload, response)
+                case _:
+                    return UnknownProviderError(
+                        msg=payload.error or f"Unknown error status {response.status_code}",
+                        response=response,
+                    )
+        except Exception:
+            self.logger.exception("failed to parse XAI error response", extra={"response": response.text})
+        return UnknownProviderError(msg=f"Unknown error status {response.status_code}", response=response)
