@@ -17,7 +17,7 @@ function FeatureCard(props: FeatureCardProps) {
         window.open(entry.url, '_blank');
       }}
     >
-      <Image src={entry.imageSrc} alt={entry.title} width={458} height={232} className='flex flex-[50%]' />
+      <Image src={entry.imageSrc} alt={'Image'} width={458} height={232} className='flex flex-[50%]' />
       <div className='flex flex-col sm:px-6 px-0 sm:py-0 pt-6 flex-[50%]'>
         <div className='sm:text-[18px] text-[16px] font-semibold text-gray-900 pb-1'>{entry.title}</div>
         <div className='sm:text-[16px] text-[13px] font-normal text-gray-500'>{entry.description}</div>
