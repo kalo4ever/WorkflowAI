@@ -32,7 +32,8 @@ def test_streamed_response_init():
 @pytest.mark.parametrize(
     "payload",
     [
-        """{"error":{"message":"'messages' must contain the word 'json' in some form, to use 'response_format' of type 'json_object'.","type":"invalid_request_error","param":"messages","code":null}}""",
+        pytest.param("""{"error":"messages"}""", id="no code"),
+        pytest.param("""{"error":"messages","code":"invalid_request_error"}""", id="with code"),
     ],
 )
 def test_error(payload: str):
