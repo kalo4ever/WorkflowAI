@@ -25,8 +25,11 @@ export function GraphComponent(props: Props) {
     const lastWeek = weeklyRuns[weeklyRuns.length - 1];
     return (
       <div>
-        with <span className='underline'>${lastWeek.overhead_ms}ms added latency</span> and{' '}
-        <span className='underline'>{workflowUptime ?? 100}% uptime</span>.
+        with {lastWeek.overhead_ms}ms added latency and{' '}
+        <a className='underline' href='https://status.workflowai.com/' target='_blank' rel='noopener noreferrer'>
+          {workflowUptime ?? 100}% uptime
+        </a>
+        .
       </div>
     );
   }, [weeklyRuns, workflowUptime]);

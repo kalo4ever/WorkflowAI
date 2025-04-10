@@ -50,12 +50,6 @@ function FeatureCardOne(props: FeatureCardProps) {
 function FeatureCardTwo(props: FeatureCardProps) {
   const { value } = props;
 
-  const message = useMemo(() => {
-    if (!value) return 'Loading...';
-    const downtimeMinutes = Math.round((100 - value) * 438.336); // 43,833.6 minutes per month / 100 = 438.336 minutes per 1% downtime
-    return `OpenAI's uptime is ${value}%, which means ~${downtimeMinutes} minutes of downtime per month. That's ${downtimeMinutes} minutes your AI features could be failing.`;
-  }, [value]);
-
   return (
     <div className='flex flex-col border border-gray-200 rounded-[2px] bg-custom-gradient-1'>
       <div className='flex flex-col sm:p-6 p-4'>
@@ -78,7 +72,10 @@ function FeatureCardTwo(props: FeatureCardProps) {
         <div className='sm:text-[18px] text-[16px] font-semibold text-gray-900 sm:pb-4 pb-1'>
           <span className='text-gray-500'>OpenAI</span> without WorkflowAI
         </div>
-        <div className='sm:text-[16px] text-[13px] font-normal text-gray-500'>{message}</div>
+        <div className='sm:text-[16px] text-[13px] font-normal text-gray-500'>
+          If OpenAI goes down, WorkflowAI instantly reroutes traffic to a backup provider (like Azure OpenAI). Your
+          users won’t even notice.
+        </div>
         <div className='flex flex-wrap gap-4 justify-start mt-6 sm:w-full w-fit'>
           <Button variant='newDesignGray' openInNewTab={true} toRoute='https://status.workflowai.com/'>
             View WorkflowAI uptime

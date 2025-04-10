@@ -16,11 +16,12 @@ export type QuoteEntry = {
 
 export type HeaderEntry = {
   logoURL?: string;
+  logoLink?: string;
   logoWidth?: number;
   logoHeight?: number;
   title: string;
   titleSizeClassName?: string;
-  description?: string;
+  description?: string | ReactNode;
   descriptionMaxWidth?: string;
   buttonText?: string;
   buttonIcon?: StaticImageData;
@@ -51,8 +52,16 @@ export type ImageEntry = {
 
 export const eighteenthNewHeaderEntry: HeaderEntry = {
   title: 'Access the world’s top AI models in one place',
-  description:
-    'The best products need the best models. But today, the top 10 models are spread across OpenAI, Anthropic, Google, Llama and Deepseek. WorkflowAI brings all the state-of-the-art models together — in one platform, with no setup required.',
+  description: (
+    <div>
+      The best products need the{' '}
+      <a href='https://lmarena.ai/?leaderboard' className='underline' target='_blank' rel='noopener noreferrer'>
+        best models
+      </a>
+      . But today, the top 10 models are spread across OpenAI, Anthropic, Google, Llama and Deepseek. WorkflowAI brings
+      all the state-of-the-art models together — in one platform, with no setup required.
+    </div>
+  ),
   descriptionMaxWidth: 'max-w-[780px]',
 };
 
@@ -70,7 +79,7 @@ export const seventeenthNewHeaderEntry: HeaderEntry = {
     'Compare the top models in one unified playground. Evaluate quality, cost, and speed — and pick what’s best for your product.',
   descriptionMaxWidth: 'max-w-[580px]',
   buttonText: 'Explore all 73 models on the playground',
-  url: 'https://workflowai.com/docs/agents/flight-info-extractor/3?versionId=89ed288ccfc7a3ef813119713d50683d&showDiffMode=true&show2ColumnLayout=false&taskRunId2=0195ee61-f33b-70a7-6e52-dcc855a12320&taskRunId3=0195ee61-f393-71d1-dc40-8dc035141299&taskRunId1=0195f2a1-0a8e-7231-7a3e-35154c7229e1',
+  url: 'https://workflowai.com/docs/agents/flight-info-extractor/3?versionId=89ed288ccfc7a3ef813119713d50683d&showDiffMode=true&show2ColumnLayout=false&taskRunId2=019620b6-0076-73b5-cb3a-d12cbbce7957&taskRunId3=019620b6-0072-7046-298f-c912681cedf6&taskRunId1=019620b6-3115-7045-ce28-5b33263c527b',
 };
 
 export const seventeenthNewImageEntry: ImageEntry = {
@@ -166,7 +175,7 @@ export const twelfthNewFeaturesEntries: FeatureEntry[] = [
     imageHeight: 310,
     imageWidth: 524,
     buttonText: 'Explore all 73 models on the playground',
-    url: 'https://workflowai.com/docs/agents/flight-info-extractor/3?versionId=89ed288ccfc7a3ef813119713d50683d&showDiffMode=true&show2ColumnLayout=false&taskRunId2=0195ee61-f33b-70a7-6e52-dcc855a12320&taskRunId3=0195ee61-f393-71d1-dc40-8dc035141299&taskRunId1=0195f2a1-0a8e-7231-7a3e-35154c7229e1',
+    url: 'https://workflowai.com/docs/agents/flight-info-extractor/3?versionId=89ed288ccfc7a3ef813119713d50683d&showDiffMode=true&show2ColumnLayout=false&taskRunId2=019620b6-0076-73b5-cb3a-d12cbbce7957&taskRunId3=019620b6-0072-7046-298f-c912681cedf6&taskRunId1=019620b6-3115-7045-ce28-5b33263c527b',
   },
   {
     title: 'Tired of black-box AI? Now you can see inside.',
@@ -176,7 +185,7 @@ export const twelfthNewFeaturesEntries: FeatureEntry[] = [
     imageHeight: 310,
     imageWidth: 524,
     buttonText: 'Try this feature',
-    url: 'https://workflowai.com/docs/agents/flight-info-extractor/3?versionId=89ed288ccfc7a3ef813119713d50683d&showDiffMode=true&show2ColumnLayout=false&taskRunId2=0195ee61-f33b-70a7-6e52-dcc855a12320&taskRunId3=0195ee61-f393-71d1-dc40-8dc035141299&taskRunId1=0195f2a1-0a8e-7231-7a3e-35154c7229e1',
+    url: 'https://workflowai.com/docs/agents/flight-info-extractor/3?versionId=89ed288ccfc7a3ef813119713d50683d&showDiffMode=true&show2ColumnLayout=false&taskRunId2=019620b6-0076-73b5-cb3a-d12cbbce7957&taskRunId3=019620b6-0072-7046-298f-c912681cedf6&taskRunId1=019620b6-3115-7045-ce28-5b33263c527b',
   },
   {
     title: 'Edit prompts. Skip the tickets.',
@@ -343,6 +352,7 @@ export const sixthNewHeaderEntry: HeaderEntry = {
 
 export const fifthNewHeaderEntry: HeaderEntry = {
   logoURL: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingCompanyLogo2.png',
+  logoLink: 'https://www.berrystreet.co',
   logoWidth: 188,
   logoHeight: 32,
   title: 'From 0 to 6 AI features in just 8 weeks',
@@ -403,6 +413,7 @@ export const fifthNewFeaturesEntries: FeatureEntry[] = [
 
 export const fourthNewHeaderEntry: HeaderEntry = {
   logoURL: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingCompanyLogo1.png',
+  logoLink: 'https://www.interfaceai.com',
   logoWidth: 94,
   logoHeight: 32,
   title: 'M1 builds reliable, AI-first features faster with WorkflowAI',

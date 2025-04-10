@@ -1,11 +1,11 @@
 import { Stream } from '@cloudflare/stream-react';
 import {
+  ArrowTrendingRegular,
   ChatRegular,
   ClipboardTaskList16Regular,
   CloudRegular,
   DataUsageRegular,
   ListBarTreeRegular,
-  PlayCircleRegular,
 } from '@fluentui/react-icons';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -46,7 +46,7 @@ const videoDemos: VideoDemo[] = [
     id: 5,
     videoId: 'c118e79228b019f3d95228bbf236b563',
     name: 'Improve',
-    icon: <PlayCircleRegular className='w-4 h-4' />,
+    icon: <ArrowTrendingRegular className='w-4 h-4' />,
   },
   {
     id: 6,

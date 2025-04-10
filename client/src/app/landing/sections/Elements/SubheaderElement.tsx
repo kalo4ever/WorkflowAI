@@ -14,7 +14,19 @@ export function SubheaderElement(props: Props) {
   return (
     <div className='flex flex-col gap-4 w-full items-center'>
       {!!entry.logoURL && !!entry.logoWidth && !!entry.logoHeight && (
-        <Image src={entry.logoURL} alt='logo' width={entry.logoWidth} height={entry.logoHeight} className='mb-8' />
+        <Image
+          src={entry.logoURL}
+          alt='logo'
+          width={entry.logoWidth}
+          height={entry.logoHeight}
+          className={cn('mb-8', entry.logoLink && 'cursor-pointer')}
+          onClick={(event) => {
+            if (entry.logoLink) {
+              event.stopPropagation();
+              window.open(entry.logoLink, '_blank');
+            }
+          }}
+        />
       )}
       <div
         className={cn(

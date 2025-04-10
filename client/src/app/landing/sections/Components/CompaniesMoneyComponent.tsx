@@ -98,7 +98,7 @@ export function CompaniesMoneyComponent(props: Props) {
 
   return (
     <div className={cn('flex flex-col items-center sm:gap-12 gap-8 sm:px-16 px-4 w-full max-w-[1260px]', className)}>
-      <div className='flex flex-wrap w-full justify-center items-center sm:gap-11 gap-4'>
+      <div className='flex flex-wrap w-full justify-center items-end sm:gap-11 gap-4'>
         {companiesMoneyEntries.map((companyMoneyEntry) => (
           <CompanyMoneyView key={companyMoneyEntry.imageUrl} companyMoneyEntry={companyMoneyEntry} />
         ))}

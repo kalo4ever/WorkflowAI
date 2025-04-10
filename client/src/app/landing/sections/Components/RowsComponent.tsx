@@ -13,7 +13,8 @@ function FeatureCard(props: FeatureCardProps) {
   return (
     <div
       className='flex sm:flex-row flex-col border border-gray-200 rounded-[2px] bg-custom-gradient-1 sm:p-6 p-4 cursor-pointer items-center overflow-hidden'
-      onClick={() => {
+      onClick={(event) => {
+        event.stopPropagation();
         window.open(entry.url, '_blank');
       }}
     >
@@ -22,9 +23,7 @@ function FeatureCard(props: FeatureCardProps) {
         <div className='sm:text-[18px] text-[16px] font-semibold text-gray-900 pb-1'>{entry.title}</div>
         <div className='sm:text-[16px] text-[13px] font-normal text-gray-500'>{entry.description}</div>
         <div className='flex justify-start mt-6'>
-          <Button variant='newDesignGray' toRoute={entry.url}>
-            {entry.buttonText}
-          </Button>
+          <Button variant='newDesignGray'>{entry.buttonText}</Button>
         </div>
       </div>
     </div>
