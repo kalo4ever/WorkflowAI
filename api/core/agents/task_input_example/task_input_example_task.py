@@ -1,5 +1,6 @@
 from typing import Any, AsyncIterator
 
+import workflowai
 from pydantic import BaseModel, Field
 from workflowai import Model, agent
 
@@ -47,37 +48,40 @@ class TaskInputExampleTaskOutput(BaseModel):
     )
 
 
-@agent(id=TASK_INPUT_EXAMPLE_TASK_ID, model=Model.GEMINI_2_0_FLASH_EXP)
+INSTRUCTIONS = """The goal here is to a generate realistic, lengthy and articulate 'task_input' (enforcing 'input_json_schema') for a task whose goal is to produce valid outputs (enforcing 'output_json_schema').
+    Step 1: Analyze the 'output_json_schema' and 'input_json_schema'. Analyze what is the goal of the task in order to generate a meaningful input.
+    Step 2: Generate a 'task_input' for a task based on the task's 'input_json_schema'.
+    Do not repeat the 'examples' included in the schema, but rather use those as an inspiration for what a correct value looks like. Consider the 'previous_task_inputs' to avoid generating the same inputs.
+
+    Also, generate inputs that:
+    - Don't be lazy and generate output with realistic length. Recomended lenght: for email 5-20 lines, for transcripts 10-20 back and forths, for songs 3-6 verse + chorus, etc. Use your best judgement to find a length that suits the use case, but DO NOT BE LAZY, generate data that look real.
+    - Have datetime values that are close to the current datetime, unless otherwise specified.
+    - Look realistic, e.g., a call transcript must include a back and forth between two persons, etc.
+    - Will be able to yield various outputs and explore the space of possible outputs. E.g., for classification tasks, generate inputs that can be classified into multiple categories as well as positive and negative examples.
+    - Are nicely formatted, in order to ease reading."""
+
+
+@agent(
+    id=TASK_INPUT_EXAMPLE_TASK_ID,
+    version=workflowai.VersionProperties(
+        instructions=INSTRUCTIONS,
+        model=Model.GEMINI_2_0_FLASH_EXP,  # For speed
+        temperature=0.7,  # For more diverse outputs
+    ),
+)
 async def run_task_input_example_task(
     input: TaskInputExampleTaskInput,
-) -> TaskInputExampleTaskOutput:
-    """The goal here is to a generate realistic, lengthy and articulate 'task_input' (enforcing 'input_json_schema') for a task whose goal is to produce valid outputs (enforcing 'output_json_schema').
-    Step 1: Analyze the 'output_json_schema' and 'input_json_schema'. Analyze what is the goal of the task in order to generate a meaningful input.
-    Step 2: Generate a 'task_input' for a task based on the task's 'input_json_schema'.
-    Do not repeat the 'examples' included in the schema, but rather use those as an inspiration for what a correct value looks like. Consider the 'previous_task_inputs' to avoid generating the same inputs.
-
-    Also, generate inputs that:
-    - Don't be lazy and generate output with realistic length. Recomended lenght: for email 5-20 lines, for transcripts 10-20 back and forths, for songs 3-6 verse + chorus, etc. Use your best judgement to find a length that suits the use case, but DO NOT BE LAZY, generate data that look real.
-    - Have datetime values that are close to the current datetime, unless otherwise specified.
-    - Look realistic, e.g., a call transcript must include a back and forth between two persons, etc.
-    - Will be able to yield various outputs and explore the space of possible outputs. E.g., for classification tasks, generate inputs that can be classified into multiple categories as well as positive and negative examples.
-    - Are nicely formatted, in order to ease reading."""
-    ...
+) -> TaskInputExampleTaskOutput: ...
 
 
-@agent(id=TASK_INPUT_EXAMPLE_TASK_ID, model=Model.GEMINI_2_0_FLASH_EXP.value)
+@agent(
+    id=TASK_INPUT_EXAMPLE_TASK_ID,
+    version=workflowai.VersionProperties(
+        instructions=INSTRUCTIONS,
+        model=Model.GEMINI_2_0_FLASH_EXP,  # For speed
+        temperature=0.7,  # For more diverse outputs
+    ),
+)
 def stream_task_input_example_task(
     input: TaskInputExampleTaskInput,
-) -> AsyncIterator[TaskInputExampleTaskOutput]:
-    """The goal here is to a generate realistic, lengthy and articulate 'task_input' (enforcing 'input_json_schema') for a task whose goal is to produce valid outputs (enforcing 'output_json_schema').
-    Step 1: Analyze the 'output_json_schema' and 'input_json_schema'. Analyze what is the goal of the task in order to generate a meaningful input.
-    Step 2: Generate a 'task_input' for a task based on the task's 'input_json_schema'.
-    Do not repeat the 'examples' included in the schema, but rather use those as an inspiration for what a correct value looks like. Consider the 'previous_task_inputs' to avoid generating the same inputs.
-
-    Also, generate inputs that:
-    - Don't be lazy and generate output with realistic length. Recomended lenght: for email 5-20 lines, for transcripts 10-20 back and forths, for songs 3-6 verse + chorus, etc. Use your best judgement to find a length that suits the use case, but DO NOT BE LAZY, generate data that look real.
-    - Have datetime values that are close to the current datetime, unless otherwise specified.
-    - Look realistic, e.g., a call transcript must include a back and forth between two persons, etc.
-    - Will be able to yield various outputs and explore the space of possible outputs. E.g., for classification tasks, generate inputs that can be classified into multiple categories as well as positive and negative examples.
-    - Are nicely formatted, in order to ease reading."""
-    ...
+) -> AsyncIterator[TaskInputExampleTaskOutput]: ...
