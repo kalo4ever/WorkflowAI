@@ -90,7 +90,7 @@ class InputObjectFieldConfig(BaseFieldConfig):
 
 class InputArrayFieldConfig(BaseFieldConfig):
     type: Literal["array"] = "array"
-    item_type: InputItemType = Field(default=None, description="The type of the items in the array")
+    items: InputItemType = Field(default=None, description="The type of the items in the array")
 
 
 class OutputGenericFieldConfig(BaseFieldConfig):
@@ -104,7 +104,7 @@ class OutputObjectFieldConfig(BaseFieldConfig):
 
 class OutputArrayFieldConfig(BaseFieldConfig):
     type: Literal["array"] = "array"
-    item_type: OutputItemType = Field(default=None, description="The type of the items in the array")
+    items: OutputItemType = Field(default=None, description="The type of the items in the array")
 
 
 class ChatMessageWithExtractedURLContent(ChatMessage):
