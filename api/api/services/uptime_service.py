@@ -58,9 +58,7 @@ class UptimeService:
         component_id: str,
     ) -> tuple[float | None, date | None]:
         OPENAI_STATUS_DETAILS_URL = "https://status.openai.com/proxy/status.openai.com/component_impacts"
-        # "https://status.openai.com/proxy/status.openai.com/component_impacts?start_at=2025-01-09T00%3A00%3A00.00Z&end_at=2025-04-10T00%3A00%3A00.00Z"
 
-        # Format dates with URL encoding for the API
         start_from = current_date - timedelta(days=90)
         start_at = f"{start_from.strftime('%Y-%m-%d')}T00%3A00%3A00.00Z"
         end_at = f"{current_date.strftime('%Y-%m-%d')}T00%3A00%3A00.00Z"
