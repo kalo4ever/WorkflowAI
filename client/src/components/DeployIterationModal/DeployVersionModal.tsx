@@ -10,7 +10,7 @@ import { taskApiRoute } from '@/lib/routeFormatter';
 import { formatSemverVersion } from '@/lib/versionUtils';
 import { useOrFetchVersions } from '@/store';
 import { useReviewBenchmark } from '@/store/task_review_benchmark';
-import { VersionsPerEnvironment, useVersions } from '@/store/versions';
+import { useVersions } from '@/store/versions';
 import { TaskID, TaskSchemaID, TenantID } from '@/types/aliases';
 import { VersionEnvironment } from '@/types/workflowAI';
 import { DeployVersionConfirmModal } from './DeployVersionConfirmModal';
@@ -120,15 +120,13 @@ export function DeployVersionModal() {
     redirectToCodeAfterDeploy: redirectToCodeAfterDeployText,
   } = useParsedSearchParams('deployVersionId', 'deploySchemaId', 'redirectToCodeAfterDeploy');
 
+  const [selectedEnvironment, setSelectedEnvironment] = useState<VersionEnvironment | undefined>(undefined);
+
   const redirectToCodeAfterDeploy = redirectToCodeAfterDeployText === 'true';
 
   const taskSchemaId = (deploySchemaId as TaskSchemaID) ?? paramsTaskSchemaId;
 
-  const {
-    versions,
-    isInitialized,
-    versionsPerEnvironment: originalVersionsPerEnvironment,
-  } = useOrFetchVersions(tenant, taskId, taskSchemaId);
+  const { versions, isInitialized, versionsPerEnvironment } = useOrFetchVersions(tenant, taskId, taskSchemaId);
 
   const { checkIfAllowed } = useIsAllowed();
 
@@ -145,37 +143,15 @@ export function DeployVersionModal() {
 
   const currentIteration = currentVersion?.iteration;
 
-  const [versionsPerEnvironment, setVersionsPerEnvironment] = useState<VersionsPerEnvironment>();
-
-  useEffect(() => {
-    setVersionsPerEnvironment(originalVersionsPerEnvironment);
-  }, [originalVersionsPerEnvironment, open]);
-
   const updateBenchmark = useReviewBenchmark((state) => state.updateBenchmark);
 
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-
-  const onDeployToggle = useCallback(
-    (environment: VersionEnvironment) => {
-      const newVersionsPerEnvironment = {
-        ...versionsPerEnvironment,
-        [environment]:
-          versionsPerEnvironment?.[environment]?.[0]?.id === currentVersion?.id ? undefined : [currentVersion],
-      };
-      setVersionsPerEnvironment(newVersionsPerEnvironment);
-      setShowConfirmModal(true);
-    },
-    [versionsPerEnvironment, currentVersion]
-  );
-
   const onCancel = useCallback(() => {
-    setVersionsPerEnvironment(originalVersionsPerEnvironment);
-    setShowConfirmModal(false);
-  }, [originalVersionsPerEnvironment]);
+    setSelectedEnvironment(undefined);
+  }, []);
 
   useEffect(() => {
     if (!open) {
-      setShowConfirmModal(false);
+      setSelectedEnvironment(undefined);
     }
   }, [open]);
 
@@ -184,48 +160,31 @@ export function DeployVersionModal() {
   const versionText = formatSemverVersion(currentVersion);
 
   const handleDeploy = useCallback(async () => {
-    const promises: Promise<void>[] = [];
+    if (!selectedEnvironment) {
+      return;
+    }
 
-    const taskIterationsToAddToBenchmarks: Set<number> = new Set();
-    const environmentValues: VersionEnvironment[] = ['dev', 'staging', 'production'];
+    await deployVersionToEnv(selectedEnvironment, currentVersionId, versionText, redirectToCodeAfterDeploy);
 
-    environmentValues.forEach((environment) => {
-      const currentTaskIteration = versionsPerEnvironment?.[environment]?.[0]?.iteration;
-      const originalTaskIteration = originalVersionsPerEnvironment?.[environment]?.[0]?.iteration;
-
-      if (
-        !!currentIteration &&
-        !!currentVersionId &&
-        !!currentTaskIteration &&
-        currentTaskIteration !== originalTaskIteration
-      ) {
-        promises.push(deployVersionToEnv(environment, currentVersionId, versionText, redirectToCodeAfterDeploy));
-        taskIterationsToAddToBenchmarks.add(currentIteration);
-      }
-    });
-
-    await Promise.all(promises);
-
-    if (taskIterationsToAddToBenchmarks.size > 0) {
-      await updateBenchmark(tenant, taskId, taskSchemaId, Array.from(taskIterationsToAddToBenchmarks), []);
+    if (currentIteration !== undefined) {
+      await updateBenchmark(tenant, taskId, taskSchemaId, [currentIteration], []);
     }
 
     if (!redirectToCodeAfterDeploy) {
       onClose();
     }
   }, [
-    deployVersionToEnv,
-    versionsPerEnvironment,
-    originalVersionsPerEnvironment,
     currentIteration,
     currentVersionId,
+    deployVersionToEnv,
     onClose,
-    updateBenchmark,
-    tenant,
+    redirectToCodeAfterDeploy,
     taskId,
     taskSchemaId,
+    updateBenchmark,
+    tenant,
     versionText,
-    redirectToCodeAfterDeploy,
+    selectedEnvironment,
   ]);
 
   return (
@@ -236,11 +195,11 @@ export function DeployVersionModal() {
           onClose={onClose}
           isInitialized={isInitialized}
           versionsPerEnvironment={versionsPerEnvironment}
-          originalVersionsPerEnvironment={originalVersionsPerEnvironment}
-          onDeploy={onDeployToggle}
+          selectedEnvironment={selectedEnvironment}
+          setSelectedEnvironment={setSelectedEnvironment}
         />
         <DeployVersionConfirmModal
-          showConfirmModal={showConfirmModal}
+          showConfirmModal={!!selectedEnvironment}
           versionBadgeText={formatSemverVersion(currentVersion)}
           closeModal={onCancel}
           onConfirm={handleDeploy}
