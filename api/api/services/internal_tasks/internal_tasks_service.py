@@ -759,6 +759,7 @@ class InternalTasksService:
             tenant_uid=input_gen_agent_uids.tenant_uid,
             task_uid=input_gen_agent_uids.agent_uid,
             memory_id=memory_id,
+            limit=15,  # 15 to have even more diversity
         ):
             try:
                 output = TaskInputExampleTaskOutput.model_validate(run.task_output)
