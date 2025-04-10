@@ -162,6 +162,7 @@ async def preview_models() -> Page[ModelResponse]:
         Model.DEEPSEEK_R1_2501_BASIC,
         Model.MISTRAL_LARGE_2_LATEST,
         Model.LLAMA_4_MAVERICK_BASIC,
+        Model.GROK_3_BETA,
     }
 
     # Total number of default models to include
