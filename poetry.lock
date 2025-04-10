@@ -4873,13 +4873,13 @@ watchdog = ["watchdog (>=2.3)"]
 
 [[package]]
 name = "workflowai"
-version = "0.6.2"
+version = "0.6.5"
 description = "Python SDK for WorkflowAI"
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "workflowai-0.6.2-py3-none-any.whl", hash = "sha256:6ca484a05fa9e84310ce4e7594ba0ad74ce5c1678838f9a90b11a6b1b2d81ed7"},
-    {file = "workflowai-0.6.2.tar.gz", hash = "sha256:ad59975541dd4f765061015e9431e6b8deda38912e6e711ec12eaa5d0faeea88"},
+    {file = "workflowai-0.6.5-py3-none-any.whl", hash = "sha256:031bda28447b1d7a8b3dd134df8e36c89a26ff8b09fd5b4edf4e30b90fd5b163"},
+    {file = "workflowai-0.6.5.tar.gz", hash = "sha256:656e057ffe615043591137b3b355eb0d63f1cde53077d11d3961c4d004bb28d6"},
 ]
 
 [package.dependencies]
@@ -5188,4 +5188,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.12,<3.13"
-content-hash = "49e51447263445f0d17b0835e7dc4d4139e851e9e9dfd89f8ef9e9830c0f0a01"
+content-hash = "52224ece511996feaba40906147ba8175bf31bf01dbdc03a753faaea4ae70200"

@@ -24,6 +24,7 @@ from core.runners.workflowai.internal_tool import InternalTool
 from core.tools import ToolKind
 from core.utils.file_utils.file_utils import guess_content_type
 from core.utils.schema_sanitation import get_file_format
+from core.utils.strings import clean_unicode_chars
 
 _logger = logging.getLogger(__file__)
 
@@ -315,3 +316,13 @@ async def convert_pdf_to_images(pdf_file: FileWithKeyPath) -> list[FileWithKeyPa
         return FileWithKeyPath(data=image_base64, content_type="image/jpeg", key_path=pdf_file.key_path + [idx])
 
     return [_map(image, i) for i, image in enumerate(images)]
+
+
+def cleanup_provider_json(obj: Any) -> Any:
+    if isinstance(obj, dict):
+        return {k: cleanup_provider_json(v) for k, v in obj.items()}  # pyright: ignore[reportUnknownVariableType]
+    if isinstance(obj, list):
+        return [cleanup_provider_json(v) for v in obj]  # pyright: ignore[reportUnknownVariableType]
+    if isinstance(obj, str):
+        return clean_unicode_chars(obj)
+    return obj
