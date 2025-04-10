@@ -16,6 +16,7 @@ class DisplayedProvider(StrEnum):
     MISTRAL_AI = "Mistral"
     GROQ = "Groq"
     AMAZON_BEDROCK = "Amazon Bedrock"
+    X_AI = "xAI"
 
 
 def _build_model_datas():
@@ -1260,6 +1261,126 @@ def _build_model_datas():
         Model.DEEPSEEK_V3_LATEST: LatestModel(
             model=Model.DEEPSEEK_V3_0324,
             display_name="DeepSeek V3 (latest)",
+        ),
+        Model.GROK_3_BETA: ModelData(
+            display_name="Grok 3 (beta)",
+            supports_json_mode=True,
+            supports_input_image=True,
+            supports_multiple_images_in_input=True,
+            supports_input_pdf=True,
+            supports_input_audio=False,
+            max_tokens_data=MaxTokensData(
+                max_tokens=131_072,
+                source="https://docs.x.ai/docs/models#models-and-pricing",
+            ),
+            provider_for_pricing=Provider.X_AI,
+            icon_url="https://workflowai.blob.core.windows.net/workflowai-public/xai.svg",
+            release_date=date(2025, 4, 4),
+            # TODO: Update the quality index
+            quality_index=835,
+            provider_name=DisplayedProvider.X_AI.value,
+            supports_tool_calling=True,
+            supports_structured_output=True,
+        ),
+        Model.GROK_3_FAST_BETA: ModelData(
+            display_name="Grok 3 Fast (beta)",
+            supports_json_mode=True,
+            supports_input_image=True,
+            supports_multiple_images_in_input=True,
+            supports_input_pdf=True,
+            supports_input_audio=False,
+            max_tokens_data=MaxTokensData(
+                max_tokens=131_072,
+                source="https://docs.x.ai/docs/models#models-and-pricing",
+            ),
+            provider_for_pricing=Provider.X_AI,
+            icon_url="https://workflowai.blob.core.windows.net/workflowai-public/xai.svg",
+            release_date=date(2025, 4, 4),
+            # TODO: Update the quality index
+            quality_index=835,
+            provider_name=DisplayedProvider.X_AI.value,
+            supports_tool_calling=True,
+            supports_structured_output=True,
+        ),
+        Model.GROK_3_MINI_BETA_HIGH_REASONING_EFFORT: ModelData(
+            display_name="Grok 3 Mini (beta) - High reasoning effort",
+            supports_json_mode=True,
+            supports_input_image=True,
+            supports_multiple_images_in_input=True,
+            supports_input_pdf=True,
+            supports_input_audio=False,
+            max_tokens_data=MaxTokensData(
+                max_tokens=131_072,
+                source="https://docs.x.ai/docs/models#models-and-pricing",
+            ),
+            provider_for_pricing=Provider.X_AI,
+            icon_url="https://workflowai.blob.core.windows.net/workflowai-public/xai.svg",
+            release_date=date(2025, 4, 4),
+            # TODO: Update the quality index
+            quality_index=820,
+            provider_name=DisplayedProvider.X_AI.value,
+            supports_tool_calling=True,
+            supports_structured_output=True,
+        ),
+        Model.GROK_3_MINI_BETA_LOW_REASONING_EFFORT: ModelData(
+            display_name="Grok 3 Mini (beta) - Low reasoning effort",
+            supports_json_mode=True,
+            supports_input_image=True,
+            supports_multiple_images_in_input=True,
+            supports_input_pdf=True,
+            supports_input_audio=False,
+            max_tokens_data=MaxTokensData(
+                max_tokens=131_072,
+                source="https://docs.x.ai/docs/models#models-and-pricing",
+            ),
+            provider_for_pricing=Provider.X_AI,
+            icon_url="https://workflowai.blob.core.windows.net/workflowai-public/xai.svg",
+            release_date=date(2025, 4, 4),
+            # TODO: Update the quality index
+            quality_index=815,
+            provider_name=DisplayedProvider.X_AI.value,
+            supports_tool_calling=True,
+            supports_structured_output=True,
+        ),
+        Model.GROK_3_MINI_FAST_BETA_HIGH_REASONING_EFFORT: ModelData(
+            display_name="Grok 3 Mini Fast (beta) - High reasoning effort",
+            supports_json_mode=True,
+            supports_input_image=True,
+            supports_multiple_images_in_input=True,
+            supports_input_pdf=True,
+            supports_input_audio=False,
+            max_tokens_data=MaxTokensData(
+                max_tokens=131_072,
+                source="https://docs.x.ai/docs/models#models-and-pricing",
+            ),
+            provider_for_pricing=Provider.X_AI,
+            icon_url="https://workflowai.blob.core.windows.net/workflowai-public/xai.svg",
+            release_date=date(2025, 4, 4),
+            # TODO: Update the quality index
+            quality_index=820,
+            provider_name=DisplayedProvider.X_AI.value,
+            supports_tool_calling=True,
+            supports_structured_output=True,
+        ),
+        Model.GROK_3_MINI_FAST_BETA_LOW_REASONING_EFFORT: ModelData(
+            display_name="Grok 3 Mini Fast (beta) - Low reasoning effort",
+            supports_json_mode=True,
+            supports_input_image=True,
+            supports_multiple_images_in_input=True,
+            supports_input_pdf=True,
+            supports_input_audio=False,
+            max_tokens_data=MaxTokensData(
+                max_tokens=131_072,
+                source="https://docs.x.ai/docs/models#models-and-pricing",
+            ),
+            provider_for_pricing=Provider.X_AI,
+            icon_url="https://workflowai.blob.core.windows.net/workflowai-public/xai.svg",
+            release_date=date(2025, 4, 4),
+            # TODO: Update the quality index
+            quality_index=815,
+            provider_name=DisplayedProvider.X_AI.value,
+            supports_tool_calling=True,
+            supports_structured_output=True,
         ),
     }
 
