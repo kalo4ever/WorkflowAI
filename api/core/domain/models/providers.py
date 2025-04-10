@@ -19,3 +19,4 @@ class Provider(StrEnum):
     GROQ = "groq"
     MISTRAL_AI = "mistral_ai"
     GOOGLE_GEMINI = "google_gemini"
+    X_AI = "xai"

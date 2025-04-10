@@ -37,9 +37,9 @@ class RunUser(HttpUser):
         self._run_task(
             "analyze-book-characters",
             1,
-            "dev",
+            {"model": "claude-3-haiku-20240307", "provider": "anthropic"},
             {"book_title": "The Shadow of the Wind"},
-            use_cache=True,
+            use_cache=False,
         )
 
     # @task

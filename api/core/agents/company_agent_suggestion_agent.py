@@ -106,9 +106,8 @@ INSTUCTIONS = f"""Your role is to generate a comprehensive list of exactly {NUMB
     - 'company_context' (in order to understand the company and propose agents that make sense based on the company's context)
     - the 'supported_agent_input_types' and 'supported_agent_output_types' that explains the type of agents input and output that can be suggested.
     - consider the 'available_tools' that can give suggested agent more capabilities.
-    - use 'latest_news' to propose agents that are super relevant and impactful for the company based on the latest news. Offer features that works well with the latest product and features, and aligns with the company goals from 'latest_news'. Aim for 1 to 2 agents over {NUMBER_OF_SUGGESTED_AGENTS} to be related to the latest news, IF and only IF those agents do not contradict with the other criterias, and if the enforece all other criterias described in those instructions.
+    - use 'latest_news' to propose agents that are super relevant and impactful for the company based on the latest news. Offer features that works well with the latest product and features, and aligns with the company goals from 'latest_news'. Aim for 1 to 2 agents over {NUMBER_OF_SUGGESTED_AGENTS} to be related to the latest news, IF and only IF those agents do not contradict with the other criterias, and if the enforece all other criterias described in those instructions. For agents that are based on latest news, please make sure that the description makes it clear that the feature is related to the latest news.
     - the client's 'existing_agents' (in order to avoid duplicates, and propose new agents that make sense based on the agents the client is already using)
-
 
     ## Agents to propose
     - Propose features that are scalable and can be seamlessly integrated into the client's existing products.
