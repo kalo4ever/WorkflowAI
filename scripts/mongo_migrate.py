@@ -5,9 +5,7 @@ from typing import Annotated
 import typer
 from dotenv import load_dotenv
 
-from core.storage.mongo.migrations.migrate import check_migrations, migrate
-
-from ._common import (
+from _common import (
     PROD_ARG,
     STAGING_ARG,
     env_name,
@@ -15,6 +13,7 @@ from ._common import (
     raise_if_not_prod_branch,
     wait_for_truthy_input,
 )
+from core.storage.mongo.migrations.migrate import check_migrations, migrate
 
 
 def _migrate_command(

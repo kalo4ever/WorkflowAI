@@ -44,6 +44,12 @@ CREATE TABLE runs (
     -- and should be ignored in aggregations
     -- Maxes out at 65535 = 6555.35 seconds = 100.92 minutes
     duration_ds UInt16,
+    -- Overhead is stored in milliseconds as a UInt8. This means
+    -- That the max stored value is 255ms which is way more that what we should allow for latency
+    -- Final value will g
+    -- This field could be calculated from the duration_seconds of the llm_completions but it is not usable
+    -- yet because of legacy data.
+    overhead_ms UInt8,
     -- Cost stored in millionths of a USD, 0 is used as a default value
     -- and should be ignored in aggregations
     -- Other options would be:

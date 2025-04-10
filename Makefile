@@ -40,5 +40,8 @@ format: api.format client.format
 .PHONY: lint
 lint: api.lint client.lint
 
+.PHONY: mongo.migrate
+mongo.migrate:
+	PYTHONPATH=./api:./scripts poetry run python scripts/mongo_migrate.py ${ARGS}
 
 

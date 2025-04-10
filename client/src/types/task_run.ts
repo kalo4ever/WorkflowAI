@@ -1,8 +1,8 @@
 import { SchemaNodeType } from '@/lib/schemaUtils';
-import { ReasoningStep, SerializableTaskRun } from './workflowAI';
+import { ReasoningStep, Run } from './workflowAI';
 import { api__routers__runs_by_id__TranscriptionResponse } from './workflowAI';
 
-export interface TaskRun extends SerializableTaskRun {
+export interface TaskRun extends Run {
   // id is actually always present in the TaskRun object
   id: string;
 }

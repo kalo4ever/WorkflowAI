@@ -34,7 +34,6 @@ async def test_import_run_with_metadata_and_labels(
         "group": {"properties": {"model": "not-our-model"}},
         "task_input": {"name": "John", "age": 30},
         "task_output": {"greeting": "Hello John!"},
-        "labels": ["label1", "label2"],
         "metadata": {
             "key1": "value1",
         },

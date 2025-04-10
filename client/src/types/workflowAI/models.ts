@@ -1161,7 +1161,7 @@ export type Page_RunItemV1_ = {
 };
 
 export type Page_SerializableTaskRun_ = {
-  items: Array<SerializableTaskRun>;
+  items: Array<Run>;
   count?: number | null;
 };
 
@@ -1513,7 +1513,7 @@ export type SerializableTaskIO = {
 /**
  * A task run represents an instance of a task being executed
  */
-export type SerializableTaskRun = {
+export type Run = {
   /**
    * the id of the task run. If not provided a uuid will be generated
    */

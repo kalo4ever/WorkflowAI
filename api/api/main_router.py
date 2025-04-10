@@ -7,7 +7,7 @@ from api.routers import (
     feedback_v1,
     stripe_webhooks,
 )
-from api.routers.agents import home_agent, meta_agent, new_task_agent, new_tool_agent
+from api.routers.agents import meta_agent, new_tool_agent
 from api.tags import RouteTags
 from core.domain.tenant_data import PublicOrganizationData
 
@@ -57,7 +57,6 @@ def _tenant_router():
     tenant_router.include_router(runs_by_id.router, tags=[RouteTags.RUNS])
     tenant_router.include_router(upload.router, tags=[RouteTags.UPLOAD])
     tenant_router.include_router(reviews.router, tags=[RouteTags.REVIEWS])
-    tenant_router.include_router(new_task_agent.router, tags=[RouteTags.NEW_AGENT])
     # TODO: remove once the client has been updated
     tenant_router.include_router(payments.router, deprecated=True, include_in_schema=False)
     tenant_router.include_router(meta_agent.router, tags=[RouteTags.PROMPT_ENGINEER_AGENT])
@@ -87,7 +86,3 @@ def _authenticated_router():
 
 
 main_router.include_router(_authenticated_router())
-main_router.include_router(  # Routes for the landing page, unauthenticated
-    home_agent.router,
-    tags=[RouteTags.HOME_AGENT],
-)

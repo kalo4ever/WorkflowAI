@@ -9,7 +9,8 @@ from freezegun import freeze_time
 from httpx import AsyncClient
 
 from api.dependencies.security import user_organization
-from api.routers.run import DeprecatedVersionReference, RunRequest, version_reference_to_domain
+from api.routers.run import DeprecatedVersionReference, version_reference_to_domain
+from core.domain.agent_run import AgentRun
 from core.domain.ban import Ban
 from core.domain.errors import InvalidGenerationError, ProviderRateLimitError
 from core.domain.llm_completion import LLMCompletion
@@ -20,7 +21,6 @@ from core.domain.run_output import RunOutput
 from core.domain.task_group import TaskGroup
 from core.domain.task_group_properties import TaskGroupProperties
 from core.domain.task_info import TaskInfo
-from core.domain.task_run import SerializableTaskRun
 from core.domain.task_run_builder import TaskRunBuilder
 from core.domain.task_variant import SerializableTaskVariant
 from core.domain.tool_call import ToolCall, ToolCallRequestWithID
@@ -65,16 +65,6 @@ class TestDeprecatedVersionReferenceToDomain:
     )
     def test_environment_alias(self, version: DeprecatedVersionReference, expected: VersionReference):
         assert version.to_domain() == expected
-
-
-def test_run_request_labels_deprecated_are_parsed() -> None:
-    run_request: RunRequest = RunRequest(
-        task_input={"param": "value"},
-        version=1,
-        id="test_id",
-        labels={"deprecated_label"},
-    )
-    assert run_request.labels == {"deprecated_label"}
 
 
 class TestRunModelsNotAuthenticated:
@@ -162,7 +152,6 @@ class TestDeprecatedRun:
             json={
                 "task_input": {"input": 1},
                 "group": {"iteration": 1},
-                "labels": ["label"],
                 "metadata": {"meta": "data"},
             },
         )
@@ -179,7 +168,7 @@ class TestDeprecatedRun:
         mock_storage: Mock,
         mock_runner: Mock,
     ):
-        patch_run_from_builder.return_value = SerializableTaskRun(
+        patch_run_from_builder.return_value = AgentRun(
             id="blabla",
             task_id="123",
             task_schema_id=1,
@@ -197,7 +186,6 @@ class TestDeprecatedRun:
                 "group": {
                     "iteration": 1,
                 },
-                "labels": ["label"],
                 "metadata": {"meta": "data"},
             },
         )
@@ -230,7 +218,6 @@ class TestDeprecatedRun:
                 "group": {
                     "iteration": 1,
                 },
-                "labels": ["label"],
                 "metadata": {"meta": "data"},
             },
         )
@@ -265,7 +252,6 @@ class TestDeprecatedRun:
                 "group": {
                     "iteration": 1,
                 },
-                "labels": ["label"],
                 "metadata": {"meta": "data"},
             },
         )
@@ -291,7 +277,6 @@ class TestDeprecatedRun:
                 "group": {
                     "iteration": 1,
                 },
-                "labels": ["label"],
                 "metadata": {"meta": "data"},
                 "stream": True,
             },
@@ -453,7 +438,7 @@ class TestDeprecatedRun:
         patch_run_from_builder: Mock,
         mock_storage: Mock,
     ):
-        patch_run_from_builder.return_value = SerializableTaskRun(
+        patch_run_from_builder.return_value = AgentRun(
             id="blabla",
             task_id="123",
             task_schema_id=1,
@@ -481,7 +466,6 @@ class TestDeprecatedRun:
                 "group": {
                     "iteration": 1,
                 },
-                "labels": ["label"],
                 "metadata": {"meta": "data"},
             },
         )
@@ -513,7 +497,6 @@ class TestDeprecatedRun:
                 "group": {
                     "iteration": 1,
                 },
-                "labels": ["label"],
                 "metadata": {"meta": "data"},
             },
         )
@@ -535,7 +518,7 @@ class TestRun:
     ):
         # Actually testing the underlying run service
         # Because it returns a Response object for now...
-        patch_run_from_builder.return_value = SerializableTaskRun(
+        patch_run_from_builder.return_value = AgentRun(
             id="blabla",
             task_id=hello_task.id,
             task_schema_id=hello_task.task_schema_id,
@@ -612,7 +595,7 @@ class TestReply:
         mock_runs_service: Mock,
         hello_task: SerializableTaskVariant,
     ):
-        mock_runs_service.run_by_id.return_value = SerializableTaskRun(
+        mock_runs_service.run_by_id.return_value = AgentRun(
             id="blabla",
             task_id="123",
             task_schema_id=1,

@@ -329,7 +329,7 @@ class TestProcessFieldQuery:
 
 #         # Mock task runs
 #         mock_runs = [
-#             SerializableTaskRun(
+#             Run(
 #                 id="1",
 #                 task_id=task_id,
 #                 group=TaskGroup(id="group1", iteration=1, properties=TaskGroupProperties()),
@@ -340,7 +340,7 @@ class TestProcessFieldQuery:
 #                 task_output={},
 #                 status="success",
 #             ),
-#             SerializableTaskRun(
+#             Run(
 #                 id="2",
 #                 task_id=task_id,
 #                 group=TaskGroup(id="group2", iteration=2, properties=TaskGroupProperties()),

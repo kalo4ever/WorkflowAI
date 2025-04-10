@@ -3,6 +3,7 @@
 import asyncio
 import json
 import logging
+from collections.abc import AsyncIterator
 from datetime import datetime
 from typing import Annotated, Any, AsyncGenerator, Literal, Self
 
@@ -24,12 +25,13 @@ from api.dependencies.services import (
 )
 from api.dependencies.task_info import TaskTupleDep
 from api.errors import prettify_errors
-from api.routers.common import DeprecatedVersionReference
+from api.routers._common import DeprecatedVersionReference
 from api.services.python_gen import RunCode, generate_full_run_code
 from api.utils import error_json_response
 from core.agents.task_instruction_tool_update_task import (
     TaskInstructionsToolUpdateTaskOutput,
 )
+from core.domain.agent_run import AgentRun
 from core.domain.analytics_events.analytics_events import (
     GeneratedInputProperties,
     ImportedTaskRunEventProperties,
@@ -44,13 +46,13 @@ from core.domain.task_group import TaskGroup
 from core.domain.task_group_properties import TaskGroupProperties
 from core.domain.task_input import TaskInput, TaskInputFields
 from core.domain.task_io import SerializableTaskIO
-from core.domain.task_run import SerializableTaskRun
 from core.domain.types import TaskInputDict
 from core.domain.users import UserIdentifier
 from core.domain.version_environment import VersionEnvironment
 from core.storage.models import TaskUpdate
 from core.tools import ToolKind
 from core.utils.file_utils.file_utils import extract_text_from_file_base64
+from core.utils.stream_response_utils import safe_streaming_response
 from core.utils.streams import format_model_for_sse
 
 from ..dependencies.storage import StorageDep
@@ -142,7 +144,7 @@ async def list_task_runs(
     runs_service: RunsServiceDep,
     query: TaskRunQueryDep,
     task_uid: TaskTupleDep,
-) -> Page[SerializableTaskRun]:
+) -> Page[AgentRun]:
     # Restricting the limit to 20 if no limit is provided
     if query.limit is None:
         query.limit = 20
@@ -163,7 +165,7 @@ async def create_task_run(
     analytics_service: AnalyticsServiceDep,
     user: UserDep,
     user_org: UserOrganizationDep,
-) -> SerializableTaskRun:
+) -> AgentRun:
     # By default, groups created directly from the API are external
     if request.group.is_external is None:
         request.group.is_external = True
@@ -672,12 +674,12 @@ async def update_task_instructions(
             media_type="text/event-stream",
         )
 
-    async def _stream():
+    async def _stream() -> AsyncIterator[BaseModel]:
         async for chunk in await internal_tasks.instructions.update_task_instructions(
             task_variant=task,
             instructions=request.instructions,
             selected_tools=request.selected_tools or [],
         ):
-            yield format_model_for_sse(chunk)
+            yield chunk
 
-    return StreamingResponse(_stream(), media_type="text/event-stream")
+    return safe_streaming_response(_stream, media_type="text/event-stream")
