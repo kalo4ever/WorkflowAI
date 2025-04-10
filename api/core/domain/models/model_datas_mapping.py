@@ -1263,7 +1263,7 @@ def _build_model_datas():
             display_name="DeepSeek V3 (latest)",
         ),
         Model.GROK_3_BETA: ModelData(
-            display_name="Grok 3 (beta)",
+            display_name="[BETA] Grok 3",
             supports_json_mode=True,
             supports_input_image=True,
             supports_multiple_images_in_input=True,
@@ -1283,7 +1283,7 @@ def _build_model_datas():
             supports_structured_output=True,
         ),
         Model.GROK_3_FAST_BETA: ModelData(
-            display_name="Grok 3 Fast (beta)",
+            display_name="[BETA] Grok 3 Fast",
             supports_json_mode=True,
             supports_input_image=True,
             supports_multiple_images_in_input=True,
@@ -1303,7 +1303,7 @@ def _build_model_datas():
             supports_structured_output=True,
         ),
         Model.GROK_3_MINI_BETA_HIGH_REASONING_EFFORT: ModelData(
-            display_name="Grok 3 Mini (beta) - High reasoning effort",
+            display_name="[BETA] Grok 3 Mini - High reasoning effort",
             supports_json_mode=True,
             supports_input_image=True,
             supports_multiple_images_in_input=True,
@@ -1323,7 +1323,7 @@ def _build_model_datas():
             supports_structured_output=True,
         ),
         Model.GROK_3_MINI_BETA_LOW_REASONING_EFFORT: ModelData(
-            display_name="Grok 3 Mini (beta) - Low reasoning effort",
+            display_name="[BETA] Grok 3 Mini - Low reasoning effort",
             supports_json_mode=True,
             supports_input_image=True,
             supports_multiple_images_in_input=True,
@@ -1343,7 +1343,7 @@ def _build_model_datas():
             supports_structured_output=True,
         ),
         Model.GROK_3_MINI_FAST_BETA_HIGH_REASONING_EFFORT: ModelData(
-            display_name="Grok 3 Mini Fast (beta) - High reasoning effort",
+            display_name="[BETA] Grok 3 Mini Fast - High reasoning effort",
             supports_json_mode=True,
             supports_input_image=True,
             supports_multiple_images_in_input=True,
@@ -1363,7 +1363,7 @@ def _build_model_datas():
             supports_structured_output=True,
         ),
         Model.GROK_3_MINI_FAST_BETA_LOW_REASONING_EFFORT: ModelData(
-            display_name="Grok 3 Mini Fast (beta) - Low reasoning effort",
+            display_name="[BETA] Grok 3 Mini Fast - Low reasoning effort",
             supports_json_mode=True,
             supports_input_image=True,
             supports_multiple_images_in_input=True,
