@@ -60,6 +60,7 @@ def setup_environment():
             "LOOPS_API_KEY": "loops-api-key",
             "PAYMENT_FAILURE_EMAIL_ID": "123",
             "LOW_CREDITS_EMAIL_ID": "123",
+            "XAI_API_KEY": "xai-123",
         },
     ):
         yield

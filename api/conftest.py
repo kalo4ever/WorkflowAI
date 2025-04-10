@@ -134,6 +134,9 @@ if "MODERATION_ENABLED" not in os.environ:
 if "CLICKHOUSE_TEST_CONNECTION_STRING" not in os.environ:
     os.environ["CLICKHOUSE_TEST_CONNECTION_STRING"] = "clickhouse://default:admin@localhost:8123/db_test"
 
+if "XAI_API_KEY" not in os.environ:
+    os.environ["XAI_API_KEY"] = "xai-123"
+
 os.environ["JOBS_BROKER_URL"] = "memory://"
 
 
