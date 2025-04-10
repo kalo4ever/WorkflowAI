@@ -984,6 +984,51 @@ FIREWORKS_PROVIDER_DATA: ProviderDataByModel = {
     ),
 }
 
+XAI_PROVIDER_DATA: ProviderDataByModel = {
+    Model.GROK_3_BETA: ModelProviderData(
+        text_price=TextPricePerToken(
+            prompt_cost_per_token=3 / 1_000_000,
+            completion_cost_per_token=15 / 1_000_000,
+            source="https://docs.x.ai/docs/models#models-and-pricing",
+        ),
+    ),
+    Model.GROK_3_FAST_BETA: ModelProviderData(
+        text_price=TextPricePerToken(
+            prompt_cost_per_token=5 / 1_000_000,
+            completion_cost_per_token=25 / 1_000_000,
+            source="https://docs.x.ai/docs/models#models-and-pricing",
+        ),
+    ),
+    Model.GROK_3_MINI_BETA_HIGH_REASONING_EFFORT: ModelProviderData(
+        text_price=TextPricePerToken(
+            prompt_cost_per_token=0.3 / 1_000_000,
+            completion_cost_per_token=0.5 / 1_000_000,
+            source="https://docs.x.ai/docs/models#models-and-pricing",
+        ),
+    ),
+    Model.GROK_3_MINI_BETA_LOW_REASONING_EFFORT: ModelProviderData(
+        text_price=TextPricePerToken(
+            prompt_cost_per_token=0.3 / 1_000_000,
+            completion_cost_per_token=0.5 / 1_000_000,
+            source="https://docs.x.ai/docs/models#models-and-pricing",
+        ),
+    ),
+    Model.GROK_3_MINI_FAST_BETA_HIGH_REASONING_EFFORT: ModelProviderData(
+        text_price=TextPricePerToken(
+            prompt_cost_per_token=0.6 / 1_000_000,
+            completion_cost_per_token=4 / 1_000_000,
+            source="https://docs.x.ai/docs/models#models-and-pricing",
+        ),
+    ),
+    Model.GROK_3_MINI_FAST_BETA_LOW_REASONING_EFFORT: ModelProviderData(
+        text_price=TextPricePerToken(
+            prompt_cost_per_token=0.6 / 1_000_000,
+            completion_cost_per_token=4 / 1_000_000,
+            source="https://docs.x.ai/docs/models#models-and-pricing",
+        ),
+    ),
+}
+
 type ProviderModelDataMapping = dict[Provider, ProviderDataByModel]
 
 # Pricing and lifecycle data for each model / provider couple
@@ -1015,4 +1060,7 @@ MODEL_PROVIDER_DATAS: ProviderModelDataMapping = {
     # ------------------------------------------------------------------------------------------------
     # Fireworks
     Provider.FIREWORKS: FIREWORKS_PROVIDER_DATA,
+    # ------------------------------------------------------------------------------------------------
+    # XAI
+    Provider.X_AI: XAI_PROVIDER_DATA,
 }
