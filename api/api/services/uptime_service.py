@@ -132,7 +132,7 @@ class UptimeService:
             "Extract the API uptime",
         )
 
-        # BetterStack should display on time from 90 days from now. So we allow a small difference of 5 days
+        # BetterStack should display uptime from 90 days from now. So we allow a small difference of 5 days
         if since is not None:
             self._check_date_diff(since, date.today() - timedelta(days=90), 5, "workflowai")
         return UptimeInfo(uptime=uptime, since=since, source=URL)
@@ -152,6 +152,6 @@ class UptimeService:
             "Extract the 'APIs' uptime, DO NOT EXTRACT the uptime for 'ChatGPT'",
         )
         if since is not None:
-            # On this degraded scraping mode we can only know the month of start of the obtained data so we allow 32 days of tolerance.
+            # On this degraded scraping mode we can only know the month of start of uptime so we allow 32 days of tolerance.
             self._check_date_diff(since, date.today() - timedelta(days=90), 32, "openai")
         return UptimeInfo(uptime=uptime, since=since, source=URL)
