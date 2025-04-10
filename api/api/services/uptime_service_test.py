@@ -79,10 +79,10 @@ class TestUptimeService:
         assert service.__dict__["_logger"].name == "api.services.uptime_service"
 
     @pytest.mark.parametrize(
-        "uptime_value, expected_result",
+        "uptime_value, since_value, expected_result, expected_since",
         [
-            (0.995, 0.995),
-            (None, 1.0),
+            (0.995, date(2025, 1, 1), 0.995, date(2025, 1, 1)),
+            (None, None, None, None),
         ],
     )
     async def test_run_uptime_extraction_success(
@@ -90,7 +90,9 @@ class TestUptimeService:
         mock_uptime_agent: AsyncMock,
         mock_browser_text: AsyncMock,
         uptime_value: Optional[float],
+        since_value: Optional[date],
         expected_result: float,
+        expected_since: date,
         uptime_service: UptimeService,
     ) -> None:
         # Arrange
@@ -99,7 +101,9 @@ class TestUptimeService:
         page_content = "<html>Test content</html>"
 
         mock_browser_text.return_value = page_content
-        mock_uptime_agent.return_value = MagicMock(output=UptimeExtractorAgentOutput(uptime=uptime_value))
+        mock_uptime_agent.return_value = MagicMock(
+            output=UptimeExtractorAgentOutput(uptime=uptime_value, since=since_value),
+        )
 
         # Act
         result = await uptime_service._get_uptime_info(  # type: ignore[reportPrivateUsage]
@@ -108,7 +112,7 @@ class TestUptimeService:
         )
 
         # Assert
-        assert result == expected_result
+        assert result == (expected_result, expected_since)
         mock_browser_text.assert_called_once_with(status_page_url)
         mock_uptime_agent.assert_called_once()
         agent_input = mock_uptime_agent.call_args[0][0]
@@ -133,7 +137,7 @@ class TestUptimeService:
         )
 
         # Assert
-        assert result == 1.0
+        assert result == (None, None)
         logger_mock.exception.assert_called_once()
         assert "Error extracting uptime for" in logger_mock.exception.call_args[0][0]
 
@@ -182,7 +186,7 @@ class TestUptimeService:
         # Assert
         assert result is None
         logger_mock.exception.assert_called_once()
-        assert "Error finding Chat component ID" in logger_mock.exception.call_args[0][0]
+        assert "Error finding Chat API component ID" in logger_mock.exception.call_args[0][0]
 
     @pytest.mark.parametrize(
         "component_data, component_id, expected_uptime, expected_date",
