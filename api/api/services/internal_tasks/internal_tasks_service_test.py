@@ -1,12 +1,13 @@
 import asyncio
 from datetime import datetime, timezone
-from typing import Generator
-from unittest.mock import AsyncMock, Mock, patch
+from typing import Any, Generator
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
 
 from api.services.internal_tasks.internal_tasks_service import (
     AUDIO_TRANSCRIPTION_MODEL,
+    AgentUids,
     InternalTasksService,
 )
 from api.services.tasks import AgentSummary
@@ -675,6 +676,7 @@ class TestGenerateTaskInputs:
             task=_api_task,
             input_instructions="",
             base_input=None,
+            system_storage=Mock(),
             stream=False,
         )
         assert result == {"name": "4"}
@@ -702,6 +704,7 @@ class TestGenerateTaskInputs:
             task=_api_task,
             input_instructions="",
             base_input=None,
+            system_storage=Mock(),
             stream=True,
         )
         result = [chunk async for chunk in iter]
@@ -755,6 +758,7 @@ class TestGenerateTaskInputs:
             task=_api_task,
             input_instructions="",
             base_input=base_input,
+            system_storage=Mock(),
             stream=False,
         )
 
@@ -791,6 +795,7 @@ class TestGenerateTaskInputs:
                 task=_api_task,
                 input_instructions="",
                 base_input=base_input,
+                system_storage=Mock(),
                 stream=True,
             )
 
@@ -1914,3 +1919,53 @@ class TestFeedValidationError:
 
         # Assert
         assert agent_input.current_preview_output_validation_error is None
+
+
+@pytest.mark.parametrize(
+    "task_input_example_task_exists,expected_result",
+    [
+        (True, [{"name": "example1"}, {"name": "example2"}]),
+        (False, None),
+    ],
+)
+async def test_fetch_previous_task_inputs(
+    internal_tasks_service: InternalTasksService,
+    mock_storage: Mock,
+    task_variant: SerializableTaskVariant,
+    task_input_example_task_exists: bool,
+    expected_result: list[dict[str, Any]],
+):
+    # Arrange
+    mock_task_uid = 123
+    mock_tenant_uid = 456
+
+    # Mock the _get_task_input_example_task method
+    if task_input_example_task_exists:
+        internal_tasks_service._get_input_gen_task_uid_and_tenant_uid = AsyncMock(  # pyright: ignore[reportPrivateUsage]
+            return_value=AgentUids(agent_uid=mock_task_uid, tenant_uid=mock_tenant_uid),
+        )
+
+        mock_runs: list[Any] = []
+        for example in expected_result:
+            mock_run = MagicMock()
+            mock_run.task_output = {"task_input": example}
+            mock_runs.append(mock_run)
+
+        mock_storage.task_runs.list_runs_for_memory_id.return_value = mock_aiter(*mock_runs)
+    else:
+        internal_tasks_service._get_input_gen_task_uid_and_tenant_uid = AsyncMock(return_value=None)  # pyright: ignore[reportPrivateUsage]
+
+    # Act
+    result = await internal_tasks_service._fetch_previous_task_inputs(task_variant, mock_storage, "some_memory_id")  # pyright: ignore[reportPrivateUsage]
+
+    # Assert
+    assert result == expected_result
+
+    # Verify fetch_task_run_resources was called with the correct task_uid
+    if task_input_example_task_exists:
+        mock_storage.task_runs.list_runs_for_memory_id.assert_called_once()
+        assert mock_storage.task_runs.list_runs_for_memory_id.call_args.kwargs["task_uid"] == 123
+        assert mock_storage.task_runs.list_runs_for_memory_id.call_args.kwargs["tenant_uid"] == 456
+        assert mock_storage.task_runs.list_runs_for_memory_id.call_args.kwargs["memory_id"] == "some_memory_id"
+    else:
+        mock_storage.task_runs.list_runs_for_memory_id.assert_not_called()

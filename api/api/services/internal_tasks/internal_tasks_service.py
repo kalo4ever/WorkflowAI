@@ -5,7 +5,7 @@ import logging
 import os
 from collections.abc import Callable
 from datetime import datetime, timezone
-from typing import Annotated, Any, AsyncIterator, Literal, Optional, Sequence, overload
+from typing import Annotated, Any, AsyncIterator, Literal, NamedTuple, Optional, Sequence, overload
 
 from workflowai import Run
 
@@ -110,18 +110,23 @@ from core.domain.task_evaluation import TaskEvaluationScore
 from core.domain.task_evaluator import EvalV2Evaluator
 from core.domain.task_group_properties import TaskGroupProperties
 from core.domain.task_io import SerializableTaskIO
-from core.domain.task_run_query import SerializableTaskRunQuery
 from core.domain.task_variant import SerializableTaskVariant
 from core.domain.types import CacheUsage, TaskInputDict
 from core.domain.url_content import URLContent
 from core.domain.version_reference import VersionReference
 from core.runners.workflowai.utils import FileWithKeyPath
 from core.runners.workflowai.workflowai_runner import WorkflowAIRunner
-from core.storage.backend_storage import BackendStorage
+from core.storage.backend_storage import BackendStorage, SystemBackendStorage
 from core.tools import ToolKind
 from core.utils.schema_sanitation import streamline_schema
 from core.utils.schemas import EXPLAINATION_KEY, schema_needs_explanation, strip_json_schema_metadata_keys
 from core.utils.url_utils import extract_and_fetch_urls
+
+
+class AgentUids(NamedTuple):
+    agent_uid: int
+    tenant_uid: int
+
 
 QUICK_MODEL = Model(os.environ.get("QUICK_MODEL", Model.GPT_4O_MINI_2024_07_18))
 AUDIO_TRANSCRIPTION_MODEL = Model(os.environ.get("AUDIO_TRANSCRIPTION_MODEL", Model.GEMINI_1_5_FLASH_002))
@@ -720,10 +725,23 @@ class InternalTasksService:
     # ----------------------------------------
     # Generate inputs
 
+    async def _get_input_gen_task_uid_and_tenant_uid(self) -> AgentUids | None:
+        try:
+            if not stream_task_input_example_task.agent_uid or not stream_task_input_example_task.tenant_uid:
+                await stream_task_input_example_task.register()
+            return AgentUids(
+                agent_uid=stream_task_input_example_task.agent_uid,
+                tenant_uid=stream_task_input_example_task.tenant_uid,
+            )
+        except Exception as e:
+            self.logger.exception("Error while fetching task input example task", exc_info=e)
+            return None
+
     async def _fetch_previous_task_inputs(
         self,
         task: SerializableTaskVariant,
-        metadata: dict[str, str],
+        system_storage: SystemBackendStorage,
+        memory_id: str,
     ) -> list[dict[str, Any]] | None:
         # TODO: there is a chance that the run will occur in a different environment that the
         # current one. For example, if staging uses the production run endpoint. This would
@@ -731,17 +749,18 @@ class InternalTasksService:
         # Ultimately we should integrate the fetching to the SDK. `run_task_input_example_task.list_runs`
         # To ensure that we always fetch from the same environment.
 
-        previous_run_query = SerializableTaskRunQuery(
-            task_id="task-input-example",
-            task_schema_id=None,
-            limit=10,
-            status={"success"},
-            metadata=metadata,
-            include_fields={"task_output"},
-        )
+        input_gen_agent_uids = await self._get_input_gen_task_uid_and_tenant_uid()
+        if input_gen_agent_uids is None or not input_gen_agent_uids.agent_uid or not input_gen_agent_uids.tenant_uid:
+            self.logger.exception("Can't find the task input example task")
+            return None
 
         validated = list[dict[str, Any]]()
-        async for run in self.storage.task_runs.fetch_task_run_resources(task.task_uid, previous_run_query):
+        async for run in system_storage.task_runs.list_runs_for_memory_id(
+            tenant_uid=input_gen_agent_uids.tenant_uid,
+            task_uid=input_gen_agent_uids.agent_uid,
+            memory_id=memory_id,
+            limit=15,  # 15 to have even more diversity
+        ):
             try:
                 output = TaskInputExampleTaskOutput.model_validate(run.task_output)
                 if output.task_input:
@@ -759,6 +778,7 @@ class InternalTasksService:
         self,
         task: SerializableTaskVariant,
         input_instructions: str,
+        system_storage: SystemBackendStorage,
         stream: Literal[False],
     ) -> TaskInputDict:
         pass
@@ -768,6 +788,7 @@ class InternalTasksService:
         self,
         task: SerializableTaskVariant,
         input_instructions: str,
+        system_storage: SystemBackendStorage,
         stream: Literal[True],
     ) -> AsyncIterator[TaskInputDict]:
         pass
@@ -776,6 +797,7 @@ class InternalTasksService:
         self,
         task: SerializableTaskVariant,
         input_instructions: str,
+        system_storage: SystemBackendStorage,
         stream: bool,
     ) -> TaskInputDict | AsyncIterator[TaskInputDict]:
         task_input_generation_instructions_run = await run_input_generation_instructions(
@@ -801,10 +823,11 @@ class InternalTasksService:
         try:
             gen_task_input.previous_task_inputs = await self._fetch_previous_task_inputs(
                 task=task,
-                metadata=metadata,
+                system_storage=system_storage,
+                memory_id=metadata["memory_id"],
             )
-        except Exception:
-            self.logger.exception("Failed to fetch previous task inputs")
+        except Exception as e:
+            self.logger.exception("Failed to fetch previous task inputs", exc_info=e)
             gen_task_input.previous_task_inputs = None
 
         if stream:
@@ -854,6 +877,7 @@ class InternalTasksService:
         task: SerializableTaskVariant,
         input_instructions: str,
         base_input: dict[str, Any] | None,
+        system_storage: SystemBackendStorage,
         stream: Literal[False] = False,
     ) -> TaskInputDict:
         pass
@@ -864,6 +888,7 @@ class InternalTasksService:
         task: SerializableTaskVariant,
         input_instructions: str,
         base_input: dict[str, Any] | None,
+        system_storage: SystemBackendStorage,
         stream: Literal[True],
     ) -> AsyncIterator[TaskInputDict]:
         pass
@@ -873,6 +898,7 @@ class InternalTasksService:
         task: SerializableTaskVariant,
         input_instructions: str,
         base_input: dict[str, Any] | None,
+        system_storage: SystemBackendStorage,
         stream: bool = False,
     ) -> TaskInputDict | AsyncIterator[TaskInputDict]:
         if base_input:  # In this case we migrate the 'base_input' to the new schema
@@ -900,12 +926,14 @@ class InternalTasksService:
             return await self.generate_task_input(
                 task=task,
                 input_instructions=input_instructions,
+                system_storage=system_storage,
                 stream=True,
             )
 
         return await self.generate_task_input(
             task=task,
             input_instructions=input_instructions,
+            system_storage=system_storage,
             stream=False,
         )
 
