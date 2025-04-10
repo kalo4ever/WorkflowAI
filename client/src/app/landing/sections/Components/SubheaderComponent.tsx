@@ -6,17 +6,18 @@ type Props = {
   className?: string;
   entry: HeaderEntry;
   id?: string;
+  routeForSignUp?: string;
 };
 
 export function SubheaderComponent(props: Props) {
-  const { className, entry, id } = props;
+  const { className, entry, id, routeForSignUp } = props;
 
   return (
     <div
       className={cn('flex flex-col items-center sm:gap-8 gap-6 sm:px-16 px-4 w-full max-w-[1260px]', className)}
       id={id}
     >
-      <SubheaderElement entry={entry} />
+      <SubheaderElement entry={entry} routeForSignUp={routeForSignUp} />
     </div>
   );
 }

@@ -2793,3 +2793,9 @@ export type AgentStat = {
   run_count: number;
   total_cost_usd: number;
 };
+
+export type WeeklyRun = {
+  start_of_week: string;
+  run_count: number;
+  overhead_ms: number;
+};

@@ -1,16 +1,21 @@
+import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 import { HeaderEntry } from '../StaticData/LandingStaticData';
 
 type Props = {
   entry: HeaderEntry;
+  routeForSignUp?: string;
 };
 
 export function SubheaderElement(props: Props) {
-  const { entry } = props;
+  const { entry, routeForSignUp } = props;
 
   return (
     <div className='flex flex-col gap-4 w-full items-center'>
+      {!!entry.logoURL && !!entry.logoWidth && !!entry.logoHeight && (
+        <Image src={entry.logoURL} alt='logo' width={entry.logoWidth} height={entry.logoHeight} className='mb-8' />
+      )}
       <div
         className={cn(
           'flex w-full items-center justify-center text-center text-gray-900 font-semibold sm:text-[30px] text-[24px]',
@@ -29,8 +34,13 @@ export function SubheaderElement(props: Props) {
           {entry.description}
         </div>
       )}
-      {entry.buttonText && entry.url && (
-        <Button variant='newDesignGray' toRoute={entry.url} openInNewTab={true}>
+      {entry.buttonText && (
+        <Button
+          variant={entry.buttonVariant ?? 'newDesignGray'}
+          toRoute={entry.url === 'SignUp' ? routeForSignUp : entry.url}
+          icon={!!entry.buttonIcon && <Image src={entry.buttonIcon} alt='Icon' className='w-4 h-4' />}
+          openInNewTab={true}
+        >
           {entry.buttonText}
         </Button>
       )}

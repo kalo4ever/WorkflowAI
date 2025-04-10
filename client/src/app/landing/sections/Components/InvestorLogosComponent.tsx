@@ -49,7 +49,7 @@ export function InvestorLogosComponent(props: Props) {
   return (
     <div className={cn('flex flex-col gap-6 items-center px-4', className)}>
       <div className='text-[16px] font-normal text-gray-700 text-center'>
-        Backed by investors from leading brands and companies from across the globe.
+        WorkflowAI is backed by the best (and nicest) investors and founders.
       </div>
       <div className='flex flex-wrap max-w-[1132px] gap-x-11 gap-y-6 items-start justify-center'>
         {investorLogos.map((logo) => (

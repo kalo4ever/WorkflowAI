@@ -1,5 +1,6 @@
 import { StaticImageData } from 'next/image';
 import { ReactNode } from 'react';
+import GitHubSrc from '@/components/Images/GitHubIcon.png';
 
 // Types
 
@@ -14,18 +15,26 @@ export type QuoteEntry = {
 };
 
 export type HeaderEntry = {
+  logoURL?: string;
+  logoWidth?: number;
+  logoHeight?: number;
   title: string;
   titleSizeClassName?: string;
   description?: string;
   descriptionMaxWidth?: string;
   buttonText?: string;
-  url?: string;
+  buttonIcon?: StaticImageData;
+  url?: string | 'SignUp';
+  buttonVariant?: 'newDesign' | 'newDesignIndigo' | 'newDesignGray';
 };
 
 export type FeatureEntry = {
-  title: string;
-  description: string;
+  title?: string;
+  description?: string;
   imageSrc: string | StaticImageData;
+  imageWidth?: number;
+  imageHeight?: number;
+  showImageWithoutPadding?: boolean;
   buttonText?: string;
   url?: string | 'ScrollToSuggestedFeatures';
   qoute?: QuoteEntry;
@@ -38,68 +47,192 @@ export type ImageEntry = {
   url?: string;
 };
 
-// First component data
+// Eighteenth new component data
 
-export const firstHeaderEntry: HeaderEntry = {
-  title: 'Build AI features in 1...2..3',
-  titleSizeClassName: 'sm:text-[48px] text-[30px]',
+export const eighteenthNewHeaderEntry: HeaderEntry = {
+  title: 'Access the world’s top AI models in one place',
   description:
-    'WorkflowAI empowers product managers to create powerful AI features entirely through an intuitive web interface. No coding required.',
-  descriptionMaxWidth: 'max-w-[700px]',
+    'The best products need the best models. But today, the top 10 models are spread across OpenAI, Anthropic, Google, Llama and Deepseek. WorkflowAI brings all the state-of-the-art models together — in one platform, with no setup required.',
+  descriptionMaxWidth: 'max-w-[780px]',
 };
 
-export const firstFeaturesEntries: FeatureEntry[] = [
+export const eighteenthNewImageEntry: ImageEntry = {
+  imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration39.jpg',
+  width: 1168,
+  height: 592,
+};
+
+// Seventeenth new component data
+
+export const seventeenthNewHeaderEntry: HeaderEntry = {
+  title: 'Compare models side-by-side',
+  description:
+    'Compare the top models in one unified playground. Evaluate quality, cost, and speed — and pick what’s best for your product.',
+  descriptionMaxWidth: 'max-w-[580px]',
+  buttonText: 'Explore all 73 models on the playground',
+  url: 'https://workflowai.com/docs/agents/flight-info-extractor/3?versionId=89ed288ccfc7a3ef813119713d50683d&showDiffMode=true&show2ColumnLayout=false&taskRunId2=0195ee61-f33b-70a7-6e52-dcc855a12320&taskRunId3=0195ee61-f393-71d1-dc40-8dc035141299&taskRunId1=0195f2a1-0a8e-7231-7a3e-35154c7229e1',
+};
+
+export const seventeenthNewImageEntry: ImageEntry = {
+  imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration38.jpg',
+  width: 1168,
+  height: 390,
+};
+
+// Sixteenth new component data
+
+export const sixteenthNewHeaderEntry: HeaderEntry = {
+  title: 'Find the best model',
+  description:
+    'Validate your AI decisions with real numbers. WorkflowAI benchmarks accuracy, speed, and cost — helping you select the best model with confidence.',
+  descriptionMaxWidth: 'max-w-[780px]',
+  buttonText: 'View Benchmarks',
+  url: 'https://workflowai.com/docs/agents/flight-info-extractor/3/benchmarks',
+};
+
+export const sixteenthNewImageEntry: ImageEntry = {
+  imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration37.jpg',
+  width: 1168,
+  height: 337,
+};
+
+// Fifteenth new component data
+
+export const fifteenthNewHeaderEntry: HeaderEntry = {
+  title: 'See how your AI performs in the real world',
+  description:
+    'No more black-box behavior. WorkflowAI gives you full visibility into every input and output, so you can trust what’s happening in production, spot issues early, and make improvements faster.',
+  descriptionMaxWidth: 'max-w-[750px]',
+};
+
+export const fifteenthNewImageEntry: ImageEntry = {
+  imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration36.jpg',
+  width: 1168,
+  height: 337,
+};
+
+// Fourteenth new component data
+
+export const fourteenthNewHeaderEntry: HeaderEntry = {
+  title: 'An AI that improves your AI',
+  description:
+    'Think of it as your built-in AI prompt engineer. It reviews real outputs, finds what went wrong, and writes the fix — so you don’t have to.',
+  descriptionMaxWidth: 'max-w-[750px]',
+};
+
+export const fourteenthNewImageEntry: ImageEntry = {
+  imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration35.jpg',
+  width: 1168,
+  height: 496,
+};
+
+// Thirteenth new component data
+
+export const thirteenthNewHeaderEntry: HeaderEntry = {
+  title: 'Deploy updates instantly — without touching code',
+  description:
+    'Once the prompt is improved, anyone on the team can ship it to production with a single click. No back and forth, no downtime — just seamless updates that keep your AI performing at its best.',
+  descriptionMaxWidth: 'max-w-[840px]',
+};
+
+export const thirteenthNewImageEntry: ImageEntry = {
+  imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration34.jpg',
+  width: 1168,
+  height: 368,
+};
+
+// Twelfth new component data
+
+export const twelfthNewHeaderEntry: HeaderEntry = {
+  title: 'Hey Product Managers and Designers out there, here are some things you might like:',
+  titleSizeClassName: 'max-w-[650px]',
+};
+
+export const twelfthNewFeaturesEntries: FeatureEntry[] = [
   {
-    title: 'If you can explain it, you can build it.',
-    description: 'Write a quick sentence about what you want the AI to do  — that’s all you need to get started.',
+    title: 'Go from idea to AI feature. No code needed.',
+    description:
+      'Stop waiting on bandwidth. WorkflowAI lets anyone on your team design, test, and deploy AI features using plain language - no code needed.',
     imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration1.jpg',
+    imageHeight: 310,
+    imageWidth: 524,
     buttonText: 'Start with your idea',
     url: 'https://workflowai.com/_/agents?newTaskModalOpen=true&mode=new&redirectToPlaygrounds=true',
   },
   {
-    title: 'Drop your website. Get smart suggestions.',
-    description:
-      'WorkflowAI generates a production-ready prompt automatically—structured, optimized, and ready to test. You can tweak or deploy it as is.',
-    imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration2.jpg',
-    buttonText: 'Discover AI-powered use cases for my product',
-    url: 'ScrollToSuggestedFeatures',
-  },
-  {
-    title: 'AI-generated prompt',
-    description:
-      'Enter your product’s website and we’ll suggest high-impact AI features based on what you offer. Or explore our curated library of use cases.',
-    imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration3.jpg',
-  },
-  {
-    title: 'Ready to Ship',
-    description:
-      'Test your feature in seconds and iterate until it’s right. Once you’re happy, hand it off to engineering with everything they need to ship it fast.',
-    imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration4.jpg',
-    buttonText: 'Try Flight Information Extractor',
+    title: 'No more switching tabs and spreadsheets to compare models.',
+    description: 'WorkflowAI shows you outputs, costs, and latency side-by-side, all in one view.',
+    imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration32.jpg',
+    imageHeight: 310,
+    imageWidth: 524,
+    buttonText: 'Explore all 73 models on the playground',
     url: 'https://workflowai.com/docs/agents/flight-info-extractor/3?versionId=89ed288ccfc7a3ef813119713d50683d&showDiffMode=true&show2ColumnLayout=false&taskRunId2=0195ee61-f33b-70a7-6e52-dcc855a12320&taskRunId3=0195ee61-f393-71d1-dc40-8dc035141299&taskRunId1=0195f2a1-0a8e-7231-7a3e-35154c7229e1',
+  },
+  {
+    title: 'Tired of black-box AI? Now you can see inside.',
+    description:
+      'When the AI gets it wrong, you need to know why — fast. WorkflowAI logs every input and output automatically, so you can spot issues, understand what went wrong, and fix it without waiting on engineering.',
+    imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration10.jpg',
+    imageHeight: 310,
+    imageWidth: 524,
+    buttonText: 'Try this feature',
+    url: 'https://workflowai.com/docs/agents/flight-info-extractor/3?versionId=89ed288ccfc7a3ef813119713d50683d&showDiffMode=true&show2ColumnLayout=false&taskRunId2=0195ee61-f33b-70a7-6e52-dcc855a12320&taskRunId3=0195ee61-f393-71d1-dc40-8dc035141299&taskRunId1=0195f2a1-0a8e-7231-7a3e-35154c7229e1',
+  },
+  {
+    title: 'Edit prompts. Skip the tickets.',
+    description:
+      'Tired of creating tickets just to tweak a prompt? WorkflowAI lets you update prompts instantly, no engineering work required. Go from feedback to fix in seconds.',
+    imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration33.jpg',
+    imageHeight: 310,
+    imageWidth: 524,
   },
 ];
 
-export const firstQuoteEntry: QuoteEntry = {
-  quote: (
-    <div>
-      “I’ve always had great ideas for AI features, but engineering resources were always the bottleneck. Now, with
-      WorkflowAI, I’ve been able to ship AI features myself—
-      <span className='text-gray-700 font-semibold'>no coding, no waiting</span>. I can quickly go to market, gather
-      customer feedback, and iterate fast.“
-    </div>
-  ),
-  quoteMaxWidth: 'max-w-[800px]',
-  authorImageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/author1.jpg',
-  quoteAuthor: 'Perri Gould',
-  authorsPosition: 'Head of product',
-  authorsCompany: 'Berry Street',
-  companyURL: 'https://www.berrystreet.co',
+// Eleventh new component data
+
+export const eleventhNewHeaderEntry: HeaderEntry = {
+  title: 'Engineers we got you too...',
+  description: 'We’re engineers building for engineers.',
 };
 
-// Second component data
+export const eleventhNewFeaturesEntries: FeatureEntry[] = [
+  {
+    title: 'One SDK to run them all (73, to be exact).',
+    description:
+      'Stop wasting time maintaining separate integrations for every LLM. WorkflowAI gives you unified, seamless access to all models through a single, clean API.',
+    imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration7.jpg',
+    url: 'https://workflowai.com/docs/agents/flight-info-extractor/3?versionId=89ed288ccfc7a3ef813119713d50683d&showDiffMode=true&show2ColumnLayout=false&taskRunId2=0195ee61-f33b-70a7-6e52-dcc855a12320&taskRunId3=0195ee61-f393-71d1-dc40-8dc035141299&taskRunId1=0195f2a1-0a8e-7231-7a3e-35154c7229e1',
+    qoute: {
+      quote:
+        '“Being provider-agnostic used to mean maintaining multiple complex integrations. With WorkflowAI, we can seamlessly switch between LLM providers without any extra integration effort or overhead, saving us engineering time and headaches.”',
+      authorImageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/author4.jpg',
+      quoteAuthor: 'Aymeric Beaumet',
+      authorsPosition: 'CTO',
+      authorsCompany: 'InterfaceAI',
+      companyURL: 'https://interfaceai.com',
+    },
+  },
+  {
+    title: 'Consistent, structured outputs from your AI—every time.',
+    description:
+      'WorkflowAI ensures your AI responses always match your defined structure, simplifying integrations, reducing parsing errors, and making your data reliable and ready for use.',
+    imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration8.jpg',
+    url: 'https://workflowai.com/docs/agents/insurance-policy-information-extraction/2?version[…]68b05a9707ea38c6b7=&showDiffMode=false&show2ColumnLayout=false&versionId=ae1b15cab4cd8268b05a9707ea38c6b7&taskRunId1=0195f2aa-89d5-71c4-39eb-ce2c2fc8652f&taskRunId3=0195f2aa-89db-7171-3d4f-ddfb35bac7dc&taskRunId2=0195f2aa-89d6-70b0-24a9-8e8a69ef0b2f',
+    qoute: {
+      quote:
+        '“Before WorkflowAI, parsing AI outputs was brittle and error-prone. Now we get structured outputs consistently, streamlining our workflows and significantly improving reliability.”',
+      authorImageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/author5.jpg',
+      quoteAuthor: 'Xavier Durand',
+      authorsPosition: 'CEO',
+      authorsCompany: 'Chilli',
+      companyURL: 'https://www.chilli.club',
+    },
+  },
+];
 
-export const secondFeaturesEntries: FeatureEntry[] = [
+// Tenth new component data
+
+export const tenthNewFeaturesEntries: FeatureEntry[] = [
   {
     title: 'Write code only when you want to',
     description:
@@ -110,7 +243,7 @@ export const secondFeaturesEntries: FeatureEntry[] = [
   },
 ];
 
-export const secondQuoteEntry: QuoteEntry = {
+export const tenthNewQuoteEntry: QuoteEntry = {
   quote: (
     <div>
       “WorkflowAI lets me rapidly prototype AI concepts right in the browser, but still allows full code-level
@@ -126,214 +259,9 @@ export const secondQuoteEntry: QuoteEntry = {
   companyURL: 'https://www.berrystreet.co',
 };
 
-// Third component data
+// Ninth new component data
 
-export const thirdHeaderEntry: HeaderEntry = {
-  title: 'Compare models side-by-side',
-  description:
-    'Use the playground to compare outputs, costs, and latency across 73 models — all available without any setup. Pay the same price as using the AI provider directly.',
-  descriptionMaxWidth: 'max-w-[700px]',
-  buttonText: 'Try comparing models on the playground',
-  url: 'https://workflowai.com/docs/agents/insurance-policy-information-extraction/2?version[…]68b05a9707ea38c6b7=&showDiffMode=false&show2ColumnLayout=false&versionId=ae1b15cab4cd8268b05a9707ea38c6b7&taskRunId1=0195f2aa-89d5-71c4-39eb-ce2c2fc8652f&taskRunId3=0195f2aa-89db-7171-3d4f-ddfb35bac7dc&taskRunId2=0195f2aa-89d6-70b0-24a9-8e8a69ef0b2f',
-};
-
-export const thirdImageEntry: ImageEntry = {
-  imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration6.jpg',
-  width: 1163,
-  height: 390,
-  url: 'https://workflowai.com/docs/agents/insurance-policy-information-extraction/2?version[…]68b05a9707ea38c6b7=&showDiffMode=false&show2ColumnLayout=false&versionId=ae1b15cab4cd8268b05a9707ea38c6b7&taskRunId1=0195f2aa-89d5-71c4-39eb-ce2c2fc8652f&taskRunId3=0195f2aa-89db-7171-3d4f-ddfb35bac7dc&taskRunId2=0195f2aa-89d6-70b0-24a9-8e8a69ef0b2f',
-};
-
-export const thirdQuoteEntry: QuoteEntry = {
-  quote: (
-    <div>
-      “Before WorkflowAI, we were locked into OpenAI because integrating other models was too complex. Now,{' '}
-      <span className='text-gray-700 font-semibold'>switching is effortless</span>—we’ve easily tested alternatives and
-      saved over 90% by using Google’s models.”
-    </div>
-  ),
-  quoteMaxWidth: 'max-w-[800px]',
-  authorImageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/author3.jpg',
-  quoteAuthor: 'Maxime Germain',
-  authorsPosition: 'CEO',
-  authorsCompany: 'InterfaceAI',
-  companyURL: 'https://interfaceai.com',
-};
-
-// Fourth component data
-
-export const fourthHeaderEntry: HeaderEntry = {
-  title: 'One SDK to run them all (73, to be exact).',
-};
-
-export const fourthFeaturesEntries: FeatureEntry[] = [
-  {
-    title: 'One SDK, 73 LLMs—no integration headaches',
-    description:
-      'Stop wasting time maintaining separate integrations for every LLM. WorkflowAI gives you unified, seamless access to all models through a single, clean API—always matching the providers’ pricing.',
-    imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration7.jpg',
-    buttonText: 'Explore 73 models on the playground',
-    url: 'https://workflowai.com/docs/agents/flight-info-extractor/3?versionId=89ed288ccfc7a3ef813119713d50683d&showDiffMode=true&show2ColumnLayout=false&taskRunId2=0195ee61-f33b-70a7-6e52-dcc855a12320&taskRunId3=0195ee61-f393-71d1-dc40-8dc035141299&taskRunId1=0195f2a1-0a8e-7231-7a3e-35154c7229e1',
-    qoute: {
-      quote:
-        '“Being provider-agnostic used to mean maintaining multiple complex integrations. With WorkflowAI, we can seamlessly switch between LLM providers without any extra integration effort or overhead, saving us engineering time and headaches.”',
-      authorImageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/author4.jpg',
-      quoteAuthor: 'Aymeric Beaumet',
-      authorsPosition: 'CTO',
-      authorsCompany: 'InterfaceAI',
-      companyURL: 'https://interfaceai.com',
-    },
-  },
-  {
-    title: 'Consistent, structured outputs from your AI—every time',
-    description:
-      'WorkflowAI ensures your AI responses always match your defined structure, simplifying integrations, reducing parsing errors, and making your data reliable and ready for use.',
-    imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration8.jpg',
-    buttonText: 'Test structured output',
-    url: 'https://workflowai.com/docs/agents/insurance-policy-information-extraction/2?version[…]68b05a9707ea38c6b7=&showDiffMode=false&show2ColumnLayout=false&versionId=ae1b15cab4cd8268b05a9707ea38c6b7&taskRunId1=0195f2aa-89d5-71c4-39eb-ce2c2fc8652f&taskRunId3=0195f2aa-89db-7171-3d4f-ddfb35bac7dc&taskRunId2=0195f2aa-89d6-70b0-24a9-8e8a69ef0b2f',
-    qoute: {
-      quote:
-        '“Before WorkflowAI, parsing AI outputs was brittle and error-prone. Now we get structured outputs consistently, streamlining our workflows and significantly improving reliability.”',
-      authorImageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/author5.jpg',
-      quoteAuthor: 'Xavier Durand',
-      authorsPosition: 'CEO',
-      authorsCompany: 'Chilli',
-      companyURL: 'https://www.chilli.club',
-    },
-  },
-];
-
-// Fifth component data
-
-export const fifthHeaderEntry: HeaderEntry = {
-  title: 'Same models. Same price. No markups.',
-  description:
-    'You pay exactly what you’d pay the model providers — billed per token, with no minimums and no per-seat fees. We make our margin on them, not you.',
-  descriptionMaxWidth: 'max-w-[980px]',
-  buttonText: 'Learn more about our business model',
-  url: 'https://docs.workflowai.com/workflowai-cloud/pricing',
-};
-
-export const fifthQuoteEntry: QuoteEntry = {
-  quote: `“The fact that WorkflowAI matches provider pricing was a no-brainer for us.
-We get the same models at the same cost, but with better tools, observability, and reliability.
-And since there are no per-seat fees, our whole team can jump in and help build great AI features.
-It’s like getting a whole AI platform for free.”`,
-  quoteMaxWidth: 'max-w-[750px]',
-  authorImageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/author6.jpg',
-  quoteAuthor: 'Antoine Martin',
-  authorsPosition: 'CEO',
-  authorsCompany: 'Amo',
-  companyURL: 'https://amo.co',
-};
-
-// Sixth component data
-
-export const sixthHeaderEntry: HeaderEntry = {
-  title: 'Find the best AI, every time',
-  description:
-    'Run automated benchmarks to quickly compare accuracy, price, and latency so you can confidently select the perfect model and prompt combination for every AI feature.',
-  descriptionMaxWidth: 'max-w-[780px]',
-};
-
-export const sixthImageEntry: ImageEntry = {
-  imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration9.jpg',
-  width: 1163,
-  height: 390,
-};
-
-export const sixthQuoteEntry: QuoteEntry = {
-  quote: `“Being provider-agnostic used to mean maintaining multiple complex integrations. With WorkflowAI, we can seamlessly switch between LLM providers without any extra integration effort or overhead, saving us engineering time and headaches.”`,
-  quoteMaxWidth: 'max-w-[850px]',
-  authorImageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/author4.jpg',
-  quoteAuthor: 'Aymeric Beaumet',
-  authorsPosition: 'CTO',
-  authorsCompany: 'InterfaceAI',
-  companyURL: 'https://interfaceai.com',
-};
-
-// Seventh component data
-
-export const seventhHeaderEntry: HeaderEntry = {
-  title: 'Understand How Your AI Performs',
-  description: 'Everything you need to debug, iterate, and improve your AI features — all in one place.',
-};
-
-export const seventhFeaturesEntries: FeatureEntry[] = [
-  {
-    title: 'See what happened',
-    description:
-      'WorkflowAI logs every input and output automatically — giving you the visibility you need to iterate and improve quickly.',
-    imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration10.jpg',
-  },
-  {
-    title: 'Find the runs you care about',
-    description:
-      'Search past runs by input, output, model, or timestamp. Instantly surface the examples you need to debug, analyze, or improve.',
-    imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration11.jpg',
-  },
-  {
-    title: 'Improve the outcome',
-    description:
-      'Didn’t get the result you wanted? Retry the run in the playground — tweak the prompt or switch models to see what works better.',
-    imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration12.jpg',
-  },
-  {
-    title: 'Unlimited storage',
-    description:
-      'Store as many runs as you want. WorkflowAI handles scale for you — so you never lose visibility, even as your usage grows.',
-    imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration13.jpg',
-  },
-];
-
-export const seventhQuoteEntry: QuoteEntry = {
-  quote: (
-    <div>
-      “AI is non-deterministic, so{' '}
-      <span className='text-gray-700 font-semibold'>understanding what happens after deployment is crucial.</span>{' '}
-      WorkflowAI automatically logs all outputs, enabling rapid issue diagnosis and prompt improvements.”
-    </div>
-  ),
-  quoteMaxWidth: 'max-w-[750px]',
-  authorImageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/author7.jpg',
-  quoteAuthor: 'Gabriela Garcia',
-  authorsPosition: 'Product Manager',
-  authorsCompany: 'Luni',
-  companyURL: 'https://www.luni.app',
-};
-
-// Eighth component data
-
-export const eighthHeaderEntry: HeaderEntry = {
-  title: 'Bring the best prompt engineer onto your team',
-  description: 'WorkflowAI can automatically re-write prompts based on your feedback.',
-};
-
-export const eighthImageEntry: ImageEntry = {
-  imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration14.jpg',
-  width: 1268,
-  height: 496,
-};
-
-export const eighthQuoteEntry: QuoteEntry = {
-  quote: `“It’s hard to go back to manual prompting after this. The agent just… gets it.”`,
-  authorImageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/author6.jpg',
-  quoteAuthor: 'Antoine Martin',
-  authorsPosition: 'CEO',
-  authorsCompany: 'Amo',
-  companyURL: 'https://www.amo.co',
-};
-
-// Ninth component data
-
-export const ninthHeaderEntry: HeaderEntry = {
-  title: 'Integration that makes your engineering team happy',
-  description:
-    'WorkflowAI provides your engineering team with a seamless, developer-friendly integration process, turning AI features built by PMs into production-ready experiences quickly.',
-  descriptionMaxWidth: 'max-w-[850px]',
-};
-
-export const ninthFeaturesEntries: FeatureEntry[] = [
+export const ninthNewFeaturesEntries: FeatureEntry[] = [
   {
     title: 'Integrate with the language you already use',
     description:
@@ -366,96 +294,162 @@ export const ninthFeaturesEntries: FeatureEntry[] = [
   },
 ];
 
-export const ninthQuoteEntry: QuoteEntry = {
-  quote:
-    '“When PMs build new AI features using WorkflowAI, integrating them is straightforward and stress-free. Our engineers appreciate how quickly these features fit into our existing backend—without surprises.”',
-  quoteMaxWidth: 'max-w-[850px]',
-  authorImageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/author4.jpg',
-  quoteAuthor: 'Aymeric Beaumet',
-  authorsPosition: 'CTO',
-  authorsCompany: 'InterfaceAI',
-  companyURL: 'https://www.interfaceai.com',
-};
+// Eighth new component data
 
-// Tenth component data
-
-export const tenthFeaturesEntries: FeatureEntry[] = [
-  {
-    title: 'Your Data Belongs to You',
-    description:
-      'We never use your data for LLM training—your information stays private and exclusively yours. All models are hosted in the U.S., and we have BAAs in place with every provider to ensure your data is never used for training.',
-    imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration19.jpg',
-  },
-  {
-    title: 'SOC-2 Compliant',
-    description:
-      'We ensure security and privacy standards, giving you confidence that your data is safe and handled responsibly.',
-    imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration20.jpg',
-    buttonText: 'View our SOC-2 report',
-    url: 'https://workflowai.blob.core.windows.net/workflowai-public/soc2.pdf',
-  },
-];
-
-// Eleventh component data
-
-export const eleventhHeaderEntry: HeaderEntry = {
-  title: 'Built-in high performance and automatic reliability',
+export const eighthNewHeaderEntry: HeaderEntry = {
+  title: 'Open Source. Self-Host. Customize. Contribute.',
   description:
-    'WorkflowAI runs on dedicated high-performance infrastructure, adding only ~20ms latency per inference call. Automatically switches providers if one goes down—ensuring your AI features stay reliable.',
+    'WorkflowAI is fully open source — giving you the freedom to self-host, customize, or contribute. No hidden logic. No lock-in. Just powerful tooling you control.',
   descriptionMaxWidth: 'max-w-[780px]',
-  buttonText: 'Learn more about our infrastructure',
-  url: 'https://docs.workflowai.com/workflowai-cloud/reliability',
+  buttonText: 'Star on Github',
+  buttonIcon: GitHubSrc,
+  url: 'https://github.com/WorkflowAI/workflowai',
 };
 
-export const eleventhFeaturesEntries: FeatureEntry[] = [
-  {
-    title: 'OpenAI without WorkflowAI',
-    description: 'OpenAI API goes down. Your AI features stop working.',
-    imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration21.jpg',
-  },
-  {
-    title: 'OpenAI with WorkflowAI',
-    description:
-      'OpenAI API goes down. WorkflowAI automatically routes requests to Azure OpenAI. Your AI features keep working.',
-    imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration22.jpg',
-  },
-];
-
-export const eleventhQuoteEntry: QuoteEntry = {
-  quote: `“When OpenAI had a 5-hour outage in February, WorkflowAI automatically switched to AzureAI—providing identical OpenAI models without interruption. The seamless fallback and minimal latency meant zero downtime for our users, keeping our AI features reliably online.”`,
-  authorImageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/author4.jpg',
-  quoteAuthor: 'Aymeric Beaumet',
-  authorsPosition: 'CTO',
-  authorsCompany: 'InterfaceAI',
-  companyURL: 'https://www.interfaceai.com',
+export const eighthNewImageEntry: ImageEntry = {
+  imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration31.jpg',
+  width: 1168,
+  height: 496,
 };
 
-// Twelfth component data
+// Seventh new component data
 
-export const twelfthFeaturesEntries: FeatureEntry[] = [
+export const seventhNewHeaderEntry: HeaderEntry = {
+  title: 'Get all of the above, without paying more',
+  description:
+    'You pay exactly what you’d pay the model providers — billed per token, with no minimums and no per-seat fees. No markups. We make our margin from provider discounts, not by charging you extra.',
+  descriptionMaxWidth: 'max-w-[980px]',
+  buttonText: 'Learn more about our business model',
+  url: 'https://docs.workflowai.com/workflowai-cloud/pricing',
+};
+
+export const seventhNewQuoteEntry: QuoteEntry = {
+  quote: `“The fact that WorkflowAI matches provider pricing was a no-brainer for us. We get the same models at the same cost, but with better tools, observability, and reliability. And since there are no per-seat fees, our whole team can jump in and help build great AI features. It’s like getting a whole AI platform for free.”`,
+  quoteMaxWidth: 'max-w-[750px]',
+  authorImageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/author6.jpg',
+  quoteAuthor: 'Antoine Martin',
+  authorsPosition: 'CEO',
+  authorsCompany: 'Amo',
+  companyURL: 'https://amo.co',
+};
+
+// Sixth new component data
+
+export const sixthNewHeaderEntry: HeaderEntry = {
+  title: 'Want Proof? You can hear it from our users',
+};
+
+// Fifth new component data
+
+export const fifthNewHeaderEntry: HeaderEntry = {
+  logoURL: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingCompanyLogo2.png',
+  logoWidth: 188,
+  logoHeight: 32,
+  title: 'From 0 to 6 AI features in just 8 weeks',
+  description:
+    'Our customer Berry Street, a personalized nutrition therapy service went from 0 to 6 AI features in less than 2 months. Now their AI features are running over 49,000 times per week.',
+  descriptionMaxWidth: 'max-w-[900px]',
+};
+
+export const fifthNewFeaturesEntries: FeatureEntry[] = [
   {
-    title: 'Update prompts instantly — no code changes required — to accelerate AI improvements',
-    description:
-      'Empower your team to fine-tune prompts and deploy models effortlessly—delivering smarter, more reliable AI features faster.',
-    imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration23.jpg',
+    imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration28.jpg',
+    imageWidth: 372,
+    imageHeight: 266,
+    showImageWithoutPadding: true,
     qoute: {
       quote:
-        '“Every time we needed to tweak a prompt, we had to go through engineering, wait for a deployment, and hope it didn’t break something else. It slowed us down and made iteration painful. With WorkflowAI, we can refine prompts instantly and ship better AI features without bottlenecks.”',
-      authorImageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/author1.jpg',
-      quoteAuthor: 'Perri Gould',
-      authorsPosition: 'Head of product',
+        '“Our users genuinely love the AI features — we hear it in feedback and see it in the numbers. With WorkflowAI, we shipped 6 AI features in 8 weeks, and they now run over 45,000 times a week. It completely changed how we think about building — AI is no longer a future investment, it’s a core part of our product today.”',
+      authorImageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/author9.jpg',
+      quoteAuthor: 'Jesse Rose',
+      authorsPosition: 'CEO',
       authorsCompany: 'Berry Street',
-      companyURL: 'https://www.berrystreet.co',
+      companyURL: 'https://interfaceai.com',
     },
   },
   {
-    title: 'AI that stays current using built-in web search and browsing',
-    description:
-      'WorkflowAI integrates web search and browsing directly into your AI features, ensuring your LLM delivers timely, accurate, and highly relevant information.',
-    imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration24.jpg',
+    imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration29.jpg',
+    imageWidth: 372,
+    imageHeight: 266,
+    showImageWithoutPadding: true,
     qoute: {
       quote:
-        '“WorkflowAI lets me rapidly prototype AI concepts right in the browser, but still allows full code-level integration when I need precision and custom logic. It’s the best of both worlds.”',
+        '“Implementing directly with an AI provider would have taken us weeks — if not months — to get the reliability, observability, and structure we needed. With WorkflowAI, we had everything out of the box. We’ve saved countless engineering hours, and the product team can now update prompts and test new models on their own. That’s a huge shift.”',
+      authorImageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/author2.jpg',
+      quoteAuthor: 'Blake Yoder',
+      authorsPosition: 'Head of Engineering',
+      authorsCompany: 'Berry Street',
+      companyURL: 'https://interfaceai.com',
+    },
+  },
+  {
+    imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration30.jpg',
+    imageWidth: 372,
+    imageHeight: 266,
+    showImageWithoutPadding: true,
+    qoute: {
+      quote:
+        '“I’ve always had great ideas for AI features, but engineering resources were always the bottleneck. Now, with WorkflowAI, I’ve been able to ship AI features myself—no coding, no waiting. I can quickly go to market, gather customer feedback, and iterate fast.“',
+      authorImageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/author1.jpg',
+      quoteAuthor: 'Perri Gould',
+      authorsPosition: 'Head of Product',
+      authorsCompany: 'Berry Street',
+      companyURL: 'https://www.interfaceai.com',
+    },
+  },
+];
+
+// Fourth new component data
+
+export const fourthNewHeaderEntry: HeaderEntry = {
+  logoURL: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingCompanyLogo1.png',
+  logoWidth: 94,
+  logoHeight: 32,
+  title: 'M1 builds reliable, AI-first features faster with WorkflowAI',
+  description:
+    'M1, a fast-growing AI-first company, powers core features with WorkflowAI — from extracting meeting notes and todos to summarizing phone calls. With a 4.8 rating on the App Store and hundreds of glowing reviews, it’s clear that users aren’t just using these AI features — they love them.',
+  descriptionMaxWidth: 'max-w-[900px]',
+};
+
+export const fourthNewFeaturesEntries: FeatureEntry[] = [
+  {
+    imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration25.jpg',
+    imageWidth: 372,
+    imageHeight: 266,
+    showImageWithoutPadding: true,
+    qoute: {
+      quote:
+        '“WorkflowAI turned our AI vision into reality. It compressed our roadmap from quarters to weeks — and now AI is at the center of our product experience.”',
+      authorImageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/author3.jpg',
+      quoteAuthor: 'Maxime Germain',
+      authorsPosition: 'CEO',
+      authorsCompany: 'InterfaceAI',
+      companyURL: 'https://interfaceai.com',
+    },
+  },
+  {
+    imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration26.jpg',
+    imageWidth: 372,
+    imageHeight: 266,
+    showImageWithoutPadding: true,
+    qoute: {
+      quote:
+        '“WorkflowAI gives us benchmarking, structured outputs, and a unified SDK to access every model — all in one place. It lets us move fast without compromising on reliability or observability.”',
+      authorImageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/author4.jpg',
+      quoteAuthor: 'Aymeric Beaumet',
+      authorsPosition: 'CTO',
+      authorsCompany: 'InterfaceAI',
+      companyURL: 'https://interfaceai.com',
+    },
+  },
+  {
+    imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration27.jpg',
+    imageWidth: 372,
+    imageHeight: 266,
+    showImageWithoutPadding: true,
+    qoute: {
+      quote:
+        '“The most exciting thing about WorkflowAI is how it empowers product and design — we can build and launch AI-powered features without relying on engineering. It’s like turning every PM into an AI builder.”',
       authorImageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/author8.jpg',
       quoteAuthor: 'Justin Bureau',
       authorsPosition: 'Product Manager',
@@ -465,9 +459,52 @@ export const twelfthFeaturesEntries: FeatureEntry[] = [
   },
 ];
 
-// Thirteenth component data
+// Third new component data
 
-export const thirteenthHeaderEntry: HeaderEntry = {
-  title: 'What can AI do for your product?',
-  description: 'Enter your product URL to get personalized suggestions, or browse by category for inspiration.',
+export const thirdNewHeaderEntry: HeaderEntry = {
+  title: 'Infrastructure you can trust — backed by data',
+};
+
+// Second new component data
+
+export const secondNewHeaderEntry: HeaderEntry = {
+  title: '...all while keeping your data safe',
+};
+
+export const secondNewFeaturesEntries: FeatureEntry[] = [
+  {
+    title: 'No Model Training.',
+    description:
+      'All models are hosted in the U.S., and we have BAAs in place with every provider to ensure your data is never used for training.',
+    imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration19.jpg',
+  },
+  {
+    title: 'SOC-2 Compliant.',
+    description:
+      'We ensure security and privacy standards, giving you confidence that your data is safe and handled responsibly.',
+    imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration20.jpg',
+    buttonText: 'View our SOC-2 report',
+    url: 'https://workflowai.blob.core.windows.net/workflowai-public/soc2.pdf',
+  },
+];
+
+// First new component data
+
+export const firstNewFeaturesEntries: HeaderEntry = {
+  title: 'Build AI features your users will love.',
+  description: 'AI is redefining every product.  What’s your AI roadmap?',
+  buttonText: 'Start building for free',
+  url: 'SignUp',
+  buttonVariant: 'newDesignIndigo',
+};
+
+// Comparision new component data
+
+export const comparisionHeaderEntry: HeaderEntry = {
+  title: 'WorkflowAI is more reliable than OpenAI',
+  description:
+    'How? WorkflowAI is built with automatic provider failover — so even when OpenAI is down, your AI features stay up. Because your AI shouldn’t go down just because OpenAI does.',
+  descriptionMaxWidth: 'max-w-[1050px]',
+  buttonText: 'See how our failover system works',
+  url: 'https://docs.workflowai.com/workflowai-cloud/reliability',
 };
