@@ -39,6 +39,7 @@ export type FeatureEntry = {
   buttonText?: string;
   url?: string | 'ScrollToSuggestedFeatures';
   qoute?: QuoteEntry;
+  buttonOnlyForDesktop?: boolean;
 };
 
 export type ImageEntry = {
@@ -168,6 +169,7 @@ export const twelfthNewFeaturesEntries: FeatureEntry[] = [
     imageHeight: 310,
     imageWidth: 524,
     buttonText: 'Start with your idea',
+    buttonOnlyForDesktop: true,
     url: 'https://workflowai.com/_/agents?newTaskModalOpen=true&mode=new&redirectToPlaygrounds=true',
   },
   {

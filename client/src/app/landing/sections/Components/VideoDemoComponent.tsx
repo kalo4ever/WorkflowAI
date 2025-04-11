@@ -7,12 +7,13 @@ import {
   DataUsageRegular,
   ListBarTreeRegular,
 } from '@fluentui/react-icons';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useToggle } from 'usehooks-ts';
 import { cn } from '@/lib/utils';
 
 type VideoDemo = {
   id: number;
-  videoId: string;
+  videoSrc: string;
   width: number;
   height: number;
   name: string;
@@ -21,50 +22,50 @@ type VideoDemo = {
 
 const videoDemos: VideoDemo[] = [
   {
-    id: 1,
-    videoId: 'dd690ad4cea386e49731f843ecfd9b63',
-    width: 954,
-    height: 566,
+    id: 0,
+    videoSrc: '6dd8ba57257c1bbaa870f49a36d256ac',
+    width: 1280,
+    height: 720,
     name: 'Describe',
     icon: <ChatRegular className='w-4 h-4' />,
   },
   {
-    id: 2,
-    videoId: 'd5eb8fa37be6e96aa43990015f1ef5de',
-    width: 954,
-    height: 566,
+    id: 1,
+    videoSrc: '28d15ef03f8069f31bc1aa12dd848208',
+    width: 1280,
+    height: 720,
     name: 'Compare',
     icon: <DataUsageRegular className='w-4 h-4' />,
   },
   {
-    id: 3,
-    videoId: 'dd690ad4cea386e49731f843ecfd9b63',
-    width: 954,
-    height: 566,
+    id: 2,
+    videoSrc: 'd9b84a67c09a218f7f777459f5a7c355',
+    width: 1280,
+    height: 720,
     name: 'Deploy',
     icon: <CloudRegular className='w-4 h-4' />,
   },
   {
-    id: 4,
-    videoId: 'd5eb8fa37be6e96aa43990015f1ef5de',
-    width: 954,
-    height: 566,
+    id: 3,
+    videoSrc: '7d8a1b00e3d10b657c3910330ae83953',
+    width: 1280,
+    height: 720,
     name: 'Observe',
     icon: <ListBarTreeRegular className='w-4 h-4' />,
   },
   {
-    id: 5,
-    videoId: 'dd690ad4cea386e49731f843ecfd9b63',
-    width: 954,
-    height: 566,
+    id: 4,
+    videoSrc: '9983b7e0b7bca28ced765af6a74a5313',
+    width: 1280,
+    height: 720,
     name: 'Improve',
     icon: <ArrowTrendingRegular className='w-4 h-4' />,
   },
   {
-    id: 6,
-    videoId: 'd5eb8fa37be6e96aa43990015f1ef5de',
-    width: 954,
-    height: 566,
+    id: 5,
+    videoSrc: '0fb363416b744eaf3a269780148fcc0f',
+    width: 1280,
+    height: 720,
     name: 'Monitor',
     icon: <ClipboardTaskList16Regular className='w-4 h-4' />,
   },
@@ -94,13 +95,14 @@ export function VideoDemoButton(props: VideoDemoButtonProps) {
 }
 
 type SingleVideoDemoProps = {
-  videoId: string;
-  id: number;
+  videoSrc: string;
+  videoDemoId: number;
   selectedVideoDemoId: number;
+  rewind: boolean;
 };
 
 export function SingleVideoDemoComponent(props: SingleVideoDemoProps) {
-  const { videoId, id, selectedVideoDemoId } = props;
+  const { videoSrc: videoId, videoDemoId: id, selectedVideoDemoId, rewind } = props;
   const [shouldReset, setShouldReset] = useState(false);
 
   const isSelected = id === selectedVideoDemoId;
@@ -112,15 +114,21 @@ export function SingleVideoDemoComponent(props: SingleVideoDemoProps) {
       const timer = setTimeout(() => setShouldReset(false), 100);
       return () => clearTimeout(timer);
     }
-  }, [isSelected]);
+  }, [isSelected, rewind]);
 
   const currentTime = shouldReset || !isSelected ? 0 : undefined;
+
+  const [isInFront, setIsInFront] = useState(false);
+
+  useEffect(() => {
+    setIsInFront(isSelected);
+  }, [isSelected]);
 
   return (
     <div
       key={id}
       className='absolute top-0 left-0 flex items-center justify-center w-full h-full'
-      style={{ opacity: isSelected ? 1 : 0 }}
+      style={{ zIndex: isInFront ? 10 : id }}
     >
       <Stream
         src={videoId}
@@ -146,6 +154,18 @@ export function VideoDemoComponent(props: Props) {
   const { className } = props;
 
   const [selectedVideoDemo, setSelectedVideoDemo] = useState<VideoDemo>(videoDemos[0]);
+  const [rewind, setRewind] = useToggle(false);
+
+  const updateSelectedVideoDemo = useCallback(
+    (videoDemo: VideoDemo) => {
+      if (videoDemo.id === selectedVideoDemo.id) {
+        setRewind();
+        return;
+      }
+      setSelectedVideoDemo(videoDemo);
+    },
+    [selectedVideoDemo, setSelectedVideoDemo, setRewind]
+  );
 
   return (
     <div className={cn('flex flex-col items-center sm:px-4 px-2 w-full max-w-[1292px] gap-6', className)}>
@@ -155,19 +175,20 @@ export function VideoDemoComponent(props: Props) {
             key={videoDemo.id}
             videoDemo={videoDemo}
             selectedVideoDemo={selectedVideoDemo}
-            setSelectedVideoDemo={setSelectedVideoDemo}
+            setSelectedVideoDemo={updateSelectedVideoDemo}
           />
         ))}
       </div>
 
       <div className='flex w-full h-full border border-gray-200 p-0 rounded-[4px] overflow-hidden'>
-        <div className='relative flex w-full overflow-hidden' style={{ paddingTop: '59.3%' }}>
+        <div className='relative flex w-full overflow-hidden' style={{ paddingTop: '58.9%' }}>
           {videoDemos.map((videoDemo) => (
             <SingleVideoDemoComponent
               key={videoDemo.id}
-              videoId={videoDemo.videoId}
-              id={videoDemo.id}
+              videoSrc={videoDemo.videoSrc}
+              videoDemoId={videoDemo.id}
               selectedVideoDemoId={selectedVideoDemo.id}
+              rewind={rewind}
             />
           ))}
         </div>

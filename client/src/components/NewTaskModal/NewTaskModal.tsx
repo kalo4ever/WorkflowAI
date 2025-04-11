@@ -637,7 +637,7 @@ export function NewTaskModal() {
 
   return (
     <Dialog open={open} onOpenChange={onCloseRequest}>
-      <DialogContent className='min-w-[90vw] h-[90vh] p-0'>
+      <DialogContent className='min-w-[90vw] h-[90vh] p-0 z-20'>
         <div className='flex flex-col h-full w-full overflow-hidden bg-custom-gradient-1 rounded-[3px]'>
           <NewTaskModalHeader
             onClose={onCloseRequest}

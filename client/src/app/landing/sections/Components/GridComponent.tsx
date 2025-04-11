@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/Button';
+import { useIsMobile } from '@/lib/hooks/useIsMobile';
 import { cn } from '@/lib/utils';
 import { QuoteElement } from '../Elements/QuoteElement';
 import { FeatureEntry } from '../StaticData/LandingStaticData';
@@ -8,10 +9,11 @@ import { FeatureEntry } from '../StaticData/LandingStaticData';
 type FeatureCardProps = {
   entry: FeatureEntry;
   scrollToSuggestedFeatures?: () => void;
+  isMobile: boolean;
 };
 
 function FeatureCard(props: FeatureCardProps) {
-  const { entry, scrollToSuggestedFeatures } = props;
+  const { entry, scrollToSuggestedFeatures, isMobile } = props;
 
   const onClick = useCallback(() => {
     if (!entry.url) {
@@ -28,6 +30,8 @@ function FeatureCard(props: FeatureCardProps) {
         window.open(entry.url, '_blank');
     }
   }, [entry.url, scrollToSuggestedFeatures]);
+
+  const showButton = !!entry.buttonText && (!isMobile || !entry.buttonOnlyForDesktop);
 
   return (
     <div className='flex flex-col border border-gray-200 rounded-[2px] bg-custom-gradient-1'>
@@ -52,7 +56,7 @@ function FeatureCard(props: FeatureCardProps) {
         {!!entry.description && (
           <div className='sm:text-[16px] text-[13px] font-normal text-gray-500'>{entry.description}</div>
         )}
-        {entry.buttonText && (
+        {showButton && (
           <div className='flex justify-start mt-6'>
             <Button variant='newDesignGray'>{entry.buttonText}</Button>
           </div>
@@ -84,11 +88,18 @@ export function GridComponent(props: Props) {
     return 'grid w-full grid-cols-1 sm:grid-cols-2 gap-6';
   }, [showThreeColumns]);
 
+  const isMobile = useIsMobile();
+
   return (
     <div className={cn('flex items-center sm:px-16 px-4 w-full max-w-[1260px]', className)}>
       <div className={innerClassName}>
         {entries.map((feature) => (
-          <FeatureCard entry={feature} key={feature.title} scrollToSuggestedFeatures={scrollToSuggestedFeatures} />
+          <FeatureCard
+            entry={feature}
+            key={feature.title}
+            scrollToSuggestedFeatures={scrollToSuggestedFeatures}
+            isMobile={isMobile}
+          />
         ))}
       </div>
     </div>
