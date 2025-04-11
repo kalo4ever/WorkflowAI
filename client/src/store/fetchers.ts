@@ -32,6 +32,7 @@ import { useTaskSchemas } from './task_schemas';
 import { buildSnippetScopeKey, useTaskSnippets } from './task_snippets';
 import { useTaskStats } from './task_stats';
 import { tokenScopeKey, useToken } from './token';
+import { useUptimes } from './uptimes';
 import {
   buildScopeKey,
   buildSearchTaskRunsScopeKey,
@@ -41,6 +42,7 @@ import {
   getOrUndef,
 } from './utils';
 import { getVersionsPerEnvironment, mapMajorVersionsToVersions, useVersions } from './versions';
+import { useWeeklyRuns } from './weekly_runs';
 
 type TUseOrFetchAllAiModelsProps = {
   tenant: TenantID | undefined;
@@ -1238,5 +1240,49 @@ export const useOrFetchLatestRun = (tenant: TenantID | undefined, taskId: TaskID
   return {
     latestRun,
     isLoading,
+  };
+};
+
+export const useOrFetchWeeklyRuns = (weekCount: number) => {
+  const isLoading = useWeeklyRuns((state) => state.isLoading);
+  const isInitialized = useWeeklyRuns((state) => state.isInitialized);
+  const weeklyRuns = useWeeklyRuns((state) => state.weeklyRuns);
+
+  const fetchWeeklyRuns = useWeeklyRuns((state) => state.fetchWeeklyRuns);
+
+  useEffect(() => {
+    fetchWeeklyRuns(weekCount);
+  }, [fetchWeeklyRuns, weekCount]);
+
+  return {
+    weeklyRuns,
+    isLoading,
+    isInitialized,
+  };
+};
+
+export const useOrFetchUptime = () => {
+  const workflowUptime = useUptimes((state) => state.workflowUptime);
+  const openaiUptime = useUptimes((state) => state.openaiUptime);
+  const isLoadingWorkflowaiUptime = useUptimes((state) => state.isLoadingWorkflowaiUptime);
+  const isLoadingOpenaiUptime = useUptimes((state) => state.isLoadingOpenaiUptime);
+  const isInitializedWorkflowaiUptime = useUptimes((state) => state.isInitializedWorkflowaiUptime);
+  const isInitializedOpenaiUptime = useUptimes((state) => state.isInitializedOpenaiUptime);
+
+  const fetchWorkflowaiUptime = useUptimes((state) => state.fetchWorkflowaiUptime);
+  const fetchOpenaiUptime = useUptimes((state) => state.fetchOpenaiUptime);
+
+  useEffect(() => {
+    fetchWorkflowaiUptime();
+    fetchOpenaiUptime();
+  }, [fetchWorkflowaiUptime, fetchOpenaiUptime]);
+
+  return {
+    workflowUptime,
+    openaiUptime,
+    isLoadingWorkflowaiUptime,
+    isLoadingOpenaiUptime,
+    isInitializedWorkflowaiUptime,
+    isInitializedOpenaiUptime,
   };
 };

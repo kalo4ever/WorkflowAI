@@ -97,4 +97,10 @@
   .bordered-box-title {
     @apply flex h-10 flex-row items-center text-[13px] font-normal text-gray-500;
   }
+  .no-focus {
+    @apply focus:outline-none focus:ring-0;
+  }
+  .no-focus * {
+    @apply focus:outline-none focus:ring-0;
+  }
 }

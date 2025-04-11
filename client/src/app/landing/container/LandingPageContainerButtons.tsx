@@ -86,7 +86,7 @@ export function LandingPageContainerButtons(props: LandingPageContainerButtonsPr
           target='_blank'
           rel='noopener noreferrer'
         >
-          Star on Github
+          Star on GitHub
         </Button>
         {isLogged ? (
           <Button variant='newDesign' toRoute={dashboardRoute}>

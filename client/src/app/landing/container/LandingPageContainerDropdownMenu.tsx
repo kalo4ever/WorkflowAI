@@ -52,7 +52,7 @@ export function LandingPageContainerDropdownMenu(props: LandingPageContainerDrop
           rel='noopener noreferrer'
           className='w-full justify-center cursor-pointer'
         >
-          Star on Github
+          Star on GitHub
         </Button>
         {isLogged ? (
           <Button variant='newDesign' toRoute={dashboardRoute} className='w-full justify-center cursor-pointer'>
