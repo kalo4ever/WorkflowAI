@@ -103,7 +103,7 @@ export function VideoDemoComponent(props: Props) {
   const [selectedVideoDemo, setSelectedVideoDemo] = useState<VideoDemo>(videoDemos[0]);
 
   return (
-    <div className={cn('flex flex-col items-center sm:px-16 px-2 w-full max-w-[1292px] gap-6', className)}>
+    <div className={cn('flex flex-col items-center sm:px-4 px-2 w-full max-w-[1292px] gap-6', className)}>
       <div className='flex flex-wrap w-full justify-center items-center gap-4'>
         {videoDemos.map((videoDemo) => (
           <VideoDemoButton
