@@ -165,11 +165,10 @@ class InternalTasksService:
         task: Task[TaskInput, TaskOutput],
         input: TaskInput,
         group: VersionReference,
-        labels: set[str] | None = None,
         # Cache is never by default for internal tasks
         cache: CacheUsage = "never",
     ):
-        return self.wai.run(task, input=input, group=group, labels=labels, trigger="internal", cache=cache)
+        return self.wai.run(task, input=input, group=group, trigger="internal", cache=cache)
 
     # ----------------------------------------
     # New task schema creation (new_task)

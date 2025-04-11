@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 import bson
 import pytest
 
+from core.domain.agent_run import AgentRun
 from core.domain.error_response import ErrorResponse
 from core.domain.fields.internal_reasoning_steps import InternalReasoningStep
 from core.domain.llm_completion import LLMCompletion
@@ -25,7 +26,6 @@ from core.domain.search_query import (
     SearchQuerySimple,
     SingleValueOperator,
 )
-from core.domain.task_run import SerializableTaskRun
 from core.domain.task_run_aggregate_per_day import TaskRunAggregatePerDay
 from core.domain.task_run_query import SerializableTaskRunQuery
 from core.domain.tool_call import ToolCall, ToolCallRequestWithID
@@ -34,7 +34,7 @@ from core.storage.clickhouse.clickhouse_client import (
 )
 from core.storage.clickhouse.models.runs import ClickhouseRun
 from core.storage.mongo.models.task_run_document import TaskRunDocument
-from core.storage.task_run_storage import RunAggregate
+from core.storage.task_run_storage import RunAggregate, WeeklyRunAggregate
 from core.utils.fields import datetime_factory
 from core.utils.schemas import FieldType
 from core.utils.uuid import uuid7
@@ -157,7 +157,7 @@ class TestStoreTaskRun:
 
 class TestSearchTaskRun:
     @classmethod
-    async def _insert_runs(cls, clickhouse_client: ClickhouseClient, *args: SerializableTaskRun):
+    async def _insert_runs(cls, clickhouse_client: ClickhouseClient, *args: AgentRun):
         docs = [ClickhouseRun.from_domain(1, r) for r in args]
         for i, doc in enumerate(docs):
             doc.run_uuid = _uuid7(i + 1)
@@ -1151,3 +1151,89 @@ class TestRunCountByAgentUid:
             1: (2, pytest.approx(60.0)),  # pyright: ignore [reportUnknownMemberType]
             2: (2, pytest.approx(80.0)),  # pyright: ignore [reportUnknownMemberType]
         }
+
+
+class TestWeeklyRunAggregate:
+    def _start_of_week(self):
+        base_date = datetime_factory()
+        # Ensure we start on a Sunday
+        while base_date.weekday() != 6:  # Clickhouse starts weeks on Sunday
+            base_date -= datetime.timedelta(days=1)
+        return base_date
+
+    async def test_weekly_run_aggregate(self, clickhouse_client: ClickhouseClient):
+        # Create test data with runs spread across different weeks
+        base_date = self._start_of_week()
+        runs = [
+            # Current week
+            _ck_run(created_at=base_date, overhead_seconds=0.1),
+            # Different tenant, should be take into account
+            _ck_run(tenant_uid=2, created_at=base_date, overhead_seconds=0.2),
+            # Previous week
+            _ck_run(created_at=base_date - datetime.timedelta(days=2), overhead_seconds=0.05),
+            _ck_run(created_at=base_date - datetime.timedelta(days=3), overhead_seconds=0.1),
+            _ck_run(created_at=base_date - datetime.timedelta(days=4), overhead_seconds=0.15),
+            # Week - 2
+            _ck_run(created_at=base_date - datetime.timedelta(days=8), overhead_seconds=0.06),
+            _ck_run(created_at=base_date - datetime.timedelta(days=9), overhead_seconds=0.12),
+            # Week - 3
+            _ck_run(created_at=base_date - datetime.timedelta(days=15), overhead_seconds=0.14),
+        ]
+        await clickhouse_client.insert_models("runs", runs, {"async_insert": 0, "wait_for_async_insert": 0})
+
+        # Test with 3 weeks of data
+        results = [r async for r in clickhouse_client.weekly_run_aggregate(3)]
+
+        assert results == [
+            WeeklyRunAggregate(
+                start_of_week=base_date.date() - datetime.timedelta(days=21),
+                run_count=1,
+                overhead_ms=140,
+            ),
+            WeeklyRunAggregate(
+                start_of_week=base_date.date() - datetime.timedelta(days=14),
+                run_count=2,
+                overhead_ms=90,
+            ),
+            WeeklyRunAggregate(
+                start_of_week=base_date.date() - datetime.timedelta(days=7),
+                run_count=3,
+                overhead_ms=100,
+            ),
+            WeeklyRunAggregate(
+                start_of_week=base_date.date(),
+                run_count=2,
+                overhead_ms=150,
+            ),
+        ]
+
+    async def test_weekly_run_aggregate_empty(self, clickhouse_client: ClickhouseClient):
+        # Test with no data
+        results = [r async for r in clickhouse_client.weekly_run_aggregate(2)]
+        assert len(results) == 0
+
+    async def test_weekly_run_aggregate_zero_overhead(self, clickhouse_client: ClickhouseClient):
+        """Check that the overhead is ignored when it is 0"""
+        base_date = self._start_of_week()
+        runs = [
+            # Week with a run with no overhead
+            _ck_run(created_at=base_date, overhead_seconds=0),
+            _ck_run(created_at=base_date, overhead_seconds=0.1),
+            # Creating a week with only 0 overhead
+            _ck_run(created_at=base_date - datetime.timedelta(days=3), overhead_seconds=0),
+        ]
+        await clickhouse_client.insert_models("runs", runs, {"async_insert": 0, "wait_for_async_insert": 0})
+
+        results = [r async for r in clickhouse_client.weekly_run_aggregate(2)]
+        assert results == [
+            WeeklyRunAggregate(
+                start_of_week=base_date.date() - datetime.timedelta(days=7),
+                run_count=1,
+                overhead_ms=0,
+            ),
+            WeeklyRunAggregate(
+                start_of_week=base_date.date(),
+                run_count=2,
+                overhead_ms=100,
+            ),
+        ]

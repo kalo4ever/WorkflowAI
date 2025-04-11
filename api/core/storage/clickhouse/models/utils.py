@@ -47,6 +47,7 @@ def dump_ck_str_list(seq: Sequence[BaseModel]):
     return [t.model_dump_json(by_alias=True, exclude_none=True) for t in seq]
 
 
+MAX_UINT_8 = 255
 MAX_UINT_16 = 65535
 MAX_UINT_32 = 4_294_967_295
 

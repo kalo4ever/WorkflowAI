@@ -204,3 +204,5 @@ async def check_migrations(storage: MongoStorage, migrations: list[type[Abstract
             migrations=migrations,
             existing_migrations=existing_migrations,
         )
+
+    print("Migrations are in sync")  # noqa G004

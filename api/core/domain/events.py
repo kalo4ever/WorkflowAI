@@ -5,6 +5,7 @@ from pydantic import BaseModel, field_validator, model_validator
 
 from core.agents.chat_task_schema_generation.chat_task_schema_generation_task import AgentSchemaJson
 from core.agents.meta_agent import MetaAgentChatMessage
+from core.domain.agent_run import AgentRun
 from core.domain.analytics_events.analytics_events import (
     FullAnalyticsEvent,
     OrganizationProperties,
@@ -15,7 +16,6 @@ from core.domain.analytics_events.analytics_events import (
 from core.domain.fields.chat_message import ChatMessage
 from core.domain.review import Review
 from core.domain.task_group_properties import TaskGroupProperties
-from core.domain.task_run import SerializableTaskRun
 from core.domain.task_variant import SerializableTaskVariant
 from core.domain.users import UserIdentifier
 
@@ -48,13 +48,13 @@ class Event(BaseModel):
 
 
 class StoreTaskRunEvent(Event):
-    run: SerializableTaskRun
+    run: AgentRun
     task: SerializableTaskVariant
     trigger: RunTrigger | None
 
 
 class RunCreatedEvent(Event):
-    run: SerializableTaskRun
+    run: AgentRun
 
 
 class TaskEvent(Event):

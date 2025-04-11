@@ -22,7 +22,6 @@ from api.services.analytics import AnalyticsService, analytics_service
 from api.services.api_keys import APIKeyService
 from api.services.feedback_svc import FeedbackTokenGenerator
 from api.services.groups import GroupService
-from api.services.internal_tasks.agent_suggestions_service import TaskSuggestionsService
 from api.services.internal_tasks.internal_tasks_service import InternalTasksService
 from api.services.models import ModelsService
 from api.services.payments_service import PaymentService, PaymentSystemService
@@ -64,13 +63,6 @@ def file_storage_dependency() -> FileStorage:
 
 
 FileStorageDep = Annotated[FileStorage, Depends(file_storage_dependency)]
-
-
-def task_suggestions_service() -> TaskSuggestionsService:
-    return TaskSuggestionsService()
-
-
-AgentSuggestionsServiceDep = Annotated[TaskSuggestionsService, Depends(task_suggestions_service)]
 
 
 def group_service(

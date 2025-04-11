@@ -19,6 +19,7 @@ from api.utils import (
     log_end,
     log_start,
     log_start_with_body,
+    set_start_time,
     setup_metrics,
 )
 from core.domain.errors import (
@@ -188,30 +189,34 @@ _log_start = log_start_with_body if print_body else log_start
 
 @app.middleware("http")
 async def logger_middleware(request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
+    start_time = time.time()
+    set_start_time(request, start_time)
+
     rid = request.headers.get("X-Request-Id", str(uuid7()))
     request_id_var.set(rid)
 
-    now = time.time()
     await _log_start(request, request_id_var, logger)
 
     try:
         response = await call_next(request)
     except Exception as e:
-        await log_end(
+        log_end(
             request,
-            time.time() - now,
+            start_time=start_time,
             status_code=500,
             logger=logger,
             error=e,
         )
+
         # Re raising for normal sentry processing
         with configure_scope_for_error(e):
             raise e
 
-    await log_end(
+    log_end(
         request,
-        time.time() - now,
+        start_time=start_time,
         status_code=response.status_code,
         logger=logger,
     )
+
     return response

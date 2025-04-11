@@ -1,12 +1,9 @@
 import json
-import time
-from datetime import timedelta
 from typing import Any
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 from fastapi.responses import StreamingResponse
-from freezegun.api import FrozenDateTimeFactory
 
 from core.domain.run_output import RunOutput
 from core.domain.task_run_builder import TaskRunBuilder
@@ -75,7 +72,6 @@ class TestRun:
         patched_run_from_builder: Mock,
         mock_runner: AbstractRunner[Any],
         hello_task: SerializableTaskVariant,
-        frozen_time: FrozenDateTimeFactory,
     ):
         task_input = {"name": "world"}
 
@@ -84,20 +80,16 @@ class TestRun:
         mock_builder = Mock(spec=TaskRunBuilder)
         mock_runner.task_run_builder = AsyncMock(return_value=mock_builder)
 
-        start = time.time()
-        frozen_time.tick(delta=timedelta(seconds=1))
-
         response = await run_service.run(
             task_input,
             mock_runner,
             task_run_id="1",
             stream_serializer=None,
             cache="always",
-            labels={"label"},
             metadata={"key": "value"},
             trigger="user",
             serializer=lambda run: run,
-            start=start,
+            start_time=1,
         )
 
         patched_run_from_builder.assert_awaited_once_with(
@@ -108,15 +100,14 @@ class TestRun:
             store_inline=False,
             source=None,
             file_storage=None,
-            overhead=1,
         )
 
         mock_runner.task_run_builder.assert_called_once_with(
             input=task_input,
             task_run_id="1",
-            labels={"label"},
             metadata={"key": "value"},
             private_fields=None,
+            start_time=1,
         )
         assert response
 
@@ -125,7 +116,6 @@ class TestRun:
         run_service: RunService,
         patched_stream_from_builder: Mock,
         mock_runner: AbstractRunner[Any],
-        frozen_time: FrozenDateTimeFactory,
     ):
         task_input = {"name": "world"}
 
@@ -134,20 +124,17 @@ class TestRun:
         mock_runner.task_run_builder = AsyncMock(return_value=mock_builder)
 
         patched_stream_from_builder.return_value = mock_aiter({"name": "world"}, {"name": "world2"})
-        start = time.time()
-        frozen_time.tick(delta=timedelta(seconds=1))
 
         response = await run_service.run(
             task_input,
             mock_runner,
             task_run_id="1",
             cache="always",
-            labels={"label"},
             metadata={"key": "value"},
             trigger="user",
             stream_serializer=_chunk_serializer,
             serializer=lambda run: run,
-            start=start,
+            start_time=1,
         )
 
         assert response and isinstance(response, StreamingResponse)
@@ -163,15 +150,14 @@ class TestRun:
             store_inline=False,
             source=None,
             file_storage=None,
-            overhead=1,
         )
 
         mock_runner.task_run_builder.assert_called_once_with(
             input=task_input,
             task_run_id="1",
-            labels={"label"},
             metadata={"key": "value"},
             private_fields=None,
+            start_time=1,
         )
 
     async def test_stream_with_cache(
@@ -196,12 +182,12 @@ class TestRun:
             runner,
             task_run_id="1",
             cache="always",
-            labels={"label"},
             metadata={"key": "value"},
             trigger="user",
             source=None,
             stream_serializer=_chunk_serializer,
             serializer=lambda run: run,
+            start_time=1,
         )
         assert response and isinstance(response, StreamingResponse)
         mock_send = AsyncMock()

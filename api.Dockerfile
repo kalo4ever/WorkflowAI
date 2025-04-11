@@ -60,7 +60,8 @@ RUN pip install --no-cache /wheels/*
 
 # Copy the rest of the application
 COPY api/api api
-COPY api/core core
+COPY api/docs docs
+COPY api/core core 
 COPY api/docs docs
 COPY api/start.sh /app/start.sh
 

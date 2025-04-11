@@ -1,6 +1,7 @@
 import logging
 from typing import Any, Literal, NamedTuple, Protocol, TypedDict, cast
 
+from core.domain.agent_run import TaskRunIO
 from core.domain.errors import BadRequestError, DuplicateValueError, InternalError
 from core.domain.events import (
     AIReviewCompletedEvent,
@@ -18,7 +19,6 @@ from core.domain.review import Review, ReviewerType
 from core.domain.task_evaluation import TaskEvaluationScore
 from core.domain.task_evaluator import EvalV2Evaluator, TaskEvaluator
 from core.domain.task_group import TaskGroupQuery
-from core.domain.task_run import TaskRunIO
 from core.domain.task_run_query import SerializableTaskRunField, SerializableTaskRunQuery
 from core.domain.task_variant import SerializableTaskVariant
 from core.domain.types import TaskInputDict

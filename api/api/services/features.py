@@ -7,13 +7,13 @@ from typing import Any, NamedTuple
 from pydantic import BaseModel
 
 from api.services.internal_tasks._internal_tasks_utils import OFFICIALLY_SUGGESTED_TOOLS, officially_suggested_tools
-from api.services.internal_tasks.agent_suggestions_service import (
-    get_supported_task_input_types,
-    get_supported_task_output_types,
-)
 from api.services.slack_notifications import SlackNotificationDestination, get_user_and_org_str, send_slack_notification
 from core.agents.agent_output_example import SuggestedAgentOutputExampleInput, stream_suggested_agent_output_example
 from core.agents.agent_suggestion_validator_agent import SuggestedAgentValidationInput, run_suggested_agent_validation
+from core.agents.chat_task_schema_generation.chat_task_schema_generation_task import (
+    InputSchemaFieldType,
+    OutputSchemaFieldType,
+)
 from core.agents.chat_task_schema_generation.chat_task_schema_generation_task_utils import build_json_schema_with_defs
 from core.agents.chat_task_schema_generation.schema_generation_agent import (
     SchemaBuilderInput,
@@ -21,6 +21,9 @@ from core.agents.chat_task_schema_generation.schema_generation_agent import (
 )
 from core.agents.company_agent_suggestion_agent import (
     INSTUCTIONS as AGENT_SUGGESTION_INSTRUCTIONS,
+)
+from core.agents.company_agent_suggestion_agent import (
+    CompanyContext as CompanyContextInput,
 )
 from core.agents.company_agent_suggestion_agent import (
     SuggestAgentForCompanyInput,
@@ -42,6 +45,15 @@ from core.tools.browser_text.browser_text_tool import fetch_url_content_scraping
 from core.tools.search.run_perplexity_search import stream_perplexity_search
 from core.utils.iter_utils import safe_map
 from core.utils.schema_utils import json_schema_from_json
+
+
+def get_supported_task_input_types() -> list[str]:
+    return [type.value for type in InputSchemaFieldType] + ["enum", "array", "object"]
+
+
+def get_supported_task_output_types() -> list[str]:
+    return [type.value for type in OutputSchemaFieldType] + ["enum", "array", "object"]
+
 
 _logger = logging.getLogger(__name__)
 
@@ -105,8 +117,13 @@ class FeatureService:
 
     @staticmethod
     async def get_feature_sections_preview(user_domain: str | None = None) -> list[FeatureSectionPreview]:
+        # Feature flag to show company specific section, see https://linear.app/workflowai/issue/WOR-4190/hide-email-domain-specific-feature-suggestions
+        SHOW_COMPANY_SECTION = False
+
         # We want to show company specific section for anonymous user because they must be able to enter any URL and get suggestion for this URL.
-        show_company_section = user_domain is None or await FeatureService._is_company_email_domain(user_domain)
+        show_company_section = SHOW_COMPANY_SECTION and (
+            user_domain is None or await FeatureService._is_company_email_domain(user_domain)
+        )
 
         return [
             FeatureSectionPreview(
@@ -149,7 +166,8 @@ class FeatureService:
     async def _stream_company_context(self, company_url: str) -> AsyncIterator[CompanyContext]:
         try:
             async for chunk in stream_perplexity_search(
-                f"What does this company do:{company_url} ? Provide a concise description of the company and its products. Do not add any markdown or formatting (ex: bold, italic, underline, etc.) in the response, except line breaks, punctation and eventual bullet points.",
+                f"""What does this company do:{company_url}? Provide a concise description of the company and its products. Do not add any markdown or formatting (ex: bold, italic, underline, etc.) in the response, except line breaks, punctation and eventual bullet points.
+                Always browse the actual company domain ({company_url}) to get the most accurate and up to date description.""",
             ):
                 yield CompanyContext(public=chunk, private=chunk)
         except Exception as e:
@@ -200,7 +218,7 @@ class FeatureService:
                 ],
                 SuggestAgentForCompanyInput.ToolDescription.from_internal_tool,
             ),
-            company_context=SuggestAgentForCompanyInput.CompanyContext(
+            company_context=CompanyContextInput(
                 company_url=company_domain,
                 company_url_content=company_context,
                 # Existing agent are deactivate for now as I felt they were perturbating generation pertinence in some cases.
@@ -251,9 +269,10 @@ class FeatureService:
         input: SuggestAgentForCompanyInput,
     ) -> AsyncIterator[CompanyFeaturePreviewList]:
         validation_decisions: dict[str, bool] = {}
+        features: list[BaseFeature] = []
 
         async for chunk in stream_suggest_agents_for_company(input):
-            features: list[BaseFeature] = []
+            features = []
             for agent in chunk.suggested_agents or []:
                 if isinstance(agent, dict):  # pyright: ignore[reportUnnecessaryIsInstance]
                     # For some reason, a dict is sometimes returned instead of a SuggestedAgent

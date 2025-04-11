@@ -90,7 +90,7 @@ class InputObjectFieldConfig(BaseFieldConfig):
 
 class InputArrayFieldConfig(BaseFieldConfig):
     type: Literal["array"] = "array"
-    item_type: InputItemType = Field(default=None, description="The type of the items in the array")
+    items: InputItemType = Field(default=None, description="The type of the items in the array")
 
 
 class OutputGenericFieldConfig(BaseFieldConfig):
@@ -104,7 +104,7 @@ class OutputObjectFieldConfig(BaseFieldConfig):
 
 class OutputArrayFieldConfig(BaseFieldConfig):
     type: Literal["array"] = "array"
-    item_type: OutputItemType = Field(default=None, description="The type of the items in the array")
+    items: OutputItemType = Field(default=None, description="The type of the items in the array")
 
 
 class ChatMessageWithExtractedURLContent(ChatMessage):
@@ -257,6 +257,7 @@ INSTRUCTIONS = """Step 1 (only if there is no existing_agent_schema):
     - If 'available_tools_description' is provided, consider how these tools might be utilized in the agent and adjust the schema accordingly.
     - For cases where the agent requires static or infrequently updated context that does not vary from agent run to agent run, you do not need to include this context in the input schema. Instead, explain in the 'answer_to_user' that the agent instructions are the best place this context. Task instructions are outside of your scope and are generated afterwards by another agent, do not offer to update the instructions. Non-exhaustive examples of large and static content: FAQ knowledge base for customer service agents, Company policies or guidelines for compliance checking agents, Style guides for content creation agents, Standard operating procedures for process analysis agents, reference documentation for technical support agents, etc. As a rule of thumbs, input data that  is supposed to change every time the agent is run can go in the 'input_json_schema', input data that varies way rarely can go in the instructions.
     - If the user comes with a request like "I would like to import my own prompt" or "I would like to import my own instructions", you should ask the user to provide the prompt or instructions. Once you got the prompt, you should generate a new agent that matches the prompt.
+   - In case of ambiguity on whether a field should be a string or html, propose a simple string field and the user will still be able to update to html if they want. Ex: "extract flight information from an email." -> use 'email_body: str'
 
     Step 3:
     Set 'answer_to_user' in the output to provide a succinct reply to the user.

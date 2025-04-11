@@ -8,6 +8,7 @@ from pymongo.errors import DocumentTooLarge
 
 from api.services._utils import apply_reviews
 from api.services.analytics import AnalyticsService
+from core.domain.agent_run import AgentRun
 from core.domain.analytics_events.analytics_events import (
     EventProperties,
     RanTaskEventProperties,
@@ -20,7 +21,6 @@ from core.domain.llm_usage import LLMUsage
 from core.domain.models import Model, Provider
 from core.domain.models.utils import get_model_data
 from core.domain.page import Page
-from core.domain.task_run import SerializableTaskRun
 from core.domain.task_run_query import SerializableTaskRunField, SerializableTaskRunQuery
 from core.domain.task_variant import SerializableTaskVariant
 from core.domain.users import UserIdentifier
@@ -89,14 +89,14 @@ class RunsService:
             )
             return messages
 
-    def _sanitize_run(self, run: SerializableTaskRun) -> SerializableTaskRun:
+    def _sanitize_run(self, run: AgentRun) -> AgentRun:
         if run.llm_completions:
             for c in run.llm_completions:
                 c.messages = self._sanitize_llm_messages(c.provider, c.messages)
 
         return run
 
-    async def list_runs(self, task_uid: int, query: SerializableTaskRunQuery) -> Page[SerializableTaskRun]:
+    async def list_runs(self, task_uid: int, query: SerializableTaskRunQuery) -> Page[AgentRun]:
         storage = self._storage.task_runs
 
         res = [self._sanitize_run(a) async for a in storage.fetch_task_run_resources(task_uid, query)]
@@ -111,7 +111,7 @@ class RunsService:
         exclude: set[SerializableTaskRunField] | None = None,
         max_wait_ms: int | None = None,
         retry_delay_ms: int = 100,
-    ) -> SerializableTaskRun:
+    ) -> AgentRun:
         async def _find_run():
             raw = await self._storage.task_runs.fetch_task_run_resource(task_id, id, exclude=exclude)
             run = self._sanitize_run(raw)
@@ -140,7 +140,8 @@ class RunsService:
         task_uid: TaskTuple,
         schema_id: int | None,
         is_success: bool | None,
-    ) -> SerializableTaskRun:
+        is_active: bool | None = None,
+    ) -> AgentRun:
         """Returns the latest successful run for a task and optionally a schema"""
 
         status: set[Literal["success", "failure"]] | None = None
@@ -158,6 +159,7 @@ class RunsService:
             exclude_fields={"llm_completions"},
             limit=1,
             status=status,
+            is_active=is_active,
         )
         try:
             return await anext(self._storage.task_runs.fetch_task_run_resources(task_uid=task_uid[1], query=q))
@@ -265,7 +267,7 @@ class RunsService:
             _logger.exception("error downloading file", exc_info=e)
 
     @classmethod
-    def _provider_for_pricing_task_run(cls, task_run: SerializableTaskRun, model: Model):
+    def _provider_for_pricing_task_run(cls, task_run: AgentRun, model: Model):
         if task_run.group.properties.provider:
             try:
                 return Provider(task_run.group.properties.provider)
@@ -278,7 +280,7 @@ class RunsService:
         return get_model_data(model).provider_for_pricing
 
     @classmethod
-    async def _compute_cost(cls, task_run: SerializableTaskRun, provider_factory: AbstractProviderFactory):
+    async def _compute_cost(cls, task_run: AgentRun, provider_factory: AbstractProviderFactory):
         if not task_run.llm_completions:
             _logger.warning("no completions found for task run", extra={"task_run": task_run})
             return
@@ -299,7 +301,7 @@ class RunsService:
         task_run.cost_usd = sum(c.usage.cost_usd for c in task_run.llm_completions if c.usage and c.usage.cost_usd)
 
     @classmethod
-    def _strip_private_fields(cls, task_run: SerializableTaskRun):
+    def _strip_private_fields(cls, task_run: AgentRun):
         if not task_run.private_fields:
             return task_run
 
@@ -331,7 +333,7 @@ class RunsService:
         return task_run
 
     @classmethod
-    def _strip_llm_completions(cls, task_run: SerializableTaskRun):
+    def _strip_llm_completions(cls, task_run: AgentRun):
         if not task_run.llm_completions:
             return task_run
 
@@ -386,11 +388,11 @@ class RunsService:
         analytics_handler: Callable[[Callable[[], EventProperties]], None],
         provider_factory: AbstractProviderFactory,
         task_variant: SerializableTaskVariant,
-        task_run: SerializableTaskRun,
+        task_run: AgentRun,
         user_identifier: UserIdentifier | None = None,
         trigger: RunTrigger | None = None,
         source: SourceType | None = None,
-    ) -> SerializableTaskRun:
+    ) -> AgentRun:
         # Extract data of files in the task run input only, download files if needed
         should_store_files = await cls._extract_download_and_apply_files(
             schema=task_variant.input_schema.json_schema,
@@ -435,11 +437,11 @@ class RunsService:
     async def store_task_run(
         self,
         task_variant: SerializableTaskVariant,
-        task_run: SerializableTaskRun,
+        task_run: AgentRun,
         user_identifier: UserIdentifier | None = None,
         trigger: RunTrigger | None = None,
         user_source: SourceType | None = None,
-    ) -> SerializableTaskRun:
+    ) -> AgentRun:
         return await self.store_task_run_fn(
             self._storage,
             self._file_storage,

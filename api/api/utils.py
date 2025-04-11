@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import re
+import time
 from contextvars import ContextVar
 from typing import Any
 
@@ -10,7 +11,8 @@ from fastapi.responses import JSONResponse
 
 from api.services.metrics import BetterStackMetricsService
 from core.domain.error_response import ErrorCode, ErrorResponse
-from core.domain.metrics import Metric
+from core.domain.metrics import Metric, send_gauge
+from core.utils.background import add_background_task
 from core.utils.dicts import blacklist_keys
 
 
@@ -83,7 +85,18 @@ async def log_start_with_body(request: Request, request_id_var: ContextVar[str |
     await log_start(request, request_id_var, logger, extra)
 
 
-async def log_end(
+def set_start_time(request: Request, start_time: float):
+    request.state.start_time = start_time
+
+
+def get_start_time(request: Request) -> float:
+    if not hasattr(request.state, "start_time"):
+        logging.warning("Start time not set")
+        return time.time()
+    return request.state.start_time
+
+
+async def _log_end_inner(
     request: Request,
     duration: float,
     status_code: int,
@@ -96,13 +109,35 @@ async def log_end(
         f"<-- {request.method} {request.url.path} {status_code}",
         extra=extra,
     )
-
     route = get_transaction_name(request)
-    await Metric(
-        name="latency",
-        gauge=duration,
-        tags={"status_code": status_code, "route": route, "tenant": request.path_params.get("tenant", "")},
-    ).send()
+    await send_gauge(
+        "latency",
+        duration,
+        status_code=status_code,
+        route=route,
+        tenant=request.path_params.get("tenant", ""),
+    )
+
+
+def log_end(
+    request: Request,
+    start_time: float,
+    status_code: int,
+    logger: logging.Logger,
+    error: Exception | None = None,
+    extra: dict[str, Any] | None = None,
+):
+    duration = time.time() - start_time
+    add_background_task(
+        _log_end_inner(
+            request,
+            duration=duration,
+            status_code=status_code,
+            logger=logger,
+            error=error,
+            extra=extra,
+        ),
+    )
 
 
 async def setup_metrics():

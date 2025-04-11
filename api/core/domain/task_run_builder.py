@@ -1,15 +1,15 @@
-from datetime import UTC, datetime
+import time
 from typing import Any, Optional
 
 from pydantic import BaseModel, Field, model_validator
 
+from core.domain.agent_run import AgentRun
 from core.domain.consts import METADATA_KEY_INFERENCE_SECONDS
 from core.domain.error_response import ErrorResponse
 from core.domain.llm_completion import LLMCompletion
 from core.domain.run_output import RunOutput
 from core.domain.task_group import TaskGroup
 from core.domain.task_group_properties import TaskGroupProperties
-from core.domain.task_run import SerializableTaskRun
 from core.domain.task_run_reply import RunReply
 from core.domain.task_variant import SerializableTaskVariant
 from core.domain.types import TaskInputDict
@@ -32,7 +32,7 @@ class TaskRunBuilder(BaseModel):
 
     task_input_hash: str = ""
 
-    start_time: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    start_time: float
 
     example_id: Optional[str] = None
 
@@ -41,9 +41,7 @@ class TaskRunBuilder(BaseModel):
     tags: list[str] = Field(default_factory=list, description="A list of tags to associate with the run group.")
 
     # The built task run
-    _task_run: SerializableTaskRun | None = None
-
-    labels: Optional[set[str]] = None
+    _task_run: AgentRun | None = None
 
     metadata: dict[str, Any] | None = Field(default=None)
 
@@ -71,11 +69,6 @@ class TaskRunBuilder(BaseModel):
             return None
         return self.metadata.get(key)
 
-    def add_label(self, label: str) -> None:
-        if self.labels is None:
-            self.labels = set()
-        self.labels.add(label)
-
     @model_validator(mode="after")
     def set_task_input_hash(self):
         if not self.task_input_hash:
@@ -83,16 +76,16 @@ class TaskRunBuilder(BaseModel):
         return self
 
     @property
-    def task_run(self) -> SerializableTaskRun | None:
+    def task_run(self) -> AgentRun | None:
         return self._task_run
 
     def build(
         self,
         output: RunOutput | None,
         from_cache: bool = False,
-        end_time: Optional[datetime] = None,
+        end_time: Optional[float] = None,
         error: Optional[ErrorResponse.Error] = None,
-    ) -> SerializableTaskRun:
+    ) -> AgentRun:
         """
         Builds the task run object
         """
@@ -101,7 +94,7 @@ class TaskRunBuilder(BaseModel):
                 raise ValueError("Task output has already been set")
             return self._task_run
 
-        end_time = end_time or datetime.now(UTC)
+        end_time = end_time or time.time()
 
         _cost_usd = None
         if self.llm_completions:
@@ -113,12 +106,14 @@ class TaskRunBuilder(BaseModel):
             if seconds:
                 metadata[METADATA_KEY_INFERENCE_SECONDS] = seconds
 
-        self._task_run = SerializableTaskRun(
+        total_duration_seconds = end_time - self.start_time
+        total_provider_duration_seconds = sum(
+            c.duration_seconds for c in self.llm_completions if c.duration_seconds is not None
+        )
+        self._task_run = AgentRun(
             id=self.id,
             version_changed=self.version_changed,
-            start_time=self.start_time,
-            end_time=end_time,
-            duration_seconds=(end_time - self.start_time).total_seconds() if not error else None,
+            duration_seconds=total_duration_seconds,
             cost_usd=_cost_usd,
             task_id=self.task.task_id,
             task_schema_id=self.task.task_schema_id,
@@ -132,17 +127,16 @@ class TaskRunBuilder(BaseModel):
                 tags=self.tags,
             ),
             from_cache=from_cache,
-            labels=self.labels,
             llm_completions=self.llm_completions,
             tool_calls=list(output.tool_calls) if output and output.tool_calls else None,
             tool_call_requests=list(output.tool_call_requests) if output and output.tool_call_requests else None,
             reasoning_steps=output.reasoning_steps if output else None,
-            example_id=self.example_id,
             metadata=metadata or None,
             status="failure" if error else "success",
             error=error,
             author_tenant=self.author_tenant,
             author_uid=self.author_uid,
             private_fields=self.private_fields,
+            overhead_seconds=total_duration_seconds - total_provider_duration_seconds,
         )
         return self._task_run
