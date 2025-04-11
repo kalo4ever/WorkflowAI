@@ -7,7 +7,7 @@ from core.domain.models.providers import Provider
 from tests.integration.common import (
     IntegrationTestClient,
 )
-from tests.utils import fixtures_json, fixtures_stream
+from tests.utils import fixtures_json, fixtures_stream_hex
 
 
 async def test_content_moderation_failed_generation_wrapper(test_client: IntegrationTestClient):
@@ -16,7 +16,7 @@ async def test_content_moderation_failed_generation_wrapper(test_client: Integra
     test_client.httpx_mock.add_response(
         url="https://bedrock-runtime.us-west-2.amazonaws.com/model/us.anthropic.claude-3-opus-20240229-v1:0/converse-stream",
         status_code=200,
-        stream=IteratorStream(fixtures_stream("bedrock", "stream_content_moderation.txt")),
+        stream=IteratorStream(fixtures_stream_hex("bedrock", "stream_content_moderation.txt")),
     )
 
     task_run = test_client.stream_run_task_v1(

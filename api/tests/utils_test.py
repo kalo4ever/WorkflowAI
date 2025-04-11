@@ -1,4 +1,4 @@
-from .utils import cut_string, fixture_text, fixtures_stream
+from .utils import cut_string, fixture_text, fixtures_stream_hex
 
 
 def test_fixtures_text() -> None:
@@ -7,7 +7,7 @@ def test_fixtures_text() -> None:
 
 
 def test_fixtures_stream() -> None:
-    stream = fixtures_stream("bedrock", "stream_content_moderation.txt")
+    stream = fixtures_stream_hex("bedrock", "stream_content_moderation.txt")
     assert stream
 
 
