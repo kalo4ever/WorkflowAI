@@ -75,7 +75,7 @@ def remove_none(payload: Any) -> Any:
     return payload
 
 
-def fixtures_stream(category: str, name: str) -> list[bytes]:
+def fixtures_stream_hex(category: str, name: str) -> list[bytes]:
     """Load stream fixture data from a text file with one hex-encoded string per line."""
     with open(fixture_path(category, f"{name}"), "r") as f:
         return [
@@ -83,6 +83,13 @@ def fixtures_stream(category: str, name: str) -> list[bytes]:
             for line in f
             if line.strip()
         ]
+
+
+def fixtures_stream(*components: str) -> list[bytes]:
+    """Load stream fixture data from a text file with one string per line."""
+    with open(fixture_path(*components), "rb") as f:
+        full_text = f.read().split(b"\n\n")
+        return [line + b"\n\n" for line in full_text if line]
 
 
 def cut_string(s: str, cut_idxs: list[int]):

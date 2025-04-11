@@ -170,6 +170,7 @@ class XAIToolMessage(BaseModel):
     role: Literal["tool"]
     tool_call_id: str
     content: str
+    reasoning_content: str | None = None
 
     @classmethod
     def from_domain(cls, message: Message) -> list[Self]:
@@ -385,6 +386,7 @@ class _BaseChoice(BaseModel):
 class ChoiceMessage(BaseModel):
     role: XAIRole | None = None
     content: None | str | list[TextContent | ImageContent] = None
+    reasoning_content: str | None = None
     refusal: str | None = None
     finish_reason: str | None = None
     tool_calls: list[ToolCall] | None = None
@@ -409,6 +411,7 @@ class StreamedToolCall(BaseModel):
 class ChoiceDelta(_BaseChoice):
     class MessageDelta(BaseModel):
         content: str | None = None
+        reasoning_content: str | None = None
         tool_calls: list[StreamedToolCall] | None = None
 
     delta: MessageDelta

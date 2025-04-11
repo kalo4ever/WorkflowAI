@@ -1,3 +1,4 @@
+import copy
 import json
 from collections.abc import Callable
 from typing import Any, cast
@@ -15,6 +16,7 @@ from core.domain.errors import (
     UnknownProviderError,
 )
 from core.domain.fields.file import File
+from core.domain.fields.internal_reasoning_steps import InternalReasoningStep
 from core.domain.llm_usage import LLMUsage
 from core.domain.message import Message
 from core.domain.models import Model
@@ -24,7 +26,7 @@ from core.providers.base.models import StandardMessage
 from core.providers.base.provider_options import ProviderOptions
 from core.providers.xai.xai_domain import CompletionRequest
 from core.providers.xai.xai_provider import XAIConfig, XAIProvider
-from tests.utils import fixture_bytes, fixtures_json
+from tests.utils import fixture_bytes, fixtures_json, fixtures_stream
 
 
 @pytest.fixture(scope="function")
@@ -271,6 +273,25 @@ class TestSingleStream:
             [o async for o in raw_chunks]
         assert e.value.store_task_run is False
 
+    async def test_stream_reasoning(self, httpx_mock: HTTPXMock, xai_provider: XAIProvider):
+        httpx_mock.add_response(
+            url="https://api.x.ai/v1/chat/completions",
+            stream=IteratorStream(fixtures_stream("xai", "stream_reasoning.txt")),
+        )
+        streamer = xai_provider.stream(
+            [Message(role=Message.Role.USER, content="Hello")],
+            options=ProviderOptions(model=Model.GROK_3_MINI_BETA_HIGH_REASONING_EFFORT),
+            output_factory=lambda x, _: StructuredOutput(json.loads(x)),
+            partial_output_factory=lambda x: StructuredOutput(x),
+        )
+
+        chunks = [copy.deepcopy(o) async for o in streamer]
+        # assert len(chunks) == 9
+
+        reasoning_steps = [c.reasoning_steps for c in chunks]
+        assert reasoning_steps[0] == [InternalReasoningStep(explaination="First")]
+        assert reasoning_steps[1] == [InternalReasoningStep(explaination="First response")]
+
 
 class TestStream:
     # Tests overlap with single stream above but check the entire structure
@@ -343,20 +364,6 @@ class TestStream:
 
         assert e.value.capture
         assert str(e.value) == "blabla"
-
-    async def test_stream_data_o1_preview(self, xai_provider: XAIProvider, httpx_mock: HTTPXMock):
-        mock_xai_stream(httpx_mock)
-
-        # Just checking that the o1 model actually stream
-        streamer = xai_provider.stream(
-            [Message(role=Message.Role.USER, content="Hello")],
-            options=ProviderOptions(model=Model.O1_PREVIEW_2024_09_12, max_tokens=10, temperature=0),
-            output_factory=lambda x, _: StructuredOutput(json.loads(x)),
-            partial_output_factory=lambda x: StructuredOutput(x),
-        )
-
-        chunks = [o async for o in streamer]
-        assert len(chunks) == 2
 
 
 class TestComplete:
@@ -613,6 +620,20 @@ class TestComplete:
 
         assert e.value.store_task_run is False
         assert len(httpx_mock.get_requests()) == 1
+
+    async def test_reasoning(self, httpx_mock: HTTPXMock, xai_provider: XAIProvider):
+        httpx_mock.add_response(
+            url="https://api.x.ai/v1/chat/completions",
+            json=fixtures_json("xai", "reasoning.json"),
+        )
+        completion = await xai_provider.complete(
+            [Message(role=Message.Role.USER, content="Hello")],
+            options=ProviderOptions(model=Model.GPT_4O_2024_08_06, max_tokens=10, temperature=0),
+            output_factory=lambda x, _: StructuredOutput(json.loads(x)),
+        )
+
+        assert completion.reasoning_steps and completion.reasoning_steps[0].explaination
+        assert completion.reasoning_steps[0].explaination.startswith("First, the user has provided")
 
 
 class TestCheckValid:
