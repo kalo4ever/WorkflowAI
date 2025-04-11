@@ -15,8 +15,10 @@ type FeatureCardProps = {
 function FeatureCard(props: FeatureCardProps) {
   const { entry, scrollToSuggestedFeatures, isMobile } = props;
 
+  const shouldLinkBeTurnedOn = !isMobile || !entry.buttonOnlyForDesktop;
+
   const onClick = useCallback(() => {
-    if (!entry.url) {
+    if (!entry.url || !shouldLinkBeTurnedOn) {
       return;
     }
 
@@ -29,16 +31,16 @@ function FeatureCard(props: FeatureCardProps) {
       default:
         window.open(entry.url, '_blank');
     }
-  }, [entry.url, scrollToSuggestedFeatures]);
+  }, [entry.url, scrollToSuggestedFeatures, shouldLinkBeTurnedOn]);
 
-  const showButton = !!entry.buttonText && (!isMobile || !entry.buttonOnlyForDesktop);
+  const showButton = !!entry.buttonText && shouldLinkBeTurnedOn;
 
   return (
     <div className='flex flex-col border border-gray-200 rounded-[2px] bg-custom-gradient-1'>
       <div
         className={cn(
           'flex flex-col',
-          entry.url && 'cursor-pointer',
+          entry.url && shouldLinkBeTurnedOn && 'cursor-pointer',
           !!entry.showImageWithoutPadding ? 'p-0' : 'sm:p-6 p-4'
         )}
         onClick={onClick}
