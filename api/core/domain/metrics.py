@@ -1,11 +1,9 @@
 import logging
+import time
 from collections.abc import Awaitable, Callable
-from datetime import datetime
 from typing import Any, ClassVar
 
 from pydantic import BaseModel, Field
-
-from core.utils.fields import datetime_factory
 
 
 async def _noop_sender(metric: "Metric", *args: Any, **kwargs: Any):
@@ -14,7 +12,7 @@ async def _noop_sender(metric: "Metric", *args: Any, **kwargs: Any):
 
 class Metric(BaseModel):
     name: str
-    timestamp: datetime = Field(default_factory=datetime_factory)
+    timestamp: float = Field(default_factory=time.time)
     tags: dict[str, int | str | float | bool] = Field(default_factory=dict)
 
     gauge: float | None = None
@@ -37,8 +35,8 @@ async def send_counter(name: str, value: int = 1, **tags: int | str | float | bo
         logging.getLogger(__name__).exception("Failed to send counter metric %s: %s", name, tags)
 
 
-async def send_gauge(name: str, value: float, **tags: int | str | float | bool):
+async def send_gauge(name: str, value: float, timestamp: float | None = None, **tags: int | str | float | bool):
     try:
-        await Metric(name=name, gauge=value, tags=tags).send()
+        await Metric(name=name, gauge=value, timestamp=timestamp or time.time(), tags=tags).send()
     except Exception:
         logging.getLogger(__name__).exception("Failed to send gauge metric %s: %s", name, tags)

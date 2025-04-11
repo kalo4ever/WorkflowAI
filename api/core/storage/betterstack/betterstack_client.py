@@ -42,7 +42,7 @@ class BetterStackClient:
     def _metric_to_request(self, metric: Metric, tags: dict[str, str]) -> _MetricRequest:
         req: _MetricRequest = {
             "name": metric.name,
-            "dt": int(metric.timestamp.timestamp() * 1000),
+            "dt": int(metric.timestamp * 1000),
             "tags": {**tags, **metric.tags},
         }
         if metric.gauge is not None:

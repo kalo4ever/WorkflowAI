@@ -1,4 +1,5 @@
-from datetime import datetime, timedelta, timezone
+import time
+from datetime import datetime, timezone
 
 import httpx
 import pytest
@@ -26,11 +27,11 @@ class TestSendMetrics:
         now = datetime(2024, 1, 1, 0, 0, 0, microsecond=1, tzinfo=timezone.utc)
         await betterstack_client.send_metrics(
             [
-                Metric(name="test", gauge=1, timestamp=now, tags={"e": "test", "v": "test"}),
+                Metric(name="test", gauge=1, timestamp=now.timestamp(), tags={"e": "test", "v": "test"}),
                 Metric(
                     name="test1",
                     counter=3,
-                    timestamp=now + timedelta(seconds=1),
+                    timestamp=now.timestamp() + 1,
                     tags={"e": "test", "v": "test1"},
                 ),
             ],
@@ -72,7 +73,7 @@ class TestSendMetrics:
                 Metric(
                     name="test",
                     gauge=1,
-                    timestamp=datetime.now(),
+                    timestamp=time.time(),
                     tags={},
                 ),
             ],
