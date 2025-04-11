@@ -14,6 +14,7 @@ from api.services import storage
 from api.services.api_keys import APIKeyService
 from api.services.event_handler import system_event_router
 from api.services.security_svc import SecurityService
+from api.utils import set_tenant_slug
 from core.domain.tenant_data import (
     ProviderSettings,
     PublicOrganizationData,
@@ -222,10 +223,10 @@ async def url_public_organization(
 URLPublicOrganizationDep = Annotated[PublicOrganizationData | None, Depends(url_public_organization)]
 
 
-async def final_tenant_data(
-    user: UserDep,
-    user_org: UserOrganizationDep,
-    url_public_org: URLPublicOrganizationDep,
+async def _final_tenant_data_inner(
+    user: User | None,
+    user_org: TenantData | None,
+    url_public_org: PublicOrganizationData | None,
     request: Request,
     encryption: EncryptionDep,
 ) -> PublicOrganizationData:
@@ -255,6 +256,18 @@ async def final_tenant_data(
         raise HTTPException(404, "Task not found")
 
     return url_public_org
+
+
+async def final_tenant_data(
+    user: UserDep,
+    user_org: UserOrganizationDep,
+    url_public_org: URLPublicOrganizationDep,
+    request: Request,
+    encryption: EncryptionDep,
+) -> PublicOrganizationData:
+    data = await _final_tenant_data_inner(user, user_org, url_public_org, request, encryption)
+    set_tenant_slug(request, data.slug)
+    return data
 
 
 FinalTenantDataDep = Annotated[PublicOrganizationData, Depends(final_tenant_data)]

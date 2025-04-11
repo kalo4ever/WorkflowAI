@@ -96,9 +96,20 @@ def get_start_time(request: Request) -> float:
     return request.state.start_time
 
 
+def set_tenant_slug(request: Request, tenant_slug: str):
+    request.state.tenant_slug = tenant_slug
+
+
+def get_tenant_slug(request: Request) -> str:
+    if not hasattr(request.state, "tenant_slug"):
+        logging.warning("Tenant slug not set")
+    return request.state.tenant_slug or request.path_params.get("tenant", "")
+
+
 async def _log_end_inner(
     request: Request,
     duration: float,
+    timestamp: float,
     status_code: int,
     logger: logging.Logger,
     error: Exception | None = None,
@@ -109,13 +120,14 @@ async def _log_end_inner(
         f"<-- {request.method} {request.url.path} {status_code}",
         extra=extra,
     )
-    route = get_transaction_name(request)
+
     await send_gauge(
         "latency",
-        duration,
+        value=duration,
+        timestamp=timestamp,
         status_code=status_code,
-        route=route,
-        tenant=request.path_params.get("tenant", ""),
+        route=get_transaction_name(request),
+        tenant=get_tenant_slug(request),
     )
 
 
@@ -127,11 +139,13 @@ def log_end(
     error: Exception | None = None,
     extra: dict[str, Any] | None = None,
 ):
-    duration = time.time() - start_time
+    now = time.time()
+    duration = now - start_time
     add_background_task(
         _log_end_inner(
             request,
             duration=duration,
+            timestamp=now,
             status_code=status_code,
             logger=logger,
             error=error,

@@ -39,10 +39,10 @@ export default function Layout({ children }: Readonly<{ children: React.ReactNod
         <div className='flex flex-col h-full max-h-screen overflow-hidden bg-custom-gradient-1'>
           {showBanner && <LoggedOutBanner />}
           {showTaskBanner && <LoggedOutBannerForDemoTask name={task?.name ?? taskId} />}
-          <div className='flex-1 flex overflow-hidden'>
+          <div className='flex flex-1 sm:flex-row flex-col overflow-hidden'>
             <Sidebar />
             <CommandK tenant={tenant} />
-            <div className='flex-1 overflow-y-auto'>{children}</div>
+            <div className='flex flex-1 overflow-hidden'>{children}</div>
             <TaskSettingsModal />
           </div>
         </div>

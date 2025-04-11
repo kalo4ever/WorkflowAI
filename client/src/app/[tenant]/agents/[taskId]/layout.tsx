@@ -65,5 +65,5 @@ export async function generateMetadata({ params }: { params: TaskSchemaParams })
   }
 }
 export default function Layout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <div className='flex-1 overflow-y-auto w-full h-full'>{children}</div>;
+  return <div className='flex flex-1 overflow-y-auto w-full h-full'>{children}</div>;
 }

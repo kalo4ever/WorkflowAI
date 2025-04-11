@@ -1275,7 +1275,7 @@ def _build_model_datas():
             ),
             provider_for_pricing=Provider.X_AI,
             icon_url="https://workflowai.blob.core.windows.net/workflowai-public/xai.svg",
-            release_date=date(2025, 4, 4),
+            release_date=date(2025, 4, 10),
             # TODO: Update the quality index
             quality_index=835,
             provider_name=DisplayedProvider.X_AI.value,
@@ -1295,7 +1295,7 @@ def _build_model_datas():
             ),
             provider_for_pricing=Provider.X_AI,
             icon_url="https://workflowai.blob.core.windows.net/workflowai-public/xai.svg",
-            release_date=date(2025, 4, 4),
+            release_date=date(2025, 4, 10),
             # TODO: Update the quality index
             quality_index=835,
             provider_name=DisplayedProvider.X_AI.value,
@@ -1315,7 +1315,7 @@ def _build_model_datas():
             ),
             provider_for_pricing=Provider.X_AI,
             icon_url="https://workflowai.blob.core.windows.net/workflowai-public/xai.svg",
-            release_date=date(2025, 4, 4),
+            release_date=date(2025, 4, 10),
             # TODO: Update the quality index
             quality_index=820,
             provider_name=DisplayedProvider.X_AI.value,
@@ -1335,7 +1335,7 @@ def _build_model_datas():
             ),
             provider_for_pricing=Provider.X_AI,
             icon_url="https://workflowai.blob.core.windows.net/workflowai-public/xai.svg",
-            release_date=date(2025, 4, 4),
+            release_date=date(2025, 4, 10),
             # TODO: Update the quality index
             quality_index=815,
             provider_name=DisplayedProvider.X_AI.value,
@@ -1355,7 +1355,7 @@ def _build_model_datas():
             ),
             provider_for_pricing=Provider.X_AI,
             icon_url="https://workflowai.blob.core.windows.net/workflowai-public/xai.svg",
-            release_date=date(2025, 4, 4),
+            release_date=date(2025, 4, 10),
             # TODO: Update the quality index
             quality_index=820,
             provider_name=DisplayedProvider.X_AI.value,
@@ -1375,7 +1375,7 @@ def _build_model_datas():
             ),
             provider_for_pricing=Provider.X_AI,
             icon_url="https://workflowai.blob.core.windows.net/workflowai-public/xai.svg",
-            release_date=date(2025, 4, 4),
+            release_date=date(2025, 4, 10),
             # TODO: Update the quality index
             quality_index=815,
             provider_name=DisplayedProvider.X_AI.value,

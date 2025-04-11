@@ -18,6 +18,7 @@ import { TASK_RUN_ID_PARAM } from '@/lib/constants';
 import { useCopyCurrentUrl } from '@/lib/hooks/useCopy';
 import { useDemoMode } from '@/lib/hooks/useDemoMode';
 import { useIsAllowed } from '@/lib/hooks/useIsAllowed';
+import { useIsMobile } from '@/lib/hooks/useIsMobile';
 import { useParsedSearchParams, useRedirectWithParams } from '@/lib/queryString';
 import { requiresFileSupport } from '@/lib/schemaFileUtils';
 import { InitInputFromSchemaMode, initInputFromSchema } from '@/lib/schemaUtils';
@@ -993,7 +994,7 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
     resetOldInstructions();
   }, [setImproveVersionChangelog, resetOldInstructions]);
 
-  const { isInDemoMode } = useDemoMode();
+  const { isInDemoMode, onDifferentTenant } = useDemoMode();
 
   const playgroundState: PlaygroundState = useMemo(() => {
     const models: SelectedModels = {
@@ -1090,6 +1091,18 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
     }, 1000);
   }, [cancelScheduledPlaygroundMessage, cancelImproveInstructions, onStopGeneratingInput, onStopAllRuns]);
 
+  const isMobile = useIsMobile();
+
+  const shouldShowChat = useMemo(() => {
+    if (isMobile) {
+      return false;
+    }
+    if (onDifferentTenant) {
+      return false;
+    }
+    return true;
+  }, [isMobile, onDifferentTenant]);
+
   return (
     <div className='flex flex-row h-full w-full'>
       <div className='flex h-full flex-1 overflow-hidden'>
@@ -1104,26 +1117,29 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
           rightBarChildren={
             <div className='flex flex-row items-center gap-2 font-lato'>
               <Button variant='newDesign' icon={<Link16Regular />} onClick={copyUrl} className='w-9 h-9 px-0 py-0' />
-              <RunAgentsButton
-                showSaveAllVersions={showSaveAllVersions && !noCreditsLeft}
-                singleTaskLoading={singleTaskLoading}
-                inputLoading={inputLoading}
-                areInstructionsLoading={areInstructionsLoading}
-                onSaveAllVersions={onSaveAllVersions}
-                onTryPromptClick={onTryPromptClick}
-                onStopAllRuns={onStopAllRuns}
-              />
+              {!isMobile && (
+                <RunAgentsButton
+                  showSaveAllVersions={showSaveAllVersions && !noCreditsLeft}
+                  singleTaskLoading={singleTaskLoading}
+                  inputLoading={inputLoading}
+                  areInstructionsLoading={areInstructionsLoading}
+                  onSaveAllVersions={onSaveAllVersions}
+                  onTryPromptClick={onTryPromptClick}
+                  onStopAllRuns={onStopAllRuns}
+                />
+              )}
             </div>
           }
+          showBorders={!isMobile}
         >
           <div
-            className='flex flex-col w-full h-full overflow-y-auto'
+            className='flex flex-col w-full h-full overflow-y-auto relative'
             ref={(element) => {
               containerRef(element);
               scrollRef.current = element;
             }}
           >
-            <div className='flex flex-col w-full'>
+            <div className='flex flex-col w-full sm:pb-0 pb-20'>
               <PlaygroundInputContainer
                 inputSchema={inputSchema}
                 generatedInput={generatedInput}
@@ -1157,7 +1173,7 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
                 onShowEditSchemaModal={onShowEditSchemaModal}
                 fetchAudioTranscription={fetchAudioTranscription}
                 handleUploadFile={handleUploadFile}
-                maxHeight={containerHeight - 50}
+                maxHeight={isMobile ? undefined : containerHeight - 50}
                 matchedMajorVersion={matchedMajorVersion}
                 majorVersions={majorVersions}
                 useInstructionsAndTemperatureFromMajorVersion={useInstructionsAndTemperatureFromMajorVersion}
@@ -1188,7 +1204,7 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
                   onShowEditDescriptionModal={onShowEditDescriptionModal}
                   onShowEditSchemaModal={onShowEditSchemaModal}
                   versionsForRuns={versionsForRuns}
-                  maxHeight={containerHeight}
+                  maxHeight={isMobile ? undefined : containerHeight}
                   isInDemoMode={isInDemoMode}
                 />
               </div>
@@ -1207,22 +1223,37 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
                 open={settingsModalVisible}
               />
             </div>
+
+            <div className='fixed bottom-0 left-0 right-0 z-10 bg-white border-t border-gray-200 p-4 sm:hidden flex w-full'>
+              <RunAgentsButton
+                showSaveAllVersions={showSaveAllVersions && !noCreditsLeft}
+                singleTaskLoading={singleTaskLoading}
+                inputLoading={inputLoading}
+                areInstructionsLoading={areInstructionsLoading}
+                onSaveAllVersions={onSaveAllVersions}
+                onTryPromptClick={onTryPromptClick}
+                onStopAllRuns={onStopAllRuns}
+                className='flex w-full'
+              />
+            </div>
           </div>
         </PageContainer>
       </div>
-      <PlaygroundChat
-        tenant={tenant}
-        taskId={taskId}
-        schemaId={taskSchemaId}
-        playgroundState={playgroundState}
-        onShowEditSchemaModal={onShowEditSchemaModal}
-        improveInstructions={onToolCallImproveInstructions}
-        changeModels={onToolCallChangeModels}
-        generateNewInput={onToolCallGenerateNewInput}
-        onCancelChatToolCallOnPlayground={onCancelChatToolCallOnPlayground}
-        scrollToInput={scrollToTop}
-        scrollToOutput={scrollToPlaygroundOutput}
-      />
+      {shouldShowChat && (
+        <PlaygroundChat
+          tenant={tenant}
+          taskId={taskId}
+          schemaId={taskSchemaId}
+          playgroundState={playgroundState}
+          onShowEditSchemaModal={onShowEditSchemaModal}
+          improveInstructions={onToolCallImproveInstructions}
+          changeModels={onToolCallChangeModels}
+          generateNewInput={onToolCallGenerateNewInput}
+          onCancelChatToolCallOnPlayground={onCancelChatToolCallOnPlayground}
+          scrollToInput={scrollToTop}
+          scrollToOutput={scrollToPlaygroundOutput}
+        />
+      )}
     </div>
   );
 }

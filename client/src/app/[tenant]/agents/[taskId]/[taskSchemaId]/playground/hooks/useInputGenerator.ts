@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { displayErrorToaster, displaySuccessToaster } from '@/components/ui/Sonner';
 import { useTasks } from '@/store';
 import { ToolCallName, usePlaygroundChatStore } from '@/store/playgroundChatStore';
 import { GeneralizedTaskInput } from '@/types';
@@ -112,7 +113,7 @@ export function useInputGenerator(props: UseInputGeneratorProps) {
 
       const toastId = toast.loading('Generating input...');
 
-      const onSuccess = (input: GeneralizedTaskInput | undefined) => {
+      const onSuccess = (input: GeneralizedTaskInput | undefined, toastId: string | number | undefined) => {
         if (currentAbortController.signal.aborted) {
           cancelToolCall(ToolCallName.GENERATE_AGENT_INPUT);
           setInputLoading(false);
@@ -138,10 +139,10 @@ export function useInputGenerator(props: UseInputGeneratorProps) {
           });
         }
 
-        toast.success(successMessage, { id: toastId });
+        displaySuccessToaster(successMessage, undefined, toastId);
       };
 
-      const onError = () => {
+      const onError = (toastId: string | number | undefined) => {
         cancelToolCall(ToolCallName.GENERATE_AGENT_INPUT);
 
         if (currentAbortController.signal.aborted) {
@@ -152,7 +153,7 @@ export function useInputGenerator(props: UseInputGeneratorProps) {
         }
 
         setInputLoading(false);
-        toast.error('Failed to generate input', { id: toastId });
+        displayErrorToaster('Failed to generate input', undefined, toastId);
       };
 
       // Input Generation with Text
@@ -172,10 +173,10 @@ export function useInputGenerator(props: UseInputGeneratorProps) {
             setGeneratedInput,
             currentAbortController.signal
           );
-          onSuccess(message);
+          onSuccess(message, toastId);
           return;
         } catch {
-          onError();
+          onError(toastId);
           return;
         }
       }
@@ -183,7 +184,7 @@ export function useInputGenerator(props: UseInputGeneratorProps) {
       // Input Generation with Pre-Generated Input
       if (instructions === undefined && temperature === undefined && !!preGeneratedInput) {
         setPreGeneratedInput(undefined);
-        onSuccess(preGeneratedInput);
+        onSuccess(preGeneratedInput, toastId);
         return;
       }
 
@@ -221,8 +222,8 @@ export function useInputGenerator(props: UseInputGeneratorProps) {
           setGeneratedInput,
           currentAbortController.signal
         );
-      } catch (error) {
-        onError();
+      } catch {
+        onError(toastId);
         return;
       } finally {
         currentIteration.current = {
@@ -236,7 +237,7 @@ export function useInputGenerator(props: UseInputGeneratorProps) {
         generateInputInBackground();
       }
 
-      onSuccess(message);
+      onSuccess(message, toastId);
     },
     [
       setGeneratedInput,
