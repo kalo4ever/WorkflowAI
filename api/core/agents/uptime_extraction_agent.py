@@ -36,5 +36,5 @@ class UptimeExtractorAgentOutput(BaseModel):
     ),
 )
 async def uptime_extraction_agent(input: UptimeExtractorAgentInput) -> workflowai.Run[UptimeExtractorAgentOutput]:
-    """Your specialist at extracting uptime values from status pages. You must extract the uptime from the 'status_page_content', and also take the eventual 'extraction_instructions' into account."""
+    """You are a specialist at extracting uptime values from status pages. You must extract the uptime from the 'status_page_content', and also take the eventual 'extraction_instructions' into account."""
     ...
