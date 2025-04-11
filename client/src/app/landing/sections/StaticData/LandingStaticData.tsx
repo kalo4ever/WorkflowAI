@@ -310,7 +310,7 @@ export const eighthNewHeaderEntry: HeaderEntry = {
   description:
     'WorkflowAI is fully open source — giving you the freedom to self-host, customize, or contribute. No hidden logic. No lock-in. Just powerful tooling you control.',
   descriptionMaxWidth: 'max-w-[780px]',
-  buttonText: 'Star on Github',
+  buttonText: 'Star on GitHub',
   buttonIcon: GitHubSrc,
   url: 'https://github.com/WorkflowAI/workflowai',
 };
@@ -374,7 +374,7 @@ export const fifthNewFeaturesEntries: FeatureEntry[] = [
       quoteAuthor: 'Jesse Rose',
       authorsPosition: 'CEO',
       authorsCompany: 'Berry Street',
-      companyURL: 'https://interfaceai.com',
+      companyURL: 'https://www.berrystreet.co',
     },
   },
   {
@@ -389,7 +389,7 @@ export const fifthNewFeaturesEntries: FeatureEntry[] = [
       quoteAuthor: 'Blake Yoder',
       authorsPosition: 'Head of Engineering',
       authorsCompany: 'Berry Street',
-      companyURL: 'https://interfaceai.com',
+      companyURL: 'https://www.berrystreet.co',
     },
   },
   {
@@ -404,7 +404,7 @@ export const fifthNewFeaturesEntries: FeatureEntry[] = [
       quoteAuthor: 'Perri Gould',
       authorsPosition: 'Head of Product',
       authorsCompany: 'Berry Street',
-      companyURL: 'https://www.interfaceai.com',
+      companyURL: 'https://www.berrystreet.co',
     },
   },
 ];
@@ -413,7 +413,7 @@ export const fifthNewFeaturesEntries: FeatureEntry[] = [
 
 export const fourthNewHeaderEntry: HeaderEntry = {
   logoURL: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingCompanyLogo1.png',
-  logoLink: 'https://www.interfaceai.com',
+  logoLink: 'https://www.hellom1.com/',
   logoWidth: 94,
   logoHeight: 32,
   title: 'M1 builds reliable, AI-first features faster with WorkflowAI',

@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { useMemo } from 'react';
 import { BarChart } from '@/components/ui/BarChart';
+import { useIsMobile } from '@/lib/hooks/useIsMobile';
 import { cn } from '@/lib/utils';
 import { useOrFetchWeeklyRuns } from '@/store/fetchers';
 
@@ -34,16 +35,19 @@ export function GraphComponent(props: Props) {
     );
   }, [weeklyRuns, workflowUptime]);
 
+  const isMobile = useIsMobile();
+
   const costData = useMemo(() => {
     const data = weeklyRuns?.map((run) => {
+      const date = new Date(run.start_of_week);
       return {
-        x: `${run.start_of_week}`,
+        x: isMobile ? `${date.getMonth() + 1}/${date.getDate()}` : `${run.start_of_week}`,
         y: run.run_count,
       };
     });
 
     return data;
-  }, [weeklyRuns]);
+  }, [weeklyRuns, isMobile]);
 
   return (
     <div className={cn('flex flex-col items-center sm:gap-12 gap-8 sm:px-16 px-4 w-full max-w-[1260px]', className)}>
@@ -75,7 +79,7 @@ export function GraphComponent(props: Props) {
               barColor='#818CF8'
               textColor='#6B7280'
               showValueAboveBar={true}
-              showTooltips={true}
+              showTooltips={false}
               barRadius={2}
               tooltipLabel='Run Count'
               className='pr-3 flex w-full h-full overflow-hidden'

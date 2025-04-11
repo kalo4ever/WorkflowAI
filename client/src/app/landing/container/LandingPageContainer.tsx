@@ -4,6 +4,7 @@ import { WorkflowAIIcon } from '@/components/Logos/WorkflowAIIcon';
 import { Button } from '@/components/ui/Button';
 import { ExtendedBordersContainer } from '@/components/v2/ExtendedBordersContainer';
 import { useAuth } from '@/lib/AuthContext';
+import { useIsMobile } from '@/lib/hooks/useIsMobile';
 import { useDefaultRedirectRoute } from '@/lib/hooks/useTaskParams';
 import { PATHS, signInRoute, signUpRoute } from '@/lib/routeFormatter';
 import { LandingPageContainerButtons } from './LandingPageContainerButtons';
@@ -23,9 +24,15 @@ export function LandingPageContainer(props: LandingPageContainerProps) {
   const routeForSignIn = signInRoute();
   const dashboardRoute = useDefaultRedirectRoute(PATHS.SIGNIN);
 
+  const isMobile = useIsMobile();
+
   return (
     <div className='flex flex-col h-full w-full font-lato px-0 sm:px-6 py-6 bg-custom-gradient-1'>
-      <ExtendedBordersContainer className='flex flex-col h-full w-full' borderColor='gray-100' margin={24}>
+      <ExtendedBordersContainer
+        className='flex flex-col h-full w-full'
+        borderColor='gray-100'
+        margin={isMobile ? 0 : 24}
+      >
         <div className='flex items-center justify-between gap-2 h-[60px] px-4 w-full border-b border-gray-100'>
           <Button variant='text' size='none' toRoute={'/'} className='flex-shrink-0'>
             <div className='flex items-center gap-2'>
@@ -48,7 +55,7 @@ export function LandingPageContainer(props: LandingPageContainerProps) {
           </div>
         </div>
         <div
-          className='flex h-[calc(100%-60px)] w-full flex-col items-center overflow-y-auto landing-scroll-container'
+          className='flex h-[calc(100%-60px)] w-full flex-col items-center overflow-y-auto overflow-x-hidden landing-scroll-container'
           ref={scrollRef}
         >
           {children}

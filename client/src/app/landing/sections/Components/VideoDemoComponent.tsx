@@ -13,6 +13,8 @@ import { cn } from '@/lib/utils';
 type VideoDemo = {
   id: number;
   videoId: string;
+  width: number;
+  height: number;
   name: string;
   icon: React.ReactNode;
 };
@@ -20,37 +22,49 @@ type VideoDemo = {
 const videoDemos: VideoDemo[] = [
   {
     id: 1,
-    videoId: 'c118e79228b019f3d95228bbf236b563',
+    videoId: 'dd690ad4cea386e49731f843ecfd9b63',
+    width: 954,
+    height: 566,
     name: 'Describe',
     icon: <ChatRegular className='w-4 h-4' />,
   },
   {
     id: 2,
-    videoId: 'c118e79228b019f3d95228bbf236b563',
+    videoId: 'dd690ad4cea386e49731f843ecfd9b63',
+    width: 954,
+    height: 566,
     name: 'Compare',
     icon: <DataUsageRegular className='w-4 h-4' />,
   },
   {
     id: 3,
-    videoId: 'c118e79228b019f3d95228bbf236b563',
+    videoId: 'dd690ad4cea386e49731f843ecfd9b63',
+    width: 954,
+    height: 566,
     name: 'Deploy',
     icon: <CloudRegular className='w-4 h-4' />,
   },
   {
     id: 4,
-    videoId: 'c118e79228b019f3d95228bbf236b563',
+    videoId: 'dd690ad4cea386e49731f843ecfd9b63',
+    width: 954,
+    height: 566,
     name: 'Observe',
     icon: <ListBarTreeRegular className='w-4 h-4' />,
   },
   {
     id: 5,
-    videoId: 'c118e79228b019f3d95228bbf236b563',
+    videoId: 'dd690ad4cea386e49731f843ecfd9b63',
+    width: 954,
+    height: 566,
     name: 'Improve',
     icon: <ArrowTrendingRegular className='w-4 h-4' />,
   },
   {
     id: 6,
-    videoId: 'c118e79228b019f3d95228bbf236b563',
+    videoId: 'dd690ad4cea386e49731f843ecfd9b63',
+    width: 954,
+    height: 566,
     name: 'Monitor',
     icon: <ClipboardTaskList16Regular className='w-4 h-4' />,
   },
@@ -89,7 +103,7 @@ export function VideoDemoComponent(props: Props) {
   const [selectedVideoDemo, setSelectedVideoDemo] = useState<VideoDemo>(videoDemos[0]);
 
   return (
-    <div className={cn('flex flex-col items-center sm:px-16 px-4 w-full max-w-[1040px] gap-6', className)}>
+    <div className={cn('flex flex-col items-center sm:px-16 px-2 w-full max-w-[1292px] gap-6', className)}>
       <div className='flex flex-wrap w-full justify-center items-center gap-4'>
         {videoDemos.map((videoDemo) => (
           <VideoDemoButton
@@ -101,14 +115,14 @@ export function VideoDemoComponent(props: Props) {
         ))}
       </div>
 
-      <div className='flex w-full h-full border border-gray-100 bg-white p-4 rounded-[4px] overflow-hidden'>
-        <div className='flex w-full h-full rounded-[2px] border border-gray-200'>
-          <div className='relative w-full' style={{ paddingTop: '56.25%' }}>
+      <div className='flex w-full h-full border border-gray-100 bg-white sm:p-4 p-0 rounded-[4px] overflow-hidden'>
+        <div className='flex w-full h-full rounded-[2px] border border-gray-200 overflow-hidden'>
+          <div className='relative flex w-full overflow-hidden' style={{ paddingTop: '59.3%' }}>
             {videoDemos.map((videoDemo) => (
               <div
                 key={videoDemo.id}
                 className={cn(
-                  'absolute top-0 left-0 w-full h-full',
+                  'absolute top-0 left-0 flex items-center justify-center w-full h-full',
                   selectedVideoDemo.id === videoDemo.id ? 'opacity-100' : 'opacity-0'
                 )}
               >

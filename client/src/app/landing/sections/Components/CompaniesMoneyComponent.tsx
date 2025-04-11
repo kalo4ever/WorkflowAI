@@ -30,7 +30,7 @@ const companiesMoneyEntries: CompanyMoneyEntry[] = [
     money: 'a lot',
     width: 94,
     height: 32,
-    url: 'https://www.interfaceai.com',
+    url: 'https://www.hellom1.com',
   },
   {
     imageUrl: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingCompanyLogo3.png',
@@ -97,7 +97,10 @@ export function CompaniesMoneyComponent(props: Props) {
   const { className } = props;
 
   return (
-    <div className={cn('flex flex-col items-center sm:gap-12 gap-8 sm:px-16 px-4 w-full max-w-[1260px]', className)}>
+    <div className={cn('flex flex-col items-center gap-5 sm:px-16 px-4 w-full max-w-[1260px]', className)}>
+      <div className='text-center text-gray-700 text-[16px] font-normal'>
+        Helping these companies build AI features their users love
+      </div>
       <div className='flex flex-wrap w-full justify-center items-end sm:gap-11 gap-4'>
         {companiesMoneyEntries.map((companyMoneyEntry) => (
           <CompanyMoneyView key={companyMoneyEntry.imageUrl} companyMoneyEntry={companyMoneyEntry} />

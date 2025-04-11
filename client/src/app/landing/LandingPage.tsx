@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useState } from 'react';
-import { Dialog } from '@/components/ui/Dialog';
-import { DialogContent } from '@/components/ui/Dialog';
+import * as amplitude from '@amplitude/analytics-browser';
+import { useCallback } from 'react';
+import { NEW_TASK_MODAL_OPEN } from '@/lib/globalModal';
+import { useQueryParamModal } from '@/lib/globalModal';
 import { signUpRoute } from '@/lib/routeFormatter';
 import { useOrFetchUptime } from '@/store/fetchers';
 import { LandingPageContainer } from './container/LandingPageContainer';
@@ -19,11 +20,9 @@ import { RowsComponent } from './sections/Components/RowsComponent';
 import { SubheaderComponent } from './sections/Components/SubheaderComponent';
 import { VideoDemoComponent } from './sections/Components/VideoDemoComponent';
 import * as LandingStaticData from './sections/StaticData/LandingStaticData';
-import { SuggestedFeaturesComponentModal } from './sections/SuggestedFeatures/SuggestedFeaturesComponent';
 
 export function LandingPage() {
-  const [companyURL, setCompanyURL] = useState<string | undefined>(undefined);
-  const [showSuggestedFeaturesModal, setShowSuggestedFeaturesModal] = useState<boolean>(false);
+  const { openModal: openNewTaskModal } = useQueryParamModal(NEW_TASK_MODAL_OPEN);
 
   const routeForSignUp = signUpRoute();
 
@@ -43,13 +42,17 @@ export function LandingPage() {
     }
   }, []);
 
+  const onNewTask = useCallback(() => {
+    amplitude.track('user.clicked.new_task');
+    openNewTaskModal({
+      mode: 'new',
+      redirectToPlaygrounds: 'true',
+    });
+  }, [openNewTaskModal]);
+
   return (
     <LandingPageContainer scrollToPricing={scrollToPricing}>
-      <HeaderComponent
-        className='mt-20'
-        showSuggestedFeaturesModal={() => setShowSuggestedFeaturesModal(true)}
-        routeForSignUp={routeForSignUp}
-      />
+      <HeaderComponent className='mt-20' showSuggestedFeaturesModal={onNewTask} routeForSignUp={routeForSignUp} />
       <VideoDemoComponent className='sm:mt-20 mt-14' />
 
       <CompaniesMoneyComponent className='sm:mt-40 mt-28' />
@@ -130,16 +133,6 @@ export function LandingPage() {
         className='sm:mt-40 mt-28 sm:mb-40 mb-28'
         routeForSignUp={routeForSignUp}
       />
-
-      <Dialog open={showSuggestedFeaturesModal} onOpenChange={() => setShowSuggestedFeaturesModal(false)}>
-        <DialogContent className='sm:min-w-[90vw] sm:h-[90vh] h-full min-w-full p-0'>
-          <SuggestedFeaturesComponentModal
-            companyURL={companyURL}
-            setCompanyURL={setCompanyURL}
-            onClose={() => setShowSuggestedFeaturesModal(false)}
-          />
-        </DialogContent>
-      </Dialog>
     </LandingPageContainer>
   );
 }

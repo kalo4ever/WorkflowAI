@@ -26,8 +26,8 @@ function FeatureCardOne(props: FeatureCardProps) {
             className='w-full h-full object-cover'
           />
           {value && (
-            <div className='absolute top-[-11%] left-[37%] w-[100%] h-[100%] items-center justify-center flex'>
-              <div className='flex items-center justify-center text-red-600 bg-white border border-red-500 rounded-full px-2 py-[1px] text-[11px] font-semibold'>
+            <div className='absolute sm:top-[-11%] top-[-10%] sm:left-[37%] left-[42%] w-[100%] h-[100%] items-center justify-center flex'>
+              <div className='flex items-center justify-center text-red-600 bg-white border border-red-500 rounded-full sm:px-2 px-1 py-[1px] sm:text-[11px] text-[9px] font-semibold'>
                 {value}%
               </div>
             </div>
@@ -62,8 +62,8 @@ function FeatureCardTwo(props: FeatureCardProps) {
             className='w-full h-full object-cover'
           />
           {value && (
-            <div className='absolute top-[-11%] left-[3%] w-[100%] h-[100%] items-center justify-center flex'>
-              <div className='flex items-center justify-center text-green-600 bg-white border border-green-500 rounded-full px-2 py-[1px] text-[11px] font-semibold'>
+            <div className='absolute top-[-11%] sm:left-[3%] left-[4%] w-[100%] h-[100%] items-center justify-center flex'>
+              <div className='flex items-center justify-center text-green-600 bg-white border border-green-500 rounded-full sm:px-2 px-1 py-[1px] sm:text-[11px] text-[9px] font-semibold'>
                 {value}%
               </div>
             </div>
