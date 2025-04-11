@@ -118,7 +118,7 @@ const config = {
         lg: '900px',
       },
       backgroundImage: {
-        'custom-gradient-1': `linear-gradient(135deg, 
+        'custom-gradient-1': `linear-gradient(135deg,
           #ffffff 0%,
           rgb(243 232 255 / 0.4) 20%,
           rgb(253 242 255 / 0.35) 40%,
@@ -126,7 +126,7 @@ const config = {
           rgb(255 235 245 / 0.4) 80%,
           rgb(255 240 252 / 0.45) 100%
         ), linear-gradient(to bottom, white, white)`,
-        'custom-gradient-2': `linear-gradient(135deg, 
+        'custom-gradient-2': `linear-gradient(135deg,
           #ffffff 0%,
           rgb(243 232 255 / 0.2) 20%,
           rgb(253 242 255 / 0.15) 40%,
@@ -134,7 +134,7 @@ const config = {
           rgb(255 235 245 / 0.2) 80%,
           rgb(255 240 252 / 0.25) 100%
         ), linear-gradient(to bottom, white, white)`,
-        'custom-gradient-3': `linear-gradient(135deg, 
+        'custom-gradient-3': `linear-gradient(135deg,
           #ffffff 0%,
           rgb(243 232 255 / 0.15) 20%,
           rgb(253 242 255 / 0.1) 40%,

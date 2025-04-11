@@ -2,12 +2,14 @@ import { Play16Filled, Save16Filled, Stop16Filled } from '@fluentui/react-icons'
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { SimpleTooltip } from '@/components/ui/Tooltip';
+import { cn } from '@/lib/utils';
 
 type Props = {
   showSaveAllVersions: boolean;
   singleTaskLoading: boolean;
   inputLoading: boolean;
   areInstructionsLoading: boolean;
+  className?: string;
   onSaveAllVersions: () => void;
   onTryPromptClick: () => void;
   onStopAllRuns: () => void;
@@ -19,6 +21,7 @@ export function RunAgentsButton(props: Props) {
     singleTaskLoading,
     inputLoading,
     areInstructionsLoading,
+    className,
     onSaveAllVersions,
     onTryPromptClick,
     onStopAllRuns,
@@ -37,7 +40,7 @@ export function RunAgentsButton(props: Props) {
           loading={singleTaskLoading}
           disabled={isSaveButtonDisabled}
           onClick={onSaveAllVersions}
-          className='min-h-8'
+          className={cn('min-h-8', className)}
         >
           Save All Versions
         </Button>
@@ -55,7 +58,7 @@ export function RunAgentsButton(props: Props) {
         loading={singleTaskLoading}
         disabled={isNormalButtonDisabled}
         onClick={onTryPromptClick}
-        className='min-h-8'
+        className={cn('min-h-8', className)}
       >
         Run
       </Button>
@@ -63,13 +66,18 @@ export function RunAgentsButton(props: Props) {
   );
 
   const stopButtonContent = (
-    <Button variant='newDesignIndigo' icon={<Stop16Filled />} onClick={onStopAllRuns} className='min-h-8'>
+    <Button
+      variant='newDesignIndigo'
+      icon={<Stop16Filled />}
+      onClick={onStopAllRuns}
+      className={cn('min-h-8', className)}
+    >
       Stop All Runs
     </Button>
   );
 
   return (
-    <div onMouseEnter={() => setIsHovering(true)} onMouseLeave={() => setIsHovering(false)}>
+    <div onMouseEnter={() => setIsHovering(true)} onMouseLeave={() => setIsHovering(false)} className={className}>
       {isHovering && singleTaskLoading ? stopButtonContent : normalButtonContent}
     </div>
   );

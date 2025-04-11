@@ -31,10 +31,18 @@ export const Toaster = ({ ...props }: ToasterProps) => {
   );
 };
 
-export function displaySuccessToaster(message: string | ReactNode, title?: string | ReactNode) {
-  toast.success(<SonnerToastContent type='success' title={title} description={message} />);
+export function displaySuccessToaster(message: string | ReactNode, title?: string | ReactNode, id?: string | number) {
+  toast.success(<SonnerToastContent type='success' title={title} description={message} />, { id });
+  // On Mobile there is a case where a toast that is tapped get never dismissed, looks like a bug on Sonner
+  setTimeout(() => {
+    toast.dismiss(id);
+  }, 4000);
 }
 
-export function displayErrorToaster(message: string | ReactNode, title?: string | ReactNode) {
-  toast.error(<SonnerToastContent type='error' title={title} description={message} />);
+export function displayErrorToaster(message: string | ReactNode, title?: string | ReactNode, id?: string | number) {
+  toast.error(<SonnerToastContent type='error' title={title} description={message} />, { id });
+  // On Mobile there is a case where a toast that is tapped get never dismissed, looks like a bug on Sonner
+  setTimeout(() => {
+    toast.dismiss(id);
+  }, 4000);
 }
