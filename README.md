@@ -39,6 +39,8 @@ https://github.com/user-attachments/assets/ae260da3-06ed-4ba0-824b-a9cab4fadb6f
 
 - **Cost tracking**: Automatically calculates and tracks the cost of each AI model run, providing transparency and helping you manage your AI budget effectively. Learn more about [cost tracking](https://docs.workflowai.com/features/monitoring).
 
+![cost-tracking](https://github.com/user-attachments/assets/a5d2b3d5-5237-4d86-9536-b618e663bff9)
+
 - **Structured output**: WorkflowAI ensures your AI responses always match your defined structure, simplifying integrations, reducing parsing errors, and making your data reliable and ready for use. Learn more about [structured input and output](https://docs.workflowai.com/concepts/schemas).
 
 ![structured-output](https://github.com/user-attachments/assets/9331e7d0-72f4-48e5-bd2f-10c6a5f5f5e1)
