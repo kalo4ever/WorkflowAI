@@ -252,13 +252,6 @@ def meta_agent_service_dep(
 MetaAgentServiceDep = Annotated[MetaAgentService, TaskiqDepends(meta_agent_service_dep)]
 
 
-def versions_service_dep(storage: StorageDep, event_router: EventRouterDep) -> VersionsService:
-    return VersionsService(storage=storage, event_router=event_router)
-
-
-VersionsServiceDep = Annotated[VersionsService, TaskiqDepends(versions_service_dep)]
-
-
 def payment_service_dep(storage: StorageDep) -> PaymentService:
     from api.services.payments_service import PaymentService
 

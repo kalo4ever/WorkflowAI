@@ -44,6 +44,13 @@ services:
       [
         'poetry',
         'run',
+        'python',
+        '-m',
+        'debugpy',
+        '--wait-for-client',
+        '--listen',
+        '0.0.0.0:5678',
+        '-m',
         'uvicorn',
         'api.main:app',
         '--host',
@@ -66,8 +73,10 @@ services:
       target: dev
     ports:
       - '8000:8000'
+      - '5678:5678'
     volumes:
       - ./api/api:/app/api
+      - ./api/docs:/app/docs
       - ./api/core:/app/core
       - ./api/stubs:/app/stubs
     env_file:

@@ -17,8 +17,8 @@ from api.services.runs import RunsService
 from api.services.slack_notifications import SlackNotificationDestination, get_user_and_org_str, send_slack_notification
 from api.services.tasks import list_agent_summaries
 from api.services.versions import VersionsService
-from api.tasks.extract_company_info_from_domain_task import safe_generate_company_description_from_email
-from api.tasks.meta_agent import (
+from core.agents.extract_company_info_from_domain_task import safe_generate_company_description_from_email
+from core.agents.meta_agent import (
     META_AGENT_INSTRUCTIONS,
     EditSchemaToolCallResult,
     GenerateAgentInputToolCallResult,
@@ -419,7 +419,7 @@ class MetaAgentService:
         messages: list[MetaAgentChatMessage],
         current_agent: SerializableTaskVariant,
         playground_state: PlaygroundState,
-    ) -> tuple[MetaAgentInput, list[SerializableTaskRun]]:
+    ) -> tuple[MetaAgentInput, list[AgentRun]]:
         (
             company_description,
             existing_agents,

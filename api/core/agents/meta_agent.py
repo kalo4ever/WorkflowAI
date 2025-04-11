@@ -11,6 +11,8 @@ from core.domain.fields.file import File
 from core.domain.url_content import URLContent
 from core.domain.version_environment import VersionEnvironment
 
+from .extract_company_info_from_domain_task import Product
+
 
 class WorkflowaiPage(BaseModel):
     title: str
@@ -89,8 +91,6 @@ STATIC_WORKFLOWAI_PAGES = [
         ],
     ),
 ]
-
-from .extract_company_info_from_domain_task import Product
 
 
 class BaseResult(BaseModel):

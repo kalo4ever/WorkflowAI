@@ -141,7 +141,7 @@ class RunsService:
         schema_id: int | None,
         is_success: bool | None,
         is_active: bool | None = None,
-    ) -> SerializableTaskRun:
+    ) -> AgentRun:
         """Returns the latest successful run for a task and optionally a schema"""
 
         status: set[Literal["success", "failure"]] | None = None
