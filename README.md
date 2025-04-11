@@ -4,20 +4,15 @@ WorkflowAI is an open-source platform where product and engineering teams collab
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-## Build a AI feature in minutes
+## Demo
 
-- describe the feature you want to build
-- compare models side-by-side
-- find the best model for the feature
-- deploy with structur`ed outputs guaranteed
-- observe the feature in production
-- update the prompt and models without deploying new code
+![Demo](/assets/describe.gif)
 
-[embed video]
-
-Try this demo feature:
-- playground [URL]
-- code: [URL]
+<div align="center">
+    <a href="https://workflowai.com/docs/agents/meeting-transcript-analysis/1?showDiffMode=false&show2ColumnLayout=false&taskRunId2=019626e2-fe11-710a-a615-294c9ca81af6&taskRunId1=019626e2-fe0b-73b0-113e-b0742bf20244&versionId=204602901276db01d774a469db3aeea9&taskRunId3=019626e3-399a-7312-81a7-b7ae664529c5" target="_blank">
+        <img alt="Static Badge" src="https://img.shields.io/badge/»%20Explore%20this%20demo%20and%20try%20different%20models-8A2BE2?&color=white">
+    </a>
+</div>
 
 ## Key Features
 
