@@ -14,10 +14,11 @@ class TestPreviewModels:
         assert len(items) > 0
 
         model_ids = {item["id"] for item in items}
-        assert len(model_ids) == 6  # this might change if one of the included models is also a default model
+        assert len(model_ids) == 7  # this might change if one of the included models is also a default model
         assert Model.GPT_4O_AUDIO_PREVIEW_2024_12_17 not in model_ids
         assert Model.DEEPSEEK_R1_2501_BASIC in model_ids
         assert Model.MISTRAL_LARGE_2_LATEST in model_ids
         assert Model.LLAMA_4_MAVERICK_BASIC in model_ids
         assert Model.CLAUDE_3_7_SONNET_LATEST in model_ids
+        assert Model.GROK_3_BETA in model_ids
         models_from_run_endpoint.assert_called_once()

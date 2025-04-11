@@ -1,4 +1,5 @@
 import base64
+import json
 from typing import Any
 from unittest.mock import Mock, patch
 
@@ -18,6 +19,7 @@ from tests.utils import fixture_bytes
 from .utils import (
     FileWithKeyPath,
     _process_ref,  # pyright: ignore[reportPrivateUsage]
+    cleanup_provider_json,
     convert_pdf_to_images,
     download_file,
     extract_files,
@@ -518,3 +520,10 @@ class TestProcessRef:
 
         mock_replace_file_in_payload.assert_called_once()
         mock_recursive_find_files.assert_not_called()
+
+
+class TestCleanupProviderJson:
+    async def test_double_nulls(self):
+        raw_json = '{"blabla":["Pr\\u0000e9paration de commande"]}'
+        raw_obj = json.loads(raw_json)
+        assert cleanup_provider_json(raw_obj) == {"blabla": ["Préparation de commande"]}

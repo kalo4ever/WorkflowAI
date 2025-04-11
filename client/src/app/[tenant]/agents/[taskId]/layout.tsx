@@ -33,13 +33,28 @@ export async function generateMetadata({ params }: { params: TaskSchemaParams })
     return {
       openGraph: {
         description,
-        images: [previewImageUrl],
+        images: [
+          {
+            url: previewImageUrl,
+            width: 1200,
+            height: 630,
+          },
+        ],
       },
       twitter: {
         card: 'summary_large_image',
         title: task.name,
         description,
-        images: [previewImageUrl],
+        images: [
+          {
+            url: previewImageUrl,
+            width: 1200,
+            height: 630,
+          },
+        ],
+      },
+      other: {
+        'twitter:card': 'summary_large_image',
       },
     };
   } catch (error) {

@@ -20,6 +20,7 @@ from core.providers.groq.groq_provider import GroqProvider
 from core.providers.mistral.mistral_provider import MistralAIProvider
 from core.providers.openai.azure_open_ai_provider.azure_openai_provider import AzureOpenAIProvider
 from core.providers.openai.openai_provider import OpenAIProvider
+from core.providers.xai.xai_provider import XAIProvider
 
 _provider_cls: list[type[AbstractProvider[Any, Any]]] = [
     OpenAIProvider,
@@ -31,6 +32,7 @@ _provider_cls: list[type[AbstractProvider[Any, Any]]] = [
     AnthropicProvider,
     GoogleGeminiAPIProvider,
     FireworksAIProvider,
+    XAIProvider,
 ]
 
 _logger = logging.getLogger("LocalProviderFactory")

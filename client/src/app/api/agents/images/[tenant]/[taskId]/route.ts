@@ -77,14 +77,16 @@ export async function GET(request: Request, { params }: { params: { tenant: stri
             justifyContent: 'flex-start',
             backgroundImage:
               'url(https://workflowai.blob.core.windows.net/workflowai-public/MetaLinkPreviewBackground.jpg)',
-            backgroundSize: '100% 100%',
+            backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
-            paddingTop: '60px',
+            paddingTop: '70px',
             paddingLeft: '130px',
             paddingRight: '130px',
             overflow: 'hidden',
             fontFamily: 'Lato',
+            WebkitFontSmoothing: 'antialiased',
+            MozOsxFontSmoothing: 'grayscale',
           },
         },
         React.createElement(
@@ -98,7 +100,7 @@ export async function GET(request: Request, { params }: { params: { tenant: stri
               alignItems: 'flex-start',
               overflow: 'hidden',
               gap: '13px',
-              fontSize: '35px',
+              fontSize: '2.1875rem',
             },
           },
           // Entry 0
@@ -230,9 +232,16 @@ export async function GET(request: Request, { params }: { params: { tenant: stri
             weight: 400,
           },
         ],
+        headers: {
+          'Content-Type': 'image/png',
+          'Cache-Control': 'public, immutable, no-transform',
+          'X-Content-Type-Options': 'nosniff',
+        },
+        emoji: 'twemoji',
+        debug: false,
       }
     );
-  } catch (error) {
+  } catch {
     return new NextResponse('Error fetching agent run', {
       status: 500,
     });

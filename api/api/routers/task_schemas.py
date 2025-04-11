@@ -3,6 +3,7 @@
 import asyncio
 import json
 import logging
+from collections.abc import AsyncIterator
 from datetime import datetime
 from typing import Annotated, Any, AsyncGenerator, Literal, Self
 
@@ -14,7 +15,7 @@ from sentry_sdk import capture_exception, new_scope
 from api.dependencies.event_router import EventRouterDep
 from api.dependencies.latest_task_variant import TaskVariantDep
 from api.dependencies.path_params import TaskID, TaskSchemaID
-from api.dependencies.security import TenantDep, UserDep, UserOrganizationDep
+from api.dependencies.security import SystemStorageDep, TenantDep, UserDep, UserOrganizationDep
 from api.dependencies.services import (
     AnalyticsServiceDep,
     GroupServiceDep,
@@ -51,6 +52,7 @@ from core.domain.version_environment import VersionEnvironment
 from core.storage.models import TaskUpdate
 from core.tools import ToolKind
 from core.utils.file_utils.file_utils import extract_text_from_file_base64
+from core.utils.stream_response_utils import safe_streaming_response
 from core.utils.streams import format_model_for_sse
 
 from ..dependencies.storage import StorageDep
@@ -242,6 +244,7 @@ async def generate_input(
     task: TaskVariantDep,
     internal_tasks_service: InternalTasksServiceDep,
     analytics_service: AnalyticsServiceDep,
+    system_storage: SystemStorageDep,
 ) -> Response:
     analytics_service.send_event(
         lambda: GeneratedInputProperties(
@@ -255,6 +258,7 @@ async def generate_input(
             task,
             request.instructions,
             base_input=request.base_input,
+            system_storage=system_storage,
             stream=False,
         )
         if not generated:
@@ -267,6 +271,7 @@ async def generate_input(
                 task,
                 request.instructions,
                 base_input=request.base_input,
+                system_storage=system_storage,
                 stream=True,
             )
             async for chunk in iterator:
@@ -669,12 +674,12 @@ async def update_task_instructions(
             media_type="text/event-stream",
         )
 
-    async def _stream():
+    async def _stream() -> AsyncIterator[BaseModel]:
         async for chunk in await internal_tasks.instructions.update_task_instructions(
             task_variant=task,
             instructions=request.instructions,
             selected_tools=request.selected_tools or [],
         ):
-            yield format_model_for_sse(chunk)
+            yield chunk
 
-    return StreamingResponse(_stream(), media_type="text/event-stream")
+    return safe_streaming_response(_stream, media_type="text/event-stream")

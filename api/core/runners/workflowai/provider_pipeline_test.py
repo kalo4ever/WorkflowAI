@@ -1,9 +1,13 @@
+from datetime import datetime
 from unittest.mock import Mock, patch
 
 import pytest
 
 from core.domain.errors import ProviderRateLimitError
 from core.domain.models import Model, Provider
+from core.domain.tenant_data import ProviderSettings
+from core.providers.base.abstract_provider import AbstractProvider
+from core.providers.base.config import ProviderConfig
 from core.providers.factory.abstract_provider_factory import AbstractProviderFactory
 from core.providers.factory.local_provider_factory import LocalProviderFactory
 from core.runners.workflowai.provider_pipeline import ProviderPipeline, ProviderPipelineBuilder
@@ -16,6 +20,27 @@ def provider_builder():
     # Last argument is the model data
     builder.side_effect = lambda *args: (args[0], Mock(), Mock(), args[1])  # type: ignore
     return builder
+
+
+def _mock_provider(name: Provider) -> Mock:
+    mock = Mock(spec=AbstractProvider)
+    mock.name.return_value = name
+    return mock
+
+
+def _provider_settings(provider: Provider) -> ProviderSettings:
+    _mock = Mock()
+    _mock.provider = provider
+
+    class MockProviderSettings(ProviderSettings):
+        def decrypt(self) -> ProviderConfig:
+            return _mock
+
+    return MockProviderSettings(
+        id="123",
+        created_at=datetime.now(),
+        provider=provider,
+    )
 
 
 # TODO: The tests are based on the real model data, we should patch
@@ -51,10 +76,8 @@ class TestProviderIterator:
     def test_multiple_providers_forced_provider(self, provider_builder: Mock):
         mock_provider_factory = Mock(spec=AbstractProviderFactory)
         # Mock multiple providers of the same type
-        mock_provider1 = Mock(name="hello1")
-        mock_provider1.name.return_value = Provider.OPEN_AI
-        mock_provider2 = Mock(name="hello2")
-        mock_provider2.name.return_value = Provider.OPEN_AI
+        mock_provider1 = _mock_provider(Provider.OPEN_AI)
+        mock_provider2 = _mock_provider(Provider.OPEN_AI)
         mock_provider_factory.get_providers.return_value = [mock_provider1, mock_provider2]
 
         """Check that the providers are iterated correctly when a forced provider is set"""
@@ -92,12 +115,9 @@ class TestProviderIterator:
         """Test that providers with a full round robin are shuffled"""
         # Mock multiple providers of the same type
         mock_provider_factory = Mock(spec=AbstractProviderFactory)
-        mock_provider1 = Mock()
-        mock_provider1.name.return_value = Provider.FIREWORKS
-        mock_provider2 = Mock()
-        mock_provider2.name.return_value = Provider.FIREWORKS
-        mock_provider3 = Mock()
-        mock_provider3.name.return_value = Provider.FIREWORKS
+        mock_provider1 = _mock_provider(Provider.FIREWORKS)
+        mock_provider2 = _mock_provider(Provider.FIREWORKS)
+        mock_provider3 = _mock_provider(Provider.FIREWORKS)
         mock_provider_factory.get_providers.return_value = [mock_provider1, mock_provider2, mock_provider3]
 
         mock_shuffle.side_effect = lambda providers: providers.reverse()  # type: ignore
@@ -143,15 +163,10 @@ class TestProviderIterator:
         )
 
         # Mock multiple providers of different types
-        mock_provider1 = Mock()
-        mock_provider1.name.return_value = Provider.OPEN_AI
-        mock_provider2 = Mock()
-        mock_provider2.name.return_value = Provider.OPEN_AI
-
-        mock_provider3 = Mock()
-        mock_provider3.name.return_value = Provider.AZURE_OPEN_AI
-        mock_provider4 = Mock()
-        mock_provider4.name.return_value = Provider.AZURE_OPEN_AI
+        mock_provider1 = _mock_provider(Provider.OPEN_AI)
+        mock_provider2 = _mock_provider(Provider.OPEN_AI)
+        mock_provider3 = _mock_provider(Provider.AZURE_OPEN_AI)
+        mock_provider4 = _mock_provider(Provider.AZURE_OPEN_AI)
 
         # Mock the factory to return different providers based on type
         def get_providers(provider_type: Provider) -> list[Mock]:
@@ -183,3 +198,28 @@ class TestProviderIterator:
         provider_3 = provider_builder.call_args_list[2].args[0]
         provider_4 = provider_builder.call_args_list[3].args[0]
         assert {provider_3, provider_4} == {mock_provider3, mock_provider4}
+
+    def test_custom_configs_with_unsupported_provider(self, provider_builder: Mock, mock_provider_factory: Mock):
+        """Check that a custom config is not returned if the provider is not supported"""
+        mock_provider_factory.build_provider.side_effect = lambda *args, **kwargs: _mock_provider(args[0].provider)  # type: ignore
+        mock_provider_factory.get_providers.side_effect = lambda provider: [_mock_provider(provider)]  # type: ignore
+
+        pipeline = ProviderPipeline(
+            options=WorkflowAIRunnerOptions(
+                model=Model.GPT_4O_MINI_2024_07_18,
+                provider=None,
+                is_structured_generation_enabled=None,
+                instructions="",
+            ),
+            custom_configs=[
+                _provider_settings(Provider.GROQ),
+                _provider_settings(Provider.OPEN_AI),
+            ],
+            builder=provider_builder,
+            factory=mock_provider_factory,
+        )
+
+        providers = list(pipeline.provider_iterator())
+        assert len(providers) == 3
+        names = [p[0].name() for p in providers]
+        assert names == [Provider.OPEN_AI, Provider.OPEN_AI, Provider.AZURE_OPEN_AI]

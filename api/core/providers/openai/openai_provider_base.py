@@ -498,16 +498,16 @@ class OpenAIProviderBase(HTTPXProvider[_OpenAIConfigVar, CompletionResponse], Ge
         return tool_calls
 
     @override
-    async def _extract_and_log_rate_limits(self, response: Response, model: Model):
+    async def _extract_and_log_rate_limits(self, response: Response, options: ProviderOptions):
         await self._log_rate_limit_remaining(
             "requests",
             remaining=response.headers.get("x-ratelimit-remaining-requests"),
             total=response.headers.get("x-ratelimit-limit-requests"),
-            model=model,
+            options=options,
         )
         await self._log_rate_limit_remaining(
             "tokens",
             remaining=response.headers.get("x-ratelimit-remaining-tokens"),
             total=response.headers.get("x-ratelimit-limit-tokens"),
-            model=model,
+            options=options,
         )

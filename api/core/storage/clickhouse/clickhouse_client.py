@@ -1,8 +1,7 @@
 import asyncio
 import logging
-from collections.abc import AsyncIterator
 from datetime import datetime, timedelta
-from typing import Any, Literal, NotRequired, Sequence, TypedDict, cast, override
+from typing import Any, AsyncIterator, Literal, NotRequired, Sequence, TypedDict, cast, override
 
 from clickhouse_connect.driver import create_async_client  # pyright: ignore[reportUnknownVariableType]
 from clickhouse_connect.driver.asyncclient import AsyncClient
@@ -505,6 +504,58 @@ class ClickhouseClient(TaskRunStorage):
             )
 
     @override
+    async def list_runs_for_memory_id(
+        self,
+        tenant_uid: int,
+        task_uid: int,
+        memory_id: str,
+        limit: int = 10,
+        timeout_ms: int | None = None,
+    ) -> AsyncIterator[AgentRun]:
+        async with asyncio.timeout(timeout_ms):
+            where = (
+                W("tenant_uid", type="UInt32", value=tenant_uid)
+                & W("task_uid", type="UInt32", value=task_uid)
+                & W(
+                    "metadata['memory_id']",
+                    operator="=",
+                    type="String",
+                    value=memory_id,
+                )
+                & W("error_payload", type="String", value="")
+                & W(
+                    "output",
+                    type="String",
+                    value="",
+                    operator="!=",
+                )
+            )
+            columns = ClickhouseRun.columns(
+                include={"task_output"},
+            )
+            q, parameters = Q(
+                "runs",
+                select=columns,
+                where=where,
+                limit=limit,
+                offset=None,
+                order_by=self._default_order_by(),
+                distincts=None,
+            )
+
+            query_res = await self.query(
+                q,
+                parameters=parameters,
+            )
+
+            def _map_row(row: Sequence[Any]):
+                zipped: dict[str, Any] = dict(zip(query_res.column_names, row))  # pyright: ignore [reportUnknownArgumentType, reportUnknownMemberType]
+                return ClickhouseRun.model_validate(zipped).to_domain("")
+
+            for row in query_res.result_rows:
+                yield _map_row(row)
+
+    @override
     async def weekly_run_aggregate(self, week_count: int):
         sql = f"""
 SELECT
@@ -525,5 +576,5 @@ ORDER BY
             yield WeeklyRunAggregate(
                 start_of_week=row[0],
                 run_count=row[1],
-                overhead_ms=int(round(row[2])),
+                overhead_ms=int(round(row[2] or 0)),
             )

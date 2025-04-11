@@ -49,6 +49,7 @@ from core.runners.workflowai.tool_cache import ToolCache
 from core.runners.workflowai.utils import (
     FileWithKeyPath,
     ToolCallRecursionError,
+    cleanup_provider_json,
     convert_pdf_to_images,
     download_file,
     extract_files,
@@ -65,7 +66,6 @@ from core.utils.schema_augmentation_utils import (
     add_reasoning_steps_to_schema,
 )
 from core.utils.schemas import clean_json_string, is_schema_only_containing_one_property
-from core.utils.strings import clean_unicode_chars
 from core.utils.templates import InvalidTemplateError, TemplateManager
 
 from .workflowai_options import WorkflowAIRunnerOptions
@@ -533,7 +533,6 @@ class WorkflowAIRunner(AbstractRunner[WorkflowAIRunnerOptions]):
         # Acting on the string is probably unefficient, we do multiple decodes and encode
         # On the payload. Instead we should probably retrieve bytes for the output
         # and act on that.
-        json_str = clean_unicode_chars(json_str)
         json_str = clean_json_string(json_str)
 
         try:
@@ -546,6 +545,7 @@ class WorkflowAIRunner(AbstractRunner[WorkflowAIRunnerOptions]):
             )
             # When the normal json parsing fails, we try and decode it with a tolerant stream handler
             json_dict = parse_tolerant_json(json_str)
+        json_dict = cleanup_provider_json(json_dict)
 
         return self.validate_output_dict(json_dict, partial=partial)
 
