@@ -55,6 +55,8 @@ _UNSUPPORTED_KEYS = {
 }
 
 
+# TODO: this function is used by more than openai and should be moved elsewhere
+# The idea is that it makes all fields required and integrates some unsupported keys
 def prepare_openai_json_schema(schema: dict[str, Any]) -> dict[str, Any]:
     """Sanitize and prepare a JSON schema for OpenAI outputs by removing unsupported keys and adjusting types."""
     schema = deepcopy(schema)

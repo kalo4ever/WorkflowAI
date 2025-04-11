@@ -28,6 +28,7 @@ from core.providers.google.google_provider_domain import (
     internal_tool_name_to_native_tool_call,
     native_tool_name_to_internal,
 )
+from core.providers.openai._openai_utils import prepare_openai_json_schema
 from core.providers.openai.openai_domain import parse_tool_call_or_raise
 from core.providers.xai.xai_config import THINKING_MODEL_MAP, XAIConfig
 from core.providers.xai.xai_domain import (
@@ -55,7 +56,7 @@ class XAIProvider(HTTPXProvider[XAIConfig, CompletionResponse]):
         return JSONSchemaResponseFormat(
             json_schema=XAISchema(
                 name=get_unique_schema_name(options.task_name, options.output_schema),
-                json_schema=options.output_schema,
+                json_schema=prepare_openai_json_schema(options.output_schema),
             ),
         )
 
