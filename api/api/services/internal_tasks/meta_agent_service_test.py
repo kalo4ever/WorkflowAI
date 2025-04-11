@@ -804,3 +804,122 @@ class TestMetaAgentService:
 
             # For reviewed_input_count
             assert result.reviewed_input_count == expected_context.reviewed_input_count
+
+    @pytest.mark.asyncio
+    @patch("api.services.internal_tasks.meta_agent_service.meta_agent_user_confirmation_agent", new_callable=AsyncMock)
+    async def test_sanitize_tool_call_auto_run_initially_false(
+        self,
+        mock_confirmation_agent: AsyncMock,
+    ) -> None:
+        """
+        Tests that if tool_call.auto_run is initially False, the confirmation agent is not called
+        and auto_run remains False.
+        """
+        # Create service instance with minimal dependencies
+        service = MetaAgentService(
+            storage=Mock(spec=BackendStorage),
+            event_router=Mock(),
+            runs_service=Mock(spec=RunsService),
+            versions_service=Mock(),
+            models_service=Mock(),
+            feedback_service=Mock(),
+            reviews_service=Mock(),
+        )
+        # Replace the logger with a mock
+        with patch.object(service, "_logger", new=Mock()) as mock_logger:
+            tool_call: MetaAgentToolCallType = ImprovePromptToolCall(
+                run_feedback_message="Test feedback",
+                auto_run=False,  # Initial state
+                tool_call_id="test_improve_false_123",
+                run_id="test_run_id",
+                tool_name="improve_agent_instructions",
+            )
+            assistant_message_content = "Assistant message content"
+
+            # Call the protected method directly in the test
+            await service._sanitize_tool_call_auto_run(tool_call, assistant_message_content)  # pyright: ignore[reportPrivateUsage]
+
+            # Verify expectations
+            assert tool_call.auto_run is False  # Should remain False
+            mock_confirmation_agent.assert_not_called()
+            mock_logger.exception.assert_not_called()
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "mock_confirmation_return, expected_final_auto_run",
+        [
+            # Scenario 1: Confirmation agent returns False -> auto_run remains True
+            (
+                Mock(requires_user_confirmation=False),
+                True,
+            ),
+            # Scenario 2: Confirmation agent returns True -> auto_run becomes False
+            (
+                Mock(requires_user_confirmation=True),
+                False,
+            ),
+            # Scenario 3: Confirmation agent raises error -> auto_run remains True (and logs)
+            (
+                Exception("Test Error"),
+                True,
+            ),
+        ],
+    )
+    @patch("api.services.internal_tasks.meta_agent_service.meta_agent_user_confirmation_agent", new_callable=AsyncMock)
+    async def test_sanitize_tool_call_auto_run_initially_true(
+        self,
+        mock_confirmation_agent: AsyncMock,
+        mock_confirmation_return: Any,
+        expected_final_auto_run: bool,
+    ) -> None:
+        """
+        Tests that if tool_call.auto_run is initially True, the confirmation agent is called,
+        and auto_run is updated based on the agent's response or exception.
+        """
+        # Create service instance with minimal dependencies
+        service = MetaAgentService(
+            storage=Mock(spec=BackendStorage),
+            event_router=Mock(),
+            runs_service=Mock(spec=RunsService),
+            versions_service=Mock(),
+            models_service=Mock(),
+            feedback_service=Mock(),
+            reviews_service=Mock(),
+        )
+
+        with patch.object(service, "_logger", new=Mock()) as mock_logger:
+            # Setup mock confirmation agent behavior
+            if isinstance(mock_confirmation_return, Exception):
+                mock_confirmation_agent.side_effect = mock_confirmation_return
+            else:
+                mock_confirmation_agent.return_value = mock_confirmation_return
+
+            tool_call: MetaAgentToolCallType = ImprovePromptToolCall(
+                run_feedback_message="Test feedback",
+                auto_run=True,  # Initial state
+                tool_call_id="test_improve_true_456",
+                run_id="test_run_id",
+                tool_name="improve_agent_instructions",
+            )
+            assistant_message_content = "Relevant assistant message"
+
+            # Call the protected method directly in the test
+            await service._sanitize_tool_call_auto_run(tool_call, assistant_message_content)  # pyright: ignore[reportPrivateUsage]
+
+            # Assertions
+            assert tool_call.auto_run == expected_final_auto_run
+
+            # Check confirmation agent call
+            mock_confirmation_agent.assert_called_once()
+            call_args, _ = mock_confirmation_agent.call_args
+            assert len(call_args) == 1
+            assert call_args[0].assistant_message_content == assistant_message_content
+
+            # Check logger call on exception
+            if isinstance(mock_confirmation_return, Exception):
+                mock_logger.exception.assert_called_once_with(
+                    "Error running meta agent user confirmation agent",
+                    exc_info=mock_confirmation_return,
+                )
+            else:
+                mock_logger.exception.assert_not_called()

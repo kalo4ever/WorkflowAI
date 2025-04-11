@@ -38,6 +38,10 @@ from core.agents.meta_agent import (
 from core.agents.meta_agent import (
     PlaygroundState as PlaygroundStateDomain,
 )
+from core.agents.meta_agent_user_confirmation_agent import (
+    MetaAgentUserConfirmationInput,
+    meta_agent_user_confirmation_agent,
+)
 from core.domain.agent_run import AgentRun
 from core.domain.events import EventRouter, MetaAgentChatMessagesSent
 from core.domain.fields.file import File
@@ -757,6 +761,31 @@ class MetaAgentService:
 
         return None
 
+    async def _sanitize_tool_call_auto_run(
+        self,
+        tool_call: MetaAgentToolCallType,
+        assistant_message_content: str,
+    ) -> None:
+        """The meta agent is VERY stubborn in asking user for confirmation before running a tool call,
+        but at the same time returning 'ask_user_confirmation=False' in the tool call.
+        Therefore, we'll use another layer of safety to make sure that when the meta agent asks for user confirmation in the message,
+        the 'auto_run' flag is actually set to false."""
+        if tool_call.auto_run is False:
+            return
+
+        # Only run check if the auto_run flag is set to 'True'
+        try:
+            agent_output = await meta_agent_user_confirmation_agent(
+                MetaAgentUserConfirmationInput(assistant_message_content=assistant_message_content),
+            )
+            if agent_output.requires_user_confirmation is True:
+                # The user confirmation agent has decided that a confirmation is needed, so we switch the auto_run to 'False'
+                tool_call.auto_run = False
+
+        except Exception as e:
+            self._logger.exception("Error running meta agent user confirmation agent", exc_info=e)
+            # do nothing
+
     async def stream_meta_agent_response(
         self,
         task_tuple: TaskTuple,
@@ -796,10 +825,12 @@ class MetaAgentService:
                 yield ret
 
         if chunk and (tool_call := self._extract_tool_call_from_meta_agent_output(chunk.output, agent_runs, messages)):
+            assistant_message_content = chunk.output.content or ""
+            await self._sanitize_tool_call_auto_run(tool_call, assistant_message_content)
             ret = [
                 MetaAgentChatMessage(
                     role="ASSISTANT",
-                    content=chunk.output.content or "",
+                    content=assistant_message_content,
                     tool_call=tool_call,
                     feedback_token=chunk.feedback_token,
                 ),
