@@ -1324,12 +1324,12 @@ class TestInternalTasksServiceHelpers:
                     fields=[
                         InputArrayFieldConfig(
                             name="meal_plan",
-                            item_type=InputObjectFieldConfig(
+                            items=InputObjectFieldConfig(
                                 name="daily_meals",
                                 fields=[
                                     InputArrayFieldConfig(
                                         name="meals",
-                                        item_type=InputObjectFieldConfig(
+                                        items=InputObjectFieldConfig(
                                             name="meal",
                                             fields=[
                                                 InputGenericFieldConfig(

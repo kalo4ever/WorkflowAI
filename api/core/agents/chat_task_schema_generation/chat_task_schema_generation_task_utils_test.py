@@ -268,7 +268,7 @@ from .chat_task_schema_generation_task_utils import (
         (  # Array field
             InputArrayFieldConfig(
                 name="test_array",
-                item_type=InputGenericFieldConfig(
+                items=InputGenericFieldConfig(
                     name="item1",
                     type=InputSchemaFieldType.STRING,
                     description="An item",
@@ -285,14 +285,14 @@ from .chat_task_schema_generation_task_utils import (
         (  # Array field without description
             InputArrayFieldConfig(
                 name="test_array",
-                item_type=InputGenericFieldConfig(name="item1", type=InputSchemaFieldType.STRING),
+                items=InputGenericFieldConfig(name="item1", type=InputSchemaFieldType.STRING),
             ),
             {"type": "array", "items": {"type": "string"}},
         ),
         (  # Output array without description
             OutputArrayFieldConfig(
                 name="test_array",
-                item_type=OutputStringFieldConfig(name="item1"),
+                items=OutputStringFieldConfig(name="item1"),
             ),
             {"type": "array", "items": {"type": "string"}},
         ),
@@ -432,7 +432,7 @@ from .chat_task_schema_generation_task_utils import (
                 fields=[
                     InputArrayFieldConfig(
                         name="test_array",
-                        item_type=InputGenericFieldConfig(
+                        items=InputGenericFieldConfig(
                             name="item1",
                             type=InputSchemaFieldType.STRING,
                             description="First item",
@@ -459,7 +459,7 @@ from .chat_task_schema_generation_task_utils import (
                 fields=[
                     InputArrayFieldConfig(
                         name="test_array",
-                        item_type=InputGenericFieldConfig(name="item1", type=InputSchemaFieldType.STRING),
+                        items=InputGenericFieldConfig(name="item1", type=InputSchemaFieldType.STRING),
                     ),
                 ],
             ),
@@ -479,7 +479,7 @@ from .chat_task_schema_generation_task_utils import (
                 fields=[
                     OutputArrayFieldConfig(
                         name="test_array",
-                        item_type=OutputStringFieldConfig(name="item1"),
+                        items=OutputStringFieldConfig(name="item1"),
                     ),
                 ],
             ),
@@ -509,7 +509,7 @@ from .chat_task_schema_generation_task_utils import (
                     ),
                     InputArrayFieldConfig(
                         name="sections",
-                        item_type=InputObjectFieldConfig(
+                        items=InputObjectFieldConfig(
                             name="section",
                             fields=[
                                 InputGenericFieldConfig(name="section_title", type=InputSchemaFieldType.STRING),
@@ -517,7 +517,7 @@ from .chat_task_schema_generation_task_utils import (
                                 EnumFieldConfig(name="section_type", values=["chapter", "appendix", "reference"]),
                                 InputArrayFieldConfig(
                                     name="attachments",
-                                    item_type=InputObjectFieldConfig(
+                                    items=InputObjectFieldConfig(
                                         name="attachment",
                                         fields=[
                                             InputGenericFieldConfig(name="filename", type=InputSchemaFieldType.STRING),
@@ -598,7 +598,7 @@ from .chat_task_schema_generation_task_utils import (
                     ),
                     OutputArrayFieldConfig(
                         name="results",
-                        item_type=OutputObjectFieldConfig(
+                        items=OutputObjectFieldConfig(
                             name="result",
                             fields=[
                                 OutputStringFieldConfig(name="category", description="Result category"),
@@ -606,7 +606,7 @@ from .chat_task_schema_generation_task_utils import (
                                 EnumFieldConfig(name="confidence_level", values=["high", "medium", "low"]),
                                 OutputArrayFieldConfig(
                                     name="findings",
-                                    item_type=OutputObjectFieldConfig(
+                                    items=OutputObjectFieldConfig(
                                         name="finding",
                                         fields=[
                                             OutputStringFieldConfig(
