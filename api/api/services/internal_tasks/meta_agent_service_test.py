@@ -9,8 +9,10 @@ from pydantic import BaseModel
 from api.services.documentation_service import DocumentationService
 from api.services.internal_tasks.meta_agent_service import (
     EditSchemaToolCall,
+    HasActiveRunAndDate,
     ImprovePromptToolCall,
     MetaAgentChatMessage,
+    MetaAgentContext,
     MetaAgentService,
     MetaAgentToolCallType,
     PlaygroundState,
@@ -56,7 +58,7 @@ class TestMetaAgentService:
                         existing_agents_descriptions=["Agent 1", "Agent 2"],
                     ),
                     workflowai_sections=[],
-                    relevant_workflowai_documentation_sections=[
+                    workflowai_documentation_sections=[
                         DocumentationSection(title="Some title", content="Some content"),
                     ],
                     available_tools_description="Some tools description",
@@ -94,7 +96,7 @@ class TestMetaAgentService:
                         existing_agents_descriptions=[],
                     ),
                     workflowai_sections=[],
-                    relevant_workflowai_documentation_sections=[
+                    workflowai_documentation_sections=[
                         DocumentationSection(title="Some title", content="Some content"),
                     ],
                     available_tools_description="Some tools description",
@@ -147,6 +149,9 @@ class TestMetaAgentService:
             event_router=mock_event_router,
             runs_service=mock_runs_service,
             models_service=AsyncMock(),
+            feedback_service=AsyncMock(),
+            versions_service=AsyncMock(),
+            reviews_service=AsyncMock(),
         )
 
         # Mock the dependencies
@@ -215,10 +220,7 @@ class TestMetaAgentService:
                 result.company_context.existing_agents_descriptions
                 == expected_input.company_context.existing_agents_descriptions
             )
-            assert (
-                result.relevant_workflowai_documentation_sections
-                == expected_input.relevant_workflowai_documentation_sections
-            )
+            assert result.workflowai_documentation_sections == expected_input.workflowai_documentation_sections
 
             # If company products exist, verify them
             if result.company_context.company_products and expected_input.company_context.company_products:
@@ -306,6 +308,9 @@ class TestMetaAgentService:
             event_router=mock_event_router,
             runs_service=mock_runs_service,
             models_service=AsyncMock(),
+            feedback_service=AsyncMock(),
+            versions_service=AsyncMock(),
+            reviews_service=AsyncMock(),
         )
 
         # Create a mock for _build_meta_agent_input
@@ -313,7 +318,7 @@ class TestMetaAgentService:
             current_datetime=datetime.datetime(2025, 1, 1),
             messages=[message.to_domain() for message in messages],
             company_context=MetaAgentInput.CompanyContext(),
-            relevant_workflowai_documentation_sections=[
+            workflowai_documentation_sections=[
                 DocumentationSection(title="Some title", content="Some content"),
             ],
             workflowai_sections=[],
@@ -422,6 +427,9 @@ class TestMetaAgentService:
             event_router=mock_event_router,
             runs_service=mock_runs_service,
             models_service=AsyncMock(),
+            feedback_service=AsyncMock(),
+            versions_service=AsyncMock(),
+            reviews_service=AsyncMock(),
         )
 
         service.dispatch_new_user_messages_event(input_messages)
@@ -496,6 +504,9 @@ class TestMetaAgentService:
             event_router=Mock(),
             runs_service=Mock(),
             models_service=AsyncMock(),
+            feedback_service=AsyncMock(),
+            versions_service=AsyncMock(),
+            reviews_service=AsyncMock(),
         )
 
         # Patch the service logger to count warning calls.
@@ -620,7 +631,10 @@ class TestMetaAgentService:
             storage=Mock(),
             event_router=Mock(),
             runs_service=Mock(),
+            versions_service=AsyncMock(),
             models_service=AsyncMock(),
+            feedback_service=AsyncMock(),
+            reviews_service=AsyncMock(),
         )
 
         # Mock extract_and_fetch_urls to return our expected URLs
@@ -640,3 +654,270 @@ class TestMetaAgentService:
                 mock_extract_urls.assert_called_once_with(messages[-1].content)
             else:
                 mock_extract_urls.assert_not_called()
+
+    @pytest.mark.parametrize(
+        "context_results, expected_context",
+        [
+            # All results successful
+            (
+                [
+                    Mock(company_name="Example Corp"),  # company_description
+                    ["Agent 1", "Agent 2"],  # existing_agents
+                    [Mock(id="run1")],  # agent_runs
+                    Mock(count=5, items=["feedback1"]),  # feedback_page
+                    HasActiveRunAndDate(True, datetime.datetime(2025, 1, 1)),  # has_active_runs
+                    10,  # reviewed_input_count
+                ],
+                MetaAgentContext(
+                    company_description=Mock(company_name="Example Corp"),
+                    existing_agents=["Agent 1", "Agent 2"],
+                    agent_runs=[Mock(id="run1")],
+                    feedback_page=Mock(count=5, items=["feedback1"]),
+                    has_active_runs=HasActiveRunAndDate(True, datetime.datetime(2025, 1, 1)),
+                    reviewed_input_count=10,
+                ),
+            ),
+            # Some results failed
+            (
+                [
+                    Exception("Failed to get company description"),  # company_description fails
+                    ["Agent 1"],  # existing_agents succeeds
+                    [Mock(id="run1")],  # agent_runs succeeds
+                    Exception("Failed to get feedback"),  # feedback_page fails
+                    HasActiveRunAndDate(True, datetime.datetime(2025, 1, 1)),  # has_active_runs succeeds
+                    Exception("Failed to get reviewed input count"),  # reviewed_input_count fails
+                ],
+                MetaAgentContext(
+                    company_description=None,
+                    existing_agents=["Agent 1"],
+                    agent_runs=[Mock(id="run1")],
+                    feedback_page=None,
+                    has_active_runs=HasActiveRunAndDate(True, datetime.datetime(2025, 1, 1)),
+                    reviewed_input_count=None,
+                ),
+            ),
+            # All results failed
+            (
+                [
+                    Exception("Failed to get company description"),
+                    Exception("Failed to get existing agents"),
+                    Exception("Failed to get agent runs"),
+                    Exception("Failed to get feedback"),
+                    Exception("Failed to get has active runs"),
+                    Exception("Failed to get reviewed input count"),
+                ],
+                MetaAgentContext(
+                    company_description=None,
+                    existing_agents=None,
+                    agent_runs=None,
+                    feedback_page=None,
+                    has_active_runs=None,
+                    reviewed_input_count=None,
+                ),
+            ),
+        ],
+    )
+    async def test_fetch_meta_agent_context(
+        self,
+        context_results: list[Any],
+        expected_context: MetaAgentContext,
+    ) -> None:
+        """Test that the context fetching handles exceptions properly."""
+        # Create mocks
+        mock_storage = Mock(spec=BackendStorage)
+        mock_event_router = Mock()
+        mock_runs_service = Mock(spec=RunsService)
+
+        # Create the service with mocks
+        service = MetaAgentService(
+            storage=mock_storage,
+            event_router=mock_event_router,
+            runs_service=mock_runs_service,
+            models_service=AsyncMock(),
+            feedback_service=AsyncMock(),
+            versions_service=AsyncMock(),
+            reviews_service=AsyncMock(),
+        )
+
+        # Mock the gather call to return our test results
+        with patch("asyncio.gather", AsyncMock(return_value=context_results)) as mock_gather:
+            # Create test parameters
+            task_tuple = ("test_task", 123)
+            agent_schema_id = 456
+            user_email = "test@example.com"
+            playground_state = PlaygroundState(
+                agent_instructions="test instructions",
+                agent_temperature=0.5,
+                agent_run_ids=["run1", "run2"],
+                selected_models=PlaygroundState.SelectedModels(
+                    column_1=None,
+                    column_2=None,
+                    column_3=None,
+                ),
+            )
+
+            # Call the public method
+            result = await service.fetch_meta_agent_context_for_testing(
+                task_tuple,
+                agent_schema_id,
+                user_email,
+                playground_state,
+            )
+
+            # Verify gather was called with the right arguments
+            mock_gather.assert_called_once()
+
+            # Compare the result with expected values
+            # For company_description, we need to compare attributes since it's a Mock
+            if expected_context.company_description is None:
+                assert result.company_description is None
+            elif result.company_description is not None:
+                assert result.company_description.company_name == expected_context.company_description.company_name
+
+            # Compare existing_agents
+            assert result.existing_agents == expected_context.existing_agents
+
+            # For agent_runs, compare the ids if not None
+            if expected_context.agent_runs is None:
+                assert result.agent_runs is None
+            elif result.agent_runs is not None:
+                assert len(result.agent_runs) == len(expected_context.agent_runs)
+                for i, run in enumerate(result.agent_runs):
+                    assert run.id == expected_context.agent_runs[i].id
+
+            # For feedback_page
+            if expected_context.feedback_page is None:
+                assert result.feedback_page is None
+            elif result.feedback_page is not None:
+                assert result.feedback_page.count == expected_context.feedback_page.count
+                assert result.feedback_page.items == expected_context.feedback_page.items
+
+            # For has_active_runs
+            if expected_context.has_active_runs is None:
+                assert result.has_active_runs is None
+            elif result.has_active_runs is not None:
+                assert result.has_active_runs.has_active_runs == expected_context.has_active_runs.has_active_runs
+                assert (
+                    result.has_active_runs.latest_active_run_date
+                    == expected_context.has_active_runs.latest_active_run_date
+                )
+
+            # For reviewed_input_count
+            assert result.reviewed_input_count == expected_context.reviewed_input_count
+
+    @patch("api.services.internal_tasks.meta_agent_service.meta_agent_user_confirmation_agent", new_callable=AsyncMock)
+    async def test_sanitize_tool_call_auto_run_initially_false(
+        self,
+        mock_confirmation_agent: AsyncMock,
+    ) -> None:
+        """
+        Tests that if tool_call.auto_run is initially False, the confirmation agent is not called
+        and auto_run remains False.
+        """
+        # Create service instance with minimal dependencies
+        service = MetaAgentService(
+            storage=Mock(spec=BackendStorage),
+            event_router=Mock(),
+            runs_service=Mock(spec=RunsService),
+            versions_service=Mock(),
+            models_service=Mock(),
+            feedback_service=Mock(),
+            reviews_service=Mock(),
+        )
+        # Replace the logger with a mock
+        with patch.object(service, "_logger", new=Mock()) as mock_logger:
+            tool_call: MetaAgentToolCallType = ImprovePromptToolCall(
+                run_feedback_message="Test feedback",
+                auto_run=False,  # Initial state
+                tool_call_id="test_improve_false_123",
+                run_id="test_run_id",
+                tool_name="improve_agent_instructions",
+            )
+            assistant_message_content = "Assistant message content"
+
+            # Call the protected method directly in the test
+            await service._sanitize_tool_call_auto_run(tool_call, assistant_message_content)  # pyright: ignore[reportPrivateUsage]
+
+            # Verify expectations
+            assert tool_call.auto_run is False  # Should remain False
+            mock_confirmation_agent.assert_not_called()
+            mock_logger.exception.assert_not_called()
+
+    @pytest.mark.parametrize(
+        "mock_confirmation_return, expected_final_auto_run",
+        [
+            # Scenario 1: Confirmation agent returns False -> auto_run remains True
+            (
+                Mock(requires_user_confirmation=False),
+                True,
+            ),
+            # Scenario 2: Confirmation agent returns True -> auto_run becomes False
+            (
+                Mock(requires_user_confirmation=True),
+                False,
+            ),
+            # Scenario 3: Confirmation agent raises error -> auto_run remains True (and logs)
+            (
+                Exception("Test Error"),
+                True,
+            ),
+        ],
+    )
+    @patch("api.services.internal_tasks.meta_agent_service.meta_agent_user_confirmation_agent", new_callable=AsyncMock)
+    async def test_sanitize_tool_call_auto_run_initially_true(
+        self,
+        mock_confirmation_agent: AsyncMock,
+        mock_confirmation_return: Any,
+        expected_final_auto_run: bool,
+    ) -> None:
+        """
+        Tests that if tool_call.auto_run is initially True, the confirmation agent is called,
+        and auto_run is updated based on the agent's response or exception.
+        """
+        # Create service instance with minimal dependencies
+        service = MetaAgentService(
+            storage=Mock(spec=BackendStorage),
+            event_router=Mock(),
+            runs_service=Mock(spec=RunsService),
+            versions_service=Mock(),
+            models_service=Mock(),
+            feedback_service=Mock(),
+            reviews_service=Mock(),
+        )
+
+        with patch.object(service, "_logger", new=Mock()) as mock_logger:
+            # Setup mock confirmation agent behavior
+            if isinstance(mock_confirmation_return, Exception):
+                mock_confirmation_agent.side_effect = mock_confirmation_return
+            else:
+                mock_confirmation_agent.return_value = mock_confirmation_return
+
+            tool_call: MetaAgentToolCallType = ImprovePromptToolCall(
+                run_feedback_message="Test feedback",
+                auto_run=True,  # Initial state
+                tool_call_id="test_improve_true_456",
+                run_id="test_run_id",
+                tool_name="improve_agent_instructions",
+            )
+            assistant_message_content = "Relevant assistant message"
+
+            # Call the protected method directly in the test
+            await service._sanitize_tool_call_auto_run(tool_call, assistant_message_content)  # pyright: ignore[reportPrivateUsage]
+
+            # Assertions
+            assert tool_call.auto_run == expected_final_auto_run
+
+            # Check confirmation agent call
+            mock_confirmation_agent.assert_called_once()
+            call_args, _ = mock_confirmation_agent.call_args
+            assert len(call_args) == 1
+            assert call_args[0].assistant_message_content == assistant_message_content
+
+            # Check logger call on exception
+            if isinstance(mock_confirmation_return, Exception):
+                mock_logger.exception.assert_called_once_with(
+                    "Error running meta agent user confirmation agent",
+                    exc_info=mock_confirmation_return,
+                )
+            else:
+                mock_logger.exception.assert_not_called()

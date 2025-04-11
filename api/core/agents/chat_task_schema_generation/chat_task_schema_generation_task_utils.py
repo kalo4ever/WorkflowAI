@@ -62,7 +62,7 @@ def _handle_array_field(
     defs: dict[str, Any],
 ) -> dict[str, Any]:
     """Handle ArrayFieldConfig conversion."""
-    items_schema = convert_field_to_json_schema(field.item_type, defs)
+    items_schema = convert_field_to_json_schema(field.items, defs)
     return {
         "type": "array",
         "items": items_schema,

@@ -2374,7 +2374,6 @@ class TestAppendToolCallsToMessages:
 
 
 class TestSafeExecuteTool:
-    @pytest.mark.asyncio
     async def test_cache_hit(self, patched_runner: "WorkflowAIRunner"):
         from core.domain.tool_call import ToolCallRequestWithID
 
@@ -2389,7 +2388,6 @@ class TestSafeExecuteTool:
         assert is_cached is True
         assert result == cached_result
 
-    @pytest.mark.asyncio
     async def test_found_in_messages(self, patched_runner: "WorkflowAIRunner"):
         from core.domain.tool_call import ToolCallRequestWithID
 
@@ -2404,7 +2402,6 @@ class TestSafeExecuteTool:
         expected = tool_call.with_result("Please refer to the previous messages for the result of this tool call")
         assert result == expected
 
-    @pytest.mark.asyncio
     async def test_tool_not_found(self, patched_runner: "WorkflowAIRunner"):
         from core.domain.tool_call import ToolCallRequestWithID
 
@@ -2416,7 +2413,6 @@ class TestSafeExecuteTool:
         assert result.error is not None
         assert "Tool 'nonexistent_tool' does not exist" in result.error
 
-    @pytest.mark.asyncio
     async def test_success_execution(self, patched_runner: "WorkflowAIRunner"):
         from core.domain.tool_call import ToolCallRequestWithID
 
@@ -2437,7 +2433,6 @@ class TestSafeExecuteTool:
         dummy_tool.assert_awaited_once_with(x=10)
         patched_runner._internal_tool_cache.set.assert_awaited_once_with("dummy_tool", {"x": 10}, "success result")  # pyright: ignore[reportPrivateUsage]
 
-    @pytest.mark.asyncio
     async def test_execution_exception(self, patched_runner: "WorkflowAIRunner"):
         from core.domain.tool_call import ToolCallRequestWithID
 

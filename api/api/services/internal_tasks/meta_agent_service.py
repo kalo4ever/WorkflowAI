@@ -2,19 +2,25 @@ import asyncio
 import datetime
 import json
 import logging
-from typing import Any, AsyncIterator, TypeAlias
+from typing import Any, AsyncIterator, NamedTuple, TypeAlias
 
 import workflowai
 from pydantic import BaseModel, Field, model_validator
 from typing_extensions import Literal
 
 from api.services.documentation_service import DocumentationService
+from api.services.feedback_svc import FeedbackService
 from api.services.internal_tasks._internal_tasks_utils import internal_tools_description
 from api.services.models import ModelsService
+from api.services.reviews import ReviewsService
 from api.services.runs import RunsService
 from api.services.slack_notifications import SlackNotificationDestination, get_user_and_org_str, send_slack_notification
 from api.services.tasks import list_agent_summaries
-from core.agents.extract_company_info_from_domain_task import safe_generate_company_description_from_email
+from api.services.versions import VersionsService
+from core.agents.extract_company_info_from_domain_task import (
+    ExtractCompanyInfoFromDomainTaskOutput,
+    safe_generate_company_description_from_email,
+)
 from core.agents.meta_agent import (
     META_AGENT_INSTRUCTIONS,
     EditSchemaToolCallResult,
@@ -24,8 +30,6 @@ from core.agents.meta_agent import (
     MetaAgentOutput,
     RunCurrentAgentOnModelsToolCallRequest,
     RunCurrentAgentOnModelsToolCallResult,
-    WorkflowaiPage,
-    WorkflowaiSection,
     meta_agent,
 )
 from core.agents.meta_agent import (
@@ -34,13 +38,18 @@ from core.agents.meta_agent import (
 from core.agents.meta_agent import (
     PlaygroundState as PlaygroundStateDomain,
 )
+from core.agents.meta_agent_user_confirmation_agent import (
+    MetaAgentUserConfirmationInput,
+    meta_agent_user_confirmation_agent,
+)
 from core.domain.agent_run import AgentRun
 from core.domain.events import EventRouter, MetaAgentChatMessagesSent
 from core.domain.fields.file import File
+from core.domain.page import Page
 from core.domain.task_variant import SerializableTaskVariant
 from core.domain.url_content import URLContent
 from core.runners.workflowai.utils import extract_files
-from core.storage import TaskTuple
+from core.storage import ObjectNotFoundException, TaskTuple
 from core.storage.backend_storage import BackendStorage
 from core.tools import ToolKind
 from core.utils.hash import compute_obj_hash
@@ -48,75 +57,25 @@ from core.utils.url_utils import extract_and_fetch_urls
 
 FIRST_MESSAGE_CONTENT = "Hi, I'm WorkflowAI's agent. How can I help you?"
 
-# MVP for the redirection feature, will be replaced by a dynamic feature in the future
-STATIC_WORKFLOWAI_PAGES = [
-    WorkflowaiSection(  # noqa: F821
-        name="Iterate",
-        pages=[
-            WorkflowaiPage(
-                title="Schemas",
-                description="Dedicated to the management of agent schemas, allow to see previous schema versions, etc.",
-            ),
-            WorkflowaiPage(
-                title="Playground",
-                description="The current page the user is on, allow to run agents, on different models, with different instructions, etc.",
-            ),
-            WorkflowaiPage(
-                title="Versions",
-                description="Allows to see an history of all previous instructions versions of the current agent, with changelogs between versions, etc.",
-            ),
-            WorkflowaiPage(
-                title="Settings",
-                description="Allow to rename the current agent, delete it, or make it public. Also allows to manage private keys that allow to run the agent via API / SDK.",
-            ),
-        ],
-    ),
-    WorkflowaiSection(
-        name="Compare",
-        pages=[
-            WorkflowaiPage(
-                title="Reviews",
-                description="Allows to visualize the annotated output for this agents (positive, negative, etc.)",
-            ),
-            WorkflowaiPage(
-                title="Benchmarks",
-                description="Allows to compare model correctness, cost, latency, based on a set of reviews.",
-            ),
-        ],
-    ),
-    WorkflowaiSection(
-        name="Integrate",
-        pages=[
-            WorkflowaiPage(
-                title="Code",
-                description="Get ready-to-use Python SDK code snippets, TypeScript SDK code snippets, and example REST requests to run the agent via API.",
-            ),
-            WorkflowaiPage(
-                title="Deployments",
-                description="Allows to deploy the current agent to fixed environments 'dev', 'staging', 'production'. This allows, for example,to quickly hotfix instructions in production, since the code point to a static 'production' deployment",
-            ),
-        ],
-    ),
-    WorkflowaiSection(
-        name="Monitor",
-        pages=[
-            WorkflowaiPage(
-                title="Runs",
-                description="Allows to see an history of all previous runs of the current agent. 'Run' refers to a single execution of the agent, with a given input, instructions and a given model.",
-            ),
-            WorkflowaiPage(
-                title="Costs",
-                description="Allows to visualize the cost incurred by the agent per day, for yesterday, last week, last month, last year, and all time.",
-            ),
-        ],
-    ),
-]
-
 
 def _reverse_optional_bool(value: bool | None) -> bool | None:
     if value is None:
         return None
     return not value
+
+
+class HasActiveRunAndDate(NamedTuple):
+    has_active_runs: bool
+    latest_active_run_date: datetime.datetime | None
+
+
+class MetaAgentContext(NamedTuple):
+    company_description: ExtractCompanyInfoFromDomainTaskOutput | None
+    existing_agents: list[str] | None
+    agent_runs: list[AgentRun] | None
+    feedback_page: Page[MetaAgentInput.AgentLifecycleInfo.FeedbackInfo.AgentFeedback] | None
+    has_active_runs: HasActiveRunAndDate | None
+    reviewed_input_count: int | None
 
 
 class MetaAgentToolCall(BaseModel):
@@ -307,13 +266,19 @@ class MetaAgentService:
         storage: BackendStorage,
         event_router: EventRouter,
         runs_service: RunsService,
+        versions_service: VersionsService,
         models_service: ModelsService,
+        feedback_service: FeedbackService,
+        reviews_service: ReviewsService,
     ):
         self._logger = logging.getLogger(self.__class__.__name__)
         self.storage = storage
         self.event_router = event_router
         self.runs_service = runs_service
         self.models_service = models_service
+        self.feedback_service = feedback_service
+        self.versions_service = versions_service
+        self.reviews_service = reviews_service
 
     async def fetch_agent_runs(self, task_tuple: TaskTuple, agent_run_ids: list[str]) -> list[AgentRun]:
         """Allow to concurrently fetch several concurrently and manage expections"""
@@ -410,6 +375,149 @@ class MetaAgentService:
 
         return await extract_and_fetch_urls(message.content)
 
+    async def has_active_agent_runs(
+        self,
+        task_tuple: TaskTuple,
+        task_schema_id: int | None,
+    ) -> HasActiveRunAndDate:
+        try:
+            agent_run = await self.runs_service.latest_run(task_tuple, task_schema_id, is_success=None, is_active=True)
+            return HasActiveRunAndDate(
+                has_active_runs=True,
+                latest_active_run_date=agent_run.created_at,
+            )
+        except ObjectNotFoundException:
+            return HasActiveRunAndDate(
+                has_active_runs=False,
+                latest_active_run_date=None,
+            )
+
+    async def list_deployments(
+        self,
+        task_tuple: TaskTuple,
+        agent_schema_id: int,
+    ) -> list[MetaAgentInput.AgentLifecycleInfo.DeploymentInfo.Deployment]:
+        versions = await self.versions_service.list_version_majors(task_tuple, agent_schema_id, self.models_service)
+
+        deployments: list[MetaAgentInput.AgentLifecycleInfo.DeploymentInfo.Deployment] = []
+
+        for version in versions:
+            for minor in version.minors or []:
+                deployments.extend(
+                    [
+                        MetaAgentInput.AgentLifecycleInfo.DeploymentInfo.Deployment(
+                            environment=deployment.environment,
+                            deployed_at=deployment.deployed_at,
+                            deployed_by_email=deployment.deployed_by.user_email if deployment.deployed_by else None,
+                            model_used=minor.properties.model,
+                            last_active_at=minor.last_active_at,
+                            run_count=minor.run_count,
+                            notes=minor.notes,
+                        )
+                        for deployment in minor.deployments or []
+                    ],
+                )
+
+        return deployments
+
+    async def get_reviewed_input_count(
+        self,
+        task_tuple: TaskTuple,
+        agent_schema_id: int,
+    ) -> int:
+        reviews = await self.reviews_service.list_reviewed_inputs(task_tuple, agent_schema_id)
+        return len(reviews)
+
+    async def fetch_meta_agent_context_for_testing(
+        self,
+        task_tuple: TaskTuple,
+        agent_schema_id: int,
+        user_email: str | None,
+        playground_state: PlaygroundState,
+    ) -> MetaAgentContext:
+        """Public method that wraps _fetch_meta_agent_context for testing purposes."""
+        return await self._fetch_meta_agent_context(
+            task_tuple,
+            agent_schema_id,
+            user_email,
+            playground_state,
+        )
+
+    async def _fetch_meta_agent_context(
+        self,
+        task_tuple: TaskTuple,
+        agent_schema_id: int,
+        user_email: str | None,
+        playground_state: PlaygroundState,
+    ) -> MetaAgentContext:
+        """
+        Fetch all context data needed for the meta agent input, handling exceptions.
+
+        If any individual fetch fails, it returns None for that part of the context
+        instead of failing the entire operation.
+        """
+        context_results = await asyncio.gather(
+            safe_generate_company_description_from_email(user_email),
+            list_agent_summaries(self.storage, limit=10),
+            self.fetch_agent_runs(task_tuple, playground_state.agent_run_ids),
+            self.feedback_service.list_feedback(
+                task_tuple[1],
+                run_id=None,
+                limit=10,
+                offset=0,
+                map_fn=MetaAgentInput.AgentLifecycleInfo.FeedbackInfo.AgentFeedback.from_domain,
+            ),
+            self.has_active_agent_runs(task_tuple, agent_schema_id),
+            self.get_reviewed_input_count(task_tuple, agent_schema_id),
+            return_exceptions=True,
+        )
+
+        # Process each result - for each item, either use the value or log and return a default value
+        if isinstance(context_results[0], BaseException):
+            self._logger.warning("Failed to fetch company_description", exc_info=context_results[0])
+            company_description = None
+        else:
+            company_description = context_results[0]
+
+        if isinstance(context_results[1], BaseException):
+            self._logger.warning("Failed to fetch existing_agents", exc_info=context_results[1])
+            existing_agents = None
+        else:
+            existing_agents = [str(agent) for agent in context_results[1] or []]
+
+        if isinstance(context_results[2], BaseException):
+            self._logger.warning("Failed to fetch agent_runs", exc_info=context_results[2])
+            agent_runs = None
+        else:
+            agent_runs = context_results[2]
+
+        if isinstance(context_results[3], BaseException):
+            self._logger.warning("Failed to fetch feedback_page", exc_info=context_results[3])
+            feedback_page = None
+        else:
+            feedback_page = context_results[3]
+
+        if isinstance(context_results[4], BaseException):
+            self._logger.warning("Failed to fetch has_active_runs", exc_info=context_results[4])
+            has_active_runs = None
+        else:
+            has_active_runs = context_results[4]
+
+        if isinstance(context_results[5], BaseException):
+            self._logger.warning("Failed to fetch reviewed_input_count", exc_info=context_results[5])
+            reviewed_input_count = None
+        else:
+            reviewed_input_count = context_results[5]
+
+        return MetaAgentContext(
+            company_description=company_description,
+            existing_agents=existing_agents,
+            agent_runs=agent_runs,
+            feedback_page=feedback_page,
+            has_active_runs=has_active_runs,
+            reviewed_input_count=reviewed_input_count,
+        )
+
     async def _build_meta_agent_input(
         self,
         task_tuple: TaskTuple,
@@ -419,13 +527,13 @@ class MetaAgentService:
         current_agent: SerializableTaskVariant,
         playground_state: PlaygroundState,
     ) -> tuple[MetaAgentInput, list[AgentRun]]:
-        # Concurrently extract company info and list current agents
-        company_description, existing_agents, agent_runs = await asyncio.gather(
-            safe_generate_company_description_from_email(user_email),
-            list_agent_summaries(self.storage, limit=10),
-            self.fetch_agent_runs(task_tuple, playground_state.agent_run_ids),
+        # Fetch context data with exception handling
+        context = await self._fetch_meta_agent_context(
+            task_tuple,
+            agent_schema_id,
+            user_email,
+            playground_state,
         )
-        existing_agents = [str(agent) for agent in existing_agents]
 
         # Extract files from agent_input
         agent_input_schema = current_agent.input_schema.json_schema.copy()
@@ -439,15 +547,14 @@ class MetaAgentService:
             messages=[message.to_domain() for message in messages],
             latest_messages_url_content=await self._extract_url_content_from_messages(messages),
             company_context=MetaAgentInput.CompanyContext(
-                company_name=company_description.company_name if company_description else None,
-                company_description=company_description.description if company_description else None,
-                company_locations=company_description.locations if company_description else None,
-                company_industries=company_description.industries if company_description else None,
-                company_products=company_description.products if company_description else None,
-                existing_agents_descriptions=existing_agents,
+                company_name=context.company_description.company_name if context.company_description else None,
+                company_description=context.company_description.description if context.company_description else None,
+                company_locations=context.company_description.locations if context.company_description else None,
+                company_industries=context.company_description.industries if context.company_description else None,
+                company_products=context.company_description.products if context.company_description else None,
+                existing_agents_descriptions=context.existing_agents or [],
             ),
-            workflowai_sections=STATIC_WORKFLOWAI_PAGES,
-            relevant_workflowai_documentation_sections=await DocumentationService().get_relevant_doc_sections(
+            workflowai_documentation_sections=await DocumentationService().get_relevant_doc_sections(
                 chat_messages=[message.to_domain() for message in messages],
                 agent_instructions=META_AGENT_INSTRUCTIONS or "",
             ),
@@ -486,10 +593,30 @@ class MetaAgentService:
                             for tool_call in llm_completion.tool_calls or []
                         ],
                     )
-                    for agent_run in agent_runs
-                ],
+                    for agent_run in context.agent_runs
+                ]
+                if context.agent_runs
+                else None,
             ),
-        ), agent_runs
+            agent_lifecycle_info=MetaAgentInput.AgentLifecycleInfo(
+                deployment_info=MetaAgentInput.AgentLifecycleInfo.DeploymentInfo(
+                    has_api_or_sdk_runs=context.has_active_runs.has_active_runs,
+                    latest_api_or_sdk_run_date=context.has_active_runs.latest_active_run_date,
+                    deployments=await self.list_deployments(task_tuple, agent_schema_id),
+                )
+                if context.has_active_runs
+                else None,
+                feedback_info=MetaAgentInput.AgentLifecycleInfo.FeedbackInfo(
+                    user_feedback_count=context.feedback_page.count,
+                    latest_user_feedbacks=context.feedback_page.items,
+                )
+                if context.feedback_page
+                else None,
+                internal_review_info=MetaAgentInput.AgentLifecycleInfo.InternalReviewInfo(
+                    reviewed_input_count=context.reviewed_input_count,
+                ),
+            ),
+        ), context.agent_runs or []
 
     def dispatch_new_user_messages_event(self, messages: list[MetaAgentChatMessage]):
         # Get all consecutive USER messages at the end of the conversation
@@ -634,6 +761,31 @@ class MetaAgentService:
 
         return None
 
+    async def _sanitize_tool_call_auto_run(
+        self,
+        tool_call: MetaAgentToolCallType,
+        assistant_message_content: str,
+    ) -> None:
+        """The meta agent is VERY stubborn in asking user for confirmation before running a tool call,
+        but at the same time returning 'ask_user_confirmation=False' in the tool call.
+        Therefore, we'll use another layer of safety to make sure that when the meta agent asks for user confirmation in the message,
+        the 'auto_run' flag is actually set to false."""
+        if tool_call.auto_run is False:
+            return
+
+        # Only run check if the auto_run flag is set to 'True'
+        try:
+            agent_output = await meta_agent_user_confirmation_agent(
+                MetaAgentUserConfirmationInput(assistant_message_content=assistant_message_content),
+            )
+            if agent_output.requires_user_confirmation is True:
+                # The user confirmation agent has decided that a confirmation is needed, so we switch the auto_run to 'False'
+                tool_call.auto_run = False
+
+        except Exception as e:
+            self._logger.exception("Error running meta agent user confirmation agent", exc_info=e)
+            # do nothing
+
     async def stream_meta_agent_response(
         self,
         task_tuple: TaskTuple,
@@ -673,10 +825,12 @@ class MetaAgentService:
                 yield ret
 
         if chunk and (tool_call := self._extract_tool_call_from_meta_agent_output(chunk.output, agent_runs, messages)):
+            assistant_message_content = chunk.output.content or ""
+            await self._sanitize_tool_call_auto_run(tool_call, assistant_message_content)
             ret = [
                 MetaAgentChatMessage(
                     role="ASSISTANT",
-                    content=chunk.output.content or "",
+                    content=assistant_message_content,
                     tool_call=tool_call,
                     feedback_token=chunk.feedback_token,
                 ),

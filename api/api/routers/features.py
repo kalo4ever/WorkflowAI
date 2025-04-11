@@ -1,5 +1,5 @@
 from collections.abc import AsyncIterator
-from datetime import date, timedelta
+from datetime import date
 from typing import Annotated
 
 from fastapi import APIRouter, Query
@@ -18,6 +18,7 @@ from api.services.features import (
     FeatureService,
 )
 from api.services.models import ModelsService
+from api.services.uptime_service import UptimeService
 from core.domain.features import BaseFeature, DirectToAgentBuilderFeature, FeatureWithImage
 from core.domain.models.models import Model
 from core.domain.page import Page
@@ -219,18 +220,26 @@ async def get_weekly_runs(
 
 
 class UptimeResponse(BaseModel):
-    uptime_percent: float
-    since: date
+    uptime_percent: float | None
+    since: date | None
     source: str
 
 
 @router.get("/uptimes/workflowai")
 async def get_workflowai_uptime() -> UptimeResponse:
-    from_date = date.today() - timedelta(days=90)
-    return UptimeResponse(uptime_percent=100, since=from_date, source="https://status.workflowai.com")
+    uptime_info = await UptimeService().get_workflowai_uptime()
+    return UptimeResponse(
+        uptime_percent=uptime_info.uptime,
+        since=uptime_info.since,
+        source=uptime_info.source,
+    )
 
 
 @router.get("/uptimes/openai")
 async def get_openai_uptime() -> UptimeResponse:
-    from_date = date.today() - timedelta(days=90)
-    return UptimeResponse(uptime_percent=99.89, since=from_date, source="https://status.openai.com")
+    uptime_info = await UptimeService().get_openai_uptime()
+    return UptimeResponse(
+        uptime_percent=uptime_info.uptime,
+        since=uptime_info.since,
+        source=uptime_info.source,
+    )
