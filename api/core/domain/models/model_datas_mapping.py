@@ -1263,7 +1263,7 @@ def _build_model_datas():
             display_name="DeepSeek V3 (latest)",
         ),
         Model.GROK_3_BETA: ModelData(
-            display_name="[BETA] Grok 3",
+            display_name="Grok 3 (beta)",
             supports_json_mode=True,
             supports_input_image=True,
             supports_multiple_images_in_input=True,
@@ -1275,7 +1275,7 @@ def _build_model_datas():
             ),
             provider_for_pricing=Provider.X_AI,
             icon_url="https://workflowai.blob.core.windows.net/workflowai-public/xai.svg",
-            release_date=date(2025, 4, 4),
+            release_date=date(2025, 4, 10),
             # TODO: Update the quality index
             quality_index=835,
             provider_name=DisplayedProvider.X_AI.value,
@@ -1283,7 +1283,7 @@ def _build_model_datas():
             supports_structured_output=True,
         ),
         Model.GROK_3_FAST_BETA: ModelData(
-            display_name="[BETA] Grok 3 Fast",
+            display_name="Grok 3 Fast (beta)",
             supports_json_mode=True,
             supports_input_image=True,
             supports_multiple_images_in_input=True,
@@ -1295,7 +1295,7 @@ def _build_model_datas():
             ),
             provider_for_pricing=Provider.X_AI,
             icon_url="https://workflowai.blob.core.windows.net/workflowai-public/xai.svg",
-            release_date=date(2025, 4, 4),
+            release_date=date(2025, 4, 10),
             # TODO: Update the quality index
             quality_index=835,
             provider_name=DisplayedProvider.X_AI.value,
@@ -1303,7 +1303,7 @@ def _build_model_datas():
             supports_structured_output=True,
         ),
         Model.GROK_3_MINI_BETA_HIGH_REASONING_EFFORT: ModelData(
-            display_name="[BETA] Grok 3 Mini - High reasoning effort",
+            display_name="Grok 3 Mini (beta) - High reasoning effort",
             supports_json_mode=True,
             supports_input_image=True,
             supports_multiple_images_in_input=True,
@@ -1315,7 +1315,7 @@ def _build_model_datas():
             ),
             provider_for_pricing=Provider.X_AI,
             icon_url="https://workflowai.blob.core.windows.net/workflowai-public/xai.svg",
-            release_date=date(2025, 4, 4),
+            release_date=date(2025, 4, 10),
             # TODO: Update the quality index
             quality_index=820,
             provider_name=DisplayedProvider.X_AI.value,
@@ -1323,7 +1323,7 @@ def _build_model_datas():
             supports_structured_output=True,
         ),
         Model.GROK_3_MINI_BETA_LOW_REASONING_EFFORT: ModelData(
-            display_name="[BETA] Grok 3 Mini - Low reasoning effort",
+            display_name="Grok 3 Mini (beta) - Low reasoning effort",
             supports_json_mode=True,
             supports_input_image=True,
             supports_multiple_images_in_input=True,
@@ -1335,7 +1335,7 @@ def _build_model_datas():
             ),
             provider_for_pricing=Provider.X_AI,
             icon_url="https://workflowai.blob.core.windows.net/workflowai-public/xai.svg",
-            release_date=date(2025, 4, 4),
+            release_date=date(2025, 4, 10),
             # TODO: Update the quality index
             quality_index=815,
             provider_name=DisplayedProvider.X_AI.value,
@@ -1343,7 +1343,7 @@ def _build_model_datas():
             supports_structured_output=True,
         ),
         Model.GROK_3_MINI_FAST_BETA_HIGH_REASONING_EFFORT: ModelData(
-            display_name="[BETA] Grok 3 Mini Fast - High reasoning effort",
+            display_name="Grok 3 Mini Fast (beta) - High reasoning effort",
             supports_json_mode=True,
             supports_input_image=True,
             supports_multiple_images_in_input=True,
@@ -1355,7 +1355,7 @@ def _build_model_datas():
             ),
             provider_for_pricing=Provider.X_AI,
             icon_url="https://workflowai.blob.core.windows.net/workflowai-public/xai.svg",
-            release_date=date(2025, 4, 4),
+            release_date=date(2025, 4, 10),
             # TODO: Update the quality index
             quality_index=820,
             provider_name=DisplayedProvider.X_AI.value,
@@ -1363,7 +1363,7 @@ def _build_model_datas():
             supports_structured_output=True,
         ),
         Model.GROK_3_MINI_FAST_BETA_LOW_REASONING_EFFORT: ModelData(
-            display_name="[BETA] Grok 3 Mini Fast - Low reasoning effort",
+            display_name="Grok 3 Mini Fast (beta) - Low reasoning effort",
             supports_json_mode=True,
             supports_input_image=True,
             supports_multiple_images_in_input=True,
@@ -1375,7 +1375,7 @@ def _build_model_datas():
             ),
             provider_for_pricing=Provider.X_AI,
             icon_url="https://workflowai.blob.core.windows.net/workflowai-public/xai.svg",
-            release_date=date(2025, 4, 4),
+            release_date=date(2025, 4, 10),
             # TODO: Update the quality index
             quality_index=815,
             provider_name=DisplayedProvider.X_AI.value,
