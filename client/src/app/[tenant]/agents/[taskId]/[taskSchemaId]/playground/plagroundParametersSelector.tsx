@@ -70,7 +70,7 @@ export function PlagroundParametersSelector(props: PlaygroundParametersSelectorP
 
   return (
     <div className='flex flex-col overflow-hidden w-full h-full'>
-      <div className='flex items-center justify-between border-b border-gray-200 border-dashed px-4 h-[50px] flex-shrink-0'>
+      <div className='flex sm:flex-row flex-col sm:gap-1 gap-3 justify-between sm:items-center items-start border-b border-gray-200 border-dashed px-4 sm:h-[50px] sm:py-0 py-3 flex-shrink-0'>
         <TitleWithHistoryControls
           title='Parameters'
           isPreviousOn={isPreviousAvailable}

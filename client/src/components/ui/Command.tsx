@@ -72,6 +72,9 @@ function CustomCommandInput({ placeholder, search, onSearchChange }: CustomComma
     },
     [onSearchChange]
   );
+
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
   return (
     <div className='flex items-center border-b pl-3'>
       <SearchRegular className='h-4.5 w-4.5 shrink-0 text-gray-600' />
@@ -83,6 +86,7 @@ function CustomCommandInput({ placeholder, search, onSearchChange }: CustomComma
         autoComplete='off'
         autoCorrect='off'
         autoCapitalize='off'
+        autoFocus={!isMobile}
       />
     </div>
   );
