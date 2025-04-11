@@ -16,7 +16,7 @@ export function GraphComponent(props: Props) {
   const { weeklyRuns } = useOrFetchWeeklyRuns(6);
 
   const title = useMemo(() => {
-    if (!weeklyRuns || weeklyRuns.length === 0) return undefined;
+    if (!weeklyRuns || weeklyRuns.length === 0) return 'We processed over 1,000,000 runs last week';
     const lastWeek = weeklyRuns[weeklyRuns.length - 1];
     return `We processed ${lastWeek.run_count} runs last week...`;
   }, [weeklyRuns]);
@@ -55,9 +55,11 @@ export function GraphComponent(props: Props) {
         <div className='flex w-full items-center justify-center text-center text-gray-900 font-semibold sm:text-[30px] text-[24px]'>
           {title}
         </div>
-        <div className='flex w-fit items-center justify-center text-center text-gray-500 font-normal sm:text-[20px] text-[16px] whitespace-pre-wrap'>
-          {subtitle}
-        </div>
+        {subtitle && (
+          <div className='flex w-fit items-center justify-center text-center text-gray-500 font-normal sm:text-[20px] text-[16px] whitespace-pre-wrap'>
+            {subtitle}
+          </div>
+        )}
       </div>
 
       <div className='flex flex-col w-full relative'>
@@ -84,6 +86,7 @@ export function GraphComponent(props: Props) {
               tooltipLabel='Run Count'
               className='pr-3 flex w-full h-full overflow-hidden'
               hideFractionsOnYAxis={true}
+              turnOffFocus={true}
             />
           </div>
         </div>

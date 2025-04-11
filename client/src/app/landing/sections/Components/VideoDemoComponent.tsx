@@ -7,7 +7,7 @@ import {
   DataUsageRegular,
   ListBarTreeRegular,
 } from '@fluentui/react-icons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 type VideoDemo = {
@@ -30,7 +30,7 @@ const videoDemos: VideoDemo[] = [
   },
   {
     id: 2,
-    videoId: 'dd690ad4cea386e49731f843ecfd9b63',
+    videoId: 'd5eb8fa37be6e96aa43990015f1ef5de',
     width: 954,
     height: 566,
     name: 'Compare',
@@ -46,7 +46,7 @@ const videoDemos: VideoDemo[] = [
   },
   {
     id: 4,
-    videoId: 'dd690ad4cea386e49731f843ecfd9b63',
+    videoId: 'd5eb8fa37be6e96aa43990015f1ef5de',
     width: 954,
     height: 566,
     name: 'Observe',
@@ -62,7 +62,7 @@ const videoDemos: VideoDemo[] = [
   },
   {
     id: 6,
-    videoId: 'dd690ad4cea386e49731f843ecfd9b63',
+    videoId: 'd5eb8fa37be6e96aa43990015f1ef5de',
     width: 954,
     height: 566,
     name: 'Monitor',
@@ -93,6 +93,51 @@ export function VideoDemoButton(props: VideoDemoButtonProps) {
   );
 }
 
+type SingleVideoDemoProps = {
+  videoId: string;
+  id: number;
+  selectedVideoDemoId: number;
+};
+
+export function SingleVideoDemoComponent(props: SingleVideoDemoProps) {
+  const { videoId, id, selectedVideoDemoId } = props;
+  const [shouldReset, setShouldReset] = useState(false);
+
+  const isSelected = id === selectedVideoDemoId;
+
+  useEffect(() => {
+    if (isSelected) {
+      setShouldReset(true);
+      // Reset the flag after a short delay to allow the currentTime to take effect
+      const timer = setTimeout(() => setShouldReset(false), 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isSelected]);
+
+  const currentTime = shouldReset || !isSelected ? 0 : undefined;
+
+  return (
+    <div
+      key={id}
+      className='absolute top-0 left-0 flex items-center justify-center w-full h-full'
+      style={{ opacity: isSelected ? 1 : 0 }}
+    >
+      <Stream
+        src={videoId}
+        controls={false}
+        muted={true}
+        preload='auto'
+        autoplay={true}
+        loop={true}
+        height='1080'
+        width='1920'
+        currentTime={currentTime}
+        className='w-full h-full rounded-[2px]'
+      />
+    </div>
+  );
+}
+
 type Props = {
   className?: string;
 };
@@ -115,31 +160,16 @@ export function VideoDemoComponent(props: Props) {
         ))}
       </div>
 
-      <div className='flex w-full h-full border border-gray-100 bg-white sm:p-4 p-0 rounded-[4px] overflow-hidden'>
-        <div className='flex w-full h-full rounded-[2px] border border-gray-200 overflow-hidden'>
-          <div className='relative flex w-full overflow-hidden' style={{ paddingTop: '59.3%' }}>
-            {videoDemos.map((videoDemo) => (
-              <div
-                key={videoDemo.id}
-                className={cn(
-                  'absolute top-0 left-0 flex items-center justify-center w-full h-full',
-                  selectedVideoDemo.id === videoDemo.id ? 'opacity-100' : 'opacity-0'
-                )}
-              >
-                <Stream
-                  src={videoDemo.videoId}
-                  controls={false}
-                  muted={true}
-                  preload='auto'
-                  autoplay={true}
-                  loop={true}
-                  className='w-full h-full rounded-[2px]'
-                  height='1080'
-                  width='1920'
-                />
-              </div>
-            ))}
-          </div>
+      <div className='flex w-full h-full border border-gray-200 p-0 rounded-[4px] overflow-hidden'>
+        <div className='relative flex w-full overflow-hidden' style={{ paddingTop: '59.3%' }}>
+          {videoDemos.map((videoDemo) => (
+            <SingleVideoDemoComponent
+              key={videoDemo.id}
+              videoId={videoDemo.videoId}
+              id={videoDemo.id}
+              selectedVideoDemoId={selectedVideoDemo.id}
+            />
+          ))}
         </div>
       </div>
     </div>

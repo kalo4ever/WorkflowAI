@@ -58,11 +58,13 @@ export const eighteenthNewHeaderEntry: HeaderEntry = {
       <a href='https://lmarena.ai/?leaderboard' className='underline' target='_blank' rel='noopener noreferrer'>
         best models
       </a>
-      . But today, the top 10 models are spread across OpenAI, Anthropic, Google, Llama and Deepseek. WorkflowAI brings
-      all the state-of-the-art models together — in one platform, with no setup required.
+      . But today, the top 10 models are spread across OpenAI, Anthropic, Google, Llama, Grok and DeepSeek. WorkflowAI
+      brings all the state-of-the-art models together — in one platform, with no setup required.
     </div>
   ),
   descriptionMaxWidth: 'max-w-[780px]',
+  buttonText: 'Explore top models on the playground',
+  url: 'https://workflowai.com/docs/agents/flight-info-extractor/3?versionId=89ed288ccfc7a3ef813119713d50683d&showDiffMode=true&show2ColumnLayout=false&taskRunId2=019620b6-0076-73b5-cb3a-d12cbbce7957&taskRunId3=019620b6-0072-7046-298f-c912681cedf6&taskRunId1=019620b6-3115-7045-ce28-5b33263c527b',
 };
 
 export const eighteenthNewImageEntry: ImageEntry = {
@@ -78,7 +80,7 @@ export const seventeenthNewHeaderEntry: HeaderEntry = {
   description:
     'Compare the top models in one unified playground. Evaluate quality, cost, and speed — and pick what’s best for your product.',
   descriptionMaxWidth: 'max-w-[580px]',
-  buttonText: 'Explore all 73 models on the playground',
+  buttonText: 'Explore all 80 models on the playground',
   url: 'https://workflowai.com/docs/agents/flight-info-extractor/3?versionId=89ed288ccfc7a3ef813119713d50683d&showDiffMode=true&show2ColumnLayout=false&taskRunId2=019620b6-0076-73b5-cb3a-d12cbbce7957&taskRunId3=019620b6-0072-7046-298f-c912681cedf6&taskRunId1=019620b6-3115-7045-ce28-5b33263c527b',
 };
 
@@ -174,7 +176,7 @@ export const twelfthNewFeaturesEntries: FeatureEntry[] = [
     imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration32.jpg',
     imageHeight: 310,
     imageWidth: 524,
-    buttonText: 'Explore all 73 models on the playground',
+    buttonText: 'Explore all 80 models on the playground',
     url: 'https://workflowai.com/docs/agents/flight-info-extractor/3?versionId=89ed288ccfc7a3ef813119713d50683d&showDiffMode=true&show2ColumnLayout=false&taskRunId2=019620b6-0076-73b5-cb3a-d12cbbce7957&taskRunId3=019620b6-0072-7046-298f-c912681cedf6&taskRunId1=019620b6-3115-7045-ce28-5b33263c527b',
   },
   {
@@ -185,7 +187,7 @@ export const twelfthNewFeaturesEntries: FeatureEntry[] = [
     imageHeight: 310,
     imageWidth: 524,
     buttonText: 'Try this feature',
-    url: 'https://workflowai.com/docs/agents/flight-info-extractor/3?versionId=89ed288ccfc7a3ef813119713d50683d&showDiffMode=true&show2ColumnLayout=false&taskRunId2=019620b6-0076-73b5-cb3a-d12cbbce7957&taskRunId3=019620b6-0072-7046-298f-c912681cedf6&taskRunId1=019620b6-3115-7045-ce28-5b33263c527b',
+    url: 'https://workflowai.com/docs/agents/flight-info-extractor/3/runs?page=0',
   },
   {
     title: 'Edit prompts. Skip the tickets.',
@@ -206,19 +208,18 @@ export const eleventhNewHeaderEntry: HeaderEntry = {
 
 export const eleventhNewFeaturesEntries: FeatureEntry[] = [
   {
-    title: 'One SDK to run them all (73, to be exact).',
+    title: 'One SDK to run them all (80, to be exact).',
     description:
       'Stop wasting time maintaining separate integrations for every LLM. WorkflowAI gives you unified, seamless access to all models through a single, clean API.',
     imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration7.jpg',
-    url: 'https://workflowai.com/docs/agents/flight-info-extractor/3?versionId=89ed288ccfc7a3ef813119713d50683d&showDiffMode=true&show2ColumnLayout=false&taskRunId2=0195ee61-f33b-70a7-6e52-dcc855a12320&taskRunId3=0195ee61-f393-71d1-dc40-8dc035141299&taskRunId1=0195f2a1-0a8e-7231-7a3e-35154c7229e1',
     qoute: {
       quote:
         '“Being provider-agnostic used to mean maintaining multiple complex integrations. With WorkflowAI, we can seamlessly switch between LLM providers without any extra integration effort or overhead, saving us engineering time and headaches.”',
       authorImageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/author4.jpg',
       quoteAuthor: 'Aymeric Beaumet',
       authorsPosition: 'CTO',
-      authorsCompany: 'InterfaceAI',
-      companyURL: 'https://interfaceai.com',
+      authorsCompany: 'M1',
+      companyURL: 'https://www.hellom1.com/',
     },
   },
   {
@@ -226,7 +227,6 @@ export const eleventhNewFeaturesEntries: FeatureEntry[] = [
     description:
       'WorkflowAI ensures your AI responses always match your defined structure, simplifying integrations, reducing parsing errors, and making your data reliable and ready for use.',
     imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration8.jpg',
-    url: 'https://workflowai.com/docs/agents/insurance-policy-information-extraction/2?version[…]68b05a9707ea38c6b7=&showDiffMode=false&show2ColumnLayout=false&versionId=ae1b15cab4cd8268b05a9707ea38c6b7&taskRunId1=0195f2aa-89d5-71c4-39eb-ce2c2fc8652f&taskRunId3=0195f2aa-89db-7171-3d4f-ddfb35bac7dc&taskRunId2=0195f2aa-89d6-70b0-24a9-8e8a69ef0b2f',
     qoute: {
       quote:
         '“Before WorkflowAI, parsing AI outputs was brittle and error-prone. Now we get structured outputs consistently, streamlining our workflows and significantly improving reliability.”',
@@ -434,8 +434,8 @@ export const fourthNewFeaturesEntries: FeatureEntry[] = [
       authorImageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/author3.jpg',
       quoteAuthor: 'Maxime Germain',
       authorsPosition: 'CEO',
-      authorsCompany: 'InterfaceAI',
-      companyURL: 'https://interfaceai.com',
+      authorsCompany: 'M1',
+      companyURL: 'https://www.hellom1.com/',
     },
   },
   {
@@ -449,8 +449,8 @@ export const fourthNewFeaturesEntries: FeatureEntry[] = [
       authorImageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/author4.jpg',
       quoteAuthor: 'Aymeric Beaumet',
       authorsPosition: 'CTO',
-      authorsCompany: 'InterfaceAI',
-      companyURL: 'https://interfaceai.com',
+      authorsCompany: 'M1',
+      companyURL: 'https://www.hellom1.com/',
     },
   },
   {
@@ -464,8 +464,8 @@ export const fourthNewFeaturesEntries: FeatureEntry[] = [
       authorImageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/author8.jpg',
       quoteAuthor: 'Justin Bureau',
       authorsPosition: 'Product Manager',
-      authorsCompany: 'InterfaceAI',
-      companyURL: 'https://www.interfaceai.com',
+      authorsCompany: 'M1',
+      companyURL: 'https://www.hellom1.com/',
     },
   },
 ];

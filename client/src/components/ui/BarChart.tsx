@@ -11,6 +11,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { cn } from '@/lib/utils';
 
 export const description = 'A bar chart with a label';
 
@@ -49,6 +50,7 @@ type BarChartProps = {
   tooltipLabel: string;
   showXAxisLabels?: boolean;
   minimalWidthForLabels?: number;
+  turnOffFocus?: boolean;
 };
 
 export function BarChart(props: BarChartProps) {
@@ -65,6 +67,7 @@ export function BarChart(props: BarChartProps) {
     barRadius = 8,
     hideFractionsOnYAxis = false,
     tooltipLabel,
+    turnOffFocus = false,
   } = props;
 
   const areAllTheValuesZero = useMemo(() => data.every((item) => item.y === 0), [data]);
@@ -81,7 +84,12 @@ export function BarChart(props: BarChartProps) {
   }, [containerWidth, data.length]);
 
   return (
-    <ResponsiveContainer width='100%' height={height} className={className} onResize={handleResize}>
+    <ResponsiveContainer
+      width='100%'
+      height={height}
+      className={cn(className, turnOffFocus && 'no-focus')}
+      onResize={handleResize}
+    >
       <RechartsBarChart
         accessibilityLayer
         data={data}

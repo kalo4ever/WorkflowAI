@@ -16,8 +16,16 @@ export function HeaderComponent(props: Props) {
         Build AI features your users will love.
       </div>
       <div className='sm:text-[20px] text-[18px] text-gray-500 font-normal text-center leading-[1.5] max-w-[740px] mt-4'>
-        WorkflowAI is an open-source platform where product and engineering teams collaborate to build and iterate on AI
-        features.
+        WorkflowAI is an{' '}
+        <a
+          href='https://github.com/WorkflowAI/workflowai'
+          className='underline'
+          target='_blank'
+          rel='noopener noreferrer'
+        >
+          open-source
+        </a>{' '}
+        platform where product and engineering teams collaborate to build and iterate on AI features.
       </div>
       <div className='flex sm:flex-row flex-col sm:w-fit w-full gap-4 my-4 items-center justify-center'>
         <Button variant='newDesign' className='sm:w-fit w-full' onClick={showSuggestedFeaturesModal}>
