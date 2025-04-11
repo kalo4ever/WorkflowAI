@@ -328,21 +328,6 @@ class XAIProvider(HTTPXProvider[XAIConfig, CompletionResponse]):
         ]
         return tool_calls
 
-    @override
-    async def _extract_and_log_rate_limits(self, response: Response, options: ProviderOptions):
-        await self._log_rate_limit_remaining(
-            "requests",
-            remaining=response.headers.get("x-ratelimit-remaining-requests"),
-            total=response.headers.get("x-ratelimit-limit-requests"),
-            options=options,
-        )
-        await self._log_rate_limit_remaining(
-            "tokens",
-            remaining=response.headers.get("x-ratelimit-remaining-tokens"),
-            total=response.headers.get("x-ratelimit-limit-tokens"),
-            options=options,
-        )
-
     def _invalid_argument_error(self, payload: XAIError, response: Response) -> ProviderError:
         message = payload.error
         match message:
