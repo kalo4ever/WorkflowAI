@@ -994,7 +994,7 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
     resetOldInstructions();
   }, [setImproveVersionChangelog, resetOldInstructions]);
 
-  const { isInDemoMode } = useDemoMode();
+  const { isInDemoMode, onDifferentTenant } = useDemoMode();
 
   const playgroundState: PlaygroundState = useMemo(() => {
     const models: SelectedModels = {
@@ -1092,6 +1092,16 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
   }, [cancelScheduledPlaygroundMessage, cancelImproveInstructions, onStopGeneratingInput, onStopAllRuns]);
 
   const isMobile = useIsMobile();
+
+  const shouldShowChat = useMemo(() => {
+    if (isMobile) {
+      return false;
+    }
+    if (onDifferentTenant) {
+      return false;
+    }
+    return true;
+  }, [isMobile, onDifferentTenant]);
 
   return (
     <div className='flex flex-row h-full w-full'>
@@ -1229,7 +1239,7 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
           </div>
         </PageContainer>
       </div>
-      {!isMobile && (
+      {shouldShowChat && (
         <PlaygroundChat
           tenant={tenant}
           taskId={taskId}

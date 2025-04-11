@@ -6,7 +6,7 @@ export function useDemoMode() {
   const tenant = useTenantID();
 
   const isLoggedOut = !isSignedIn;
-  const onDifferentTenant = tenant !== tenantSlug;
+  const onDifferentTenant = tenant !== tenantSlug && tenant !== '_';
   const isInDemoMode = isLoggedOut || onDifferentTenant;
 
   return { isInDemoMode, isLoggedOut, onDifferentTenant };
