@@ -12,6 +12,7 @@ from core.domain.errors import (
     ProviderError,
     UnknownProviderError,
 )
+from core.domain.fields.internal_reasoning_steps import InternalReasoningStep
 from core.domain.llm_usage import LLMUsage
 from core.domain.message import Message
 from core.domain.models import Model, Provider
@@ -27,6 +28,7 @@ from core.providers.google.google_provider_domain import (
     internal_tool_name_to_native_tool_call,
     native_tool_name_to_internal,
 )
+from core.providers.openai._openai_utils import prepare_openai_json_schema
 from core.providers.openai.openai_domain import parse_tool_call_or_raise
 from core.providers.xai.xai_config import THINKING_MODEL_MAP, XAIConfig
 from core.providers.xai.xai_domain import (
@@ -54,7 +56,7 @@ class XAIProvider(HTTPXProvider[XAIConfig, CompletionResponse]):
         return JSONSchemaResponseFormat(
             json_schema=XAISchema(
                 name=get_unique_schema_name(options.task_name, options.output_schema),
-                json_schema=options.output_schema,
+                json_schema=prepare_openai_json_schema(options.output_schema),
             ),
         )
 
@@ -143,10 +145,13 @@ class XAIProvider(HTTPXProvider[XAIConfig, CompletionResponse]):
     def _request_url(self, model: Model, stream: bool) -> str:
         return self._config.url
 
-    # TODO:
-    # @override
-    # def _extract_reasoning_steps(self, response: CompletionResponse) -> list[InternalReasoningStep] | None:
-    #     return None
+    @override
+    def _extract_reasoning_steps(self, response: CompletionResponse) -> list[InternalReasoningStep] | None:
+        try:
+            content = response.choices[0].message.reasoning_content
+        except IndexError:
+            return None
+        return [InternalReasoningStep(explaination=content)]
 
     @override
     def _extract_content_str(self, response: CompletionResponse) -> str:
@@ -245,46 +250,48 @@ class XAIProvider(HTTPXProvider[XAIConfig, CompletionResponse]):
         if raw.usage:
             raw_completion.usage = raw.usage.to_domain()
 
-        if raw.choices:
-            tools_calls: list[ToolCallRequestWithID] = []
-            if raw.choices[0].delta.tool_calls:
-                for tool_call in raw.choices[0].delta.tool_calls:
-                    # Check if a tool call at that index is already in the buffer
-                    if tool_call.index not in tool_call_request_buffer:
-                        tool_call_request_buffer[tool_call.index] = ToolCallRequestBuffer()
+        if not raw.choices:
+            return ParsedResponse("")
 
-                    buffered_tool_call = tool_call_request_buffer[tool_call.index]
+        first_choice_delta = raw.choices[0].delta
+        tools_calls: list[ToolCallRequestWithID] = []
+        if first_choice_delta.tool_calls:
+            for tool_call in first_choice_delta.tool_calls:
+                # Check if a tool call at that index is already in the buffer
+                if tool_call.index not in tool_call_request_buffer:
+                    tool_call_request_buffer[tool_call.index] = ToolCallRequestBuffer()
 
-                    if tool_call.id and not buffered_tool_call.id:
-                        buffered_tool_call.id = tool_call.id
+                buffered_tool_call = tool_call_request_buffer[tool_call.index]
 
-                    if tool_call.function.name and not buffered_tool_call.tool_name:
-                        buffered_tool_call.tool_name = tool_call.function.name
+                if tool_call.id and not buffered_tool_call.id:
+                    buffered_tool_call.id = tool_call.id
 
-                    if tool_call.function.arguments:
-                        buffered_tool_call.tool_input += tool_call.function.arguments
+                if tool_call.function.name and not buffered_tool_call.tool_name:
+                    buffered_tool_call.tool_name = tool_call.function.name
 
-                    if buffered_tool_call.id and buffered_tool_call.tool_name and buffered_tool_call.tool_input:
-                        try:
-                            tool_input_dict = json.loads(buffered_tool_call.tool_input)
-                        except JSONDecodeError:
-                            # That means the tool call is not full streamed yet
-                            continue
+                if tool_call.function.arguments:
+                    buffered_tool_call.tool_input += tool_call.function.arguments
 
-                        tools_calls.append(
-                            ToolCallRequestWithID(
-                                id=buffered_tool_call.id,
-                                tool_name=native_tool_name_to_internal(buffered_tool_call.tool_name),
-                                tool_input_dict=tool_input_dict,
-                            ),
-                        )
+                if buffered_tool_call.id and buffered_tool_call.tool_name and buffered_tool_call.tool_input:
+                    try:
+                        tool_input_dict = json.loads(buffered_tool_call.tool_input)
+                    except JSONDecodeError:
+                        # That means the tool call is not full streamed yet
+                        continue
 
-            return ParsedResponse(
-                raw.choices[0].delta.content or "",
-                tool_calls=tools_calls,
-            )
+                    tools_calls.append(
+                        ToolCallRequestWithID(
+                            id=buffered_tool_call.id,
+                            tool_name=native_tool_name_to_internal(buffered_tool_call.tool_name),
+                            tool_input_dict=tool_input_dict,
+                        ),
+                    )
 
-        return ParsedResponse("")
+        return ParsedResponse(
+            first_choice_delta.content or "",
+            tool_calls=tools_calls,
+            reasoning_steps=first_choice_delta.reasoning_content,
+        )
 
     def _compute_prompt_token_count(
         self,

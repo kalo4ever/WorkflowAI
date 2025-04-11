@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import Any, Literal, TypedDict
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from core.domain.llm_usage import LLMUsage
 from core.utils.fields import datetime_factory
@@ -16,6 +16,8 @@ class RawCompletion(BaseModel):
 
     def end(self):
         self.end_time = datetime.now(timezone.utc)
+
+    model_config = ConfigDict(extra="allow")
 
 
 class TextContentDict(TypedDict):

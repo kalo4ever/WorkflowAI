@@ -2,7 +2,7 @@ import json
 import logging
 from typing import Literal, cast
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from core.domain.errors import (
     MissingEnvVariablesError,
@@ -45,8 +45,8 @@ class AmazonBedrockConfig(BaseModel):
 
     aws_bedrock_access_key: str
     aws_bedrock_secret_key: str
-    resource_id_x_model_map: dict[Model, str]
-    available_model_x_region_map: dict[Model, str]
+    resource_id_x_model_map: dict[Model, str] = Field(default_factory=_default_resource_ids)
+    available_model_x_region_map: dict[Model, str] = Field(default_factory=dict)
     default_region: str = "us-west-2"
 
     def __str__(self):
