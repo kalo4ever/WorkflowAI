@@ -23,13 +23,11 @@ Try this demo feature:
 
 - **Faster Time to Market**: Build production-ready AI features in minutes through a web-app – no coding required.
 
-- **Developer-Friendly**: Need more control? Seamlessly extend functionality with our [Python SDK](https://docs.workflowai.com/python-sdk/get-started) when you need custom logic.
-
 - **Interactive Playground**: Test and compare 70+ leading AI models side-by-side in our visual playground. See the difference in responses, costs, and latency. [Try it now](https://workflowai.com/docs/agents/flight-info-extractor/1?versionId=b9cf227a9a2e3c90f02ca98a59cd88cf&showDiffMode=false&show2ColumnLayout=false&taskRunId1=0195ee60-6fda-71c1-5f2f-5713168b43e6&taskRunId3=01961b95-8ac7-718c-e17d-2603af7f3708&taskRunId2=0195ee60-6eac-70cd-7bd5-25fddaf31309).
 
 https://github.com/user-attachments/assets/febf1047-ed85-4af0-b796-5242aef051b4
 
-- **Model-agnostic**: Works with all major AI models including OpenAI, Anthropic, Claude, Google/Gemini, Mistral, Deepseek, with a unified interface that makes switching between providers seamless. [View all supported models](https://workflowai.com/docs/agents/flight-info-extractor/1).
+- **Model-agnostic**: Works with all major AI models including OpenAI, Anthropic, Claude, Google/Gemini, Mistral, Deepseek, with a unified interface that makes switching between providers seamless. [View all 80+ supported models](https://workflowai.com/docs/agents/flight-info-extractor/1).
 
 ![Model-agnostic](https://github.com/user-attachments/assets/fa9ba9bb-4eed-422a-93c0-ccfc02dcdc86)
 
@@ -68,6 +66,27 @@ https://github.com/user-attachments/assets/9329af26-1222-4d5d-a68d-2bb4675261e2
 - **Multimodality support**: Build agents that can handle multiple modalities, such as images, PDFs, documents, and audio. Try it [here](https://workflowai.com/docs/agents/pdf-answer-bot/1?versionId=db4cf825a65eaab3d3b7f6543a78ece1&showDiffMode=false&show2ColumnLayout=false&taskRunId2=0195d8b6-ed8b-7190-b71d-53bfc9782e6b&taskRunId3=0195d8b6-ed93-736f-c53d-50e284a1038a&taskRunId1=01961b9a-915a-7075-a353-2cebb452aeea).
 
 https://github.com/user-attachments/assets/0cd54e38-6e6d-42f2-aa7d-365970151375
+
+- **Developer-Friendly**: Need more control? Seamlessly extend functionality with our [Python SDK](https://github.com/workflowai/python-sdk) when you need custom logic.
+
+```python
+import workflowai
+from pydantic import BaseModel
+from workflowai import Model
+
+class MeetingInput(BaseModel):
+    meeting_transcript: str
+
+class MeetingOutput(BaseModel):
+    summary: str
+    key_items: list[str]
+    action_items: list[str]
+
+@workflowai.agent()
+async def extract_meeting_info(meeting_input: MeetingInput) -> MeetingOutput:
+    ...
+
+```
 
 ## Deploy WorkflowAI
 
