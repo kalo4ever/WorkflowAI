@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from api.services.documentation_service import DocumentationService
 from api.services.internal_tasks.meta_agent_service import (
     EditSchemaToolCall,
+    GenerateAgentInputToolCall,
     HasActiveRunAndDate,
     ImprovePromptToolCall,
     MetaAgentChatMessage,
@@ -20,7 +21,15 @@ from api.services.internal_tasks.meta_agent_service import (
 )
 from api.services.runs import RunsService
 from core.agents.extract_company_info_from_domain_task import Product
-from core.agents.meta_agent import MetaAgentInput, MetaAgentOutput
+from core.agents.meta_agent import (
+    EditSchemaDescriptionAndExamplesToolCallRequest,
+    EditSchemaStructureToolCallRequest,
+    GenerateAgentInputToolCallRequest,
+    ImprovePromptToolCallRequest,
+    MetaAgentInput,
+    MetaAgentOutput,
+    RunCurrentAgentOnModelsToolCallRequest,
+)
 from core.agents.meta_agent import PlaygroundState as PlaygroundStateDomain
 from core.domain.agent_run import AgentRun
 from core.domain.documentation_section import DocumentationSection
@@ -921,3 +930,239 @@ class TestMetaAgentService:
                 )
             else:
                 mock_logger.exception.assert_not_called()
+
+    def test_extract_tool_call_no_tool_call(self):
+        """Test when there is no tool call in the meta agent output"""
+        service = MetaAgentService(
+            storage=Mock(),
+            event_router=Mock(),
+            runs_service=Mock(),
+            versions_service=Mock(),
+            models_service=Mock(),
+            feedback_service=Mock(),
+            reviews_service=Mock(),
+        )
+
+        meta_agent_output = MetaAgentOutput(content="Just a simple response")
+        result = service._extract_tool_call_from_meta_agent_output(  # pyright: ignore[reportPrivateUsage]
+            meta_agent_output,
+            [],
+            [],
+        )
+
+        assert result is None
+
+    def test_extract_tool_call_improve_instructions(self):
+        """Test extracting an improve instructions tool call"""
+        service = MetaAgentService(
+            storage=Mock(),
+            event_router=Mock(),
+            runs_service=Mock(),
+            versions_service=Mock(),
+            models_service=Mock(),
+            feedback_service=Mock(),
+            reviews_service=Mock(),
+        )
+
+        with patch.object(service, "_sanitize_agent_run_id", return_value="run1") as mock_sanitize:
+            with patch.object(service, "_resolve_auto_run", return_value=False) as mock_resolve:
+                meta_agent_output = MetaAgentOutput(
+                    content="Improving instructions",
+                    improve_instructions_tool_call=ImprovePromptToolCallRequest(
+                        agent_run_id="run1",
+                        instruction_improvement_request_message="Make it better",
+                        ask_user_confirmation=True,
+                    ),
+                )
+
+                result = service._extract_tool_call_from_meta_agent_output(  # type: ignore[reportPrivateUsage]
+                    meta_agent_output,
+                    [Mock(id="run1", user_review=None, task_output={"result": "value"})],
+                    [],
+                )
+
+                assert isinstance(result, ImprovePromptToolCall)
+                assert result.run_id == "run1"
+                assert result.run_feedback_message == "Make it better"
+                assert result.auto_run is False
+                mock_sanitize.assert_called_once()
+                mock_resolve.assert_called_once()
+
+    def test_extract_tool_call_edit_schema_descriptions(self):
+        """Test extracting an edit schema descriptions tool call"""
+        service = MetaAgentService(
+            storage=Mock(),
+            event_router=Mock(),
+            runs_service=Mock(),
+            versions_service=Mock(),
+            models_service=Mock(),
+            feedback_service=Mock(),
+            reviews_service=Mock(),
+        )
+
+        with patch.object(service, "_resolve_auto_run", return_value=False) as mock_resolve:
+            meta_agent_output = MetaAgentOutput(
+                content="Editing schema descriptions",
+                edit_schema_description_and_examples_tool_call=EditSchemaDescriptionAndExamplesToolCallRequest(
+                    description_and_examples_edition_request_message="Better descriptions",
+                    ask_user_confirmation=True,
+                ),
+            )
+
+            result = service._extract_tool_call_from_meta_agent_output(  # type: ignore[reportPrivateUsage]
+                meta_agent_output,
+                [],
+                [],
+            )
+
+            assert isinstance(result, ImprovePromptToolCall)
+            assert result.run_id is None
+            assert result.run_feedback_message == "Better descriptions"
+            assert result.auto_run is False
+            mock_resolve.assert_called_once()
+
+    def test_extract_tool_call_edit_schema_structure(self):
+        """Test extracting an edit schema structure tool call"""
+        service = MetaAgentService(
+            storage=Mock(),
+            event_router=Mock(),
+            runs_service=Mock(),
+            versions_service=Mock(),
+            models_service=Mock(),
+            feedback_service=Mock(),
+            reviews_service=Mock(),
+        )
+
+        with patch.object(service, "_resolve_auto_run", return_value=False) as mock_resolve:
+            meta_agent_output = MetaAgentOutput(
+                content="Editing schema structure",
+                edit_schema_structure_tool_call=EditSchemaStructureToolCallRequest(
+                    edition_request_message="Add a field",
+                    ask_user_confirmation=False,
+                ),
+            )
+
+            result = service._extract_tool_call_from_meta_agent_output(  # type: ignore[reportPrivateUsage]
+                meta_agent_output,
+                [],
+                [],
+            )
+
+            assert isinstance(result, EditSchemaToolCall)
+            assert result.edition_request_message == "Add a field"
+            assert result.auto_run is False
+            mock_resolve.assert_called_once()
+
+    def test_extract_tool_call_run_on_models(self):
+        """Test extracting a run on models tool call"""
+        service = MetaAgentService(
+            storage=Mock(),
+            event_router=Mock(),
+            runs_service=Mock(),
+            versions_service=Mock(),
+            models_service=Mock(),
+            feedback_service=Mock(),
+            reviews_service=Mock(),
+        )
+
+        with patch.object(service, "_resolve_auto_run", return_value=True) as mock_resolve:
+            meta_agent_output = MetaAgentOutput(
+                content="Running on models",
+                run_current_agent_on_models_tool_call=RunCurrentAgentOnModelsToolCallRequest(
+                    run_configs=[
+                        RunCurrentAgentOnModelsToolCallRequest.RunConfig(
+                            run_on_column="column_1",
+                            model="model1",
+                        ),
+                    ],
+                    ask_user_confirmation=False,
+                ),
+            )
+
+            result = service._extract_tool_call_from_meta_agent_output(  # type: ignore[reportPrivateUsage]
+                meta_agent_output,
+                [],
+                [],
+            )
+
+            assert isinstance(result, RunCurrentAgentOnModelsToolCall)
+            assert result.run_configs is not None
+            assert len(result.run_configs) == 1
+            assert result.run_configs[0].run_on_column == "column_1"
+            assert result.run_configs[0].model == "model1"
+            assert result.auto_run is True
+            mock_resolve.assert_called_once()
+
+    def test_extract_tool_call_generate_input(self):
+        """Test extracting a generate input tool call"""
+        service = MetaAgentService(
+            storage=Mock(),
+            event_router=Mock(),
+            runs_service=Mock(),
+            versions_service=Mock(),
+            models_service=Mock(),
+            feedback_service=Mock(),
+            reviews_service=Mock(),
+        )
+
+        with patch.object(service, "_resolve_auto_run", return_value=True) as mock_resolve:
+            meta_agent_output = MetaAgentOutput(
+                content="Generating input",
+                generate_agent_input_tool_call=GenerateAgentInputToolCallRequest(
+                    instructions="Generate a sample input",
+                    ask_user_confirmation=False,
+                ),
+            )
+
+            result = service._extract_tool_call_from_meta_agent_output(  # type: ignore[reportPrivateUsage]
+                meta_agent_output,
+                [],
+                [],
+            )
+
+            assert isinstance(result, GenerateAgentInputToolCall)
+            assert result.instructions == "Generate a sample input"
+            assert result.auto_run is True
+            mock_resolve.assert_called_once()
+
+    def test_extract_tool_call_previous_message_same_type(self):
+        """Test that auto_run is False when previous message has same tool call type"""
+        service = MetaAgentService(
+            storage=Mock(),
+            event_router=Mock(),
+            runs_service=Mock(),
+            versions_service=Mock(),
+            models_service=Mock(),
+            feedback_service=Mock(),
+            reviews_service=Mock(),
+        )
+
+        # Set up the previous messages with same tool call type
+        messages = [
+            MetaAgentChatMessage(
+                role="ASSISTANT",
+                content="Previous message",
+                tool_call=GenerateAgentInputToolCall(instructions="Previous input generation"),
+            ),
+            MetaAgentChatMessage(role="PLAYGROUND", content="Playground message"),
+        ]
+
+        with patch.object(service, "_resolve_auto_run", return_value=False) as mock_resolve:
+            meta_agent_output = MetaAgentOutput(
+                content="Generating input again",
+                generate_agent_input_tool_call=GenerateAgentInputToolCallRequest(
+                    instructions="Generate another sample input",
+                    ask_user_confirmation=False,
+                ),
+            )
+
+            result = service._extract_tool_call_from_meta_agent_output(  # type: ignore[reportPrivateUsage]
+                meta_agent_output,
+                [],
+                messages,
+            )
+
+            assert isinstance(result, GenerateAgentInputToolCall)
+            assert result.instructions == "Generate another sample input"
+            assert result.auto_run is False
+            mock_resolve.assert_called_once()
