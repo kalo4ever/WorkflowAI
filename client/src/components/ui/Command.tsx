@@ -87,6 +87,7 @@ function CustomCommandInput({ placeholder, search, onSearchChange }: CustomComma
         autoCorrect='off'
         autoCapitalize='off'
         autoFocus={!isMobile}
+        tabIndex={isMobile ? -1 : 0}
       />
     </div>
   );
