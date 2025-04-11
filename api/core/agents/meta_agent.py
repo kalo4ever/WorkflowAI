@@ -318,8 +318,8 @@ class PlaygroundState(BaseModel):
         description="The models currently selected in the playground",
     )
 
-    agent_runs: list[AgentRun] = Field(
-        default_factory=list,
+    agent_runs: list[AgentRun] | None = Field(
+        default=None,
         description="The agent runs",
     )
 

@@ -17,7 +17,10 @@ from api.services.runs import RunsService
 from api.services.slack_notifications import SlackNotificationDestination, get_user_and_org_str, send_slack_notification
 from api.services.tasks import list_agent_summaries
 from api.services.versions import VersionsService
-from core.agents.extract_company_info_from_domain_task import safe_generate_company_description_from_email
+from core.agents.extract_company_info_from_domain_task import (
+    ExtractCompanyInfoFromDomainTaskOutput,
+    safe_generate_company_description_from_email,
+)
 from core.agents.meta_agent import (
     META_AGENT_INSTRUCTIONS,
     EditSchemaToolCallResult,
@@ -38,6 +41,7 @@ from core.agents.meta_agent import (
 from core.domain.agent_run import AgentRun
 from core.domain.events import EventRouter, MetaAgentChatMessagesSent
 from core.domain.fields.file import File
+from core.domain.page import Page
 from core.domain.task_variant import SerializableTaskVariant
 from core.domain.url_content import URLContent
 from core.runners.workflowai.utils import extract_files
@@ -59,6 +63,15 @@ def _reverse_optional_bool(value: bool | None) -> bool | None:
 class HasActiveRunAndDate(NamedTuple):
     has_active_runs: bool
     latest_active_run_date: datetime.datetime | None
+
+
+class MetaAgentContext(NamedTuple):
+    company_description: ExtractCompanyInfoFromDomainTaskOutput | None
+    existing_agents: list[str] | None
+    agent_runs: list[AgentRun] | None
+    feedback_page: Page[MetaAgentInput.AgentLifecycleInfo.FeedbackInfo.AgentFeedback] | None
+    has_active_runs: HasActiveRunAndDate | None
+    reviewed_input_count: int | None
 
 
 class MetaAgentToolCall(BaseModel):
@@ -411,23 +424,35 @@ class MetaAgentService:
         reviews = await self.reviews_service.list_reviewed_inputs(task_tuple, agent_schema_id)
         return len(reviews)
 
-    async def _build_meta_agent_input(
+    async def fetch_meta_agent_context_for_testing(
         self,
         task_tuple: TaskTuple,
         agent_schema_id: int,
         user_email: str | None,
-        messages: list[MetaAgentChatMessage],
-        current_agent: SerializableTaskVariant,
         playground_state: PlaygroundState,
-    ) -> tuple[MetaAgentInput, list[AgentRun]]:
-        (
-            company_description,
-            existing_agents,
-            agent_runs,
-            feedback_page,
-            has_active_runs,
-            reviewed_input_count,
-        ) = await asyncio.gather(
+    ) -> MetaAgentContext:
+        """Public method that wraps _fetch_meta_agent_context for testing purposes."""
+        return await self._fetch_meta_agent_context(
+            task_tuple,
+            agent_schema_id,
+            user_email,
+            playground_state,
+        )
+
+    async def _fetch_meta_agent_context(
+        self,
+        task_tuple: TaskTuple,
+        agent_schema_id: int,
+        user_email: str | None,
+        playground_state: PlaygroundState,
+    ) -> MetaAgentContext:
+        """
+        Fetch all context data needed for the meta agent input, handling exceptions.
+
+        If any individual fetch fails, it returns None for that part of the context
+        instead of failing the entire operation.
+        """
+        context_results = await asyncio.gather(
             safe_generate_company_description_from_email(user_email),
             list_agent_summaries(self.storage, limit=10),
             self.fetch_agent_runs(task_tuple, playground_state.agent_run_ids),
@@ -440,8 +465,71 @@ class MetaAgentService:
             ),
             self.has_active_agent_runs(task_tuple, agent_schema_id),
             self.get_reviewed_input_count(task_tuple, agent_schema_id),
+            return_exceptions=True,
         )
-        existing_agents = [str(agent) for agent in existing_agents or []]
+
+        # Process each result - for each item, either use the value or log and return a default value
+        if isinstance(context_results[0], BaseException):
+            self._logger.warning("Failed to fetch company_description", exc_info=context_results[0])
+            company_description = None
+        else:
+            company_description = context_results[0]
+
+        if isinstance(context_results[1], BaseException):
+            self._logger.warning("Failed to fetch existing_agents", exc_info=context_results[1])
+            existing_agents = None
+        else:
+            existing_agents = [str(agent) for agent in context_results[1] or []]
+
+        if isinstance(context_results[2], BaseException):
+            self._logger.warning("Failed to fetch agent_runs", exc_info=context_results[2])
+            agent_runs = None
+        else:
+            agent_runs = context_results[2]
+
+        if isinstance(context_results[3], BaseException):
+            self._logger.warning("Failed to fetch feedback_page", exc_info=context_results[3])
+            feedback_page = None
+        else:
+            feedback_page = context_results[3]
+
+        if isinstance(context_results[4], BaseException):
+            self._logger.warning("Failed to fetch has_active_runs", exc_info=context_results[4])
+            has_active_runs = None
+        else:
+            has_active_runs = context_results[4]
+
+        if isinstance(context_results[5], BaseException):
+            self._logger.warning("Failed to fetch reviewed_input_count", exc_info=context_results[5])
+            reviewed_input_count = None
+        else:
+            reviewed_input_count = context_results[5]
+
+        return MetaAgentContext(
+            company_description=company_description,
+            existing_agents=existing_agents,
+            agent_runs=agent_runs,
+            feedback_page=feedback_page,
+            has_active_runs=has_active_runs,
+            reviewed_input_count=reviewed_input_count,
+        )
+
+    async def _build_meta_agent_input(
+        self,
+        task_tuple: TaskTuple,
+        agent_schema_id: int,
+        user_email: str | None,
+        messages: list[MetaAgentChatMessage],
+        current_agent: SerializableTaskVariant,
+        playground_state: PlaygroundState,
+    ) -> tuple[MetaAgentInput, list[AgentRun]]:
+        # Fetch context data with exception handling
+        context = await self._fetch_meta_agent_context(
+            task_tuple,
+            agent_schema_id,
+            user_email,
+            playground_state,
+        )
 
         # Extract files from agent_input
         agent_input_schema = current_agent.input_schema.json_schema.copy()
@@ -455,12 +543,12 @@ class MetaAgentService:
             messages=[message.to_domain() for message in messages],
             latest_messages_url_content=await self._extract_url_content_from_messages(messages),
             company_context=MetaAgentInput.CompanyContext(
-                company_name=company_description.company_name if company_description else None,
-                company_description=company_description.description if company_description else None,
-                company_locations=company_description.locations if company_description else None,
-                company_industries=company_description.industries if company_description else None,
-                company_products=company_description.products if company_description else None,
-                existing_agents_descriptions=existing_agents or [],
+                company_name=context.company_description.company_name if context.company_description else None,
+                company_description=context.company_description.description if context.company_description else None,
+                company_locations=context.company_description.locations if context.company_description else None,
+                company_industries=context.company_description.industries if context.company_description else None,
+                company_products=context.company_description.products if context.company_description else None,
+                existing_agents_descriptions=context.existing_agents or [],
             ),
             workflowai_documentation_sections=await DocumentationService().get_relevant_doc_sections(
                 chat_messages=[message.to_domain() for message in messages],
@@ -501,28 +589,30 @@ class MetaAgentService:
                             for tool_call in llm_completion.tool_calls or []
                         ],
                     )
-                    for agent_run in agent_runs or []
-                ],
+                    for agent_run in context.agent_runs
+                ]
+                if context.agent_runs
+                else None,
             ),
             agent_lifecycle_info=MetaAgentInput.AgentLifecycleInfo(
                 deployment_info=MetaAgentInput.AgentLifecycleInfo.DeploymentInfo(
-                    has_api_or_sdk_runs=has_active_runs.has_active_runs,
-                    latest_api_or_sdk_run_date=has_active_runs.latest_active_run_date,
+                    has_api_or_sdk_runs=context.has_active_runs.has_active_runs,
+                    latest_api_or_sdk_run_date=context.has_active_runs.latest_active_run_date,
                     deployments=await self.list_deployments(task_tuple, agent_schema_id),
                 )
-                if has_active_runs
+                if context.has_active_runs
                 else None,
                 feedback_info=MetaAgentInput.AgentLifecycleInfo.FeedbackInfo(
-                    user_feedback_count=feedback_page.count,
-                    latest_user_feedbacks=feedback_page.items,
+                    user_feedback_count=context.feedback_page.count,
+                    latest_user_feedbacks=context.feedback_page.items,
                 )
-                if feedback_page
+                if context.feedback_page
                 else None,
                 internal_review_info=MetaAgentInput.AgentLifecycleInfo.InternalReviewInfo(
-                    reviewed_input_count=reviewed_input_count,
+                    reviewed_input_count=context.reviewed_input_count,
                 ),
             ),
-        ), agent_runs
+        ), context.agent_runs or []
 
     def dispatch_new_user_messages_event(self, messages: list[MetaAgentChatMessage]):
         # Get all consecutive USER messages at the end of the conversation

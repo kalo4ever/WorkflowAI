@@ -9,8 +9,10 @@ from pydantic import BaseModel
 from api.services.documentation_service import DocumentationService
 from api.services.internal_tasks.meta_agent_service import (
     EditSchemaToolCall,
+    HasActiveRunAndDate,
     ImprovePromptToolCall,
     MetaAgentChatMessage,
+    MetaAgentContext,
     MetaAgentService,
     MetaAgentToolCallType,
     PlaygroundState,
@@ -652,3 +654,153 @@ class TestMetaAgentService:
                 mock_extract_urls.assert_called_once_with(messages[-1].content)
             else:
                 mock_extract_urls.assert_not_called()
+
+    @pytest.mark.parametrize(
+        "context_results, expected_context",
+        [
+            # All results successful
+            (
+                [
+                    Mock(company_name="Example Corp"),  # company_description
+                    ["Agent 1", "Agent 2"],  # existing_agents
+                    [Mock(id="run1")],  # agent_runs
+                    Mock(count=5, items=["feedback1"]),  # feedback_page
+                    HasActiveRunAndDate(True, datetime.datetime(2025, 1, 1)),  # has_active_runs
+                    10,  # reviewed_input_count
+                ],
+                MetaAgentContext(
+                    company_description=Mock(company_name="Example Corp"),
+                    existing_agents=["Agent 1", "Agent 2"],
+                    agent_runs=[Mock(id="run1")],
+                    feedback_page=Mock(count=5, items=["feedback1"]),
+                    has_active_runs=HasActiveRunAndDate(True, datetime.datetime(2025, 1, 1)),
+                    reviewed_input_count=10,
+                ),
+            ),
+            # Some results failed
+            (
+                [
+                    Exception("Failed to get company description"),  # company_description fails
+                    ["Agent 1"],  # existing_agents succeeds
+                    [Mock(id="run1")],  # agent_runs succeeds
+                    Exception("Failed to get feedback"),  # feedback_page fails
+                    HasActiveRunAndDate(True, datetime.datetime(2025, 1, 1)),  # has_active_runs succeeds
+                    Exception("Failed to get reviewed input count"),  # reviewed_input_count fails
+                ],
+                MetaAgentContext(
+                    company_description=None,
+                    existing_agents=["Agent 1"],
+                    agent_runs=[Mock(id="run1")],
+                    feedback_page=None,
+                    has_active_runs=HasActiveRunAndDate(True, datetime.datetime(2025, 1, 1)),
+                    reviewed_input_count=None,
+                ),
+            ),
+            # All results failed
+            (
+                [
+                    Exception("Failed to get company description"),
+                    Exception("Failed to get existing agents"),
+                    Exception("Failed to get agent runs"),
+                    Exception("Failed to get feedback"),
+                    Exception("Failed to get has active runs"),
+                    Exception("Failed to get reviewed input count"),
+                ],
+                MetaAgentContext(
+                    company_description=None,
+                    existing_agents=None,
+                    agent_runs=None,
+                    feedback_page=None,
+                    has_active_runs=None,
+                    reviewed_input_count=None,
+                ),
+            ),
+        ],
+    )
+    async def test_fetch_meta_agent_context(
+        self,
+        context_results: list[Any],
+        expected_context: MetaAgentContext,
+    ) -> None:
+        """Test that the context fetching handles exceptions properly."""
+        # Create mocks
+        mock_storage = Mock(spec=BackendStorage)
+        mock_event_router = Mock()
+        mock_runs_service = Mock(spec=RunsService)
+
+        # Create the service with mocks
+        service = MetaAgentService(
+            storage=mock_storage,
+            event_router=mock_event_router,
+            runs_service=mock_runs_service,
+            models_service=AsyncMock(),
+            feedback_service=AsyncMock(),
+            versions_service=AsyncMock(),
+            reviews_service=AsyncMock(),
+        )
+
+        # Mock the gather call to return our test results
+        with patch("asyncio.gather", AsyncMock(return_value=context_results)) as mock_gather:
+            # Create test parameters
+            task_tuple = ("test_task", 123)
+            agent_schema_id = 456
+            user_email = "test@example.com"
+            playground_state = PlaygroundState(
+                agent_instructions="test instructions",
+                agent_temperature=0.5,
+                agent_run_ids=["run1", "run2"],
+                selected_models=PlaygroundState.SelectedModels(
+                    column_1=None,
+                    column_2=None,
+                    column_3=None,
+                ),
+            )
+
+            # Call the public method
+            result = await service.fetch_meta_agent_context_for_testing(
+                task_tuple,
+                agent_schema_id,
+                user_email,
+                playground_state,
+            )
+
+            # Verify gather was called with the right arguments
+            mock_gather.assert_called_once()
+
+            # Compare the result with expected values
+            # For company_description, we need to compare attributes since it's a Mock
+            if expected_context.company_description is None:
+                assert result.company_description is None
+            elif result.company_description is not None:
+                assert result.company_description.company_name == expected_context.company_description.company_name
+
+            # Compare existing_agents
+            assert result.existing_agents == expected_context.existing_agents
+
+            # For agent_runs, compare the ids if not None
+            if expected_context.agent_runs is None:
+                assert result.agent_runs is None
+            elif result.agent_runs is not None:
+                assert len(result.agent_runs) == len(expected_context.agent_runs)
+                for i, run in enumerate(result.agent_runs):
+                    assert run.id == expected_context.agent_runs[i].id
+
+            # For feedback_page
+            if expected_context.feedback_page is None:
+                assert result.feedback_page is None
+            elif result.feedback_page is not None:
+                assert result.feedback_page.count == expected_context.feedback_page.count
+                assert result.feedback_page.items == expected_context.feedback_page.items
+
+            # For has_active_runs
+            if expected_context.has_active_runs is None:
+                assert result.has_active_runs is None
+            elif result.has_active_runs is not None:
+                assert result.has_active_runs.has_active_runs == expected_context.has_active_runs.has_active_runs
+                assert (
+                    result.has_active_runs.latest_active_run_date
+                    == expected_context.has_active_runs.latest_active_run_date
+                )
+
+            # For reviewed_input_count
+            assert result.reviewed_input_count == expected_context.reviewed_input_count
