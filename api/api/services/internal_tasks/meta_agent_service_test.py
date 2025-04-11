@@ -805,7 +805,6 @@ class TestMetaAgentService:
             # For reviewed_input_count
             assert result.reviewed_input_count == expected_context.reviewed_input_count
 
-    @pytest.mark.asyncio
     @patch("api.services.internal_tasks.meta_agent_service.meta_agent_user_confirmation_agent", new_callable=AsyncMock)
     async def test_sanitize_tool_call_auto_run_initially_false(
         self,
@@ -844,7 +843,6 @@ class TestMetaAgentService:
             mock_confirmation_agent.assert_not_called()
             mock_logger.exception.assert_not_called()
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "mock_confirmation_return, expected_final_auto_run",
         [
