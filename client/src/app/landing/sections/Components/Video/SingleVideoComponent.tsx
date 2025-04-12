@@ -83,6 +83,7 @@ export function SingleVideoComponent(props: SingleVideoProps) {
       key={videoDemo.videoId}
       className='absolute top-0 left-0 flex items-center justify-center w-full h-full'
       style={{ zIndex: isSelected ? 10 : index }}
+      data-playsinline='true'
     >
       <Stream
         streamRef={streamRef}
