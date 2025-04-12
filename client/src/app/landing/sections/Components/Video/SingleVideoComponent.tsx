@@ -66,6 +66,14 @@ export function SingleVideoComponent(props: SingleVideoProps) {
       setTimeout(() => {
         forcePlayIfNeeded();
       }, 500);
+      return;
+    }
+
+    if (isSelected) {
+      onPlay();
+      setTimeout(() => {
+        forcePlayIfNeeded();
+      }, 500);
     } else {
       onStop();
     }
@@ -84,6 +92,7 @@ export function SingleVideoComponent(props: SingleVideoProps) {
       className='absolute top-0 left-0 flex items-center justify-center w-full h-full'
       style={{ zIndex: isSelected ? 10 : index }}
       data-playsinline='true'
+      data-webkit-playsinline='true'
     >
       <Stream
         streamRef={streamRef}
