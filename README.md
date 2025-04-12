@@ -54,7 +54,7 @@ https://github.com/user-attachments/assets/0c81d596-ec70-43bc-80a8-ceddcd26b9d9
 
 https://github.com/user-attachments/assets/4cf6e65a-a7b4-4b93-a30c-7d28b22e1553
 
-- **Built-in tools**: Comes with powerful built-in tools like web search and web browsing capabilities, allowing your agents to access real-time information from the internet. These tools enable your AI applications to retrieve up-to-date data, research topics, and interact with web content without requiring complex integrations. Learn more about [built-in tools](https://docs.workflowai.com/concepts/tools).
+- **Hosted tools**: Comes with powerful hosted tools like web search and web browsing capabilities, allowing your agents to access real-time information from the internet. These tools enable your AI applications to retrieve up-to-date data, research topics, and interact with web content without requiring complex integrations. Learn more about [hosted tools](https://docs.workflowai.com/concepts/tools#hosted-tools).
 
 https://github.com/user-attachments/assets/9329af26-1222-4d5d-a68d-2bb4675261e2
 
