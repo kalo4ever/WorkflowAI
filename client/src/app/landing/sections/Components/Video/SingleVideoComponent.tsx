@@ -25,12 +25,14 @@ export function SingleVideoComponent(props: SingleVideoProps) {
 
   const onPlay = useCallback(() => {
     if (streamRef.current) {
+      streamRef.current.muted = true;
       streamRef.current.play();
     }
   }, []);
 
   const onStop = useCallback(() => {
     if (streamRef.current) {
+      streamRef.current.muted = true;
       streamRef.current.pause();
       streamRef.current.currentTime = 0;
     }
@@ -38,6 +40,7 @@ export function SingleVideoComponent(props: SingleVideoProps) {
 
   const onRewind = useCallback(() => {
     if (streamRef.current) {
+      streamRef.current.muted = true;
       streamRef.current.currentTime = 0;
       streamRef.current.play();
     }
@@ -50,13 +53,23 @@ export function SingleVideoComponent(props: SingleVideoProps) {
     onRewind();
   }, [rewind, onRewind]);
 
+  const forcePlayIfNeeded = useCallback(() => {
+    if (isSelected && isLoaded && streamRef.current) {
+      streamRef.current.muted = true;
+      streamRef.current.play();
+    }
+  }, [isSelected, isLoaded]);
+
   useEffect(() => {
     if (isSelected && isLoaded) {
       onPlay();
+      setTimeout(() => {
+        forcePlayIfNeeded();
+      }, 500);
     } else {
       onStop();
     }
-  }, [isSelected, onPlay, onStop, isLoaded]);
+  }, [isSelected, onPlay, onStop, isLoaded, forcePlayIfNeeded]);
 
   const handleCanPlay = useCallback(() => {
     setIsLoaded(true);
