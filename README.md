@@ -1,10 +1,8 @@
 ![header](/assets/readme-header.png)
 
-WorkflowAI is an open-source platform where product and engineering teams collaborate to build and iterate on AI features.
-
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-## Demo
+## Demo: build a AI feature in 1 minute
 
 [![Demo](/assets/describe.gif)](https://workflowai.com/docs/agents/meeting-transcript-analysis/1?showDiffMode=false&show2ColumnLayout=false&taskRunId2=019626e2-fe11-710a-a615-294c9ca81af6&taskRunId1=019626e2-fe0b-73b0-113e-b0742bf20244&versionId=204602901276db01d774a469db3aeea9&taskRunId3=019626e3-399a-7312-81a7-b7ae664529c5)
 
@@ -18,11 +16,11 @@ WorkflowAI is an open-source platform where product and engineering teams collab
 
 - **Faster Time to Market**: Build production-ready AI features in minutes through a web-app – no coding required.
 
-- **Interactive Playground**: Test and compare 70+ leading AI models side-by-side in our visual playground. See the difference in responses, costs, and latency. [Try it now](https://workflowai.com/docs/agents/flight-info-extractor/1?versionId=b9cf227a9a2e3c90f02ca98a59cd88cf&showDiffMode=false&show2ColumnLayout=false&taskRunId1=0195ee60-6fda-71c1-5f2f-5713168b43e6&taskRunId3=01961b95-8ac7-718c-e17d-2603af7f3708&taskRunId2=0195ee60-6eac-70cd-7bd5-25fddaf31309).
+- **Interactive Playground**: Test and compare 80+ leading AI models side-by-side in our visual playground. See the difference in responses, costs, and latency. [Try it now](https://workflowai.com/docs/agents/flight-info-extractor/1?versionId=b9cf227a9a2e3c90f02ca98a59cd88cf&showDiffMode=false&show2ColumnLayout=false&taskRunId1=0195ee60-6fda-71c1-5f2f-5713168b43e6&taskRunId3=01961b95-8ac7-718c-e17d-2603af7f3708&taskRunId2=0195ee60-6eac-70cd-7bd5-25fddaf31309).
 
 https://github.com/user-attachments/assets/febf1047-ed85-4af0-b796-5242aef051b4
 
-- **Model-agnostic**: Works with all major AI models including OpenAI, Anthropic, Claude, Google/Gemini, Mistral, Deepseek, with a unified interface that makes switching between providers seamless. [View all 80+ supported models](https://workflowai.com/docs/agents/flight-info-extractor/1).
+- **Model-agnostic**: Works with all major AI models including OpenAI, Anthropic, Claude, Google/Gemini, Mistral, DeepSeek, Grok with a unified interface that makes switching between providers seamless. [View all 80+ supported models](https://workflowai.com/docs/agents/flight-info-extractor/1).
 
 ![Model-agnostic](https://github.com/user-attachments/assets/fa9ba9bb-4eed-422a-93c0-ccfc02dcdc86)
 
@@ -40,7 +38,7 @@ https://github.com/user-attachments/assets/ae260da3-06ed-4ba0-824b-a9cab4fadb6f
 
 ![structured-output](https://github.com/user-attachments/assets/9331e7d0-72f4-48e5-bd2f-10c6a5f5f5e1)
 
-- **Easy integration with SDKs for Python, Typescript and a REST API**. View code examples [here](https://workflowai.com/docs/agents/flight-info-extractor/1).
+- **Easy integration with SDKs for Python, Typescript and a REST API**. View code examples [here](https://workflowai.com/docs/agents/flight-info-extractor/1/code).
 
 https://github.com/user-attachments/assets/261c3a5a-16ac-4c29-bc30-5ec725a0619d
 
@@ -99,7 +97,7 @@ Fully managed solution with zero infrastructure setup required. [Pay exactly wha
 
 ### Self-hosted
 
-### Quick start
+#### Quick start
 
 The Docker Compose file is provided as a quick way to spin up a local instance of WorkflowAI.
 It is configured to be self contained viable from the start.
@@ -176,7 +174,7 @@ variables are loaded by default (see the [sample env](.env.sample) for the avail
 
 ## Support
 
-To find answers to your questions, please refer to the [Documentation](https://docs.workflowai.com), or open a [GitHub issue](https://github.com/workflowai/workflowai/issues).
+To find answers to your questions, please refer to the [Documentation](https://docs.workflowai.com), or ask a question in the [Q&A section of our GitHub Discussions](https://github.com/WorkflowAI/WorkflowAI/discussions/categories/q-a).
 
 ## License
 
