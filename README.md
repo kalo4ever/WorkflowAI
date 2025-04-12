@@ -2,7 +2,7 @@
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-## Demo: build a AI feature in 1 minute
+## Demo: build an AI feature in 1 minute
 
 [![Demo](/assets/describe.gif)](https://workflowai.com/docs/agents/meeting-transcript-analysis/1?showDiffMode=false&show2ColumnLayout=false&taskRunId2=019626e2-fe11-710a-a615-294c9ca81af6&taskRunId1=019626e2-fe0b-73b0-113e-b0742bf20244&versionId=204602901276db01d774a469db3aeea9&taskRunId3=019626e3-399a-7312-81a7-b7ae664529c5)
 
@@ -166,7 +166,7 @@ The [client](./client/README.md) is a NextJS app that serves as a frontend
 
 ### Setting up providers
 
-WorkflowAI supports a variety of LLM providers.
+WorkflowAI supports a variety of LLM providers (OpenAI, Anthropic, Amazon Bedrock, Azure OpenAI, Grok, Gemini, FireworksAI, ...). View all supported providers [here](https://github.com/WorkflowAI/WorkflowAI/tree/main/api/core/providers).
 
 Each provider has a different set of credentials and configuration. Providers that have the required environment
 variables are loaded by default (see the [sample env](.env.sample) for the available variables). Providers can also be configured per tenant through the UI.
