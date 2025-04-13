@@ -39,6 +39,7 @@ from core.storage.backend_storage import BackendStorage
 from core.storage.file_storage import FileData
 from core.utils.dicts import InvalidKeyPathError, delete_at_keypath, set_at_keypath
 from core.utils.models.dumps import safe_dump_pydantic_model
+from core.utils.models.previews import compute_preview
 
 # TODO: move to __init__ when we have removed classmethods
 _logger = logging.getLogger("RunsService")
@@ -421,6 +422,11 @@ class RunsService:
         # TODO: be more granular
         if task_run.private_fields and task_run.llm_completions:
             task_run = cls._strip_llm_completions(task_run)
+
+        if not task_run.task_input_preview:
+            task_run.task_input_preview = compute_preview(task_run.task_input)
+        if not task_run.task_output_preview and task_run.task_output:
+            task_run.task_output_preview = compute_preview(task_run.task_output)
 
         try:
             # Store task run
