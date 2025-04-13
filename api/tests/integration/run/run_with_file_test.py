@@ -129,3 +129,36 @@ async def test_run_previews_with_data_url(test_client: IntegrationTestClient):
     await test_client.wait_for_completed_tasks()
     fetched_task_run1 = await test_client.fetch_run(task, run_id=run1["id"])
     assert fetched_task_run1["task_input_preview"] == expected_preview
+
+
+async def test_run_preview_with_downloaded_file(test_client: IntegrationTestClient):
+    task = await test_client.create_task(
+        input_schema={
+            "type": "object",
+            "properties": {"image": {"$ref": "#/$defs/Image"}},
+        },
+    )
+    # When the content type is not guessable, we have to download the file
+    test_client.mock_vertex_call()
+
+    test_client.httpx_mock.add_response(
+        url="https://bla.com/image",
+        method="GET",
+        status_code=200,
+        # Prefix for a jpeg file
+        content=b"\xff\xd8\xffjfiezjfeziojfeiozjfezio",
+    )
+
+    task_run = await test_client.run_task_v1(
+        task=task,
+        task_input={
+            "image": {
+                "url": "https://bla.com/image",
+            },
+        },
+        model=test_client.DEFAULT_VERTEX_MODEL,
+    )
+
+    await test_client.wait_for_completed_tasks()
+    fetched_task_run = await test_client.fetch_run(task, run_id=task_run["id"])
+    assert fetched_task_run["task_input_preview"] == "image: [[img:https://bla.com/image]]"
