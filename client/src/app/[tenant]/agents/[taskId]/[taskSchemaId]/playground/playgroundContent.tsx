@@ -47,7 +47,7 @@ import { buildScopeKey } from '@/store/utils';
 import { useVersions } from '@/store/versions';
 import { StreamedChunk, TaskRun, TaskSchemaResponseWithSchema } from '@/types';
 import { ModelOptional, TaskID, TaskSchemaID, TenantID } from '@/types/aliases';
-import { StreamError } from '@/types/errors';
+import { StreamError, captureIfNeeded } from '@/types/errors';
 import {
   MajorVersion,
   ModelResponse,
@@ -510,7 +510,7 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
             onTaskRunIdUpdate(index, error.extra.runId);
           }
 
-          captureException(error);
+          captureIfNeeded(error);
           // We don't reject here to avoid rejecting the Promise.all in handleRunTasks
           // That way if one task fails, the other ones still finish
           resolve(undefined);
