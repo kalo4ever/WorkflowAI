@@ -90,7 +90,7 @@ class TestUptimeService:
         mock_uptime_agent: AsyncMock,
         mock_browser_text: AsyncMock,
         uptime_value: Optional[float],
-        since_value: Optional[date],
+        since_value: Optional[str],
         expected_result: float,
         expected_since: date,
         uptime_service: UptimeService,
