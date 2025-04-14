@@ -1,3 +1,5 @@
+import pytest
+
 from core.domain.models import Model
 from core.domain.models.utils import get_model_data
 from tests.integration.common import IntegrationTestClient, openai_endpoint
@@ -63,6 +65,7 @@ async def test_unmarked_image_url(test_client: IntegrationTestClient):
     }
 
 
+@pytest.mark.poppler
 async def test_pdf_conversion(test_client: IntegrationTestClient):
     """Check that we correctly convert PDFs to images when the model supports it"""
 

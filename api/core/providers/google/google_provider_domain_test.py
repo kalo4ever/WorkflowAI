@@ -71,6 +71,7 @@ class TestGoogleMessageFromDomain:
         assert google_message.parts[1].fileData.mimeType == "image/png"
         assert google_message.role == "user"
 
+    @pytest.mark.ffmpeg
     async def test_with_file_audio(self):
         # Test with text content
         text_message = Message(role=Message.Role.USER, content="Hello, world!")
