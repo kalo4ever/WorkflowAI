@@ -19,5 +19,7 @@ class BuilderInterface(Protocol):
 
     def get_metadata(self, key: str) -> Any | None: ...
 
+    def record_file_download_seconds(self, seconds: float) -> None: ...
+
 
 builder_context = ContextVar[Optional[BuilderInterface]]("builder_context", default=None)
