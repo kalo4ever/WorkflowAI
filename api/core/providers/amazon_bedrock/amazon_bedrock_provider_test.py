@@ -742,6 +742,9 @@ async def test_cost_is_set_to_0_if_error_occurs_in_usage_computation(
         def get_metadata(self, key: str) -> Any | None:
             return None
 
+        def record_file_download_seconds(self, seconds: float) -> None:
+            pass
+
     builder_context.set(
         Context(llm_completions=[], config_id=None),
     )
