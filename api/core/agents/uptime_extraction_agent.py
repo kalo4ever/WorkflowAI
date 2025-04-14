@@ -23,7 +23,7 @@ class UptimeExtractorAgentOutput(BaseModel):
     )
     since: str | None = Field(
         default=None,
-        description="The start date of the uptime extraction period, in ISO 8601 format: YYYY-MM-DD",
+        description="The start date of the uptime extraction period, in ISO 8601 format: 'YYYY-MM-DD'",
     )
 
 

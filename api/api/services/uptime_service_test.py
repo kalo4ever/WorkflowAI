@@ -148,8 +148,8 @@ class TestUptimeService:
         assert result == (expected_uptime, None)
         mock_browser_text.assert_called_once_with(status_page_url)
         mock_uptime_agent.assert_called_once()
-        logger_mock.error.assert_called_once()
-        assert "Invalid since date" in logger_mock.error.call_args[0][0]
+        logger_mock.exception.assert_called_once()
+        assert "Invalid since date" in logger_mock.exception.call_args[0][0]
 
     async def test_run_uptime_extraction_browser_exception(
         self,
