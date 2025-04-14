@@ -126,7 +126,12 @@ class Model(StrEnum):
     PIXTRAL_12B_2409 = "pixtral-12b-2409"
     MINISTRAL_3B_2410 = "ministral-3b-2410"
     MINISTRAL_8B_2410 = "ministral-8b-2410"
+    MISTRAL_SMALL_LATEST = "mistral-small-latest"
+    MISTRAL_SMALL_2503 = "mistral-small-2503"
+    MISTRAL_SMALL_2501 = "mistral-small-2501"
     MISTRAL_SMALL_2409 = "mistral-small-2409"
+    MISTRAL_SABA_2502 = "mistral-saba-2502"
+    CODESTRAL_2501 = "codestral-2501"
     CODESTRAL_MAMBA_2407 = "codestral-mamba-2407"
 
     # --------------------------------------------------------------------------

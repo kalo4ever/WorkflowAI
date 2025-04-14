@@ -1,22 +1,10 @@
 from datetime import date
-from enum import StrEnum
 
 from core.domain.models import Model, Provider
+from core.domain.models._displayed_provider import DisplayedProvider
+from core.domain.models._mistral import mistral_models
 
 from .model_data import DeprecatedModel, FinalModelData, LatestModel, MaxTokensData, ModelData
-
-
-class DisplayedProvider(StrEnum):
-    # Provider name displayed in the UI.
-    # The link between a model and a displayed provider is arbitrary and configured manually in the model data.
-    OPEN_AI = "OpenAI"
-    ANTHROPIC = "Anthropic"
-    FIREWORKS = "Fireworks"
-    GOOGLE = "Google"
-    MISTRAL_AI = "Mistral"
-    GROQ = "Groq"
-    AMAZON_BEDROCK = "Amazon Bedrock"
-    X_AI = "xAI"
 
 
 def _build_model_datas():
@@ -702,25 +690,6 @@ def _build_model_datas():
             provider_name=DisplayedProvider.FIREWORKS.value,
             supports_tool_calling=False,
         ),
-        Model.MIXTRAL_8X7B_32768: ModelData(
-            display_name="Mixtral (8x7B)",
-            supports_json_mode=True,
-            supports_input_image=False,
-            supports_multiple_images_in_input=False,
-            supports_input_pdf=False,
-            supports_input_audio=False,
-            supports_structured_output=True,
-            max_tokens_data=MaxTokensData(
-                max_tokens=32768,
-                source="https://api.fireworks.ai/v1/accounts/fireworks/models/mixtral-8x7b-instruct",
-            ),
-            provider_for_pricing=Provider.FIREWORKS,
-            icon_url="https://workflowai.blob.core.windows.net/workflowai-public/mistral.svg",
-            release_date=date(2023, 12, 11),
-            quality_index=468,  # MMLU=70.60, GPQA=39.00
-            provider_name=DisplayedProvider.MISTRAL_AI.value,
-            supports_tool_calling=False,
-        ),
         Model.LLAMA_3_1_405B: ModelData(
             display_name="Llama 3.1 (405B)",
             supports_json_mode=False,  # 405b does not support JSON mode for now https://www.together.ai/blog/meta-llama-3-1
@@ -913,167 +882,6 @@ def _build_model_datas():
             quality_index=694,  # MMLU=86.00, GPQA=59.10
             provider_name=DisplayedProvider.FIREWORKS.value,
             supports_tool_calling=False,
-        ),
-        Model.MISTRAL_LARGE_2_LATEST: LatestModel(
-            model=Model.MISTRAL_LARGE_2_2407,
-            display_name="Mistral Large 2 (latest)",
-        ),
-        Model.MISTRAL_LARGE_2_2407: ModelData(
-            display_name="Mistral Large 2 (24-07)",
-            supports_json_mode=True,
-            supports_input_image=False,
-            supports_multiple_images_in_input=False,
-            supports_input_pdf=False,
-            supports_input_audio=False,
-            max_tokens_data=MaxTokensData(
-                max_tokens=128000,
-                source="https://mistral.ai/news/mistral-large-2407/",
-            ),
-            provider_for_pricing=Provider.AMAZON_BEDROCK,
-            icon_url="https://workflowai.blob.core.windows.net/workflowai-public/mistral.svg",
-            latest_model=Model.MISTRAL_LARGE_2_LATEST,
-            release_date=date(2024, 7, 24),
-            quality_index=549,  # MMLU=84.00, GPQA=46.09
-            provider_name=DisplayedProvider.MISTRAL_AI.value,
-            supports_tool_calling=True,
-        ),
-        Model.PIXTRAL_12B_2409: ModelData(
-            display_name="PixTral (12B-2409)",
-            supports_json_mode=True,
-            supports_input_image=True,
-            supports_multiple_images_in_input=True,
-            supports_input_pdf=False,
-            supports_input_audio=False,
-            max_tokens_data=MaxTokensData(
-                max_tokens=128000,
-                source="https://docs.mistral.ai/getting-started/models/",
-            ),
-            provider_for_pricing=Provider.MISTRAL_AI,
-            icon_url="https://workflowai.blob.core.windows.net/workflowai-public/mistral.svg",
-            release_date=date(2024, 9, 17),
-            quality_index=526,  # MMLU=69.20, GPQA=39.00
-            provider_name=DisplayedProvider.MISTRAL_AI.value,
-            supports_tool_calling=True,
-        ),
-        Model.MINISTRAL_3B_2410: ModelData(
-            display_name="MiniStral (3B-2410)",
-            supports_json_mode=True,
-            supports_input_image=False,
-            supports_multiple_images_in_input=False,
-            supports_input_pdf=False,
-            supports_input_audio=False,
-            max_tokens_data=MaxTokensData(
-                max_tokens=128000,
-                source="https://docs.mistral.ai/getting-started/models/",
-            ),
-            provider_for_pricing=Provider.MISTRAL_AI,
-            icon_url="https://workflowai.blob.core.windows.net/workflowai-public/mistral.svg",
-            release_date=date(2024, 10, 24),
-            quality_index=317,  # MMLU=33.90, GPQA=33.59
-            provider_name=DisplayedProvider.MISTRAL_AI.value,
-            supports_tool_calling=True,
-        ),
-        Model.MINISTRAL_8B_2410: ModelData(
-            display_name="MiniStral (8B-2410)",
-            supports_json_mode=True,
-            supports_input_image=False,
-            supports_multiple_images_in_input=False,
-            supports_input_pdf=False,
-            supports_input_audio=False,
-            max_tokens_data=MaxTokensData(
-                max_tokens=128000,
-                source="https://docs.mistral.ai/getting-started/models/",
-            ),
-            provider_for_pricing=Provider.MISTRAL_AI,
-            icon_url="https://workflowai.blob.core.windows.net/workflowai-public/mistral.svg",
-            release_date=date(2024, 10, 24),
-            quality_index=426,  # MMLU=63.40, GPQA=33.80
-            provider_name=DisplayedProvider.MISTRAL_AI.value,
-            supports_tool_calling=True,
-        ),
-        Model.MISTRAL_SMALL_2409: ModelData(
-            display_name="Mistral Small (24-09)",
-            supports_json_mode=True,
-            supports_input_image=False,
-            supports_multiple_images_in_input=False,
-            supports_input_pdf=False,
-            supports_input_audio=False,
-            max_tokens_data=MaxTokensData(
-                max_tokens=32768,
-                source="https://docs.mistral.ai/getting-started/models/",
-            ),
-            provider_for_pricing=Provider.MISTRAL_AI,
-            icon_url="https://workflowai.blob.core.windows.net/workflowai-public/mistral.svg",
-            release_date=date(2024, 9, 24),
-            quality_index=377,  # MMLU=52.90, GPQA=33.80
-            provider_name=DisplayedProvider.MISTRAL_AI.value,
-            supports_tool_calling=True,
-        ),
-        Model.CODESTRAL_MAMBA_2407: ModelData(
-            display_name="CodeStral Mamba (24-07)",
-            supports_json_mode=True,
-            supports_input_image=False,
-            supports_multiple_images_in_input=False,
-            supports_input_pdf=False,
-            supports_input_audio=False,
-            max_tokens_data=MaxTokensData(
-                max_tokens=32768,
-                # source="https://docs.mistral.ai/getting-started/models/",
-                # NOTE: The site states 256k context window but the Mistral models API + testing seems to point towards a context of 32768 as of now
-                source="https://api.mistral.ai/v1/models",
-            ),
-            provider_for_pricing=Provider.MISTRAL_AI,
-            icon_url="https://workflowai.blob.core.windows.net/workflowai-public/mistral.svg",
-            release_date=date(2024, 7, 24),
-            quality_index=481,  # MMLU=63.47, GPQA=38.35
-            provider_name=DisplayedProvider.MISTRAL_AI.value,
-            supports_tool_calling=True,
-        ),
-        Model.MISTRAL_LARGE_LATEST: LatestModel(
-            model=Model.MISTRAL_LARGE_2411,
-            display_name="Mistral Large (latest)",
-        ),
-        Model.PIXTRAL_LARGE_LATEST: LatestModel(
-            model=Model.PIXTRAL_LARGE_2411,
-            display_name="PixTral Large (latest)",
-        ),
-        Model.PIXTRAL_LARGE_2411: ModelData(
-            display_name="PixTral Large (24-11)",
-            supports_json_mode=True,
-            supports_input_image=True,
-            supports_multiple_images_in_input=True,
-            supports_input_pdf=False,
-            supports_input_audio=False,
-            max_tokens_data=MaxTokensData(
-                max_tokens=128000,
-                source="https://docs.mistral.ai/getting-started/models/",
-            ),
-            provider_for_pricing=Provider.MISTRAL_AI,
-            icon_url="https://workflowai.blob.core.windows.net/workflowai-public/mistral.svg",
-            latest_model=Model.PIXTRAL_LARGE_LATEST,
-            release_date=date(2024, 11, 24),
-            quality_index=531,  # MMLU=70.10, GPQA=39.30
-            provider_name=DisplayedProvider.MISTRAL_AI.value,
-            supports_tool_calling=True,
-        ),
-        Model.MISTRAL_LARGE_2411: ModelData(
-            display_name="Mistral Large 2 (24-11)",
-            supports_json_mode=True,
-            supports_input_image=False,
-            supports_multiple_images_in_input=False,
-            supports_input_pdf=False,
-            supports_input_audio=False,
-            max_tokens_data=MaxTokensData(
-                max_tokens=128000,
-                source="https://docs.mistral.ai/getting-started/models/",
-            ),
-            provider_for_pricing=Provider.MISTRAL_AI,
-            icon_url="https://workflowai.blob.core.windows.net/workflowai-public/mistral.svg",
-            latest_model=Model.MISTRAL_LARGE_LATEST,
-            release_date=date(2024, 11, 24),
-            quality_index=702,  # MMLU=84.00, GPQA=59.10
-            provider_name=DisplayedProvider.MISTRAL_AI.value,
-            supports_tool_calling=True,
         ),
         Model.GEMINI_1_5_FLASH_8B: ModelData(
             display_name="Gemini 1.5 Flash (8B)",
@@ -1382,6 +1190,7 @@ def _build_model_datas():
             supports_tool_calling=True,
             supports_structured_output=True,
         ),
+        **mistral_models(),
     }
 
     from .model_provider_datas_mapping import MODEL_PROVIDER_DATAS

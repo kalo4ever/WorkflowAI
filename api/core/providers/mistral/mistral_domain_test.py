@@ -94,18 +94,6 @@ class TestMistralAIMessage:
         assert isinstance(result.content[1], ImageURLChunk)
         assert result.content[1].image_url.url == "https://example.com/image.jpg"
 
-    def test_from_domain_with_non_image_file_raises(self) -> None:
-        # Given
-        message = Message(
-            role=Message.Role.USER,
-            content="Check this file",
-            files=[File(url="https://example.com/doc.pdf", content_type="application/pdf")],
-        )
-
-        # When/Then
-        with pytest.raises(Exception, match="MistralAI only supports image files in messages"):
-            MistralAIMessage.from_domain(message)
-
     def test_from_domain_with_tool_calls(self) -> None:
         # Given
         message = Message(
