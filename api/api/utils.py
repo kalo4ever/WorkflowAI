@@ -105,8 +105,8 @@ def get_tenant_slug(request: Request) -> str | None:
         return None
     if not hasattr(request.state, "tenant_slug"):
         logging.warning("Tenant slug not set")
-        return None
-    return request.state.tenant_slug or request.path_params.get("tenant")
+        return request.path_params.get("tenant")
+    return request.state.tenant_slug
 
 
 async def _log_end_inner(
