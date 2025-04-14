@@ -12,7 +12,7 @@ def _build_model_datas():
         Model.GPT_4O_LATEST: LatestModel(
             model=Model.GPT_4O_2024_11_20,
             display_name="GPT-4o (latest)",
-            is_default=True,
+            is_default=False,
         ),
         Model.GPT_4O_2024_11_20: ModelData(
             display_name="GPT-4o (2024-11-20)",
@@ -59,7 +59,7 @@ def _build_model_datas():
         Model.GPT_41_LATEST: LatestModel(
             model=Model.GPT_41_2025_04_14,
             display_name="GPT-4.1 (latest)",
-            is_default=False,
+            is_default=True,
         ),
         Model.GPT_41_2025_04_14: ModelData(
             display_name="GPT-4.1 (2025-04-14)",
