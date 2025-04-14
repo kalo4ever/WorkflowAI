@@ -1,5 +1,5 @@
 import { Stream, StreamPlayerApi } from '@cloudflare/stream-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { VideoDemo } from '../../StaticData/LandingStaticData';
 
 type SingleVideoProps = {
@@ -14,6 +14,9 @@ export function SingleVideoComponent(props: SingleVideoProps) {
   const { videoDemo, index, selectedVideoDemo, rewind } = props;
   const [isLoaded, setIsLoaded] = useState(false);
 
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [triedToPlay, setTriedToPlay] = useState(false);
+
   const height = String(videoDemo.height);
   const width = String(videoDemo.width);
 
@@ -22,6 +25,14 @@ export function SingleVideoComponent(props: SingleVideoProps) {
   isSelectedRef.current = isSelected;
 
   const streamRef = useRef<StreamPlayerApi>();
+
+  const handlePlay = useCallback(() => {
+    setIsPlaying(true);
+  }, []);
+
+  const handlePause = useCallback(() => {
+    setIsPlaying(false);
+  }, []);
 
   const onPlay = useCallback(() => {
     if (streamRef.current) {
@@ -54,17 +65,21 @@ export function SingleVideoComponent(props: SingleVideoProps) {
   }, [rewind, onRewind]);
 
   const forcePlayIfNeeded = useCallback(() => {
-    if (isSelected && isLoaded && streamRef.current) {
+    if (isSelected && streamRef.current) {
       streamRef.current.muted = true;
       streamRef.current.play();
+      setTriedToPlay(true);
     }
-  }, [isSelected, isLoaded]);
+  }, [isSelected]);
 
   useEffect(() => {
     if (isSelected && isLoaded) {
       onPlay();
       setTimeout(() => {
         forcePlayIfNeeded();
+        setTimeout(() => {
+          forcePlayIfNeeded();
+        }, 1000);
       }, 500);
       return;
     }
@@ -73,9 +88,13 @@ export function SingleVideoComponent(props: SingleVideoProps) {
       onPlay();
       setTimeout(() => {
         forcePlayIfNeeded();
+        setTimeout(() => {
+          forcePlayIfNeeded();
+        }, 1000);
       }, 500);
     } else {
       onStop();
+      setTriedToPlay(false);
     }
   }, [isSelected, onPlay, onStop, isLoaded, forcePlayIfNeeded]);
 
@@ -85,6 +104,10 @@ export function SingleVideoComponent(props: SingleVideoProps) {
       onPlay();
     }
   }, [isSelected, onPlay]);
+
+  const showControls = useMemo(() => {
+    return isSelected && triedToPlay && !isPlaying;
+  }, [isSelected, isPlaying, triedToPlay]);
 
   return (
     <div
@@ -97,7 +120,7 @@ export function SingleVideoComponent(props: SingleVideoProps) {
       <Stream
         streamRef={streamRef}
         src={videoDemo.videoId}
-        controls={false}
+        controls={showControls}
         muted={true}
         preload='auto'
         autoplay={false}
@@ -107,6 +130,8 @@ export function SingleVideoComponent(props: SingleVideoProps) {
         className='w-full h-full'
         onEnded={() => props.onVideoEnded(videoDemo)}
         onCanPlay={handleCanPlay}
+        onPlay={handlePlay}
+        onPause={handlePause}
       />
     </div>
   );
