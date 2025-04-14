@@ -1,3 +1,4 @@
+import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { useMemo } from 'react';
 import { BarChart } from '@/components/ui/BarChart';
@@ -12,7 +13,7 @@ type Props = {
 export function GraphComponent(props: Props) {
   const { className, workflowUptime } = props;
 
-  const { weeklyRuns } = useOrFetchWeeklyRuns(6);
+  const { weeklyRuns, isLoading: isWeeklyRunsLoading } = useOrFetchWeeklyRuns(6);
 
   const title = useMemo(() => {
     if (!weeklyRuns || weeklyRuns.length === 0) return 'We processed over 1,000,000 runs last week';
@@ -25,7 +26,7 @@ export function GraphComponent(props: Props) {
     const lastWeek = weeklyRuns[weeklyRuns.length - 1];
     return (
       <div>
-        with {lastWeek.overhead_ms}ms added latency and{' '}
+        with {(lastWeek.overhead_ms / 1000).toFixed(2)}s added latency and{' '}
         <a className='underline' href='https://status.workflowai.com/' target='_blank' rel='noopener noreferrer'>
           {workflowUptime ?? 100}% uptime
         </a>
@@ -69,6 +70,12 @@ export function GraphComponent(props: Props) {
             className='w-full h-full'
           />
         </div>
+
+        {isWeeklyRunsLoading && (
+          <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex w-full h-full items-center justify-center'>
+            <Loader2 className='w-10 h-10 animate-spin text-gray-400' />
+          </div>
+        )}
 
         <div className='flex w-full h-full z-10 sm:px-32 sm:py-16 px-0 py-0'>
           <div className='flex w-full h-full items-center justify-center overflow-hidden sm:px-1 sm:py-3 px-0'>
