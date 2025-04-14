@@ -4,7 +4,7 @@ from typing import Any, Optional
 from pydantic import BaseModel, Field, model_validator
 
 from core.domain.agent_run import AgentRun
-from core.domain.consts import METADATA_KEY_INFERENCE_SECONDS
+from core.domain.consts import METADATA_KEY_FILE_DOWNLOAD_SECONDS, METADATA_KEY_INFERENCE_SECONDS
 from core.domain.error_response import ErrorResponse
 from core.domain.llm_completion import LLMCompletion
 from core.domain.run_output import RunOutput
@@ -59,6 +59,8 @@ class TaskRunBuilder(BaseModel):
     # Whether the builder concerns a reply to a previous run
     reply: RunReply | None = None
 
+    file_download_seconds: float | None = None
+
     def add_metadata(self, key: str, value: Any) -> None:
         if self.metadata is None:
             self.metadata = {}
@@ -101,15 +103,17 @@ class TaskRunBuilder(BaseModel):
             _cost_usd = sum(c.usage.cost_usd for c in self.llm_completions if c.usage and c.usage.cost_usd is not None)
 
         metadata = self.metadata or {}
-        if self.llm_completions:
-            seconds = sum(c.duration_seconds for c in self.llm_completions if c.duration_seconds is not None)
-            if seconds:
-                metadata[METADATA_KEY_INFERENCE_SECONDS] = seconds
+        inference_seconds = sum(c.duration_seconds for c in self.llm_completions if c.duration_seconds is not None)
+        if inference_seconds:
+            metadata[METADATA_KEY_INFERENCE_SECONDS] = round(inference_seconds, 3)
 
         total_duration_seconds = end_time - self.start_time
-        total_provider_duration_seconds = sum(
-            c.duration_seconds for c in self.llm_completions if c.duration_seconds is not None
-        )
+
+        overhead_seconds = total_duration_seconds - inference_seconds
+        if self.file_download_seconds:
+            overhead_seconds -= self.file_download_seconds
+            metadata[METADATA_KEY_FILE_DOWNLOAD_SECONDS] = round(self.file_download_seconds, 3)
+
         self._task_run = AgentRun(
             id=self.id,
             version_changed=self.version_changed,
@@ -137,6 +141,9 @@ class TaskRunBuilder(BaseModel):
             author_tenant=self.author_tenant,
             author_uid=self.author_uid,
             private_fields=self.private_fields,
-            overhead_seconds=total_duration_seconds - total_provider_duration_seconds,
+            overhead_seconds=overhead_seconds,
         )
         return self._task_run
+
+    def record_file_download_seconds(self, seconds: float) -> None:
+        self.file_download_seconds = seconds

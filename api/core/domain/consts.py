@@ -8,7 +8,7 @@ METADATA_KEY_USED_MODEL = "workflowai.model"
 METADATA_KEY_USED_PROVIDERS = "workflowai.providers"
 METADATA_KEY_PROVIDER_NAME = "workflowai.provider"
 METADATA_KEY_INFERENCE_SECONDS = "workflowai.inference_seconds"
-METADATA_KEY_OVERHEAD_SECONDS = "workflowai.overhead_seconds"
+METADATA_KEY_FILE_DOWNLOAD_SECONDS = "workflowai.file_download_seconds"
 METADATA_KEY_DEPLOYMENT_ENVIRONMENT_DEPRECATED = "used_alias"
 
 WORKFLOWAI_RUN_URL = os.getenv("WORKFLOWAI_API_URL", "https://run.workflowai.com")
