@@ -272,12 +272,13 @@ class TestStoreTaskRun:
         mock_file_storage.store_file.assert_not_called()
         mock_storage.store_task_run_resource.assert_awaited_with(
             non_legacy_task,
-            non_legacy_task_run,
+            result,  # store_task_runs_resource is the same as what is returned. The comparison is below
             None,  # user_identifier
             None,  # source
         )
 
-        assert result == non_legacy_task_run
+        excluded = {"task_input_preview", "task_output_preview"}
+        assert result.model_dump(exclude=excluded) == non_legacy_task_run.model_dump(exclude=excluded)
 
     async def test_store_task_run_with_legacy_task(
         self,
@@ -298,12 +299,13 @@ class TestStoreTaskRun:
         mock_file_storage.store_file.assert_not_called()
         mock_storage.store_task_run_resource.assert_awaited_with(
             legacy_task,
-            legacy_task_run,
+            result,  # store_task_runs_resource is the same as what is returned. The comparison is below
             None,  # user_identifier
             None,  # source
         )
 
-        assert result == legacy_task_run
+        excluded = {"task_input_preview", "task_output_preview"}
+        assert result.model_dump(exclude=excluded) == legacy_task_run.model_dump(exclude=excluded)
 
 
 class TestStripPrivateFields:

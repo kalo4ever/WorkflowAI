@@ -15,7 +15,6 @@ from core.domain.task_group import TaskGroup
 from core.domain.tool_call import ToolCall, ToolCallRequestWithID
 from core.domain.types import TaskInputDict, TaskOutputDict
 from core.domain.utils import compute_eval_hash
-from core.utils.models.previews import compute_preview
 
 AIReview = Literal["in_progress", "positive", "negative", "unsure"]
 
@@ -140,11 +139,6 @@ class AgentRun(AgentRunBase):
     @model_validator(mode="after")
     def post_validate(self):
         self._assign_eval_hash()
-        if not self.task_input_preview:
-            self.task_input_preview = compute_preview(self.task_input)
-        if not self.task_output_preview and self.task_output:
-            self.task_output_preview = compute_preview(self.task_output)
-
         return self
 
     def is_failure(self) -> bool:

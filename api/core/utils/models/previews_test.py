@@ -1,5 +1,5 @@
 import json
-from typing import Optional
+from typing import Any, Optional
 
 import pytest
 from pydantic import BaseModel
@@ -47,3 +47,22 @@ def test_compute_preview_default_limit():
     }
     assert len(json.dumps(d)) > 255, "sanity check"
     assert len(compute_preview(d)) == 255
+
+
+@pytest.mark.parametrize(
+    "file_payload, expected",
+    [
+        pytest.param(
+            {"url": "https://example.com/image.png", "content_type": "image/png"},
+            "[[img:https://example.com/image.png]]",
+            id="image_url",
+        ),
+        pytest.param(
+            {"url": "data:base64,...", "content_type": "image/png", "storage_url": "https://example.com/image.png"},
+            "[[img:https://example.com/image.png]]",
+            id="url_with_data",
+        ),
+    ],
+)
+def test_compute_preview_file(file_payload: dict[str, Any], expected: str):
+    assert compute_preview({"file": file_payload}, max_len=10) == "file: " + expected
