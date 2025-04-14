@@ -56,7 +56,6 @@ def _build_model_datas():
             provider_name=DisplayedProvider.OPEN_AI.value,
             supports_tool_calling=True,
         ),
-        Model.GPT_4O_2024_11_20: DeprecatedModel(replacement_model=Model.GPT_41_2025_04_14),
         Model.GPT_41_LATEST: LatestModel(
             model=Model.GPT_41_2025_04_14,
             display_name="GPT-4.1 (latest)",
