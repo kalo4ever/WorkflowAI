@@ -82,6 +82,11 @@ def _build_model_datas():
             provider_name=DisplayedProvider.OPEN_AI.value,
             supports_tool_calling=True,
         ),
+        Model.GPT_41_MINI_LATEST: LatestModel(
+            model=Model.GPT_41_MINI_2025_04_14,
+            display_name="GPT-4.1 Mini (latest)",
+            is_default=False,
+        ),
         Model.GPT_41_MINI_2025_04_14: ModelData(
             display_name="GPT-4.1 Mini (2025-04-14)",
             supports_json_mode=True,
@@ -97,10 +102,16 @@ def _build_model_datas():
             ),
             provider_for_pricing=Provider.OPEN_AI,
             icon_url="https://workflowai.blob.core.windows.net/workflowai-public/openai.svg",
+            latest_model=Model.GPT_41_MINI_LATEST,
             release_date=date(2025, 4, 14),
             quality_index=762,  # MMLU=87.5, GPQA=65
             provider_name=DisplayedProvider.OPEN_AI.value,
             supports_tool_calling=True,
+        ),
+        Model.GPT_41_NANO_LATEST: LatestModel(
+            model=Model.GPT_41_NANO_2025_04_14,
+            display_name="GPT-4.1 Nano (latest)",
+            is_default=False,
         ),
         Model.GPT_41_NANO_2025_04_14: ModelData(
             display_name="GPT-4.1 Nano (2025-04-14)",
@@ -119,6 +130,7 @@ def _build_model_datas():
             icon_url="https://workflowai.blob.core.windows.net/workflowai-public/openai.svg",
             release_date=date(2025, 4, 14),
             quality_index=650,  # MMLU=80, GPQA=50
+            latest_model=Model.GPT_41_NANO_LATEST,
             provider_name=DisplayedProvider.OPEN_AI.value,
             supports_tool_calling=True,
         ),
