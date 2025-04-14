@@ -1,14 +1,17 @@
+import { DeviceEqFilled, DocumentBulletList16Regular } from '@fluentui/react-icons';
 import NextImage from 'next/image';
 import { Fragment, ReactNode, memo } from 'react';
+import { ImagePlaceholderIcon } from '@/components/icons/ImagePlaceholderIcon';
+import { cn } from '@/lib/utils';
 
 function ImagePreview(props: { url: string }) {
   const { url } = props;
 
   if (!url) {
-    return '🖼️';
+    return <ImagePlaceholderIcon />;
   }
 
-  return <NextImage src={url} alt='' width={50} height={50} />;
+  return <NextImage src={url} alt='' width={48} height={48} className='max-h-12 max-w-12 object-contain' />;
 }
 
 function PreviewComponent(props: { prefix: string; url: string }) {
@@ -18,9 +21,9 @@ function PreviewComponent(props: { prefix: string; url: string }) {
 
   switch (props.prefix) {
     case 'audio':
-      return '🎵';
+      return <DeviceEqFilled />;
     default:
-      return '📄';
+      return <DocumentBulletList16Regular />;
   }
 }
 
@@ -67,7 +70,7 @@ export const PreviewBox = memo(function PreviewBox(props: { preview: string; pre
   ));
 
   return (
-    <div className={baseCls}>
+    <div className={cn(baseCls, 'flex flex-row gap-1 items-center')}>
       {parts.map((part, index) => (
         <Fragment key={index}>{part}</Fragment>
       ))}
