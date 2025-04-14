@@ -75,12 +75,15 @@ export function SingleVideoComponent(props: SingleVideoProps) {
   // Simulate user interaction on mount, important for autoplaying videos
   useEffect(() => {
     const simulateUserInteraction = () => {
-      const event = new MouseEvent('click', {
-        view: window,
-        bubbles: true,
-        cancelable: true,
+      const events = ['click', 'touchstart', 'pointerdown'];
+      events.forEach((eventType) => {
+        const event = new MouseEvent(eventType, {
+          view: window,
+          bubbles: true,
+          cancelable: true,
+        });
+        document.dispatchEvent(event);
       });
-      document.dispatchEvent(event);
     };
 
     // Try immediately
