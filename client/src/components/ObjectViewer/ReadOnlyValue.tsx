@@ -1,16 +1,16 @@
 import { cx } from 'class-variance-authority';
 import { diffLines, diffWords } from 'diff';
-import DOMPurify from 'dompurify';
 import { useMemo } from 'react';
 import { CopyButtonWrapper } from '@/components/buttons/CopyTextButton';
 import { SimpleTooltip } from '../ui/Tooltip';
+import { SVGValueContent } from './SVGValue';
 import { ValueViewerProps, stringifyNil } from './utils';
 
 function shouldDiffLineForString(text: string) {
   return text?.includes('\n') || text?.includes(' ');
 }
 
-type ReadonlyValueContentProps = {
+type ReadonlyValueTextContentProps = {
   className: string;
   previewMode: boolean;
   isError: boolean;
@@ -19,64 +19,8 @@ type ReadonlyValueContentProps = {
   text: string;
 };
 
-function ReadonlyValueContent(props: ReadonlyValueContentProps) {
+export function ReadonlyValueTextContent(props: ReadonlyValueTextContentProps) {
   const { className, previewMode, isError, truncateText, icon, text } = props;
-
-  const isSVG = useMemo(() => {
-    if (!text) return false;
-    const trimmedText = text.trim();
-    return trimmedText.startsWith('<svg') && trimmedText.endsWith('</svg>');
-  }, [text]);
-
-  const sanitizedSVG = useMemo(() => {
-    if (!isSVG) return null;
-
-    // Add viewBox if not present to support width adjustments for layout
-    let svgText = text;
-    if (!text.includes('viewBox=')) {
-      const widthMatch = text.match(/width="([^"]+)"/);
-      const heightMatch = text.match(/height="([^"]+)"/);
-      if (widthMatch && heightMatch) {
-        const width = widthMatch[1];
-        const height = heightMatch[1];
-        svgText = text.replace(/<svg/, `<svg viewBox="0 0 ${width} ${height}"`);
-      }
-    }
-
-    return DOMPurify.sanitize(svgText, {
-      USE_PROFILES: { svg: true, svgFilters: true },
-      ADD_TAGS: ['use'],
-      ADD_ATTR: ['xlink:href'],
-    });
-  }, [text, isSVG]);
-
-  if (isSVG && sanitizedSVG) {
-    return (
-      <div
-        data-testid='viewer-readonly-value'
-        className={cx(
-          className,
-          'relative min-h-6 px-1.5 py-0.5 border border-gray-200 rounded-[2px] flex items-center w-full',
-          previewMode ? 'bg-gray-50' : 'bg-white'
-        )}
-      >
-        <div className='flex-1 w-full overflow-hidden'>
-          <div
-            className='w-full [&>svg]:block [&>svg]:w-full [&>svg]:h-auto [&>svg]:max-w-full'
-            style={{
-              width: '100%',
-              height: 'auto',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-            dangerouslySetInnerHTML={{ __html: sanitizedSVG }}
-          />
-        </div>
-        {!!icon && <div className='flex-shrink-0 ml-1'>{icon}</div>}
-      </div>
-    );
-  }
 
   return (
     <div
@@ -154,6 +98,12 @@ export function ReadonlyValue(props: ReadonlyValueProps) {
     return shouldDiffLine ? diffLines(referenceValue, text) : diffWords(referenceValue, text);
   }, [text, referenceValue, shouldDiffLine]);
 
+  const isSVG = useMemo(() => {
+    if (!text) return false;
+    const trimmedText = text.trim();
+    return trimmedText.startsWith('<svg') && trimmedText.endsWith('</svg>');
+  }, [text]);
+
   if (diff) {
     return (
       <div
@@ -177,8 +127,17 @@ export function ReadonlyValue(props: ReadonlyValueProps) {
     );
   }
 
-  const content = (
-    <ReadonlyValueContent
+  const content = isSVG ? (
+    <SVGValueContent
+      text={text}
+      className={className ?? ''}
+      previewMode={previewMode ?? false}
+      isError={isError ?? false}
+      truncateText={truncateText ?? 0}
+      icon={icon}
+    />
+  ) : (
+    <ReadonlyValueTextContent
       text={text}
       className={className ?? ''}
       previewMode={previewMode ?? false}
