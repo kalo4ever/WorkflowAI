@@ -263,6 +263,30 @@ OPENAI_PROVIDER_DATA: ProviderDataByModel = {
             source="https://openai.com/api/pricing/",
         ),
     ),
+    Model.GPT_41_2025_04_14: ModelProviderData(
+        text_price=TextPricePerToken(
+            prompt_cost_per_token=2 * ONE_MILLION_TH,
+            prompt_cached_tokens_discount=0.75,
+            completion_cost_per_token=8 * ONE_MILLION_TH,
+            source="https://openai.com/api/pricing/",
+        ),
+    ),
+    Model.GPT_41_MINI_2025_04_14: ModelProviderData(
+        text_price=TextPricePerToken(
+            prompt_cost_per_token=0.4 * ONE_MILLION_TH,
+            prompt_cached_tokens_discount=0.75,
+            completion_cost_per_token=1.6 * ONE_MILLION_TH,
+            source="https://openai.com/api/pricing/",
+        ),
+    ),
+    Model.GPT_41_NANO_2025_04_14: ModelProviderData(
+        text_price=TextPricePerToken(
+            prompt_cost_per_token=0.1 * ONE_MILLION_TH,
+            prompt_cached_tokens_discount=0.75,
+            completion_cost_per_token=0.4 * ONE_MILLION_TH,
+            source="https://openai.com/api/pricing/",
+        ),
+    ),
     Model.GPT_45_PREVIEW_2025_02_27: ModelProviderData(
         text_price=TextPricePerToken(
             prompt_cost_per_token=75 * ONE_MILLION_TH,

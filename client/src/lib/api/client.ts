@@ -1,4 +1,4 @@
-import { EventSourceMessage, fetchEventSource } from '@microsoft/fetch-event-source';
+import { EventSourceMessage, EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source';
 import { captureException } from '@sentry/nextjs';
 import { StreamError } from '@/types/errors';
 
@@ -52,6 +52,40 @@ export enum Method {
   DELETE = 'DELETE',
   PUT = 'PUT',
   PATCH = 'PATCH',
+}
+
+async function onOpenStream(response: Response) {
+  const contentType = response.headers.get('content-type');
+  if (!contentType?.startsWith(EventStreamContentType)) {
+    // There was an error with the request, we should not have a 200 status code
+    let errorMessage = 'An internal error occurred while streaming the response';
+    let capture = false;
+    let title: string | undefined = undefined;
+    switch (response.status) {
+      case 200:
+        capture = true;
+        break;
+      case 429:
+        title = 'Rate limit exceeded';
+        errorMessage =
+          'Apologies, our system is currently handling more requests than it can process.\n\nOur team has already been alerted and is working hard to resolve the situation.\nPlease try again shortly.';
+        break;
+      case 402:
+        title = 'Out of LLM Credits';
+        errorMessage =
+          'You have used all your LLM credits from WorkflowAI.\n\nIn order to continue running tasks with WorkflowAI, you will need to purchase more.';
+        break;
+      default:
+        capture = true;
+        break;
+    }
+    throw new StreamError(errorMessage, capture, {
+      status: response.status,
+      path: response.url,
+      text: await response.text(),
+      title,
+    });
+  }
 }
 
 async function fetchWrapper<T, R = unknown>(
@@ -191,6 +225,7 @@ export async function SSEClient<R, T>(
   let lastMessage: T | undefined;
 
   await fetchEventSource(path, {
+    onopen: onOpenStream,
     onmessage: (event: EventSourceMessage) => {
       lastMessage = parseSSEEvent(event.data) as T;
       onMessage?.(lastMessage);

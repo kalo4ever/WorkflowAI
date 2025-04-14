@@ -254,12 +254,6 @@ class RunService:
             self._send_run_analytics(run, trigger)
             return run
 
-        # TODO[latency]
-        # if start_time is not None and end_time is not None:
-        #     if run.metadata is None:
-        #         run.metadata = {}
-        #     run.metadata[METADATA_KEY_OVERHEAD_SECONDS] = round(end_time - start_time, 3)
-
         if store_inline:
             # Soon we will no longer store runs inline + this class will be removed
             # For now, let's just use the runs service static method to store the run

@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import time
 from collections.abc import Sequence
 from copy import deepcopy
 from typing import Any, Callable, Iterable, NamedTuple, Optional
@@ -425,21 +426,27 @@ class WorkflowAIRunner(AbstractRunner[WorkflowAIRunnerOptions]):
         output_schema = self.task_output_schema()
 
         input_schema, input_copy, files = extract_files(input_schema, input_copy)
-        files = await self._convert_pdf_to_images(files, model_data)
-        self._check_support_for_files(model_data, files)
+        if files:
+            files = await self._convert_pdf_to_images(files, model_data)
+            self._check_support_for_files(model_data, files)
 
-        try:
-            async with asyncio.TaskGroup() as tg:
-                for file in files:
-                    # We want to update the provided input because file data
-                    # should be propagated upstream to avoid having to download files twice
-                    tg.create_task(self._download_file_and_update_input_if_needed(provider, file, input))
-        except* InvalidFileError as eg:
-            raise eg.exceptions[0]
+            download_start_time = time.time()
+            try:
+                async with asyncio.TaskGroup() as tg:
+                    for file in files:
+                        # We want to update the provided input because file data
+                        # should be propagated upstream to avoid having to download files twice
+                        tg.create_task(self._download_file_and_update_input_if_needed(provider, file, input))
+            except* InvalidFileError as eg:
+                raise eg.exceptions[0]
+            if builder:
+                builder.record_file_download_seconds(time.time() - download_start_time)
 
-        # Here we update the input copy instead of the provided input
-        # Since the data will just be provided to the provider
-        files, has_inlined_files = self._inline_text_files(files, input_copy)
+            # Here we update the input copy instead of the provided input
+            # Since the data will just be provided to the provider
+            files, has_inlined_files = self._inline_text_files(files, input_copy)
+        else:
+            has_inlined_files = False
 
         instructions = self._options.instructions
         if instructions is not None:
