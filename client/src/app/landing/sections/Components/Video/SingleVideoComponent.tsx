@@ -72,6 +72,25 @@ export function SingleVideoComponent(props: SingleVideoProps) {
     }
   }, [isSelected]);
 
+  // Simulate user interaction on mount, important for autoplaying videos
+  useEffect(() => {
+    const simulateUserInteraction = () => {
+      const event = new MouseEvent('click', {
+        view: window,
+        bubbles: true,
+        cancelable: true,
+      });
+      document.dispatchEvent(event);
+    };
+
+    // Try immediately
+    simulateUserInteraction();
+
+    // And try again after a short delay
+    const timeout = setTimeout(simulateUserInteraction, 1000);
+    return () => clearTimeout(timeout);
+  }, []);
+
   useEffect(() => {
     if (isSelected && isLoaded) {
       onPlay();
