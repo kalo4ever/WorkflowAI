@@ -132,6 +132,8 @@ export function SingleVideoComponent(props: SingleVideoProps) {
         onCanPlay={handleCanPlay}
         onPlay={handlePlay}
         onPause={handlePause}
+        data-playsinline='true'
+        data-webkit-playsinline='true'
       />
     </div>
   );
