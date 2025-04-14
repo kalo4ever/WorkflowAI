@@ -3,7 +3,7 @@ import logging
 from datetime import date, timedelta
 from pathlib import Path
 from typing import Any, Generator, Optional
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import httpx
 import pytest
@@ -81,7 +81,7 @@ class TestUptimeService:
     @pytest.mark.parametrize(
         "uptime_value, since_value, expected_result, expected_since",
         [
-            (0.995, date(2025, 1, 1), 0.995, date(2025, 1, 1)),
+            (0.995, "2025-01-01", 0.995, date(2025, 1, 1)),
             (None, None, None, None),
         ],
     )
@@ -90,7 +90,7 @@ class TestUptimeService:
         mock_uptime_agent: AsyncMock,
         mock_browser_text: AsyncMock,
         uptime_value: Optional[float],
-        since_value: Optional[date],
+        since_value: Optional[str],
         expected_result: float,
         expected_since: date,
         uptime_service: UptimeService,
@@ -119,6 +119,37 @@ class TestUptimeService:
         assert isinstance(agent_input, UptimeExtractorAgentInput)
         assert agent_input.status_page_content == page_content
         assert agent_input.extraction_instructions == extraction_instructions
+
+    async def test_run_uptime_extraction_unparsable_date(
+        self,
+        mock_uptime_agent: AsyncMock,
+        mock_browser_text: AsyncMock,
+        uptime_service_with_mock_logger: UptimeService,
+        logger_mock: MagicMock,
+    ) -> None:
+        # Arrange
+        status_page_url = "https://test-status.com"
+        extraction_instructions = "Test instructions"
+        page_content = "<html>Test content</html>"
+        expected_uptime = 0.99
+
+        mock_browser_text.return_value = page_content
+        mock_uptime_agent.return_value = MagicMock(
+            output=UptimeExtractorAgentOutput(uptime=expected_uptime, since="not-a-valid-date"),
+        )
+
+        # Act
+        result = await uptime_service_with_mock_logger._get_uptime_info(  # type: ignore[reportPrivateUsage]
+            status_page_url=status_page_url,
+            extraction_instructions=extraction_instructions,
+        )
+
+        # Assert
+        assert result == (expected_uptime, None)
+        mock_browser_text.assert_called_once_with(status_page_url)
+        mock_uptime_agent.assert_called_once()
+        logger_mock.exception.assert_called_once()
+        assert "Invalid since date" in logger_mock.exception.call_args[0][0]
 
     async def test_run_uptime_extraction_browser_exception(
         self,
@@ -276,3 +307,56 @@ class TestUptimeService:
         assert since is None
         logger_mock.exception.assert_called_once()
         assert "Error getting OpenAI component uptime" in logger_mock.exception.call_args[0][0]
+
+    @pytest.mark.parametrize(
+        "from_date,to_date,tolerance,service_name,should_log",
+        [
+            # Date difference is greater than tolerance - should log warning
+            (date(2023, 5, 15), date(2023, 5, 10), 3, "workflowai", True),
+            # Date difference is equal to tolerance - should not log warning
+            (date(2023, 5, 15), date(2023, 5, 12), 3, "openai", False),
+            # Date difference is less than tolerance - should not log warning
+            (date(2023, 5, 15), date(2023, 5, 13), 3, "workflowai", False),
+            # Edge case: same dates - should not log warning
+            (date(2023, 5, 15), date(2023, 5, 15), 0, "openai", False),
+            # Edge case: negative tolerance - should log warning if any difference
+            (date(2023, 5, 15), date(2023, 5, 14), -1, "workflowai", True),
+        ],
+    )
+    def test_check_date_diff(
+        self,
+        from_date: date,
+        to_date: date,
+        tolerance: int,
+        service_name: str,
+        should_log: bool,
+    ) -> None:
+        # Arrange
+        with patch("logging.getLogger") as mock_get_logger:
+            mock_logger = Mock()
+            mock_get_logger.return_value = mock_logger
+
+            service = TestableUptimeService()
+
+            # Act
+            service.check_date_diff(from_date, to_date, tolerance, service_name)
+
+            # Assert
+            if should_log:
+                mock_logger.warning.assert_called_once_with(
+                    "Uptime date difference is greater than tolerance",
+                    extra={
+                        "from_date": from_date,
+                        "to_date": to_date,
+                        "tolerance": tolerance,
+                        "service_name": service_name,
+                    },
+                )
+            else:
+                mock_logger.warning.assert_not_called()
+
+
+# Test subclass that exposes the protected method for testing
+class TestableUptimeService(UptimeService):
+    def check_date_diff(self, from_date: date, to_date: date, tolerance: int, service_name: str) -> None:
+        return self._check_date_diff(from_date, to_date, tolerance, service_name)

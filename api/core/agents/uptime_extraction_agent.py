@@ -1,5 +1,3 @@
-from datetime import date
-
 import workflowai
 from pydantic import BaseModel, Field
 
@@ -23,9 +21,9 @@ class UptimeExtractorAgentOutput(BaseModel):
         description="The uptime extracted from the status page, between 0 and 100. All decimals from the status page must be extracted.",
         default=None,
     )
-    since: date | None = Field(
+    since: str | None = Field(
         default=None,
-        description="The start date of the uptime extraction period",
+        description="The start date of the uptime extraction period, in ISO 8601 format: 'YYYY-MM-DD'",
     )
 
 
