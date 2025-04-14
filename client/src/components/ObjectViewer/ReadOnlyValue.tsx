@@ -3,10 +3,54 @@ import { diffLines, diffWords } from 'diff';
 import { useMemo } from 'react';
 import { CopyButtonWrapper } from '@/components/buttons/CopyTextButton';
 import { SimpleTooltip } from '../ui/Tooltip';
+import { SVGValueContent } from './SVGValue';
 import { ValueViewerProps, stringifyNil } from './utils';
 
 function shouldDiffLineForString(text: string) {
   return text?.includes('\n') || text?.includes(' ');
+}
+
+type ReadonlyValueTextContentProps = {
+  className: string;
+  previewMode: boolean;
+  isError: boolean;
+  truncateText: number;
+  icon: React.ReactNode;
+  text: string;
+};
+
+export function ReadonlyValueTextContent(props: ReadonlyValueTextContentProps) {
+  const { className, previewMode, isError, truncateText, icon, text } = props;
+
+  return (
+    <div
+      data-testid='viewer-readonly-value'
+      className={cx(
+        className,
+        'relative min-h-6 font-medium text-[13px] px-1.5 py-0.5 border border-gray-200 rounded-[2px] flex items-center',
+        previewMode ? 'bg-gray-50' : 'bg-white',
+        {
+          'text-gray-400': !isError && previewMode,
+          'text-gray-700': !isError && !previewMode,
+          'text-red-600 border-red-200': isError,
+        }
+      )}
+    >
+      <div
+        className={cx('flex-1', !!truncateText && 'overflow-hidden')}
+        style={{
+          display: !!truncateText ? '-webkit-box' : 'block',
+          WebkitLineClamp: !!truncateText ? truncateText : undefined,
+          WebkitBoxOrient: !!truncateText ? 'vertical' : undefined,
+          wordBreak: 'break-word',
+          overflowWrap: 'anywhere',
+        }}
+      >
+        {text}
+      </div>
+      {!!icon && <div className='flex-shrink-0 ml-1'>{icon}</div>}
+    </div>
+  );
 }
 
 type ReadonlyValueProps = Pick<
@@ -54,6 +98,12 @@ export function ReadonlyValue(props: ReadonlyValueProps) {
     return shouldDiffLine ? diffLines(referenceValue, text) : diffWords(referenceValue, text);
   }, [text, referenceValue, shouldDiffLine]);
 
+  const isSVG = useMemo(() => {
+    if (!text) return false;
+    const trimmedText = text.trim();
+    return trimmedText.startsWith('<svg') && trimmedText.endsWith('</svg>');
+  }, [text]);
+
   if (diff) {
     return (
       <div
@@ -77,34 +127,24 @@ export function ReadonlyValue(props: ReadonlyValueProps) {
     );
   }
 
-  const content = (
-    <div
-      data-testid='viewer-readonly-value'
-      className={cx(
-        className,
-        'relative min-h-6 font-medium text-[13px] px-1.5 py-0.5 border border-gray-200 rounded-[2px] flex items-center',
-        previewMode ? 'bg-gray-50' : 'bg-white',
-        {
-          'text-gray-400': !isError && previewMode,
-          'text-gray-700': !isError && !previewMode,
-          'text-red-600 border-red-200': isError,
-        }
-      )}
-    >
-      <div
-        className={cx('flex-1', !!truncateText && 'overflow-hidden')}
-        style={{
-          display: !!truncateText ? '-webkit-box' : 'block',
-          WebkitLineClamp: !!truncateText ? truncateText : undefined,
-          WebkitBoxOrient: !!truncateText ? 'vertical' : undefined,
-          wordBreak: 'break-word',
-          overflowWrap: 'anywhere',
-        }}
-      >
-        {text}
-      </div>
-      {!!icon && <div className='flex-shrink-0 ml-1'>{icon}</div>}
-    </div>
+  const content = isSVG ? (
+    <SVGValueContent
+      text={text}
+      className={className ?? ''}
+      previewMode={previewMode ?? false}
+      isError={isError ?? false}
+      truncateText={truncateText ?? 0}
+      icon={icon}
+    />
+  ) : (
+    <ReadonlyValueTextContent
+      text={text}
+      className={className ?? ''}
+      previewMode={previewMode ?? false}
+      isError={isError ?? false}
+      truncateText={truncateText ?? 0}
+      icon={icon}
+    />
   );
 
   if (!!showTypes) {
@@ -130,5 +170,6 @@ export function ReadonlyValue(props: ReadonlyValueProps) {
   if (hideCopyValue) {
     return <div className='group flex items-center gap-1'>{content}</div>;
   }
+
   return <CopyButtonWrapper text={text}>{content}</CopyButtonWrapper>;
 }

@@ -12,7 +12,7 @@ import {
   JsonValueSchema,
   sanitizeRef,
 } from '@/types';
-import { FILE_REF_NAMES, IMAGE_REF_NAME } from './constants';
+import { AUDIO_REF_NAME, FILE_REF_NAMES, IMAGE_REF_NAME } from './constants';
 
 export const IMAGE_REF: JsonRefSchema = {
   $ref: '#/$defs/Image',
@@ -244,6 +244,13 @@ export function fromSchemaToSplattedEditorFields(
       return {
         keyName,
         type: 'image',
+      };
+    }
+
+    if (AUDIO_REF_NAME === refName) {
+      return {
+        keyName,
+        type: 'audio',
       };
     }
 

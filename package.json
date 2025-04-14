@@ -45,5 +45,8 @@
   "packageManager": "yarn@4.1.0",
   "resolutions": {
     "cross-spawn": "7.0.6"
+  },
+  "dependencies": {
+    "dompurify": "^3.2.5"
   }
 }

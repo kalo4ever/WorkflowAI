@@ -62,6 +62,7 @@ export function SuggestedFeaturesSearch(props: Props) {
       } else {
         redirectWithParams({
           path: `/${cleanedURL}`,
+          scroll: false,
         });
       }
 
