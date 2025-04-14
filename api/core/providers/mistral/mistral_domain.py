@@ -5,7 +5,7 @@ from typing import Any, Literal, Self
 
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
 
-from core.domain.errors import ModelDoesNotSupportMode, UnpriceableRunError
+from core.domain.errors import UnpriceableRunError
 from core.domain.fields.file import File
 from core.domain.llm_usage import LLMUsage
 from core.domain.message import Message
@@ -118,8 +118,6 @@ class MistralAIMessage(BaseModel):
             if message.content:
                 content.append(TextChunk(text=message.content))
             for file in message.files or []:
-                if file.is_image is False:
-                    raise ModelDoesNotSupportMode("MistralAI only supports image files in messages")
                 content.append(ImageURLChunk.from_file(file))
 
         tool_calls: list[ToolCall] = []
