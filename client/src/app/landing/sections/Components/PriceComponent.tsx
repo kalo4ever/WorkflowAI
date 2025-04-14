@@ -148,21 +148,17 @@ export function PriceComponent(props: Props) {
 
   const { models } = useOrFetchModels();
 
-  const filteredModels = useMemo(() => {
-    return models?.slice(0, 4);
-  }, [models]);
-
   const [selectedModelIndex, setSelectedModelIndex] = useState<number>(0);
 
   return (
     <div className={cn('flex flex-col items-center sm:gap-8 gap-6 sm:px-16 px-4 w-full max-w-[1260px]', className)}>
       <div className='flex flex-col border border-gray-200 rounded-[2px] w-full'>
         <PriceSectionModelSelector
-          models={filteredModels}
+          models={models}
           selectedModelIndex={selectedModelIndex}
           setSelectedModelIndex={setSelectedModelIndex}
         />
-        <PriceSectionGraph model={filteredModels?.[selectedModelIndex]} />
+        <PriceSectionGraph model={models?.[selectedModelIndex]} />
       </div>
     </div>
   );
