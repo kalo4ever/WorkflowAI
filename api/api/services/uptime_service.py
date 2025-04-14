@@ -109,13 +109,26 @@ class UptimeService:
                 )
 
             since = uptime_extraction_run.output.since
+            since_date = None
             if since is None:
                 self._logger.error(
                     "No uptime since extracted",
                     extra={"status_page_url": status_page_url, "extraction_run_id": uptime_extraction_run.id},
                 )
-
-            return uptime, since
+            else:
+                try:
+                    since_date = date.fromisoformat(since)
+                except Exception as e:
+                    self._logger.exception(
+                        "Invalid since date",
+                        extra={
+                            "since": since,
+                            "status_page_url": status_page_url,
+                            "extraction_run_id": uptime_extraction_run.id,
+                        },
+                        exc_info=e,
+                    )
+            return uptime, since_date
         except Exception as e:
             self._logger.exception(
                 "Error extracting uptime for",
