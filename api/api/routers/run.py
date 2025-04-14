@@ -1,16 +1,18 @@
 import logging
+import os
 import uuid
 from collections.abc import Sequence
-from typing import Any, Literal, override
+from typing import Annotated, Any, Literal, override
 
-from fastapi import APIRouter, Depends, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel, Field, TypeAdapter, field_validator, model_validator
 
 from api.dependencies.analytics import UserPropertiesDep
 from api.dependencies.path_params import TaskID, TaskSchemaID
-from api.dependencies.run import AuthorTenantDep
 from api.dependencies.security import (
     ProviderSettingsDep,
+    RequiredUserOrganizationDep,
+    URLPublicOrganizationDep,
     UserOrganizationDep,
     key_ring_dependency,
     tenant_dependency,
@@ -35,10 +37,12 @@ from core.domain.major_minor import MajorMinor
 from core.domain.run_output import RunOutput
 from core.domain.task_group import TaskGroupIdentifier
 from core.domain.task_group_properties import TaskGroupProperties
+from core.domain.tenant_data import TenantData
 from core.domain.tool_call import ToolCall, ToolCallOutput
 from core.domain.types import CacheUsage
 from core.domain.version_environment import VersionEnvironment
 from core.domain.version_reference import VersionReference as DomainVersionReference
+from core.storage import TenantTuple
 from core.utils.fields import id_factory
 from core.utils.iter_utils import safe_map_optional
 from core.utils.models.previews import compute_preview
@@ -271,6 +275,42 @@ _RUN_RESPONSE_V1: dict[int | str, dict[str, Any]] = {
         },
     },
 }
+
+# By default we block runs for no credits. Set BLOCK_RUN_FOR_NO_CREDITS=false to disable
+_BLOCK_RUN_FOR_NO_CREDITS = os.getenv("BLOCK_RUN_FOR_NO_CREDITS", "true").lower() != "false"
+
+
+def check_enough_credits(org_settings: TenantData):
+    if _BLOCK_RUN_FOR_NO_CREDITS and org_settings.current_credits_usd < 0:
+        if org_settings.payment_failure and org_settings.payment_failure.failure_code == "internal":
+            _logger.error(
+                "An organization has no credits because of an internal error",
+                extra={"tenant": org_settings.tenant, "slug": org_settings.slug},
+            )
+            return org_settings
+
+        # TODO: lower to debug. We should not be logging a warning here, checking just in case
+        _logger.warning(
+            "Blocked run for no credits",
+            extra={"tenant": org_settings.tenant, "slug": org_settings.slug},
+        )
+
+        raise HTTPException(status_code=402, detail="Insufficient credits to run the task")
+    return org_settings
+
+
+def author_tenant(org_settings: RequiredUserOrganizationDep, url_public_org: URLPublicOrganizationDep):
+    check_enough_credits(org_settings)
+
+    # author_tenant is only set if the owner of the task and the current logged in user
+    # are different. This is used to determine if the run should be counted towards the
+    # user's credits.
+    if url_public_org and org_settings and url_public_org.tenant != org_settings.tenant:
+        return (org_settings.tenant, org_settings.uid)
+    return None
+
+
+AuthorTenantDep = Annotated[TenantTuple | None, Depends(author_tenant)]
 
 
 @task_router.post(
