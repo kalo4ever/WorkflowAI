@@ -101,10 +101,11 @@ def set_tenant_slug(request: Request, tenant_slug: str):
 
 
 def get_tenant_slug(request: Request) -> str | None:
-    if "tenant" not in request.path_params:
+    if not request.path_params or "tenant" not in request.path_params:
         return None
     if not hasattr(request.state, "tenant_slug"):
         logging.warning("Tenant slug not set")
+        return None
     return request.state.tenant_slug or request.path_params.get("tenant")
 
 
