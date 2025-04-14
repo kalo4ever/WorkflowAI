@@ -23,7 +23,7 @@ export function AutomaticPaymentsSection(props: AutomaticPaymentsSectionProps) {
           className='py-3 flex w-full whitespace-pre-line'
         />
       )}
-      {isAutomaticPaymentsEnabled ? (
+      {isAutomaticPaymentsEnabled && !automaticPaymentsFailure ? (
         <div className='flex flex-col'>
           <div className='flex flex-row items-center gap-1'>
             <CheckmarkCircleRegular className='text-green-500 w-4 h-4' />
