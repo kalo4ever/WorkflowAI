@@ -370,21 +370,10 @@ async def test_run_with_500_error(httpx_mock: HTTPXMock, int_api_client: AsyncCl
     assert requests[0]["events"][0]["event_properties"]["error_code"] == "provider_internal_error"
 
 
-@pytest.fixture(scope="function", params=[True, False])
-def block_run_for_no_credits(request: pytest.FixtureRequest):
-    from api.dependencies import run as run_deps
-
-    _prev_block_run_for_no_credits = run_deps._BLOCK_RUN_FOR_NO_CREDITS  # pyright: ignore [reportPrivateUsage]
-    run_deps._BLOCK_RUN_FOR_NO_CREDITS = request.param  # pyright: ignore [reportPrivateUsage]
-    yield request.param
-    run_deps._BLOCK_RUN_FOR_NO_CREDITS = _prev_block_run_for_no_credits  # pyright: ignore [reportPrivateUsage]
-
-
 async def test_run_schema_insufficient_credits(
     int_api_client: AsyncClient,
     httpx_mock: HTTPXMock,
     patched_broker: InMemoryBroker,
-    block_run_for_no_credits: bool,
 ):
     # Create a task with the patched broker and HTTPXMock
     await create_task(int_api_client, patched_broker, httpx_mock)
@@ -438,18 +427,7 @@ async def test_run_schema_insufficient_credits(
     org = result_or_raise(await int_api_client.get("/_/organization/settings"))
     assert pytest.approx(org["current_credits_usd"], 0.001) == -2.0  # pyright: ignore [reportUnknownMemberType]
 
-    if block_run_for_no_credits:
-        with pytest.raises(HTTPStatusError) as e:
-            await run_task(
-                int_api_client,
-                task_id="greet",
-                task_schema_id=1,
-                task_input={"name": "John", "age": 30},
-                group={"properties": {"model": "gpt-4o-2024-11-20"}},
-            )
-
-        assert e.value.response.status_code == 402
-    else:
+    with pytest.raises(HTTPStatusError) as e:
         await run_task(
             int_api_client,
             task_id="greet",
@@ -457,6 +435,8 @@ async def test_run_schema_insufficient_credits(
             task_input={"name": "John", "age": 30},
             group={"properties": {"model": "gpt-4o-2024-11-20"}},
         )
+
+    assert e.value.response.status_code == 402
 
 
 async def test_run_no_tenant_analytics(
