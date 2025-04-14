@@ -61,8 +61,7 @@ RUN pip install --no-cache /wheels/*
 # Copy the rest of the application
 COPY api/api api
 COPY docs docs
-COPY api/core core 
-COPY api/docs docs
+COPY api/core core
 COPY api/start.sh /app/start.sh
 
 ENV PATH="/app/.venv/bin:$PATH"
