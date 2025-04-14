@@ -1,7 +1,7 @@
 from datetime import date
 
+from core.domain.models._displayed_provider import DisplayedProvider
 from core.domain.models.model_data import DeprecatedModel, LatestModel, MaxTokensData, ModelData
-from core.domain.models.model_datas_mapping import DisplayedProvider
 from core.domain.models.models import Model
 from core.domain.models.providers import Provider
 
@@ -39,7 +39,7 @@ def mistral_models() -> dict[Model, ModelData | LatestModel | DeprecatedModel]:
             supports_input_pdf=False,
             supports_input_audio=False,
             max_tokens_data=MaxTokensData(
-                max_tokens=128000,
+                max_tokens=131072,
                 source="https://mistral.ai/news/mistral-large-2407/",
             ),
             provider_for_pricing=Provider.AMAZON_BEDROCK,
@@ -62,7 +62,7 @@ def mistral_models() -> dict[Model, ModelData | LatestModel | DeprecatedModel]:
             supports_input_pdf=False,
             supports_input_audio=False,
             max_tokens_data=MaxTokensData(
-                max_tokens=128000,
+                max_tokens=131072,
                 source="https://docs.mistral.ai/getting-started/models/",
             ),
             provider_for_pricing=Provider.MISTRAL_AI,
@@ -85,7 +85,7 @@ def mistral_models() -> dict[Model, ModelData | LatestModel | DeprecatedModel]:
             supports_input_pdf=False,
             supports_input_audio=False,
             max_tokens_data=MaxTokensData(
-                max_tokens=128000,
+                max_tokens=131072,
                 source="https://docs.mistral.ai/getting-started/models/",
             ),
             provider_for_pricing=Provider.MISTRAL_AI,
@@ -104,7 +104,7 @@ def mistral_models() -> dict[Model, ModelData | LatestModel | DeprecatedModel]:
             supports_input_pdf=False,
             supports_input_audio=False,
             max_tokens_data=MaxTokensData(
-                max_tokens=128000,
+                max_tokens=131072,
                 source="https://docs.mistral.ai/getting-started/models/",
             ),
             provider_for_pricing=Provider.MISTRAL_AI,
@@ -122,7 +122,7 @@ def mistral_models() -> dict[Model, ModelData | LatestModel | DeprecatedModel]:
             supports_input_pdf=False,
             supports_input_audio=False,
             max_tokens_data=MaxTokensData(
-                max_tokens=128000,
+                max_tokens=131072,
                 source="https://docs.mistral.ai/getting-started/models/",
             ),
             provider_for_pricing=Provider.MISTRAL_AI,
@@ -140,7 +140,7 @@ def mistral_models() -> dict[Model, ModelData | LatestModel | DeprecatedModel]:
             supports_input_pdf=False,
             supports_input_audio=False,
             max_tokens_data=MaxTokensData(
-                max_tokens=128000,
+                max_tokens=131072,
                 source="https://docs.mistral.ai/getting-started/models/",
             ),
             provider_for_pricing=Provider.MISTRAL_AI,
@@ -171,6 +171,7 @@ def mistral_models() -> dict[Model, ModelData | LatestModel | DeprecatedModel]:
             quality_index=377,  # MMLU=52.90, GPQA=33.80
             provider_name=DisplayedProvider.MISTRAL_AI.value,
             supports_tool_calling=True,
+            latest_model=Model.MISTRAL_SMALL_LATEST,
         ),
         Model.MISTRAL_SMALL_2501: ModelData(
             display_name="Mistral Small (25-01)",
@@ -189,6 +190,7 @@ def mistral_models() -> dict[Model, ModelData | LatestModel | DeprecatedModel]:
             quality_index=377,  # MMLU=52.90, GPQA=33.80
             provider_name=DisplayedProvider.MISTRAL_AI.value,
             supports_tool_calling=True,
+            latest_model=Model.MISTRAL_SMALL_LATEST,
         ),
         Model.MISTRAL_SMALL_2409: ModelData(
             display_name="Mistral Small (24-09)",
@@ -207,6 +209,7 @@ def mistral_models() -> dict[Model, ModelData | LatestModel | DeprecatedModel]:
             quality_index=377,  # MMLU=52.90, GPQA=33.80
             provider_name=DisplayedProvider.MISTRAL_AI.value,
             supports_tool_calling=True,
+            latest_model=Model.MISTRAL_SMALL_LATEST,
         ),
         Model.MISTRAL_SABA_2502: ModelData(
             display_name="Mistral Saba (25-02)",
@@ -252,9 +255,8 @@ def mistral_models() -> dict[Model, ModelData | LatestModel | DeprecatedModel]:
             supports_input_pdf=False,
             supports_input_audio=False,
             max_tokens_data=MaxTokensData(
-                max_tokens=32768,
+                max_tokens=262144,
                 # source="https://docs.mistral.ai/getting-started/models/",
-                # NOTE: The site states 256k context window but the Mistral models API + testing seems to point towards a context of 32768 as of now
                 source="https://api.mistral.ai/v1/models",
             ),
             provider_for_pricing=Provider.MISTRAL_AI,
