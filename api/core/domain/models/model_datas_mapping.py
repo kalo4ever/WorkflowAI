@@ -59,7 +59,7 @@ def _build_model_datas():
         Model.GPT_41_LATEST: LatestModel(
             model=Model.GPT_41_2025_04_14,
             display_name="GPT-4.1 (latest)",
-            is_default=True,
+            is_default=False,
         ),
         Model.GPT_41_2025_04_14: ModelData(
             display_name="GPT-4.1 (2025-04-14)",
