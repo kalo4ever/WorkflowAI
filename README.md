@@ -4,7 +4,7 @@
 
 ## Demo: build an AI feature in 1 minute
 
-[![Demo](/assets/describe.gif)](https://workflowai.com/docs/agents/meeting-transcript-analysis/1?showDiffMode=false&show2ColumnLayout=false&taskRunId2=019626e2-fe11-710a-a615-294c9ca81af6&taskRunId1=019626e2-fe0b-73b0-113e-b0742bf20244&versionId=204602901276db01d774a469db3aeea9&taskRunId3=019626e3-399a-7312-81a7-b7ae664529c5)
+[![Demo](/assets/describe.v2.gif)](https://workflowai.com/docs/agents/meeting-transcript-analysis/1?showDiffMode=false&show2ColumnLayout=false&taskRunId2=019626e2-fe11-710a-a615-294c9ca81af6&taskRunId1=019626e2-fe0b-73b0-113e-b0742bf20244&versionId=204602901276db01d774a469db3aeea9&taskRunId3=019626e3-399a-7312-81a7-b7ae664529c5)
 
 <div align="center">
     <a href="https://workflowai.com/docs/agents/meeting-transcript-analysis/1?showDiffMode=false&show2ColumnLayout=false&taskRunId2=019626e2-fe11-710a-a615-294c9ca81af6&taskRunId1=019626e2-fe0b-73b0-113e-b0742bf20244&versionId=204602901276db01d774a469db3aeea9&taskRunId3=019626e3-399a-7312-81a7-b7ae664529c5" target="_blank">
