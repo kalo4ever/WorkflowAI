@@ -141,11 +141,6 @@ class TestDeprecatedRun:
         mock_runner: Mock,
         reset_security_dependencies: None,
     ):
-        from api.dependencies import run as run_deps
-
-        prev_block_run_for_no_credits = run_deps._BLOCK_RUN_FOR_NO_CREDITS  # pyright: ignore [reportPrivateUsage]
-        run_deps._BLOCK_RUN_FOR_NO_CREDITS = True  # pyright: ignore [reportPrivateUsage]
-
         # Perform the test request
         response = await test_api_client.post(
             "/test/tasks/123/schemas/1/run",
@@ -158,8 +153,6 @@ class TestDeprecatedRun:
 
         # Assert the status code for insufficient credits (402)
         assert response.status_code == 402
-
-        run_deps._BLOCK_RUN_FOR_NO_CREDITS = prev_block_run_for_no_credits  # pyright: ignore [reportPrivateUsage]
 
     async def test_run(
         self,
