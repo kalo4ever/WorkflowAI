@@ -1615,6 +1615,10 @@ class TestAddLowCreditsEmailSent:
         assert 100 in tenant.low_credits_email_sent_by_threshold
         assert isinstance(tenant.low_credits_email_sent_by_threshold[100], datetime)
 
+        # If I try again I will get an object not found exception
+        with pytest.raises(ObjectNotFoundException):
+            await organization_storage.add_low_credits_email_sent(TENANT, threshold_usd)
+
     async def test_add_multiple_low_credits_email_sent(
         self,
         organization_storage: MongoOrganizationStorage,

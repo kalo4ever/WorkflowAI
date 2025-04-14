@@ -502,8 +502,12 @@ class PaymentSystemService:
             return
 
         try:
+            await self._org_storage.add_low_credits_email_sent(org_data.tenant, threshold)
+        except ObjectNotFoundException:
+            # The email was already sent so we can just ignore
+            return
+
+        try:
             await self._email_service.send_low_credits_email(org_data.tenant)
         except Exception:
             _logger.exception("Failed to send low credits email", extra={"tenant": org_data.tenant})
-
-        await self._org_storage.add_low_credits_email_sent(org_data.tenant, threshold)
