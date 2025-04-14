@@ -410,7 +410,7 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
         threshold_cts = int(round(threshold * 100))
         await self._update_tenant(
             tenant,
-            {},
+            {"low_credits_email_sent.threshold_cts": {"$ne": threshold_cts}},
             {
                 "$push": {
                     "low_credits_email_sent": dump_model(
