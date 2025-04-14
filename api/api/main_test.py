@@ -164,6 +164,6 @@ class TestAuthentication:
         # Add some basic checks to ensure the response contains expected data
         data = res.json()
         assert isinstance(data, list)
-        assert data[0] == Model.GPT_4O_LATEST.value
+        assert data[0] == Model.GPT_41_LATEST.value
         assert data[1] == Model.GEMINI_2_0_FLASH_LATEST.value
         assert data[2] == Model.CLAUDE_3_7_SONNET_LATEST.value

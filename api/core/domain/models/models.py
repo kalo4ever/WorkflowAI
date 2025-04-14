@@ -12,7 +12,7 @@ from enum import StrEnum
 # needed for the order
 class Model(StrEnum):
     # Default model order
-    GPT_4O_LATEST = "gpt-4o-latest"
+    GPT_41_LATEST = "gpt-4.1-latest"
     GEMINI_2_0_FLASH_LATEST = "gemini-2.0-flash-latest"
     CLAUDE_3_7_SONNET_LATEST = "claude-3-7-sonnet-latest"
 
@@ -20,7 +20,7 @@ class Model(StrEnum):
     # OpenAI Models
     # --------------------------------------------------------------------------
 
-    # GPT_4O_LATEST = "gpt-4o-latest"
+    GPT_4O_LATEST = "gpt-4o-latest"
     GPT_4O_2024_11_20 = "gpt-4o-2024-11-20"
     GPT_4O_2024_08_06 = "gpt-4o-2024-08-06"
     GPT_4O_2024_05_13 = "gpt-4o-2024-05-13"
@@ -38,9 +38,10 @@ class Model(StrEnum):
     O1_PREVIEW_2024_09_12 = "o1-preview-2024-09-12"
     O1_MINI_LATEST = "o1-mini-latest"
     O1_MINI_2024_09_12 = "o1-mini-2024-09-12"
-    GPT_41_LATEST = "gpt-4.1-latest"
     GPT_41_2025_04_14 = "gpt-4.1-2025-04-14"
+    GPT_41_MINI_LATEST = "gpt-4.1-mini-latest"
     GPT_41_MINI_2025_04_14 = "gpt-4.1-mini-2025-04-14"
+    GPT_41_NANO_LATEST = "gpt-4.1-nano-latest"
     GPT_41_NANO_2025_04_14 = "gpt-4.1-nano-2025-04-14"
     GPT_45_PREVIEW_2025_02_27 = "gpt-4.5-preview-2025-02-27"
     GPT_4O_AUDIO_PREVIEW_2024_12_17 = "gpt-4o-audio-preview-2024-12-17"
