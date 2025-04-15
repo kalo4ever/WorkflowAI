@@ -62,7 +62,6 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
                 "uid": 1,
                 "org_id": 1,
                 "owner_id": 1,
-                "anonymous": 1,
             },
         )
         if doc is None:
@@ -110,8 +109,13 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
                 {"$set": update},
             )
 
-    async def _find_tenant(self, filter: dict[str, Any], projection: dict[str, Any] | None = None) -> TenantData:
-        doc = await self._collection.find_one(filter, projection=projection)
+    async def _find_tenant(
+        self,
+        filter: dict[str, Any],
+        projection: dict[str, Any] | None = None,
+        hint: str | None = None,
+    ) -> TenantData:
+        doc = await self._collection.find_one(filter, projection=projection, hint=hint)
         if doc is None:
             raise ObjectNotFoundException("Organization  not found", code="organization_not_found")
         return OrganizationDocument.model_validate(doc).to_domain(self.encryption)
@@ -216,8 +220,13 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
 
     @override
     async def add_5_credits_for_first_task(self) -> None:
+        # TODO: for now even anonymous users get 5 credits when creating their first task
+        # This is to avoid the logic of checking whether enough credits have been added
+        # when the user is migrated.
+        # see https://linear.app/workflowai/issue/WOR-4259/credits-and-anonymous-users
+        # for more details
         await self._update_one(
-            {"no_tasks_yet": True, "anonymous": {"$ne": True}},
+            {"no_tasks_yet": True},
             {
                 "$inc": {"current_credits_usd": 5, "added_credits_usd": 5},
                 "$unset": {"no_tasks_yet": ""},
@@ -337,7 +346,7 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
     async def find_anonymous_tenant(self, anon_id: str) -> TenantData:
         # We only return anonymous tenants that do not have an org_id
         # Otherwise you could use this function to find a tenant that should not be anonymous
-        return await self._find_tenant(self._anonymous_user_id_filter(anon_id))
+        return await self._find_tenant(self._anonymous_user_id_filter(anon_id), hint="anonymous_user_id_unique")
 
     @override
     async def migrate_tenant_to_organization(
@@ -359,10 +368,14 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
         update = {"org_id": org_id, "slug": org_slug}
         if owner_id:
             update["owner_id"] = owner_id
+        if anon_id:
+            # We move the anonymous_user_id to previous_anonymous_user_id
+            # to avoid some confusion with the anonymous_user_id field
+            update["previous_anonymous_user_id"] = anon_id
 
         return await self._find_one_and_update_tenant(
             filter,
-            {"$set": update},
+            {"$set": update, "$unset": {"anonymous_user_id": ""}},
         )
 
     @override
@@ -370,9 +383,14 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
         update = {"owner_id": owner_id}
         if org_slug:
             update["slug"] = org_slug
+        if anon_id:
+            # We move the anonymous_user_id to previous_anonymous_user_id
+            # to avoid some confusion with the anonymous_user_id field
+            update["previous_anonymous_user_id"] = anon_id
+
         return await self._find_one_and_update_tenant(
             self._anonymous_user_id_filter(anon_id),
-            {"$set": update},
+            {"$set": update, "$unset": {"anonymous_user_id": ""}},
         )
 
     @override
