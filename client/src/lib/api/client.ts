@@ -90,7 +90,6 @@ async function onOpenStream(response: Response) {
 }
 
 let uniqueAnonIdPromise: Promise<string | undefined> | undefined;
-let fetchTokenPromise: Promise<string> | undefined;
 
 function setCookie(name: string, value: string) {
   const props = baseCookieProps();
@@ -146,29 +145,21 @@ async function headersWithoutToken(contentType: string | undefined) {
   return headers;
 }
 
-function getOrCreateToken() {
-  const cookieMatch = document.cookie.match(/x-api-token=([^;]+)/);
-  if (cookieMatch) {
-    return Promise.resolve(cookieMatch[1]);
-  }
-  if (fetchTokenPromise) {
-    return fetchTokenPromise;
-  }
-
-  fetchTokenPromise = new Promise(async (resolve) => {
-    const headers = await headersWithoutToken('application/json');
-    const res = await fetch('/api/jwt', headers);
-    const raw: { token: string } = await res.json();
-    setCookie('x-api-token', raw.token);
-    resolve(raw.token);
-  });
-  return fetchTokenPromise;
+async function getOrCreateToken() {
+  const headers = await headersWithoutToken('application/json');
+  const res = await fetch('/api/jwt', headers);
+  const raw: { token: string } = await res.json();
+  return raw.token;
 }
 
 async function requestHeaders(contentType: string | undefined): Promise<Record<string, string>> {
   const headers = await headersWithoutToken(contentType);
 
   try {
+    // TODO: We always refresh the token here
+    // which is used when streaming. This is to avoid having to use
+    // clerk hooks to validate that the token is valid
+    // We will no longer have the issue when we just use the clerk token
     const token = await getOrCreateToken();
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
@@ -191,7 +182,7 @@ async function fetchWrapper<T, R = unknown>(
     body?: T;
   }
 ): Promise<R> {
-  const headers = await requestHeaders('application/json');
+  const headers = await headersWithoutToken('application/json');
 
   const res = await fetch(path, {
     method,
