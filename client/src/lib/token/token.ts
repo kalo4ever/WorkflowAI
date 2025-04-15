@@ -112,7 +112,7 @@ export async function export_public_key(sign_key?: KeyLike) {
   return out;
 }
 
-export async function getAuthenticatedTokenData(): Promise<TokenData | undefined> {
+export async function getAuthenticatedTokenData(unknownUserId: string | undefined): Promise<TokenData | undefined> {
   const user = await currentUser();
   const { orgSlug, orgId } = auth();
   const email = user?.email;
@@ -128,6 +128,7 @@ export async function getAuthenticatedTokenData(): Promise<TokenData | undefined
     orgSlug: getTenantSlug({ slug: orgSlug }, user),
     email,
     userId: user?.id,
+    unknownUserId,
   };
 }
 
@@ -172,13 +173,12 @@ export function getOrSetUnknownUserId(cookieStore: CookieStore) {
 }
 
 export async function buildTokenData(cookieStore: CookieStore) {
+  // Otherwise we generate a token for an anonymous user
+  const unknownUserId = getOrSetUnknownUserId(cookieStore);
   // First try to get token data from clerk if the user is logged in
-  const tokenData = await getAuthenticatedTokenData();
+  const tokenData = await getAuthenticatedTokenData(unknownUserId);
   if (tokenData) {
     return tokenData;
   }
-
-  // Otherwise we generate a token for an anonymous user
-  const unknownUserId = getOrSetUnknownUserId(cookieStore);
   return getTokenDataForUnknownUser(unknownUserId);
 }
