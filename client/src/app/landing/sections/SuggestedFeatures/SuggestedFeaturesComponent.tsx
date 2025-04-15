@@ -1,6 +1,7 @@
 import { Dismiss12Regular } from '@fluentui/react-icons';
 import { cx } from 'class-variance-authority';
 import { Button } from '@/components/ui/Button';
+import { CompanySpecificFeatures } from './CompanySpecificFeatures';
 import { SuggestedFeatures } from './SuggestedFeatures';
 
 type Props = {
@@ -36,6 +37,24 @@ export function SuggestedFeaturesComponentModal(props: Props) {
         />
       </div>
       <SuggestedFeatures companyURL={companyURL} setCompanyURL={setCompanyURL} hideSidebar={hideSidebar} />
+    </div>
+  );
+}
+
+type CompanySpecificFeaturesComponentProps = {
+  className?: string;
+  companyURL?: string;
+  setCompanyURL?: (companyURL: string) => void;
+  onClose?: () => void;
+};
+
+export function CompanySpecificFeaturesComponent(props: CompanySpecificFeaturesComponentProps) {
+  const { className, companyURL, setCompanyURL } = props;
+  return (
+    <div className={cx('flex items-center justify-center w-full h-max px-4 sm:px-16', className)}>
+      <div className='flex w-full max-w-[1132px] sm:h-[820px] h-max sm:max-h-[820px] max-h-max bg-white rounded-[4px] border border-gray-200 shadow-md overflow-hidden'>
+        <CompanySpecificFeatures companyURL={companyURL} setCompanyURL={setCompanyURL} />
+      </div>
     </div>
   );
 }

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { LandingPageContainer } from './container/LandingPageContainer';
 import { URLHeaderComponent } from './sections/Components/HeaderComponent';
-import { SuggestedFeaturesComponent } from './sections/SuggestedFeatures/SuggestedFeaturesComponent';
+import { CompanySpecificFeaturesComponent } from './sections/SuggestedFeatures/SuggestedFeaturesComponent';
 
 type URLLandingPageProps = {
   companyURL?: string;
@@ -27,12 +27,7 @@ export function URLLandingPage(props: URLLandingPageProps) {
   return (
     <LandingPageContainer scrollToPricing={scrollToPricing}>
       <URLHeaderComponent className='mt-20' />
-      <SuggestedFeaturesComponent
-        className='mt-2 mb-28'
-        companyURL={companyURL}
-        setCompanyURL={setCompanyURL}
-        hideSidebar={true}
-      />
+      <CompanySpecificFeaturesComponent className='mt-2 mb-28' companyURL={companyURL} setCompanyURL={setCompanyURL} />
     </LandingPageContainer>
   );
 }
