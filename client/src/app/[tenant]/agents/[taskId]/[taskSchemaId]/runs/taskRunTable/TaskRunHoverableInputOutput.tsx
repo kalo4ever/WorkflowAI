@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { ObjectViewer } from '@/components/ObjectViewer/ObjectViewer';
 import { TaskOutputViewer } from '@/components/ObjectViewer/TaskOutputViewer';
 import { Loader } from '@/components/ui/Loader';
@@ -8,6 +8,7 @@ import { TaskID } from '@/types/aliases';
 import { TaskSchemaID } from '@/types/aliases';
 import { RunItemV1 } from '@/types/workflowAI';
 import { ModelOutputErrorInformation } from '../../playground/components/ModelOutputErrorInformation';
+import { PreviewBox } from './PreviewBox';
 
 type TaskRunHoverableInputOutputContentProps = {
   runItem: RunItemV1;
@@ -111,10 +112,12 @@ export function TaskRunHoverableInputOutput(props: TaskRunHoverableInputOutputPr
       content={<TaskRunHoverableInputOutputContent runItem={runItem} />}
     >
       <div className='flex flex-row gap-4 ml-2 mr-6 py-3.5'>
-        <div className='flex-1 overflow-hidden text-ellipsis whitespace-nowrap'>{inputPreview}</div>
-        <div className='flex-1 overflow-hidden text-ellipsis whitespace-nowrap'>
-          {runItem.error?.message ?? outputPreview}
-        </div>
+        <PreviewBox preview={inputPreview} pretty />
+        {runItem.error ? (
+          <PreviewBox preview={runItem.error.message} pretty={false} />
+        ) : (
+          <PreviewBox preview={outputPreview} pretty />
+        )}
       </div>
     </SimpleTooltip>
   );

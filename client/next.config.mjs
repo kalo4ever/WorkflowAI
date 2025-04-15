@@ -6,8 +6,10 @@ let nextConfig = {
   output: 'standalone',
   images: {
     domains: [
+      // TODO: extract this to env variables
       'workflowai.blob.core.windows.net',
       'workflowaistaging.blob.core.windows.net',
+      '127.0.0.1',
       'img.clerk.com',
       'images.clerk.dev',
     ],

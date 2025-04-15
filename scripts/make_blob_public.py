@@ -1,7 +1,7 @@
 import asyncio
 import os
 
-from azure.core.exceptions import ResourceNotFoundError
+from azure.core.exceptions import ResourceExistsError
 from azure.core.pipeline.transport import AioHttpTransport
 from azure.storage.blob import PublicAccess
 from azure.storage.blob.aio import BlobServiceClient
@@ -15,10 +15,12 @@ async def main(connection_string: str, container_name: str):
         connection_string,
         transport=AioHttpTransport(),
     ) as blob_service_client:
+        clt = blob_service_client.get_container_client(container_name)
+
         try:
-            clt = blob_service_client.get_container_client(container_name)
-        except ResourceNotFoundError:
-            clt = blob_service_client.create_container(container_name)
+            clt = await blob_service_client.create_container(container_name)
+        except ResourceExistsError:
+            pass
 
         await clt.set_container_access_policy(  # type: ignore
             signed_identifiers={},
