@@ -28,9 +28,7 @@ export default function SignUpRedirectPage() {
       return;
     }
 
-    if (redirectUrl) {
-      replace(redirectUrl ?? '/agents');
-    }
+    replace(redirectUrl ?? '/');
   }, [userInvitations.data, userMemberships.data, userSuggestions.data, replace, isLoaded, redirectUrl]);
 
   return (

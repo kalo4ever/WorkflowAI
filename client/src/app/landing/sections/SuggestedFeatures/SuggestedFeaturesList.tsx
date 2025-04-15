@@ -2,7 +2,6 @@ import { cx } from 'class-variance-authority';
 import { useEffect, useMemo, useRef } from 'react';
 import { useFeaturePreview, useFeatureSchemas } from '@/store/features';
 import { useOrFetchFeaturesByDomain, useOrFetchFeaturesByTag } from '@/store/fetchers';
-import { useOrFetchToken } from '@/store/fetchers';
 import { BaseFeature, TagPreview } from '@/types/workflowAI/index';
 import { LoadingSuggestedFeaturesListEntry } from './LoadingSuggestedFeaturesListEntry';
 import { SuggestedFeaturesCompanyContext } from './SuggestedFeaturesCompanyContext';
@@ -22,7 +21,6 @@ type SuggestedFeaturesListProps = {
 export function SuggestedFeaturesList(props: SuggestedFeaturesListProps) {
   const { tag, companyURL, featureWasSelected } = props;
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const { token } = useOrFetchToken();
 
   const isCompanySpecific = tag?.kind === 'company_specific';
 
@@ -30,14 +28,14 @@ export function SuggestedFeaturesList(props: SuggestedFeaturesListProps) {
     features: featuresByTag,
     isLoading: featuresByTagAreLoading,
     isInitialized: featuresByTagAreInitialized,
-  } = useOrFetchFeaturesByTag(!isCompanySpecific ? tag?.name : undefined, token);
+  } = useOrFetchFeaturesByTag(!isCompanySpecific ? tag?.name : undefined);
 
   const {
     features: featuresByDomain,
     companyContext,
     isLoading: featuresByDomainAreLoading,
     isInitialized: featuresByDomainAreInitialized,
-  } = useOrFetchFeaturesByDomain(isCompanySpecific ? tag?.name : undefined, token);
+  } = useOrFetchFeaturesByDomain(isCompanySpecific ? tag?.name : undefined);
 
   const isLoading = featuresByTagAreLoading || featuresByDomainAreLoading;
   const isInitialized = featuresByTagAreInitialized || featuresByDomainAreInitialized;
@@ -64,10 +62,10 @@ export function SuggestedFeaturesList(props: SuggestedFeaturesListProps) {
     }
 
     completedFeatures.forEach((feature) => {
-      fetchFeaturePreviewIfNeeded(feature, companyContext, token);
+      fetchFeaturePreviewIfNeeded(feature, companyContext);
       fetchFeatureSchemasIfNeeded(feature, companyContext);
     });
-  }, [completedFeatures, companyContext, token, fetchFeaturePreviewIfNeeded, fetchFeatureSchemasIfNeeded]);
+  }, [completedFeatures, companyContext, fetchFeaturePreviewIfNeeded, fetchFeatureSchemasIfNeeded]);
 
   useEffect(() => {
     if (scrollContainerRef.current) {

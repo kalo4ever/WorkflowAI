@@ -16,14 +16,12 @@ interface UploadState {
     taskId,
     form,
     hash,
-    token,
     onProgress,
   }: {
     tenant: TenantID;
     taskId: TaskID;
     form: FormData;
     hash: string;
-    token: string;
     onProgress?: (progress: number) => void;
   }) => Promise<string>;
 }
@@ -32,13 +30,12 @@ export const useUpload = create<UploadState>()(
   persist(
     (set, get) => ({
       uploadURLsByHash: {},
-      getUploadURL: async ({ tenant, taskId, form, hash, token, onProgress }) => {
+      getUploadURL: async ({ tenant, taskId, form, hash, onProgress }) => {
         const existing = get().uploadURLsByHash[hash];
         if (existing) return existing;
         const { url } = await client.uploadFile<UploadFileResponse>(
           `${API_URL}/${tenant}/upload/${taskId}`,
           form,
-          token,
           onProgress
         );
         set(

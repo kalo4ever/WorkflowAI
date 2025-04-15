@@ -1,8 +1,8 @@
 import { captureException } from '@sentry/nextjs';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { displayErrorToaster, displaySuccessToaster } from '@/components/ui/Sonner';
-import { ImproveVersionResponse, useOrFetchToken, useTasks } from '@/store';
 import { ToolCallName, usePlaygroundChatStore } from '@/store/playgroundChatStore';
+import { ImproveVersionResponse, useTasks } from '@/store/task';
 import { TaskID, TaskSchemaID, TenantID } from '@/types/aliases';
 import { ToolKind } from '@/types/workflowAI';
 import { RunTaskOptions } from './usePlaygroundPersistedState';
@@ -30,7 +30,6 @@ export function useImproveInstructions(props: ImproveInstructionsProps) {
     handleRunTasks,
   } = props;
   const improveVersion = useTasks((state) => state.improveVersion);
-  const { token } = useOrFetchToken();
 
   const [oldInstructions, setOldInstructions] = useState<string | undefined>(undefined);
 
@@ -77,7 +76,6 @@ export function useImproveInstructions(props: ImproveInstructionsProps) {
             variant_id: variantId,
             instructions: instructionsRef.current,
           },
-          token,
           onMessage,
           abortController.signal
         );
@@ -106,7 +104,6 @@ export function useImproveInstructions(props: ImproveInstructionsProps) {
       setInstructions,
       handleRunTasks,
       setImproveVersionChangelog,
-      token,
       variantId,
       cancelToolCall,
       markToolCallAsDone,
@@ -121,15 +118,7 @@ export function useImproveInstructions(props: ImproveInstructionsProps) {
       setIsImproveVersionLoading(true);
 
       try {
-        const data = await updateTaskInstructions(
-          tenant,
-          taskId,
-          taskSchemaId,
-          token,
-          instructions,
-          tools,
-          setInstructions
-        );
+        const data = await updateTaskInstructions(tenant, taskId, taskSchemaId, instructions, tools, setInstructions);
         setInstructions(data);
       } catch (error) {
         captureException(error);
@@ -139,7 +128,7 @@ export function useImproveInstructions(props: ImproveInstructionsProps) {
 
       setIsImproveVersionLoading(false);
     },
-    [instructions, updateTaskInstructions, tenant, taskId, taskSchemaId, token, setInstructions]
+    [instructions, updateTaskInstructions, tenant, taskId, taskSchemaId, setInstructions]
   );
 
   const cancelImproveInstructions = useCallback(() => {

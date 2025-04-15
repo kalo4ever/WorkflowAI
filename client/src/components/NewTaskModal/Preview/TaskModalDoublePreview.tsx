@@ -16,7 +16,6 @@ type TaskModalDoublePreviewProps = {
   loading: boolean;
   messages: ConversationMessage[];
   noChangesDetected: boolean;
-  token: string | undefined;
   className?: string;
   computedInputSchema: JsonSchema | undefined;
   computedOutputSchema: JsonSchema | undefined;
@@ -31,7 +30,6 @@ export function TaskModalDoublePreview(props: TaskModalDoublePreviewProps) {
     messages,
     loading,
     noChangesDetected,
-    token,
     className,
     computedInputSchema,
     computedOutputSchema,
@@ -98,7 +96,6 @@ export function TaskModalDoublePreview(props: TaskModalDoublePreviewProps) {
     computedOutputSchemaToUse as Record<string, unknown>,
     previousInputPreview,
     previousOutputPreview,
-    token,
     loading
   );
 

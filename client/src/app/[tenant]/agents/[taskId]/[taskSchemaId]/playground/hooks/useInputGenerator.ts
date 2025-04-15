@@ -2,8 +2,8 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { displayErrorToaster, displaySuccessToaster } from '@/components/ui/Sonner';
-import { useTasks } from '@/store';
 import { ToolCallName, usePlaygroundChatStore } from '@/store/playgroundChatStore';
+import { useTasks } from '@/store/task';
 import { GeneralizedTaskInput } from '@/types';
 import { TaskID, TaskSchemaID, TenantID } from '@/types/aliases';
 import { GeneratePlaygroundInputParams, RunTaskOptions } from './usePlaygroundPersistedState';
@@ -27,7 +27,6 @@ type UseInputGeneratorProps = {
   taskSchemaId: TaskSchemaID;
   tenant: TenantID | undefined;
   voidInput: GeneralizedTaskInput | undefined;
-  token: string | undefined;
 };
 
 export function useInputGenerator(props: UseInputGeneratorProps) {
@@ -43,7 +42,6 @@ export function useInputGenerator(props: UseInputGeneratorProps) {
     taskId,
     taskSchemaId,
     tenant,
-    token,
     voidInput,
   } = props;
   const generatePlaygroundInput = useTasks((state) => state.generatePlaygroundInput);
@@ -69,7 +67,7 @@ export function useInputGenerator(props: UseInputGeneratorProps) {
       type: 'background',
       pending: true,
     };
-    const input = await generatePlaygroundInput(tenant, taskId, taskSchemaId, {}, token);
+    const input = await generatePlaygroundInput(tenant, taskId, taskSchemaId, {});
     if (currentIteration.current.type !== 'background' || currentIteration.current.iteration !== iteration) {
       return;
     }
@@ -79,7 +77,7 @@ export function useInputGenerator(props: UseInputGeneratorProps) {
       type: 'background',
       pending: false,
     };
-  }, [isInputGenerationSupported, generatePlaygroundInput, setPreGeneratedInput, taskId, taskSchemaId, tenant, token]);
+  }, [isInputGenerationSupported, generatePlaygroundInput, setPreGeneratedInput, taskId, taskSchemaId, tenant]);
 
   useEffect(() => {
     if (!preGeneratedInput && isInputGenerationSupported) {
@@ -169,7 +167,6 @@ export function useInputGenerator(props: UseInputGeneratorProps) {
             taskId,
             taskSchemaId,
             request,
-            token,
             setGeneratedInput,
             currentAbortController.signal
           );
@@ -218,7 +215,6 @@ export function useInputGenerator(props: UseInputGeneratorProps) {
           taskId,
           taskSchemaId,
           request,
-          token,
           setGeneratedInput,
           currentAbortController.signal
         );
@@ -249,7 +245,6 @@ export function useInputGenerator(props: UseInputGeneratorProps) {
       tenant,
       taskId,
       taskSchemaId,
-      token,
       setPreGeneratedInput,
       generatePlaygroundInput,
       generateInputInBackground,

@@ -5,7 +5,6 @@ import { client } from '@/lib/api';
 import {
   AutomaticPaymentRequest,
   CreatePaymentIntentRequest,
-  CustomerCreatedResponse,
   PaymentIntentCreatedResponse,
   PaymentMethodResponse,
 } from '@/types/workflowAI';

@@ -52,7 +52,6 @@ interface TasksState {
     tenant: TenantID | undefined,
     taskId: TaskID,
     payload: ImproveVersionRequest,
-    token: string | undefined,
     onMessage: (message: ImproveVersionResponse) => void,
     signal?: AbortSignal
   ): Promise<ImproveVersionResponse>;
@@ -61,7 +60,6 @@ interface TasksState {
     taskId: TaskID,
     taskSchemaId: TaskSchemaID,
     request: GenerateInputRequest,
-    token: string | undefined,
     onMessage?: (message: GenerateInputMessage) => void,
     signal?: AbortSignal
   ): Promise<GenerateInputMessage>;
@@ -70,14 +68,12 @@ interface TasksState {
     taskId: TaskID,
     taskSchemaId: TaskSchemaID,
     request: ImportInputsRequest,
-    token: string | undefined,
     onMessage: (message: GenerateInputMessage) => void,
     signal?: AbortSignal
   ): Promise<GenerateInputMessage>;
   iterateTaskInputOutput(
     tenant: TenantID | undefined,
     request: BuildAgentRequest,
-    token: string | undefined,
     onMessage: (message: BuildAgentIteration) => void,
     signal?: AbortSignal
   ): Promise<BuildAgentIteration>;
@@ -85,14 +81,12 @@ interface TasksState {
     tenant: TenantID | undefined,
     taskId: TaskID,
     taskSchemaId: TaskSchemaID,
-    token: string | undefined,
     onMessage: (message: string) => void
   ): Promise<string>;
   updateTaskInstructions(
     tenant: TenantID | undefined,
     taskId: TaskID,
     taskSchemaId: TaskSchemaID,
-    token: string | undefined,
     instructions: string,
     tools: ToolKind[],
     onMessage: (message: string) => void
@@ -110,7 +104,6 @@ interface TasksState {
     taskId: TaskID;
     taskSchemaId: TaskSchemaID;
     body: RunRequest;
-    token: string | undefined;
     onMessage: (message: RunResponseStreamChunk) => void;
     signal?: AbortSignal;
   }): Promise<RunResponseStreamChunk>;
@@ -194,11 +187,10 @@ export const useTasks = create<TasksState>((set, get) => ({
       })
     );
   },
-  improveVersion: async (tenant, taskId, payload, token, onMessage, signal) => {
+  improveVersion: async (tenant, taskId, payload, onMessage, signal) => {
     const lastMessage = await SSEClient<ImproveVersionRequest, ImproveVersionResponse>(
       `${rootTaskPathNoProxyV1(tenant)}/${taskId}/versions/improve`,
       Method.POST,
-      token,
       payload,
       onMessage,
       signal
@@ -210,14 +202,12 @@ export const useTasks = create<TasksState>((set, get) => ({
     taskId: TaskID,
     taskSchemaId: TaskSchemaID,
     request: GenerateInputRequest,
-    token: string | undefined,
     onMessage?: (message: GenerateInputMessage) => void,
     signal?: AbortSignal
   ) => {
     const lastMessage = await SSEClient<GenerateInputRequest, GenerateInputMessage>(
       `${rootTaskPathNoProxy(tenant)}/${taskId}/schemas/${taskSchemaId}/input`,
       Method.POST,
-      token,
       request,
       onMessage,
       signal
@@ -229,7 +219,6 @@ export const useTasks = create<TasksState>((set, get) => ({
     taskId: TaskID,
     taskSchemaId: TaskSchemaID,
     request: ImportInputsRequest,
-    token: string | undefined,
     onMessage: (message: GenerateInputMessage) => void,
     signal?: AbortSignal
   ) => {
@@ -239,26 +228,18 @@ export const useTasks = create<TasksState>((set, get) => ({
     const lastMessage = await SSEClient<ImportInputsRequest, ImportedInputMessage>(
       `${rootTaskPathNoProxy(tenant)}/${taskId}/schemas/${taskSchemaId}/inputs/import`,
       Method.POST,
-      token,
       request,
       handleOnMessage,
       signal
     );
     return lastMessage.imported_input;
   },
-  iterateTaskInputOutput: async (
-    tenant: TenantID | undefined,
-    request: BuildAgentRequest,
-    token,
-    onMessage,
-    signal
-  ) => {
+  iterateTaskInputOutput: async (tenant: TenantID | undefined, request: BuildAgentRequest, onMessage, signal) => {
     const path = `${rootTaskPathNoProxy(tenant)}/schemas/iterate`;
     request.stream = true;
     const lastMessage = await SSEClient<BuildAgentRequest, BuildAgentIteration>(
       path,
       Method.POST,
-      token,
       request,
       onMessage,
       signal
@@ -269,7 +250,6 @@ export const useTasks = create<TasksState>((set, get) => ({
     tenant: TenantID | undefined,
     taskId: TaskID,
     taskSchemaId: TaskSchemaID,
-    token: string | undefined,
     onMessage: (message: string) => void
   ): Promise<string> => {
     const handleOnMessage = (message: SuggestedInstructionsResponse) => {
@@ -278,7 +258,6 @@ export const useTasks = create<TasksState>((set, get) => ({
     const lastMessage = await SSEClient<string, SuggestedInstructionsResponse>(
       `${rootTaskPathNoProxy(tenant)}/${taskId}/schemas/${taskSchemaId}/suggested-instructions`,
       Method.GET,
-      token,
       '',
       handleOnMessage
     );
@@ -289,7 +268,6 @@ export const useTasks = create<TasksState>((set, get) => ({
     tenant: TenantID | undefined,
     taskId: TaskID,
     taskSchemaId: TaskSchemaID,
-    token: string | undefined,
     instructions: string,
     tools: ToolKind[],
     onMessage: (message: string) => void
@@ -300,7 +278,6 @@ export const useTasks = create<TasksState>((set, get) => ({
     >(
       `${rootTaskPathNoProxy(tenant)}/${taskId}/schemas/${taskSchemaId}/instructions`,
       Method.PUT,
-      token,
       { instructions, selected_tools: tools },
       (message) => {
         if (message.updated_task_instructions) {
@@ -349,11 +326,10 @@ export const useTasks = create<TasksState>((set, get) => ({
       id: taskId,
     });
   },
-  runTask: async ({ tenant, taskId, taskSchemaId, body, token, onMessage, signal }) => {
+  runTask: async ({ tenant, taskId, taskSchemaId, body, onMessage, signal }) => {
     const lastMessage = await SSEClient<RunRequest, RunResponseStreamChunk>(
       `${runTaskPathNoProxy(tenant)}/${taskId}/schemas/${taskSchemaId}/run`,
       Method.POST,
-      token,
       body,
       onMessage,
       signal

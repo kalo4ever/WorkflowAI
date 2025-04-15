@@ -1,7 +1,10 @@
+import { captureMessage } from '@sentry/nextjs';
 import { KeyLike, SignJWT, exportJWK, importPKCS8 } from 'jose';
 import { CookieStore } from '@/types/cookies';
 import { auth, currentUser } from '../auth';
 import { getTenantSlug } from '../auth_utils';
+import { UNKNOWN_USER_ID_COOKIE_NAME } from '../constants';
+import { setAnonUserIdCookie } from './anon';
 
 // functions are only available in the server
 
@@ -134,11 +137,9 @@ export function getTokenDataForUnknownUser(unknownUserId: string): TokenData {
   };
 }
 
-const unknownUserIdCookieName = 'x-unknown-user-id';
-
 export function getOrSetUnknownUserId(cookieStore: CookieStore) {
   // First try and find the unknownUserId in the cookies
-  const unknownUserId = cookieStore.get(unknownUserIdCookieName);
+  const unknownUserId = cookieStore.get(UNKNOWN_USER_ID_COOKIE_NAME);
   if (unknownUserId && !!unknownUserId.value) {
     return unknownUserId.value;
   }
@@ -159,15 +160,15 @@ export function getOrSetUnknownUserId(cookieStore: CookieStore) {
     });
   }
 
-  const newUnknownUserId = crypto.randomUUID();
-  cookieStore.set(unknownUserIdCookieName, newUnknownUserId, {
-    maxAge: 60 * 60 * 24 * 30 * 12, // almost 1 year
-    path: '/',
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    httpOnly: false,
+  // This should not happen. Cookie should be generated client side to avoid race conditions
+  captureMessage('generating new unknownUserId', {
+    level: 'warning',
+    extra: {
+      token,
+    },
   });
-  return newUnknownUserId;
+
+  return setAnonUserIdCookie(cookieStore);
 }
 
 export async function buildTokenData(cookieStore: CookieStore) {

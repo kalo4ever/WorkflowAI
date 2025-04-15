@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useOrFetchToken } from '@/store/fetchers';
 import { useOrFetchMetaAgentMessagesIfNeeded } from '@/store/fetchers';
 import { usePlaygroundChatStore } from '@/store/playgroundChatStore';
 import { ToolCallName } from '@/store/playgroundChatStore';
@@ -40,8 +39,6 @@ export function usePlaygroundChatToolCalls(props: Props) {
     isAutoRunOn,
   } = props;
 
-  const { token } = useOrFetchToken();
-
   const {
     isLoading,
     messages,
@@ -49,7 +46,7 @@ export function usePlaygroundChatToolCalls(props: Props) {
     reset,
     updateStateForToolCallId,
     onStop: onStopMetaAgentMessages,
-  } = useOrFetchMetaAgentMessagesIfNeeded(tenant, taskId, schemaId, token, playgroundState);
+  } = useOrFetchMetaAgentMessagesIfNeeded(tenant, taskId, schemaId, playgroundState);
 
   const stopPlaygroundChatStore = usePlaygroundChatStore((state) => state.stop);
 
