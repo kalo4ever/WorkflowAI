@@ -126,15 +126,17 @@ function PriceSectionModelSelector(props: PriceSectionModelSelectorProps) {
 
   return (
     <div className='flex flex-row items-center sm:justify-center justify-start overflow-x-auto w-full scrollbar-hide border-b border-gray-200'>
-      {models?.map((model, index) => (
-        <PriceSectionModelSelectorItem
-          key={model.id}
-          model={model}
-          isSelected={selectedModelIndex === index}
-          onClick={() => setSelectedModelIndex(index)}
-          numberOfModels={numberOfModels}
-        />
-      ))}
+      <div className='flex flex-row items-center sm:justify-center justify-start w-max'>
+        {models?.map((model, index) => (
+          <PriceSectionModelSelectorItem
+            key={model.id}
+            model={model}
+            isSelected={selectedModelIndex === index}
+            onClick={() => setSelectedModelIndex(index)}
+            numberOfModels={numberOfModels}
+          />
+        ))}
+      </div>
     </div>
   );
 }
