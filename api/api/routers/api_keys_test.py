@@ -26,9 +26,7 @@ class TestNoAnonymousOrganization:
         mock_api_keys_service: Mock,
     ):
         # Anonymous organization
-        mock_user_org_dep.return_value.org_id = None
-        mock_user_org_dep.return_value.owner_id = None
-        assert mock_user_org_dep.return_value.is_anonymous is True, "Organization should be anonymous"
+        mock_user_org_dep.return_value.anonymous = True
 
         response = await test_api_client.post("/_/api/keys")
         assert response.status_code == 401
@@ -36,9 +34,7 @@ class TestNoAnonymousOrganization:
         mock_api_keys_service.create_key.assert_not_called()
 
         # Non-anonymous organization as a sanity check
-        mock_user_org_dep.return_value.org_id = "org_123"
-        assert mock_user_org_dep.return_value.is_anonymous is False, "Organization should not be anonymous"
-
+        mock_user_org_dep.return_value.anonymous = False
         mock_api_keys_service.create_key.return_value = (
             APIKey(
                 id="1",
