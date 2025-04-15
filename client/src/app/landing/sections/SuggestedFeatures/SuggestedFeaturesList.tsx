@@ -2,7 +2,6 @@ import { cx } from 'class-variance-authority';
 import { useEffect, useMemo, useRef } from 'react';
 import { useFeaturePreview, useFeatureSchemas } from '@/store/features';
 import { useOrFetchFeaturesByDomain, useOrFetchFeaturesByTag } from '@/store/fetchers';
-import { useOrFetchToken } from '@/store/fetchers';
 import { BaseFeature, TagPreview } from '@/types/workflowAI/index';
 import { LoadingSuggestedFeaturesListEntry } from './LoadingSuggestedFeaturesListEntry';
 import { SuggestedFeaturesCompanyContext } from './SuggestedFeaturesCompanyContext';

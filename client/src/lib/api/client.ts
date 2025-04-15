@@ -192,7 +192,7 @@ async function fetchWrapper<T, R = unknown>(
   }
 ): Promise<R> {
   const headers = await requestHeaders('application/json');
-  console.log('headers', headers);
+
   const res = await fetch(path, {
     method,
     headers,
