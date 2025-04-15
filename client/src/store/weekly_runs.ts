@@ -33,7 +33,9 @@ export const useWeeklyRuns = create<WeeklyRunsState>((set, get) => ({
       const response = await client.get<{ items: WeeklyRun[] }>(path);
       set(
         produce((state) => {
-          state.weeklyRuns = response.items;
+          // We don't display the current week for now
+          // TODO: this should be done backed side instead
+          state.weeklyRuns = response.items.slice(0, response.items.length - 1);
         })
       );
     } catch (error) {
