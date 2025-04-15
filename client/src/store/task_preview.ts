@@ -24,8 +24,7 @@ interface TaskPreviewState {
     inputSchema: Record<string, unknown>,
     outputSchema: Record<string, unknown>,
     currentInputPreview: Record<string, unknown> | undefined,
-    currentOutputPreview: Record<string, unknown> | undefined,
-    token: string | undefined
+    currentOutputPreview: Record<string, unknown> | undefined
   ): Promise<void>;
 
   saveTaskPreview(
@@ -73,8 +72,7 @@ export const useTaskPreview = create<TaskPreviewState>((set, get) => ({
     inputSchema: Record<string, unknown>,
     outputSchema: Record<string, unknown>,
     previousInputPreview: Record<string, unknown> | undefined,
-    previousOutputPreview: Record<string, unknown> | undefined,
-    token: string | undefined
+    previousOutputPreview: Record<string, unknown> | undefined
   ): Promise<void> => {
     const scopeKey = buildTaskPreviewScopeKey({
       inputSchema,
@@ -117,7 +115,6 @@ export const useTaskPreview = create<TaskPreviewState>((set, get) => ({
       const result = await SSEClient<GenerateTaskPreviewRequest, { preview: TaskPreview }>(
         `${rootTaskPathNoProxy(tenant)}/schemas/preview`,
         Method.POST,
-        token,
         request,
         onMessage
       );

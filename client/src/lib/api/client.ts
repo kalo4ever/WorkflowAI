@@ -1,6 +1,7 @@
 import { EventSourceMessage, EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source';
 import { captureException } from '@sentry/nextjs';
 import { StreamError } from '@/types/errors';
+import { baseCookieProps } from '../token/anon';
 
 function extractErrorMessage(parsed: unknown) {
   if (typeof parsed !== 'object' || !parsed) {
@@ -88,6 +89,89 @@ async function onOpenStream(response: Response) {
   }
 }
 
+let uniqueAnonIdPromise: Promise<string | undefined> | undefined;
+
+function setCookie(name: string, value: string) {
+  const props = baseCookieProps();
+  const joined = Object.entries(props)
+    .map(([key, value]) => `${key}=${value}`)
+    .join('; ');
+  document.cookie = `${name}=${value}; ${joined}`;
+}
+
+export function getOrCreateUniqueId() {
+  // If the cookie is already set, extract and return it.
+  const cookieMatch = document.cookie.match(/x-unknown-user-id=([^;]+)/);
+  if (cookieMatch) {
+    return Promise.resolve(cookieMatch[1]);
+  }
+
+  // If generation is already in progress, return the promise.
+  if (uniqueAnonIdPromise) {
+    return uniqueAnonIdPromise;
+  }
+
+  // Otherwise, create the promise and generate the ID.
+  uniqueAnonIdPromise = new Promise((resolve) => {
+    try {
+      const id = crypto.randomUUID();
+      setCookie('x-unknown-user-id', id);
+      resolve(id);
+    } catch (e) {
+      captureException(e);
+      resolve(undefined);
+    }
+  });
+
+  return uniqueAnonIdPromise;
+}
+
+async function headersWithoutToken(contentType: string | undefined) {
+  const headers: Record<string, string> = {
+    'x-workflowai-source': 'web',
+  };
+
+  if (contentType) {
+    headers['Content-Type'] = contentType;
+  }
+
+  if (process.env.NEXT_PUBLIC_RELEASE_NAME) {
+    headers['x-workflowai-version'] = process.env.NEXT_PUBLIC_RELEASE_NAME;
+  }
+  const unknownUserId = await getOrCreateUniqueId();
+  if (unknownUserId) {
+    headers['x-workflowai-unknown-user-id'] = unknownUserId;
+  }
+  return headers;
+}
+
+async function getOrCreateToken() {
+  const headers = await headersWithoutToken('application/json');
+  const res = await fetch('/api/jwt', headers);
+  const raw: { token: string } = await res.json();
+  return raw.token;
+}
+
+async function requestHeaders(contentType: string | undefined): Promise<Record<string, string>> {
+  const headers = await headersWithoutToken(contentType);
+
+  try {
+    // TODO: We always refresh the token here
+    // which is used when streaming. This is to avoid having to use
+    // clerk hooks to validate that the token is valid
+    // We will no longer have the issue when we just use the clerk token
+    const token = await getOrCreateToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+  } catch (e) {
+    // This should not happen. If it does, we will let the server handle
+    // the token creation
+    captureException(e);
+  }
+  return headers;
+}
+
 async function fetchWrapper<T, R = unknown>(
   path: string,
   {
@@ -98,13 +182,12 @@ async function fetchWrapper<T, R = unknown>(
     body?: T;
   }
 ): Promise<R> {
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-    'x-workflowai-source': 'web',
-  };
-  if (process.env.NEXT_PUBLIC_RELEASE_NAME) {
-    headers['x-workflowai-version'] = process.env.NEXT_PUBLIC_RELEASE_NAME;
-  }
+  // We don't compute a token here
+  // It will be added server side automatically. What's important is that
+  // the anon user id is unique.
+  // This will change when we start using clerk tokens directly
+  const headers = await headersWithoutToken('application/json');
+
   const res = await fetch(path, {
     method,
     headers,
@@ -150,11 +233,11 @@ export async function del<T = undefined, R = unknown>(path: string, body?: T): P
 export async function uploadFile<R = unknown>(
   path: string,
   body: FormData,
-  token: string,
   onProgress?: (progress: number) => void
 ): Promise<R> {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     const xhr = new XMLHttpRequest();
+    const headers = await requestHeaders(undefined);
 
     xhr.upload.addEventListener('progress', (event) => {
       if (event.lengthComputable && !!onProgress) {
@@ -180,7 +263,9 @@ export async function uploadFile<R = unknown>(
     xhr.addEventListener('abort', () => reject(new Error('Upload aborted')));
 
     xhr.open('POST', path);
-    xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+    Object.entries(headers).forEach(([key, value]) => {
+      xhr.setRequestHeader(key, value);
+    });
     xhr.send(body);
   });
 }
@@ -217,12 +302,12 @@ function parseSSEEvent(eventData: string) {
 export async function SSEClient<R, T>(
   path: string,
   method: Method,
-  token: string | null | undefined,
   body: R,
   onMessage?: (ev: T) => void,
   signal?: AbortSignal
 ): Promise<T> {
   let lastMessage: T | undefined;
+  const headers = await requestHeaders('application/json');
 
   await fetchEventSource(path, {
     onopen: onOpenStream,
@@ -241,12 +326,7 @@ export async function SSEClient<R, T>(
       throw e;
     },
     method,
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      'x-workflowai-source': 'web',
-      'x-workflowai-version': process.env.NEXT_PUBLIC_RELEASE_NAME ?? 'unknown',
-    },
+    headers,
     body: method !== Method.GET ? JSON.stringify({ ...body, stream: true }) : undefined,
     openWhenHidden: true,
     // We should not keepalive because we noticed that running audio tasks

@@ -31,7 +31,6 @@ import {
   useOrFetchOrganizationSettings,
   useOrFetchTask,
   useOrFetchTaskRun,
-  useOrFetchToken,
   useOrFetchVersion,
   useOrFetchVersions,
   useScheduledMetaAgentMessages,
@@ -268,8 +267,6 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
   } = useOrFetchTaskRun(tenant, taskId, inputTaskRunId);
 
   const [taskIndexesLoading, setTaskIndexLoading] = useState<boolean[]>([false, false, false]);
-  const { token } = useOrFetchToken();
-
   const { task, isInitialized: isTaskInitialized } = useOrFetchTask(tenant, taskId);
 
   const { majorVersions } = useOrFetchVersions(tenant, taskId, taskSchemaId);
@@ -468,7 +465,6 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
             taskId,
             taskSchemaId,
             body,
-            token,
             onMessage: (message) => {
               if (abortController.signal.aborted) {
                 return;
@@ -534,7 +530,6 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
       tenant,
       taskId,
       taskSchemaId,
-      token,
       fetchTaskRunUntilCreated,
       fetchModels,
       createVersion,
@@ -685,7 +680,6 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
     taskId,
     taskSchemaId,
     tenant,
-    token,
     voidInput,
   });
 
@@ -706,7 +700,7 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
     );
 
     setAreInstructionsLoading(true);
-    toast.promise(() => generateSuggestedInstructions(tenant, taskId, taskSchemaId, token, setInstructions), {
+    toast.promise(() => generateSuggestedInstructions(tenant, taskId, taskSchemaId, setInstructions), {
       loading: 'Generating instructions...',
       success: (data) => {
         setAreInstructionsLoading(false);
@@ -739,7 +733,6 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
     tenant,
     taskId,
     taskSchemaId,
-    token,
     setInstructions,
     handleGeneratePlaygroundInput,
     isInputGenerationSupported,
@@ -749,17 +742,16 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
   const { getUploadURL } = useUpload();
   const handleUploadFile = useCallback(
     async (formData: FormData, hash: string, onProgress?: (progress: number) => void) => {
-      if (!tenant || !taskId || !token) return undefined;
+      if (!tenant || !taskId) return undefined;
       return getUploadURL({
         tenant,
         taskId,
         form: formData,
         hash,
-        token,
         onProgress,
       });
     },
-    [getUploadURL, tenant, taskId, token]
+    [getUploadURL, tenant, taskId]
   );
 
   const onClose = useCallback(() => {
@@ -1019,7 +1011,6 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
     tenant,
     taskId,
     taskSchemaId,
-    token,
     playgroundState,
     scheduledPlaygroundStateMessage,
     setScheduledPlaygroundStateMessage,

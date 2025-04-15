@@ -43,7 +43,6 @@ interface MetaAgentChatState {
     tenant: TenantID | undefined,
     taskId: TaskID,
     schemaId: TaskSchemaID,
-    token: string | undefined,
     playgroundState: PlaygroundState
   ) => void;
 
@@ -51,7 +50,6 @@ interface MetaAgentChatState {
     tenant: TenantID | undefined,
     taskId: TaskID,
     schemaId: TaskSchemaID,
-    token: string | undefined,
     text: string | undefined,
     role: 'USER' | 'PLAYGROUND',
     playgroundState: PlaygroundState,
@@ -109,22 +107,15 @@ export const useMetaAgentChat = create<MetaAgentChatState>((set, get) => ({
     );
   },
 
-  reset: (
-    tenant: TenantID | undefined,
-    taskId: TaskID,
-    schemaId: TaskSchemaID,
-    token: string | undefined,
-    playgroundState: PlaygroundState
-  ) => {
+  reset: (tenant: TenantID | undefined, taskId: TaskID, schemaId: TaskSchemaID, playgroundState: PlaygroundState) => {
     get().remove(taskId);
-    get().sendMessage(tenant, taskId, schemaId, token, undefined, 'USER', playgroundState);
+    get().sendMessage(tenant, taskId, schemaId, undefined, 'USER', playgroundState);
   },
 
   sendMessage: async (
     tenant: TenantID | undefined,
     taskId: TaskID,
     schemaId: TaskSchemaID,
-    token: string | undefined,
     text: string | undefined,
     role: 'USER' | 'PLAYGROUND',
     playgroundState: PlaygroundState,
@@ -186,7 +177,6 @@ export const useMetaAgentChat = create<MetaAgentChatState>((set, get) => ({
       const response = await SSEClient<MetaAgentChatRequest, MetaAgentChatResponse>(
         path,
         Method.POST,
-        token,
         request,
         updateMessages,
         signal
