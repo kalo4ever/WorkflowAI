@@ -1,7 +1,7 @@
 import { EventSourceMessage, EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source';
 import { captureException } from '@sentry/nextjs';
 import { StreamError } from '@/types/errors';
-import { anonUserIdCookieProps } from '../token/anon';
+import { baseCookieProps } from '../token/anon';
 
 function extractErrorMessage(parsed: unknown) {
   if (typeof parsed !== 'object' || !parsed) {
@@ -90,6 +90,15 @@ async function onOpenStream(response: Response) {
 }
 
 let uniqueAnonIdPromise: Promise<string | undefined> | undefined;
+let fetchTokenPromise: Promise<string> | undefined;
+
+function setCookie(name: string, value: string) {
+  const props = baseCookieProps();
+  const joined = Object.entries(props)
+    .map(([key, value]) => `${key}=${value}`)
+    .join('; ');
+  document.cookie = `${name}=${value}; ${joined}`;
+}
 
 export function getOrCreateUniqueId() {
   // If the cookie is already set, extract and return it.
@@ -107,12 +116,7 @@ export function getOrCreateUniqueId() {
   uniqueAnonIdPromise = new Promise((resolve) => {
     try {
       const id = crypto.randomUUID();
-      const props = anonUserIdCookieProps();
-      const joined = Object.entries(props)
-        .map(([key, value]) => `${key}=${value}`)
-        .join('; ');
-
-      document.cookie = `x-unknown-user-id=${id}; ${joined}`;
+      setCookie('x-unknown-user-id', id);
       resolve(id);
     } catch (e) {
       captureException(e);
@@ -123,10 +127,7 @@ export function getOrCreateUniqueId() {
   return uniqueAnonIdPromise;
 }
 
-async function requestHeaders(
-  token: string | null | undefined,
-  contentType = 'application/json'
-): Promise<Record<string, string>> {
+async function headersWithoutToken(contentType: string) {
   const headers: Record<string, string> = {
     'Content-Type': contentType,
     'x-workflowai-source': 'web',
@@ -138,11 +139,45 @@ async function requestHeaders(
   if (unknownUserId) {
     headers['x-workflowai-unknown-user-id'] = unknownUserId;
   }
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+  return headers;
+}
+
+function getOrCreateToken() {
+  const cookieMatch = document.cookie.match(/x-api-token=([^;]+)/);
+  if (cookieMatch) {
+    console.log('token', 'cookie match');
+    return Promise.resolve(cookieMatch[1]);
+  }
+  if (fetchTokenPromise) {
+    return fetchTokenPromise;
+  }
+
+  fetchTokenPromise = new Promise(async (resolve) => {
+    const headers = await headersWithoutToken('application/json');
+    const res = await fetch('/api/jwt', headers);
+    const raw: { token: string } = await res.json();
+    setCookie('x-api-token', raw.token);
+    resolve(raw.token);
+  });
+  return fetchTokenPromise;
+}
+
+async function requestHeaders(contentType = 'application/json'): Promise<Record<string, string>> {
+  const headers = await headersWithoutToken(contentType);
+
+  try {
+    const token = await getOrCreateToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+  } catch (e) {
+    // This should not happen. If it does, we will let the server handle
+    // the token creation
+    captureException(e);
   }
   return headers;
 }
+
 async function fetchWrapper<T, R = unknown>(
   path: string,
   {
@@ -272,7 +307,7 @@ export async function SSEClient<R, T>(
   signal?: AbortSignal
 ): Promise<T> {
   let lastMessage: T | undefined;
-  const headers = await requestHeaders(token);
+  const headers = await requestHeaders();
 
   await fetchEventSource(path, {
     onopen: onOpenStream,
