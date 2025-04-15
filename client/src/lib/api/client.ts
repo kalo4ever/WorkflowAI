@@ -182,6 +182,10 @@ async function fetchWrapper<T, R = unknown>(
     body?: T;
   }
 ): Promise<R> {
+  // We don't compute a token here
+  // It will be added server side automatically. What's important is that
+  // the anon user id is unique.
+  // This will change when we start using clerk tokens directly
   const headers = await headersWithoutToken('application/json');
 
   const res = await fetch(path, {
