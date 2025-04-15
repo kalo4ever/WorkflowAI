@@ -63,6 +63,15 @@ export type VideoDemo = {
   icon: React.ReactNode;
 };
 
+// Nineteenth new component data
+
+export const nineteenthNewHeaderEntry: HeaderEntry = {
+  title: 'But actually... we’re really cheap',
+  description:
+    'If you’re using Langsmith or Langfuse already, compare how much you’ll save by using WorkflowAI instead. If you don’t switch, it’s OK.',
+  descriptionMaxWidth: 'max-w-[930px]',
+};
+
 // Eighteenth new component data
 
 export const eighteenthNewHeaderEntry: HeaderEntry = {

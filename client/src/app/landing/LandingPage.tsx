@@ -9,6 +9,7 @@ import { signUpRoute } from '@/lib/routeFormatter';
 import { useOrFetchUptime } from '@/store/fetchers';
 import { LandingPageContainer } from './container/LandingPageContainer';
 import { CompaniesMoneyComponent } from './sections/Components/CompaniesMoneyComponent';
+import { ComparePriceComponent } from './sections/Components/ComparePriceComponent';
 import { ComparisionComponent } from './sections/Components/ComparisionComponent';
 import { GraphComponent } from './sections/Components/GraphComponent';
 import { GridComponent } from './sections/Components/GridComponent';
@@ -66,6 +67,9 @@ export function LandingPage() {
       <HeaderComponent className='mt-10' showSuggestedFeaturesModal={onNewTask} routeForSignUp={routeForSignUp} />
       <VideosComponent className='sm:mt-10 mt-7' />
       <CompaniesMoneyComponent className='sm:mt-20 mt-14' />
+
+      <SubheaderComponent entry={LandingStaticData.nineteenthNewHeaderEntry} className='sm:mt-20 mt-14' />
+      <ComparePriceComponent className='mt-10' />
 
       <SubheaderComponent entry={LandingStaticData.eighteenthNewHeaderEntry} className='sm:mt-20 mt-14' />
       <ImageComponent entry={LandingStaticData.eighteenthNewImageEntry} className='mt-10' isMobile={isMobile} />
