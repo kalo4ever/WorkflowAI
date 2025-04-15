@@ -37,3 +37,5 @@ export const HARDCODED_TENANT =
 export const STRIPE_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 
 export const TASK_RUN_ID_PARAM = 'taskRunId';
+
+export const UNKNOWN_USER_ID_COOKIE_NAME = 'x-unknown-user-id';

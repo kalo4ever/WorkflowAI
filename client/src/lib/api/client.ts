@@ -1,6 +1,7 @@
 import { EventSourceMessage, EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source';
 import { captureException } from '@sentry/nextjs';
 import { StreamError } from '@/types/errors';
+import { anonUserIdCookieProps } from '../token/anon';
 
 function extractErrorMessage(parsed: unknown) {
   if (typeof parsed !== 'object' || !parsed) {
@@ -88,6 +89,60 @@ async function onOpenStream(response: Response) {
   }
 }
 
+let uniqueAnonIdPromise: Promise<string | undefined> | undefined;
+
+export function getOrCreateUniqueId() {
+  // If the cookie is already set, extract and return it.
+  const cookieMatch = document.cookie.match(/x-unknown-user-id=([^;]+)/);
+  if (cookieMatch) {
+    return Promise.resolve(cookieMatch[1]);
+  }
+
+  // If generation is already in progress, return the promise.
+  if (uniqueAnonIdPromise) {
+    return uniqueAnonIdPromise;
+  }
+
+  // Otherwise, create the promise and generate the ID.
+  uniqueAnonIdPromise = new Promise((resolve) => {
+    try {
+      const id = crypto.randomUUID();
+      const props = anonUserIdCookieProps();
+      const joined = Object.entries(props)
+        .map(([key, value]) => `${key}=${value}`)
+        .join('; ');
+
+      document.cookie = `x-unknown-user-id=${id}; ${joined}`;
+      resolve(id);
+    } catch (e) {
+      captureException(e);
+      resolve(undefined);
+    }
+  });
+
+  return uniqueAnonIdPromise;
+}
+
+async function requestHeaders(
+  token: string | null | undefined,
+  contentType = 'application/json'
+): Promise<Record<string, string>> {
+  const headers: Record<string, string> = {
+    'Content-Type': contentType,
+    'x-workflowai-source': 'web',
+  };
+  if (process.env.NEXT_PUBLIC_RELEASE_NAME) {
+    headers['x-workflowai-version'] = process.env.NEXT_PUBLIC_RELEASE_NAME;
+  }
+  const unknownUserId = await getOrCreateUniqueId();
+  if (unknownUserId) {
+    headers['x-workflowai-unknown-user-id'] = unknownUserId;
+  }
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  return headers;
+}
 async function fetchWrapper<T, R = unknown>(
   path: string,
   {
@@ -98,13 +153,7 @@ async function fetchWrapper<T, R = unknown>(
     body?: T;
   }
 ): Promise<R> {
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-    'x-workflowai-source': 'web',
-  };
-  if (process.env.NEXT_PUBLIC_RELEASE_NAME) {
-    headers['x-workflowai-version'] = process.env.NEXT_PUBLIC_RELEASE_NAME;
-  }
+  const headers = await requestHeaders(undefined);
   const res = await fetch(path, {
     method,
     headers,
@@ -223,6 +272,7 @@ export async function SSEClient<R, T>(
   signal?: AbortSignal
 ): Promise<T> {
   let lastMessage: T | undefined;
+  const headers = await requestHeaders(token);
 
   await fetchEventSource(path, {
     onopen: onOpenStream,
@@ -241,12 +291,7 @@ export async function SSEClient<R, T>(
       throw e;
     },
     method,
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      'x-workflowai-source': 'web',
-      'x-workflowai-version': process.env.NEXT_PUBLIC_RELEASE_NAME ?? 'unknown',
-    },
+    headers,
     body: method !== Method.GET ? JSON.stringify({ ...body, stream: true }) : undefined,
     openWhenHidden: true,
     // We should not keepalive because we noticed that running audio tasks
