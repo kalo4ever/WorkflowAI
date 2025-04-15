@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, computed_field
 
 from core.domain.models import Provider
 from core.providers.base.config import ProviderConfig
@@ -25,7 +25,11 @@ class PublicOrganizationData(BaseModel):
     name: str | None = None
     org_id: str | None = None
     owner_id: str | None = None
-    anonymous: bool | None = Field(default=None)
+
+    @computed_field
+    @property
+    def is_anonymous(self) -> bool:
+        return not self.org_id and not self.owner_id
 
 
 class TenantData(PublicOrganizationData):

@@ -6,7 +6,7 @@ async def test_anonymous_user_starter_credits(
 ):
     test_client.authenticate(ANON_JWT)
     org = await test_client.get("/_/organization/settings")
-    assert org["anonymous"] is True
+    assert org["is_anonymous"] is True
     assert org["added_credits_usd"] == 0.2
     assert org["current_credits_usd"] == 0.2
 
@@ -16,7 +16,7 @@ async def test_anonymous_user_accessible_endpoints(
 ):
     test_client.authenticate(ANON_JWT)
     org = await test_client.get("/_/organization/settings")
-    assert org["anonymous"] is True
+    assert org["is_anonymous"] is True
     assert org["added_credits_usd"] == 0.2
     assert org["current_credits_usd"] == 0.2
 
