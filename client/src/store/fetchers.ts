@@ -723,7 +723,6 @@ export const useOrFetchTaskPreview = (
   outputSchema: Record<string, unknown>,
   previouseInputPreview: Record<string, unknown> | undefined,
   previouseOutputPreview: Record<string, unknown> | undefined,
-  token: string | undefined,
   isPaused: boolean
 ) => {
   const scopeKey = buildTaskPreviewScopeKey({
@@ -792,23 +791,14 @@ export const useOrFetchTaskPreview = (
         debouncedInputSchema,
         debouncedOutputSchema,
         previewRef.current.input,
-        previewRef.current.output,
-        token
+        previewRef.current.output
       );
     } catch (error) {
       console.error('Error parsing debounced schemas:', error);
     } finally {
       setInternalIsLoading(false);
     }
-  }, [
-    generateTaskPreview,
-    tenant,
-    debouncedChatMessages,
-    debouncedInputSchema,
-    debouncedOutputSchema,
-    token,
-    isPaused,
-  ]);
+  }, [generateTaskPreview, tenant, debouncedChatMessages, debouncedInputSchema, debouncedOutputSchema, isPaused]);
 
   return {
     generatedInput,
@@ -1018,7 +1008,7 @@ export const useOrFetchFeatureSections = () => {
   };
 };
 
-export const useOrFetchFeaturesByTag = (tag: string | undefined, token: string | undefined) => {
+export const useOrFetchFeaturesByTag = (tag: string | undefined) => {
   const features = useFeaturesState((state) => (tag ? state.featuresByTag[tag] : undefined));
   const isLoading = useFeaturesState((state) => (tag ? state.isLoadingFeaturesByTag[tag] : false));
   const isInitialized = useFeaturesState((state) => (tag ? state.isInitializedFeaturesByTag[tag] : false));
@@ -1033,9 +1023,9 @@ export const useOrFetchFeaturesByTag = (tag: string | undefined, token: string |
 
   useEffect(() => {
     if (!!tag && !isInitializedRef.current && !isLoadingRef.current) {
-      fetchFeaturesByTag(tag, token);
+      fetchFeaturesByTag(tag);
     }
-  }, [fetchFeaturesByTag, tag, token]);
+  }, [fetchFeaturesByTag, tag]);
 
   return {
     features,
@@ -1044,7 +1034,7 @@ export const useOrFetchFeaturesByTag = (tag: string | undefined, token: string |
   };
 };
 
-export const useOrFetchFeaturesByDomain = (domain: string | undefined, token: string | undefined) => {
+export const useOrFetchFeaturesByDomain = (domain: string | undefined) => {
   const features = useFeaturesState((state) => (domain ? state.featuresByDomain[domain] : undefined));
   const isLoading = useFeaturesState((state) => (domain ? state.isLoadingFeaturesByDomain[domain] : false));
   const isInitialized = useFeaturesState((state) => (domain ? state.isInitializedFeaturesByDomain[domain] : false));
@@ -1061,9 +1051,9 @@ export const useOrFetchFeaturesByDomain = (domain: string | undefined, token: st
 
   useEffect(() => {
     if (!!domain && !isInitializedRef.current && !isLoadingRef.current) {
-      fetchFeaturesByDomain(domain, token);
+      fetchFeaturesByDomain(domain);
     }
-  }, [fetchFeaturesByDomain, domain, token]);
+  }, [fetchFeaturesByDomain, domain]);
 
   return {
     features,
@@ -1077,7 +1067,6 @@ export const useOrFetchMetaAgentMessagesIfNeeded = (
   tenant: TenantID | undefined,
   taskId: TaskID,
   schemaId: TaskSchemaID,
-  token: string | undefined,
   playgroundState: PlaygroundState
 ) => {
   const messages = useMetaAgentChat((state) => state.messagesByTaskId[taskId]);
@@ -1105,7 +1094,6 @@ export const useOrFetchMetaAgentMessagesIfNeeded = (
           tenant,
           taskId,
           schemaIdRef.current,
-          token,
           text,
           'USER',
           playgroundStateRef.current,
@@ -1115,15 +1103,15 @@ export const useOrFetchMetaAgentMessagesIfNeeded = (
         console.error('Error sending message:', error);
       }
     },
-    [sendMessageMetaAgentChat, tenant, taskId, token]
+    [sendMessageMetaAgentChat, tenant, taskId]
   );
 
   const resetMetaAgentChat = useMetaAgentChat((state) => state.reset);
   const updateStateForToolCallIdAgentChat = useMetaAgentChat((state) => state.updateStateForToolCallId);
 
   const reset = useCallback(() => {
-    resetMetaAgentChat(tenant, taskId, schemaIdRef.current, token, playgroundStateRef.current);
-  }, [resetMetaAgentChat, tenant, taskId, token]);
+    resetMetaAgentChat(tenant, taskId, schemaIdRef.current, playgroundStateRef.current);
+  }, [resetMetaAgentChat, tenant, taskId]);
 
   const updateStateForToolCallId = useCallback(
     (toolCallId: string, status: 'assistant_proposed' | 'user_ignored' | 'completed' | 'failed') => {
@@ -1133,8 +1121,8 @@ export const useOrFetchMetaAgentMessagesIfNeeded = (
   );
 
   useEffect(() => {
-    sendMessageMetaAgentChat(tenant, taskId, schemaIdRef.current, token, undefined, 'USER', playgroundStateRef.current);
-  }, [sendMessageMetaAgentChat, tenant, taskId, token]);
+    sendMessageMetaAgentChat(tenant, taskId, schemaIdRef.current, undefined, 'USER', playgroundStateRef.current);
+  }, [sendMessageMetaAgentChat, tenant, taskId]);
 
   const onStop = useCallback(() => {
     abortController.current?.abort();
@@ -1155,7 +1143,6 @@ export const useScheduledMetaAgentMessages = (
   tenant: TenantID | undefined,
   taskId: TaskID,
   schemaId: TaskSchemaID,
-  token: string | undefined,
   playgroundState: PlaygroundState,
   scheduledPlaygroundStateMessage: string | undefined,
   setScheduledPlaygroundStateMessage: (message: string | undefined) => void,
@@ -1188,7 +1175,6 @@ export const useScheduledMetaAgentMessages = (
           tenant,
           taskId,
           schemaIdRef.current,
-          token,
           text,
           'PLAYGROUND',
           playgroundStateRef.current,
@@ -1198,7 +1184,7 @@ export const useScheduledMetaAgentMessages = (
         console.error('Error sending message:', error);
       }
     },
-    [sendMessageMetaAgentChat, tenant, taskId, token, markScheduledPlaygroundStateMessageAsSend]
+    [sendMessageMetaAgentChat, tenant, taskId, markScheduledPlaygroundStateMessageAsSend]
   );
 
   useEffect(() => {

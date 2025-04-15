@@ -26,8 +26,8 @@ interface FeaturesState {
   companyContextByDomain: Record<string, string>;
 
   fetchFeatureSections: () => Promise<void>;
-  fetchFeaturesByTag: (tag: string, token: string | undefined) => Promise<void>;
-  fetchFeaturesByDomain: (domain: string, token: string | undefined) => Promise<void>;
+  fetchFeaturesByTag: (tag: string) => Promise<void>;
+  fetchFeaturesByDomain: (domain: string) => Promise<void>;
 }
 
 export const useFeaturesState = create<FeaturesState>((set, get) => ({
@@ -77,7 +77,7 @@ export const useFeaturesState = create<FeaturesState>((set, get) => ({
     }
   },
 
-  fetchFeaturesByTag: async (tag: string, token: string | undefined) => {
+  fetchFeaturesByTag: async (tag: string) => {
     const isLoading = get().isLoadingFeaturesByTag[tag];
 
     if (!!isLoading) {
@@ -102,7 +102,6 @@ export const useFeaturesState = create<FeaturesState>((set, get) => ({
       const response = await SSEClient<Record<string, never>, { features: Array<BaseFeature> }>(
         `${API_URL}/features/search?tags=${tag}`,
         Method.GET,
-        token,
         {},
         update
       );
@@ -122,7 +121,7 @@ export const useFeaturesState = create<FeaturesState>((set, get) => ({
     }
   },
 
-  fetchFeaturesByDomain: async (domain: string, token: string | undefined) => {
+  fetchFeaturesByDomain: async (domain: string) => {
     const isLoading = get().isLoadingFeaturesByDomain[domain];
 
     if (!!isLoading) {
@@ -148,7 +147,7 @@ export const useFeaturesState = create<FeaturesState>((set, get) => ({
       const response = await SSEClient<
         Record<string, never>,
         { company_context: string; features?: Array<BaseFeature> }
-      >(`${API_URL}/features/domain/${domain}`, Method.GET, token, {}, update);
+      >(`${API_URL}/features/domain/${domain}`, Method.GET, {}, update);
 
       set(
         produce((state: FeaturesState) => {
@@ -188,11 +187,7 @@ interface FeaturePreviewState {
   isInitializedByScope: Map<string, boolean>;
   previewByScope: Map<string, FeaturePreview>;
 
-  fetchFeaturePreviewIfNeeded: (
-    feature: BaseFeature,
-    companyContext: string | undefined,
-    token: string | undefined
-  ) => Promise<void>;
+  fetchFeaturePreviewIfNeeded: (feature: BaseFeature, companyContext: string | undefined) => Promise<void>;
 }
 
 const loadPreviewFromStorage = (): Partial<FeaturePreviewState> => {
@@ -220,11 +215,7 @@ export const useFeaturePreview = create<FeaturePreviewState>((set, get) => ({
   isInitializedByScope: loadPreviewFromStorage().isInitializedByScope || new Map(),
   previewByScope: loadPreviewFromStorage().previewByScope || new Map(),
 
-  fetchFeaturePreviewIfNeeded: async (
-    feature: BaseFeature,
-    companyContext: string | undefined,
-    token: string | undefined
-  ) => {
+  fetchFeaturePreviewIfNeeded: async (feature: BaseFeature, companyContext: string | undefined) => {
     const scopeKey = buildFeaturePreviewsScopeKey({ feature });
 
     if (!scopeKey) {
@@ -263,7 +254,6 @@ export const useFeaturePreview = create<FeaturePreviewState>((set, get) => ({
       const response = await SSEClient<FeaturePreviewSchemasRequest, FeaturePreview>(
         `${API_URL}/features/preview`,
         Method.POST,
-        token,
         {
           feature: feature,
           company_context: companyContext ?? null,

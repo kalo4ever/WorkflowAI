@@ -23,7 +23,7 @@ import {
   fromSplattedEditorFieldsToSchema,
 } from '@/lib/schemaEditorUtils';
 import { mergeSchemas } from '@/lib/schemaUtils';
-import { useOrFetchCurrentTaskSchema, useOrFetchToken, useOrFetchVersions, useTasks } from '@/store';
+import { useOrFetchCurrentTaskSchema, useOrFetchVersions, useTasks } from '@/store';
 import { ToolCallName, usePlaygroundChatStore } from '@/store/playgroundChatStore';
 import { useTaskSchemas } from '@/store/task_schemas';
 import { JsonSchema } from '@/types';
@@ -168,8 +168,6 @@ export function NewTaskModal() {
   const fullName = user?.fullName;
   const userFirstName = user?.firstName;
   const userImageUrl = user?.imageUrl;
-
-  const { token } = useOrFetchToken();
 
   const redirectWithParams = useRedirectWithParams();
 
@@ -389,7 +387,6 @@ export function NewTaskModal() {
         const newIteration = await iterateTaskInputOutput(
           loggedInTenant,
           request,
-          token,
           (data) => {
             if (!isMounted() || !open) return;
 
@@ -447,7 +444,6 @@ export function NewTaskModal() {
       computedInputSchema,
       computedOutputSchema,
       open,
-      token,
       setShowRetry,
     ]
   );
@@ -674,7 +670,6 @@ export function NewTaskModal() {
               noChangesDetected={noChangesDetected}
               tenant={tenant}
               taskSchemaId={taskSchemaId}
-              token={token}
               showRetry={showRetry}
               retry={onRetry}
               featureWasSelected={featureWasSelected}

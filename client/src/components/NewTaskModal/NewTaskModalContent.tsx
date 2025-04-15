@@ -15,7 +15,6 @@ import { ConversationMessage } from './TaskConversationMessage';
 type NewTaskModalContentProps = {
   tenant: TenantID;
   taskSchemaId: TaskSchemaID;
-  token: string | undefined;
   isInitialized: boolean;
   isEditMode: boolean;
   inputSplattedSchema: SchemaEditorField | undefined;
@@ -61,7 +60,6 @@ export function NewTaskModalContent(props: NewTaskModalContentProps) {
     noChangesDetected,
     tenant,
     taskSchemaId,
-    token,
     showRetry,
     retry,
     featureWasSelected,
@@ -148,7 +146,6 @@ export function NewTaskModalContent(props: NewTaskModalContentProps) {
           loading={loading}
           messages={messages}
           noChangesDetected={noChangesDetected}
-          token={token}
           className='flex flex-col w-[50%] h-max min-h-full'
           computedInputSchema={computedInputSchema}
           computedOutputSchema={computedOutputSchema}

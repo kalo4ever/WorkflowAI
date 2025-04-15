@@ -127,11 +127,15 @@ export function getOrCreateUniqueId() {
   return uniqueAnonIdPromise;
 }
 
-async function headersWithoutToken(contentType: string) {
+async function headersWithoutToken(contentType: string | undefined) {
   const headers: Record<string, string> = {
-    'Content-Type': contentType,
     'x-workflowai-source': 'web',
   };
+
+  if (contentType) {
+    headers['Content-Type'] = contentType;
+  }
+
   if (process.env.NEXT_PUBLIC_RELEASE_NAME) {
     headers['x-workflowai-version'] = process.env.NEXT_PUBLIC_RELEASE_NAME;
   }
@@ -145,7 +149,6 @@ async function headersWithoutToken(contentType: string) {
 function getOrCreateToken() {
   const cookieMatch = document.cookie.match(/x-api-token=([^;]+)/);
   if (cookieMatch) {
-    console.log('token', 'cookie match');
     return Promise.resolve(cookieMatch[1]);
   }
   if (fetchTokenPromise) {
@@ -162,7 +165,7 @@ function getOrCreateToken() {
   return fetchTokenPromise;
 }
 
-async function requestHeaders(contentType = 'application/json'): Promise<Record<string, string>> {
+async function requestHeaders(contentType: string | undefined): Promise<Record<string, string>> {
   const headers = await headersWithoutToken(contentType);
 
   try {
@@ -188,7 +191,8 @@ async function fetchWrapper<T, R = unknown>(
     body?: T;
   }
 ): Promise<R> {
-  const headers = await requestHeaders(undefined);
+  const headers = await requestHeaders('application/json');
+  console.log('headers', headers);
   const res = await fetch(path, {
     method,
     headers,
@@ -234,11 +238,11 @@ export async function del<T = undefined, R = unknown>(path: string, body?: T): P
 export async function uploadFile<R = unknown>(
   path: string,
   body: FormData,
-  token: string,
   onProgress?: (progress: number) => void
 ): Promise<R> {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     const xhr = new XMLHttpRequest();
+    const headers = await requestHeaders(undefined);
 
     xhr.upload.addEventListener('progress', (event) => {
       if (event.lengthComputable && !!onProgress) {
@@ -264,7 +268,9 @@ export async function uploadFile<R = unknown>(
     xhr.addEventListener('abort', () => reject(new Error('Upload aborted')));
 
     xhr.open('POST', path);
-    xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+    Object.entries(headers).forEach(([key, value]) => {
+      xhr.setRequestHeader(key, value);
+    });
     xhr.send(body);
   });
 }
@@ -301,13 +307,12 @@ function parseSSEEvent(eventData: string) {
 export async function SSEClient<R, T>(
   path: string,
   method: Method,
-  token: string | null | undefined,
   body: R,
   onMessage?: (ev: T) => void,
   signal?: AbortSignal
 ): Promise<T> {
   let lastMessage: T | undefined;
-  const headers = await requestHeaders();
+  const headers = await requestHeaders('application/json');
 
   await fetchEventSource(path, {
     onopen: onOpenStream,
