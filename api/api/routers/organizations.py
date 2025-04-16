@@ -47,6 +47,7 @@ class OrganizationResponse(BaseModel):
 
     providers: list[ConfiguredProvider] | None
 
+    added_credits_usd: float
     current_credits_usd: float
 
     automatic_payment_enabled: bool
@@ -66,7 +67,8 @@ class OrganizationResponse(BaseModel):
                 failure_reason=payment_failure.failure_reason,
             )
 
-    payment_failure: PaymentFailure | None = None
+    payment_failure: PaymentFailure | None
+    is_anonymous: bool
 
     @classmethod
     def from_domain(cls, tenant: TenantData):
@@ -79,15 +81,17 @@ class OrganizationResponse(BaseModel):
             owner_id=tenant.owner_id,
             stripe_customer_id=tenant.stripe_customer_id,
             providers=safe_map_optional(tenant.providers, cls.ConfiguredProvider.from_domain),
+            added_credits_usd=tenant.added_credits_usd,
             current_credits_usd=tenant.current_credits_usd,
             automatic_payment_enabled=tenant.automatic_payment_enabled,
             automatic_payment_threshold=tenant.automatic_payment_threshold,
             automatic_payment_balance_to_maintain=tenant.automatic_payment_balance_to_maintain,
             payment_failure=cls.PaymentFailure.from_domain(tenant.payment_failure) if tenant.payment_failure else None,
+            is_anonymous=tenant.is_anonymous,
         )
 
 
-@router.get("/settings", description="List settings for a tenant")
+@router.get("/settings", description="List settings for a tenant", response_model_exclude_none=True)
 async def get_organization_settings(tenant: RequiredUserOrganizationDep) -> OrganizationResponse:
     return OrganizationResponse.from_domain(tenant)
 
