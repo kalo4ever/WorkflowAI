@@ -23,8 +23,10 @@ function SliderComponent(props: SliderProps) {
   return (
     <div className='flex flex-col w-full'>
       <div className='flex w-full justify-between items-center mb-4'>
-        <div className='text-gray-700 text-[16px] font-semibold'>Number of Traces/Events</div>
-        <div className='text-center text-gray-900 font-bold text-[16px]'>{numberOfTraces.toLocaleString()}</div>
+        <div className='text-gray-700 sm:text-[16px] text-[14px] font-semibold'>Number of Traces Per Month</div>
+        <div className='text-center text-gray-900 font-bold sm:text-[16px] text-[14px]'>
+          {numberOfTraces.toLocaleString()}
+        </div>
       </div>
       <Slider
         min={min}
@@ -69,8 +71,13 @@ function PriceCard(props: PriceCardProps) {
         >
           <div className='flex flex-col gap-3 w-full px-1 py-2 items-start'>
             <Image src={imageURL} alt={'Image'} width={imageWidth} height={imageHeight} />
-            <div className={cn('text-center text-[30px] font-bold', best ? 'text-green-600' : 'text-red-500')}>
-              ${price.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+            <div
+              className={cn(
+                'text-center sm:text-[30px] text-[24px] font-bold',
+                best ? 'text-green-600' : 'text-red-500'
+              )}
+            >
+              ${price.toLocaleString(undefined, { maximumFractionDigits: 0 })}/yr
             </div>
           </div>
         </div>
@@ -86,22 +93,37 @@ type ComparePriceComponentProps = {
 export function ComparePriceComponent(props: ComparePriceComponentProps) {
   const { className } = props;
 
-  const [numberOfTraces, setNumberOfTraces] = useState(772000);
+  const [numberOfTraces, setNumberOfTraces] = useState(1000000);
 
-  const langSmith = 3429;
+  const langSmith = useMemo(() => {
+    const basePrice = 39;
+    const includedTraces = 10000;
+    const pricePerBlock = 5.0;
+    const blockSize = 1000;
+
+    const additionalTracesPerYear = Math.max(0, numberOfTraces * 12 - includedTraces * 12);
+    const additionalBlocksPerYear = Math.ceil(additionalTracesPerYear / blockSize);
+
+    return basePrice * 12 + additionalBlocksPerYear * pricePerBlock;
+  }, [numberOfTraces]);
+
   const langfuse = useMemo(() => {
     const basePrice = 199;
     const includedTraces = 100000;
-    const pricePer100k = 8;
+    const pricePerBlock = 8;
+    const blockSize = 100000;
 
-    return basePrice + (Math.max(0, numberOfTraces - includedTraces) * pricePer100k) / 100000;
+    const additionalTracesPreYear = Math.max(0, numberOfTraces * 12 - includedTraces * 12);
+    const additionalBlocksPerYear = Math.ceil(additionalTracesPreYear / blockSize);
+
+    return basePrice * 12 + additionalBlocksPerYear * pricePerBlock;
   }, [numberOfTraces]);
 
   return (
     <div className={cn('flex flex-col items-center sm:gap-12 gap-8 sm:px-16 px-4 w-full max-w-[900px]', className)}>
       <div className='flex w-full bg-white rounded-[2px] sm:p-6 p-4 border border-gray-200 flex-col items-center justify-center gap-8'>
-        <div className='text-indigo-600 font-semibold text-center text-[16px] py-[6px] px-3 rounded-[2px] bg-indigo-50'>
-          Drag the Slider. Watch the Savings.
+        <div className='text-indigo-600 font-semibold text-center sm:text-[16px] text-[14px] py-[6px] px-3 rounded-[2px] bg-indigo-50'>
+          Just slide it. You’ll get it.
         </div>
         <SliderComponent min={0} max={5000000} numberOfTraces={numberOfTraces} setNumberOfTraces={setNumberOfTraces} />
         <div className='flex flex-wrap items-center justify-center gap-4 w-full'>
@@ -127,9 +149,20 @@ export function ComparePriceComponent(props: ComparePriceComponentProps) {
             imageHeight={20}
           />
         </div>
-        <div className='text-gray-500 text-center text-[16px] font-normal'>
+        <div className='text-gray-500 text-center sm:text-[16px] text-[14px] font-normal'>
           <span className='font-semibold text-gray-700'>WorkflowAI is completely free ($0)</span> for any number of
           traces, while competitors charge based on usage.
+        </div>
+        <div className='text-gray-500 text-center sm:text-[16px] text-[14px] font-normal max-w-[540px]'>
+          How do we make money? We make money on providers volume discount.{' '}
+          <a
+            href='https://docs.workflowai.com/workflowai-cloud/pricing'
+            target='_blank'
+            rel='noopener noreferrer'
+            className='underline'
+          >
+            Learn more about our business model.
+          </a>
         </div>
       </div>
     </div>

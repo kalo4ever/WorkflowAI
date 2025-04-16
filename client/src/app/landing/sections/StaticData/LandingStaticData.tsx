@@ -66,10 +66,9 @@ export type VideoDemo = {
 // Nineteenth new component data
 
 export const nineteenthNewHeaderEntry: HeaderEntry = {
-  title: 'But actually... we’re really cheap',
-  description:
-    'If you’re using Langsmith or Langfuse already, compare how much you’ll save by using WorkflowAI instead. If you don’t switch, it’s OK.',
-  descriptionMaxWidth: 'max-w-[930px]',
+  title: 'Still using Langsmith or Langfuse? That’s cute.',
+  titleSizeClassName: 'max-w-[500px]',
+  description: 'WorkflowAI costs $0. Try it. If you like overpaying, feel free to stay.',
 };
 
 // Eighteenth new component data
