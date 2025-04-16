@@ -223,6 +223,54 @@ OPENAI_PROVIDER_DATA: ProviderDataByModel = {
             source="https://openai.com/api/pricing/",
         ),
     ),
+    Model.O3_2025_04_16_HIGH_REASONING_EFFORT: ModelProviderData(
+        text_price=TextPricePerToken(
+            prompt_cost_per_token=0,
+            prompt_cached_tokens_discount=0.5,
+            completion_cost_per_token=0,
+            source="https://openai.com/api/pricing/",
+        ),
+    ),
+    Model.O3_2025_04_16_MEDIUM_REASONING_EFFORT: ModelProviderData(
+        text_price=TextPricePerToken(
+            prompt_cost_per_token=0,
+            prompt_cached_tokens_discount=0.5,
+            completion_cost_per_token=0,
+            source="https://openai.com/api/pricing/",
+        ),
+    ),
+    Model.O3_2025_04_16_LOW_REASONING_EFFORT: ModelProviderData(
+        text_price=TextPricePerToken(
+            prompt_cost_per_token=0,
+            prompt_cached_tokens_discount=0.5,
+            completion_cost_per_token=0,
+            source="https://openai.com/api/pricing/",
+        ),
+    ),
+    Model.O4_MINI_2025_04_16_HIGH_REASONING_EFFORT: ModelProviderData(
+        text_price=TextPricePerToken(
+            prompt_cost_per_token=0,
+            prompt_cached_tokens_discount=0.5,
+            completion_cost_per_token=0,
+            source="https://openai.com/api/pricing/",
+        ),
+    ),
+    Model.O4_MINI_2025_04_16_MEDIUM_REASONING_EFFORT: ModelProviderData(
+        text_price=TextPricePerToken(
+            prompt_cost_per_token=0,
+            prompt_cached_tokens_discount=0.5,
+            completion_cost_per_token=0,
+            source="https://openai.com/api/pricing/",
+        ),
+    ),
+    Model.O4_MINI_2025_04_16_LOW_REASONING_EFFORT: ModelProviderData(
+        text_price=TextPricePerToken(
+            prompt_cost_per_token=0,
+            prompt_cached_tokens_discount=0.5,
+            completion_cost_per_token=0,
+            source="https://openai.com/api/pricing/",
+        ),
+    ),
     Model.O1_2024_12_17_LOW_REASONING_EFFORT: ModelProviderData(
         text_price=TextPricePerToken(
             prompt_cost_per_token=15 * ONE_MILLION_TH,
