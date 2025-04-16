@@ -113,8 +113,8 @@ export async function export_public_key(sign_key?: KeyLike) {
 }
 
 export async function getAuthenticatedTokenData(unknownUserId: string | undefined): Promise<TokenData | undefined> {
-  const user = await currentUser();
-  const { orgSlug, orgId } = auth();
+  const { orgSlug, orgId, userId } = auth();
+  const user = await currentUser(userId);
   const email = user?.email;
 
   if (!orgId && !email) {
