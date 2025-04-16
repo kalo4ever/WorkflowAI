@@ -1,6 +1,7 @@
 import logging
 import time
 from collections.abc import Awaitable, Callable
+from contextlib import contextmanager
 from typing import Any, ClassVar
 
 from pydantic import BaseModel, Field
@@ -49,6 +50,7 @@ async def send_gauge(name: str, value: float, timestamp: float | None = None, **
         logging.getLogger(__name__).exception("Failed to send gauge metric %s: %s", name, tags)
 
 
+@contextmanager
 def measure_time(name: str, **tags: int | str | float | bool | None):
     start = time.time()
     try:

@@ -77,6 +77,8 @@ class AbstractRunner(
         self.properties = self._build_properties(self._options, original=properties)
         self.cache_fetcher = cache_fetcher
         self.metadata = metadata
+        # Set from the outside for analytics
+        self.metric_tags: dict[str, int | str | float | bool | None] = {}
 
     async def validate_run_options(self):
         """An opportunity to validate the run options before they are used. This method
@@ -278,7 +280,7 @@ class AbstractRunner(
         The main runner function that is called when an input is provided
         """
 
-        with measure_time("prepare_builder", **{"task_id": builder.task.id, "task_uid": builder.task.task_uid}):
+        with measure_time("run_overhead_builder", **self.metric_tags):
             cached = await self._prepare_builder(builder, cache)
         if cached is not None:
             return cached

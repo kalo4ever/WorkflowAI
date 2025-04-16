@@ -320,18 +320,19 @@ async def _send_overhead_metrics(
     request_start_time: float,
     preparation_start_time: float,
     done_building_runner: float,
-    tenant_slug: str | None,
-    task_id: str,
+    metric_tags: dict[str, Any],
 ):
     await send_gauge(
-        "run_overhead_1",
+        "run_overhead_prep",
         value=preparation_start_time - request_start_time,
-        tenant_slug=tenant_slug,
+        timestamp=request_start_time,
+        **metric_tags,
     )
     await send_gauge(
-        "run_overhead_2",
+        "run_overhead_runner",
         value=done_building_runner - preparation_start_time,
-        tenant_slug=tenant_slug,
+        timestamp=preparation_start_time,
+        **metric_tags,
     )
 
 
@@ -356,6 +357,7 @@ async def run_task(
     user_org: UserOrganizationDep,
     feedback_token_generator: RunFeedbackGeneratorDep,
     request: Request,
+    task_org: URLPublicOrganizationDep,
 ) -> Response:
     request_start_time = get_start_time(request)
     preparation_start_time = time.time()
@@ -369,12 +371,13 @@ async def run_task(
             reference=reference,
             provider_settings=provider_settings,
         )
+    runner.metric_tags = {"tenant": task_org.slug if task_org else None, "task_id": task_id}
     add_background_task(
         _send_overhead_metrics(
             request_start_time,
             preparation_start_time,
             time.time(),
-            user_org.slug if user_org else None,
+            runner.metric_tags,
         ),
     )
 
