@@ -68,6 +68,7 @@ class SlackNotificationDestination(Enum):
                 return os.environ.get("SLACK_WEBHOOK_URL_MODERATION")
 
 
+# TODO: deprecated ? move to customer service instead
 async def send_slack_notification(
     message: str | SlackMessage,
     user_email: str | None,

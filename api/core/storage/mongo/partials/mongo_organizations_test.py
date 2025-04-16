@@ -2046,3 +2046,23 @@ class TestSetSlackChannelId:
         # Try to set slack channel ID for non-existent organization
         with pytest.raises(ObjectNotFoundException):
             await organization_storage.set_slack_channel_id("C1234567890")
+
+    async def test_set_slack_channel_raises_if_already_set(
+        self,
+        organization_storage: MongoOrganizationStorage,
+        org_col: AsyncCollection,
+    ) -> None:
+        # Insert an organization with a slack channel ID
+        await org_col.insert_one(
+            dump_model(
+                OrganizationDocument(
+                    tenant=TENANT,
+                    slug="simple_slug",
+                ),
+            ),
+        )
+
+        await organization_storage.set_slack_channel_id("C1234567890")
+        # Try to set the slack channel ID again
+        with pytest.raises(ObjectNotFoundException):
+            await organization_storage.set_slack_channel_id("C1234567890")

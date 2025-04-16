@@ -21,7 +21,7 @@ from core.storage.mongo.models.organization_document import (
 )
 from core.storage.mongo.mongo_types import AsyncCollection
 from core.storage.mongo.partials.base_partial_storage import PartialStorage
-from core.storage.mongo.utils import dump_model
+from core.storage.mongo.utils import dump_model, projection
 from core.storage.organization_storage import OrganizationStorage
 from core.utils.encryption import Encryption
 from core.utils.fields import datetime_factory
@@ -48,8 +48,8 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
         )
 
     @override
-    async def get_organization(self) -> TenantData:
-        doc = await self._find_one({}, projection=self._projection(None))
+    async def get_organization(self, include: set[str] | None = None) -> TenantData:
+        doc = await self._find_one({}, projection=self._projection(projection(include=include)))
         return doc.to_domain(self.encryption)
 
     async def _get_public_org(self, filter: dict[str, Any]):
@@ -455,4 +455,4 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
 
     @override
     async def set_slack_channel_id(self, channel_id: str) -> None:
-        await self._update_one({}, {"$set": {"slack_channel_id": channel_id}})
+        await self._update_one({"slack_channel_id": {"$exists": False}}, {"$set": {"slack_channel_id": channel_id}})

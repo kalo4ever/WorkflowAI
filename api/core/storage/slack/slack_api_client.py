@@ -31,6 +31,14 @@ class SlackApiClient:
                 json={"channel": channel_id, "name": name},
             )
 
+    async def invite_users(self, channel_id: str, user_ids: list[str]):
+        """Invite users to a slack channel"""
+        async with self._client() as client:
+            await client.post(
+                "/conversations.invite",
+                json={"channel": channel_id, "users": ",".join(user_ids)},
+            )
+
     async def send_message(self, channel_id: str, message: SlackMessage):
         """Send a message to a slack channel"""
         async with self._client() as client:
