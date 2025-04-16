@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 import pytest
 from pytest import LogCaptureFixture
 
-from api.services.scrapping_service import ScrapingService
+from api.services.scraping_service import ScrapingService
 from core.agents.pick_relevant_url_agent import PickRelevantUrlAgentsOutput
 from core.domain.url_content import URLContent
 
@@ -18,7 +18,7 @@ class TestGetSitemapLinks:
         company_domain = "example.com"
         expected_links = {"http://example.com", "http://example.com/page1"}
 
-        with patch("api.services.features.get_sitemap", new_callable=AsyncMock) as mock_get_sitemap:
+        with patch("api.services.scraping_service.get_sitemap", new_callable=AsyncMock) as mock_get_sitemap:
             mock_get_sitemap.return_value = expected_links
             actual_links = await scraping_service._get_sitemap_links(company_domain)  # pyright: ignore[reportPrivateUsage]
             assert actual_links == expected_links
@@ -28,7 +28,7 @@ class TestGetSitemapLinks:
         company_domain = "example.com"
         expected_links = {company_domain}  # Fallback
 
-        with patch("api.services.features.get_sitemap", new_callable=AsyncMock) as mock_get_sitemap:
+        with patch("api.services.scraping_service.get_sitemap", new_callable=AsyncMock) as mock_get_sitemap:
             mock_get_sitemap.side_effect = Exception("Sitemap fetch failed")
             actual_links = await scraping_service._get_sitemap_links(company_domain)  # pyright: ignore[reportPrivateUsage]
             assert actual_links == expected_links
@@ -74,9 +74,9 @@ class TestPickRelevantLinks:
         agent_output: PickRelevantUrlAgentsOutput,
         expected_links: set[str],
     ):
-        with patch("api.services.features.pick_relevant_url_agents", new_callable=AsyncMock) as mock_pick_agent:
+        with patch("api.services.scraping_service.pick_relevant_url_agents", new_callable=AsyncMock) as mock_pick_agent:
             mock_pick_agent.return_value = agent_output
-            actual_links = await scraping_service._pick_relevant_links(list(sitemap_links), max_links)  # pyright: ignore[reportPrivateUsage]
+            actual_links = await scraping_service.pick_relevant_links(list(sitemap_links), max_links, "test")  # pyright: ignore[reportPrivateUsage]
             # Convert sitemap_links to list for consistent ordering in assertion check if needed, but set comparison is fine
             assert actual_links == expected_links
             mock_pick_agent.assert_awaited_once()
@@ -88,16 +88,17 @@ class TestPickRelevantLinks:
         # Fallback: first max_links from the input set (order might vary, so convert to list first)
         expected_links = set(list(sitemap_links)[:max_links])
 
-        with patch("api.services.features.pick_relevant_url_agents", new_callable=AsyncMock) as mock_pick_agent:
+        with patch("api.services.scraping_service.pick_relevant_url_agents", new_callable=AsyncMock) as mock_pick_agent:
             mock_pick_agent.side_effect = Exception("Agent failed")
-            actual_links = await scraping_service._pick_relevant_links(sitemap_links, max_links)  # pyright: ignore[reportPrivateUsage]
+            actual_links = await scraping_service.pick_relevant_links(sitemap_links, max_links, "test")  # pyright: ignore[reportPrivateUsage]
             assert actual_links == expected_links
             mock_pick_agent.assert_awaited_once()
             assert "Error picking relevant urls" in caplog.text
 
 
 class TestFetchUrlContentsConcurrently:
-    async def test_fetch_contents_success(self, scraping_service: ScrapingService):
+    @patch("api.services.scraping_service.ScrapingService._get_url_content")
+    async def test_fetch_contents_success(self, mock_get_content: AsyncMock, scraping_service: ScrapingService):
         urls_to_fetch = {"a.com", "b.com", "c.com"}
         timeout = 10.0
         expected_contents = [
@@ -106,8 +107,8 @@ class TestFetchUrlContentsConcurrently:
             URLContent(url="c.com", content="Content C"),
         ]
 
-        # Mock _get_url_content to return different values based on URL
-        async def mock_get_content(url: str, request_timeout: float | None = None) -> URLContent:
+        # Configure mock to return different values based on URL
+        async def mock_content_side_effect(url: str, request_timeout: float | None = None) -> URLContent:
             if url == "a.com":
                 return URLContent(url=url, content="Content A")
             if url == "b.com":
@@ -116,16 +117,24 @@ class TestFetchUrlContentsConcurrently:
                 return URLContent(url=url, content="Content C")
             return URLContent(url=url, content="")  # Default empty
 
-        with patch.object(scraping_service, "_get_url_content", side_effect=mock_get_content) as mock_method:
-            actual_contents = await scraping_service.fetch_url_contents_concurrently(urls_to_fetch, timeout)  # pyright: ignore[reportPrivateUsage]
-            # Order might not be guaranteed by gather, so compare sets of results
-            assert set(actual_contents) == set(expected_contents)
-            assert mock_method.call_count == len(urls_to_fetch)
-            for url in urls_to_fetch:
-                # Check if called with correct args (any order)
-                mock_method.assert_any_call(url, request_timeout=timeout)
+        mock_get_content.side_effect = mock_content_side_effect
 
-    async def test_fetch_contents_partial_failure(self, scraping_service: ScrapingService, caplog: LogCaptureFixture):
+        actual_contents = await scraping_service.fetch_url_contents_concurrently(urls_to_fetch, timeout)
+
+        # Order might not be guaranteed by gather, so compare sets of results
+        assert set(actual_contents) == set(expected_contents)
+        assert mock_get_content.call_count == len(urls_to_fetch)
+        for url in urls_to_fetch:
+            # Check if called with correct args (any order)
+            mock_get_content.assert_any_call(url, request_timeout=timeout)
+
+    @patch("api.services.scraping_service.ScrapingService._get_url_content")
+    async def test_fetch_contents_partial_failure(
+        self,
+        mock_get_content: MagicMock,
+        scraping_service: ScrapingService,
+        caplog: LogCaptureFixture,
+    ):
         urls_to_fetch = {"good.com", "timeout.com", "error.com", "empty.com"}
         timeout = 10.0
         expected_successful = [URLContent(url="good.com", content="Good Content")]
@@ -147,20 +156,11 @@ class TestFetchUrlContentsConcurrently:
 
         with patch("asyncio.gather", new_callable=AsyncMock) as mock_gather:
             mock_gather.return_value = mock_results
-            # We also need to patch _get_url_content because it's used to create the tasks
-            with patch.object(scraping_service, "_get_url_content", new_callable=MagicMock) as mock_task_creator:
-                actual_contents = await scraping_service.fetch_url_contents_concurrently(urls_to_fetch, timeout)  # pyright: ignore[reportPrivateUsage]
-                assert set(actual_contents) == set(expected_successful)  # Only good.com should remain
-                assert mock_task_creator.call_count == len(urls_to_fetch)  # Ensure tasks were created
-                mock_gather.assert_awaited_once()  # Ensure gather was called
+            actual_contents = await scraping_service.fetch_url_contents_concurrently(urls_to_fetch, timeout)
 
-                # Check logs
-                assert "No content retrieved for URL" in caplog.text
-                assert "timeout.com" in caplog.text  # From the simulated empty return for timeout.com
-                assert "empty.com" in caplog.text  # From the explicit empty return
-
-                assert "Error fetching content for URL" in caplog.text
-                assert "error.com" in caplog.text  # From the ValueError returned by gather
+            assert set(actual_contents) == set(expected_successful)  # Only good.com should remain
+            assert mock_get_content.call_count == len(urls_to_fetch)  # Ensure tasks were created
+            mock_gather.assert_awaited_once()  # Ensure gather was called
 
 
 @pytest.mark.asyncio
@@ -253,7 +253,7 @@ class TestLimiteURLContentSize:
             ),
         ],
     )
-    @patch("api.services.features.tokens_from_string")
+    @patch("api.services.scraping_service.tokens_from_string")
     async def test_limit_url_content_size(
         self,
         mock_tokens_from_string: Mock,

@@ -1,7 +1,7 @@
 import logging
 from typing import List, NamedTuple, Optional, Set
 
-from api.services.scrapping_service import ScrapingService
+from api.services.scraping_service import ScrapingService
 from core.agents.company_domain_from_email_agent import (
     ClassifyEmailDomainAgentInput,
     ClassifyEmailDomainAgentOutput,
