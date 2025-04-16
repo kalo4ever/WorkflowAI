@@ -4,6 +4,7 @@ import * as amplitude from '@amplitude/analytics-browser';
 import { AppsList20Regular } from '@fluentui/react-icons';
 import { useRouter } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
+import { useApiKeysModal } from '@/components/ApiKeysModal/ApiKeysModal';
 import { NotFoundForNotMatchingTenant } from '@/components/NotFound';
 import { PageContainer } from '@/components/v2/PageContainer';
 import { useQueryParamModal } from '@/lib/globalModal';
@@ -12,9 +13,10 @@ import { useIsAllowed } from '@/lib/hooks/useIsAllowed';
 import { useIsSameTenant } from '@/lib/hooks/useTaskParams';
 import { taskApiRoute, taskDeploymentsRoute, taskRunsRoute, taskSchemaRoute } from '@/lib/routeFormatter';
 import { getNewestSchemaId } from '@/lib/taskUtils';
-import { useOrFetchTasks } from '@/store/fetchers';
+import { useOrFetchApiKeys, useOrFetchTasks } from '@/store/fetchers';
 import { TaskID, TenantID } from '@/types/aliases';
 import { SerializableTask } from '@/types/workflowAI';
+import { ManageApiKeysButton } from '../[taskId]/[taskSchemaId]/code/ManageApiKeyButton';
 import { LoadingTasksTable } from './LoadingTasksTable';
 import { NoTasksView } from './NoTasksView';
 import { TasksTable } from './TasksTable';
@@ -70,7 +72,9 @@ export function TasksContainer(props: TasksContainerProps) {
     [router, tenant]
   );
 
+  const { apiKeys } = useOrFetchApiKeys(tenant);
   const { openModal: openNewTaskModal } = useQueryParamModal(NEW_TASK_MODAL_OPEN);
+  const { openModal: openApiKeysModal } = useApiKeysModal();
 
   const onNewTask = useCallback(() => {
     if (!checkIfSignedIn()) return;
@@ -98,6 +102,14 @@ export function TasksContainer(props: TasksContainerProps) {
       showCopyLink={false}
       showBottomBorder={true}
       showSchema={false}
+      rightBarChildren={
+        <ManageApiKeysButton
+          apiKeys={apiKeys}
+          openApiKeysModal={openApiKeysModal}
+          disabled={false}
+          buttonVariant='newDesign'
+        />
+      }
     >
       <div className='flex w-full h-full p-4'>
         {tasks.length > 0 ? (

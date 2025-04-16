@@ -52,13 +52,14 @@ export function PageContainer(props: PageContainerProps) {
         <ExtendedBordersContainer className='flex flex-col h-full w-full' borderColor={borderColor} margin={margin}>
           <div
             className={cn(
-              'flex items-center h-[48px] w-full flex-shrink-0 px-4 font-semibold text-base text-gray-700',
+              'flex items-center justify-between h-[60px] w-full flex-shrink-0 px-4 font-semibold text-base text-gray-700',
               showBottomBorder && 'border-b border-dashed border-gray-200'
             )}
           >
-            {name}
+            <div>{name}</div>
+            <div>{rightBarChildren}</div>
           </div>
-          <div className='flex h-[calc(100%-48px)] w-full'>{children}</div>
+          <div className='flex h-[calc(100%-60px)] w-full'>{children}</div>
         </ExtendedBordersContainer>
       </div>
     );
