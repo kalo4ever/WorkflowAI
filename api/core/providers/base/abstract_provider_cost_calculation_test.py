@@ -36,6 +36,8 @@ def active_models_with_price(providers: set[Provider] | None = None):
     for model in Model:
         model_data = get_model_data(model)
         pricing_data = model_data.provider_data_for_pricing()
+        if pricing_data.text_price.prompt_cost_per_token == 0:
+            continue
         for provider, _ in model_data.providers:
             if provider not in providers:
                 continue
