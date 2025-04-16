@@ -338,7 +338,7 @@ def _build_model_datas():
             display_name="o3 (latest) - Low reasoning effort",
         ),
         Model.O3_2025_04_16_HIGH_REASONING_EFFORT: ModelData(
-            display_name="o3 (2025-01-31) - High reasoning effort",
+            display_name="o3 (2025-04-16) - High reasoning effort",
             supports_json_mode=True,
             supports_input_image=True,
             supports_multiple_images_in_input=True,
@@ -359,7 +359,7 @@ def _build_model_datas():
             supports_tool_calling=True,
         ),
         Model.O3_2025_04_16_MEDIUM_REASONING_EFFORT: ModelData(
-            display_name="o3 (2025-01-31) - Medium reasoning effort",
+            display_name="o3 (2025-04-16) - Medium reasoning effort",
             supports_json_mode=True,
             supports_input_image=True,
             supports_multiple_images_in_input=True,
@@ -380,7 +380,7 @@ def _build_model_datas():
             supports_tool_calling=True,
         ),
         Model.O3_2025_04_16_LOW_REASONING_EFFORT: ModelData(
-            display_name="o3 (2025-01-31) - Low reasoning effort",
+            display_name="o3 (2025-04-16) - Low reasoning effort",
             supports_json_mode=True,
             supports_input_image=True,
             supports_multiple_images_in_input=True,
