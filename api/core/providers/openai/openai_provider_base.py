@@ -88,6 +88,9 @@ _REASONING_EFFORT_FOR_MODEL = {
     Model.O3_2025_04_16_HIGH_REASONING_EFFORT: "high",
     Model.O3_2025_04_16_MEDIUM_REASONING_EFFORT: "medium",
     Model.O3_2025_04_16_LOW_REASONING_EFFORT: "low",
+    Model.O4_MINI_2025_04_16_HIGH_REASONING_EFFORT: "high",
+    Model.O4_MINI_2025_04_16_MEDIUM_REASONING_EFFORT: "medium",
+    Model.O4_MINI_2025_04_16_LOW_REASONING_EFFORT: "low",
 }
 
 _OpenAIConfigVar = TypeVar("_OpenAIConfigVar", bound=OpenAIProviderBaseConfig)
