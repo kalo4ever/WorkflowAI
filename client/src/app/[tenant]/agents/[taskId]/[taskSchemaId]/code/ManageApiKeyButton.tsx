@@ -6,10 +6,11 @@ type ManageApiKeysButtonProps = {
   apiKeys: APIKeyResponse[];
   openApiKeysModal: () => void;
   disabled: boolean;
+  buttonVariant?: 'newDesign' | 'newDesignIndigo';
 };
 
 export function ManageApiKeysButton(props: ManageApiKeysButtonProps) {
-  const { apiKeys, openApiKeysModal, disabled } = props;
+  const { apiKeys, openApiKeysModal, disabled, buttonVariant } = props;
   const hasApiKeys = apiKeys.length > 0;
 
   const handleClick = useCallback(() => {
@@ -18,7 +19,11 @@ export function ManageApiKeysButton(props: ManageApiKeysButtonProps) {
 
   return (
     <div>
-      <Button variant={hasApiKeys ? 'newDesign' : 'newDesignIndigo'} onClick={handleClick} disabled={disabled}>
+      <Button
+        variant={buttonVariant ?? (hasApiKeys ? 'newDesign' : 'newDesignIndigo')}
+        onClick={handleClick}
+        disabled={disabled}
+      >
         {hasApiKeys ? 'Manage Secret Keys' : 'Create Secret Key'}
       </Button>
     </div>
