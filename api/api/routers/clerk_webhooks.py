@@ -141,6 +141,7 @@ async def _clerk_organization_webhook(
                 slug=organization.slug,
                 display_name=organization.name,
             )
+            # TODO: update slack channel name
         case "organization.deleted":
             await system_storage.delete_organization(organization.id)
         case _:

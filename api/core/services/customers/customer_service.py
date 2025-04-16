@@ -9,4 +9,5 @@ class CustomerService:
         pass
 
     async def handle_customer_migrated(self, from_user_id: str | None, from_anon_id: str | None):
+        # TODO: rename slack channel
         pass
