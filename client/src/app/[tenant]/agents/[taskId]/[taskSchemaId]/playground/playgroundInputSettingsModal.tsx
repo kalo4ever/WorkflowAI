@@ -31,8 +31,8 @@ export function PlaygroundInputSettingsModal(props: PlaygroundInputSettingsModal
 
   return (
     <Dialog open={open} onOpenChange={toggleModal}>
-      <DialogContent className='max-w-[727px] p-0 bg-custom-gradient-1'>
-        <div className='flex flex-col h-full font-lato'>
+      <DialogContent className='flex flex-col w-full max-w-[727px] max-h-[90vh] p-0 bg-custom-gradient-1 overflow-hidden'>
+        <div className='flex flex-col h-full font-lato overflow-hidden'>
           <div className='flex gap-4 items-center w-full whitespace-nowrap border-b border-gray-200 border-dashed px-4 py-3'>
             <Button
               onClick={toggleModal}
@@ -51,11 +51,11 @@ export function PlaygroundInputSettingsModal(props: PlaygroundInputSettingsModal
             </div>
           </div>
 
-          <div className='flex flex-col p-4 pb-4'>
+          <div className='flex flex-col p-4 pb-4 overflow-hidden'>
             <div className='mb-1 text-gray-900 text-[13px] font-medium'>Input instructions</div>
 
             <Textarea
-              className='min-h-[80px] font-lato border-gray-200 text-gray-800'
+              className='flex min-h-[80px] font-lato border-gray-200 text-gray-800 overflow-y-auto'
               value={instruction}
               onChange={handleInstructionChange}
               placeholder='Add any specific instructions to generate a AI agent input or leave blank...'
