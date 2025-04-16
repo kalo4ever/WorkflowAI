@@ -68,9 +68,6 @@ export function LandingPage() {
       <VideosComponent className='sm:mt-10 mt-7' />
       <CompaniesMoneyComponent className='sm:mt-20 mt-14' />
 
-      <SubheaderComponent entry={LandingStaticData.nineteenthNewHeaderEntry} className='sm:mt-20 mt-14' />
-      <ComparePriceComponent className='mt-10' />
-
       <SubheaderComponent entry={LandingStaticData.eighteenthNewHeaderEntry} className='sm:mt-20 mt-14' />
       <ImageComponent entry={LandingStaticData.eighteenthNewImageEntry} className='mt-10' isMobile={isMobile} />
 
@@ -118,6 +115,9 @@ export function LandingPage() {
       <SubheaderComponent entry={LandingStaticData.seventhNewHeaderEntry} className='sm:mt-20 mt-14' id='pricing' />
       <PriceComponent className='mt-10' />
       <QuoteComponent entry={LandingStaticData.seventhNewQuoteEntry} className='mt-10' />
+
+      <SubheaderComponent entry={LandingStaticData.nineteenthNewHeaderEntry} className='sm:mt-20 mt-14' />
+      <ComparePriceComponent className='mt-10' />
 
       <SubheaderComponent entry={LandingStaticData.sixthNewHeaderEntry} className='sm:mt-20 mt-12' />
 
