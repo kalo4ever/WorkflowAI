@@ -3,8 +3,8 @@ from enum import Enum
 from logging import getLogger
 
 from core.domain.events import Event
-from core.storage.slack.client import SlackClient
 from core.storage.slack.slack_types import SlackMessage
+from core.storage.slack.webhook_client import SlackWebhookClient
 
 logger = getLogger(__name__)
 
@@ -74,7 +74,7 @@ async def send_slack_notification(
     destination: SlackNotificationDestination,
 ):
     if _should_send_slack_notification(user_email=user_email):
-        slack_client = SlackClient(destination.webhook_url)
+        slack_client = SlackWebhookClient(destination.webhook_url)
         await slack_client.send_message(message)
     else:
         logger.info(

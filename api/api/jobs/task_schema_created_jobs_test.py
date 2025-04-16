@@ -3,7 +3,7 @@ from unittest.mock import patch
 from api.jobs.task_schema_created_jobs import send_task_update_slack_notification
 from core.domain.analytics_events.analytics_events import OrganizationProperties, UserProperties
 from core.domain.events import TaskSchemaCreatedEvent
-from core.storage.slack.client import SlackClient
+from core.storage.slack.webhook_client import SlackWebhookClient
 
 
 @patch.dict(
@@ -14,7 +14,7 @@ from core.storage.slack.client import SlackClient
     },
 )
 async def test_send_task_update_slack_notification_new_task():
-    with patch.object(SlackClient, "send_message") as mock_send_message:
+    with patch.object(SlackWebhookClient, "send_message") as mock_send_message:
         # Test for a new task creation
         event = TaskSchemaCreatedEvent(
             task_id="123",
@@ -37,7 +37,7 @@ async def test_send_task_update_slack_notification_new_task():
     clear=True,
 )
 async def test_send_task_update_slack_notification_new_task_with_org():
-    with patch.object(SlackClient, "send_message") as mock_send_message:
+    with patch.object(SlackWebhookClient, "send_message") as mock_send_message:
         # Test for a new task creation
         event = TaskSchemaCreatedEvent(
             task_id="123",
@@ -65,7 +65,7 @@ async def test_send_task_update_slack_notification_new_task_with_org():
     },
 )
 async def test_send_task_update_slack_notification_new_task_with_org_and_domain():
-    with patch.object(SlackClient, "send_message") as mock_send_message:
+    with patch.object(SlackWebhookClient, "send_message") as mock_send_message:
         # Test for a new task creation
         event = TaskSchemaCreatedEvent(
             task_id="some_task_id",
@@ -95,7 +95,7 @@ async def test_send_task_update_slack_notification_new_task_with_org_and_domain(
     },
 )
 async def test_send_task_update_slack_notification_new_task_with_org_no_domain():
-    with patch.object(SlackClient, "send_message") as mock_send_message:
+    with patch.object(SlackWebhookClient, "send_message") as mock_send_message:
         # Test for a new task creation
         event = TaskSchemaCreatedEvent(
             task_id="some_task_id",
@@ -126,7 +126,7 @@ async def test_send_task_update_slack_notification_new_task_with_org_no_domain()
     clear=True,
 )
 async def test_send_task_update_slack_notification_new_task_with_org_no_slug():
-    with patch.object(SlackClient, "send_message") as mock_send_message:
+    with patch.object(SlackWebhookClient, "send_message") as mock_send_message:
         # Test for a new task creation
         event = TaskSchemaCreatedEvent(
             task_id="some_task_id",
@@ -153,7 +153,7 @@ async def test_send_task_update_slack_notification_new_task_with_org_no_slug():
     },
 )
 async def test_send_task_update_slack_notification_update_task():
-    with patch.object(SlackClient, "send_message") as mock_send_message:
+    with patch.object(SlackWebhookClient, "send_message") as mock_send_message:
         # Test for a task update
         event = TaskSchemaCreatedEvent(
             task_id="456",
@@ -175,7 +175,7 @@ async def test_send_task_update_slack_notification_update_task():
     },
 )
 async def test_send_task_update_slack_notification_unknown_user():
-    with patch.object(SlackClient, "send_message") as mock_send_message:
+    with patch.object(SlackWebhookClient, "send_message") as mock_send_message:
         # Test for an unknown user
         event = TaskSchemaCreatedEvent(
             task_id="789",

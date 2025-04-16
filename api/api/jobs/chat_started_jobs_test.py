@@ -5,7 +5,7 @@ import pytest
 from api.jobs.chat_started_jobs import send_chat_started_slack_notification
 from core.domain.analytics_events.analytics_events import OrganizationProperties, UserProperties
 from core.domain.events import TaskChatStartedEvent
-from core.storage.slack.client import SlackClient
+from core.storage.slack.webhook_client import SlackWebhookClient
 
 
 @pytest.mark.parametrize(
@@ -43,6 +43,6 @@ from core.storage.slack.client import SlackClient
     },
 )
 async def test_send_chat_started_slack_notification(event: TaskChatStartedEvent, expected_message: str):
-    with patch.object(SlackClient, "send_message") as mock_send_message:
+    with patch.object(SlackWebhookClient, "send_message") as mock_send_message:
         await send_chat_started_slack_notification(event)
         mock_send_message.assert_called_once_with(expected_message)

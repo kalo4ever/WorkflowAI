@@ -42,7 +42,7 @@ class _ClerkWebhookSigner:
             raise ValueError("Missing clerk webhook secret")
         signer = raw.split("_")
         if not len(signer) == 2:
-            _logger.warning("Invalid CLERK_WEBHOOK_SECRET")
+            _logger.warning("Invalid CLERK_WEBHOOKS_SECRET")
             return
         self._secret = base64.b64decode(signer[1])
 
