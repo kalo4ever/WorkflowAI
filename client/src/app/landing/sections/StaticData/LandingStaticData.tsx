@@ -65,7 +65,7 @@ export type VideoDemo = {
 
 // Nineteenth new component data
 
-export const nineteenthNewHeaderEntry: HeaderEntry = {
+export const headerEntry19: HeaderEntry = {
   title: 'Still using Langsmith or Langfuse? That’s cute.',
   titleSizeClassName: 'max-w-[500px]',
   description: 'WorkflowAI costs $0. Try it. If you like overpaying, feel free to stay.',
@@ -73,7 +73,7 @@ export const nineteenthNewHeaderEntry: HeaderEntry = {
 
 // Eighteenth new component data
 
-export const eighteenthNewHeaderEntry: HeaderEntry = {
+export const headerEntry18: HeaderEntry = {
   title: 'Access the world’s top AI models in one place',
   description: (
     <div>
@@ -90,7 +90,7 @@ export const eighteenthNewHeaderEntry: HeaderEntry = {
   url: 'https://workflowai.com/docs/agents/flight-info-extractor/3?versionId=89ed288ccfc7a3ef813119713d50683d&showDiffMode=true&show2ColumnLayout=false&taskRunId2=019620b6-0076-73b5-cb3a-d12cbbce7957&taskRunId3=019620b6-0072-7046-298f-c912681cedf6&taskRunId1=019620b6-3115-7045-ce28-5b33263c527b',
 };
 
-export const eighteenthNewImageEntry: ImageEntry = {
+export const imageEntry18: ImageEntry = {
   imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration39.jpg',
   width: 1168,
   height: 592,
@@ -101,7 +101,7 @@ export const eighteenthNewImageEntry: ImageEntry = {
 
 // Seventeenth new component data
 
-export const seventeenthNewHeaderEntry: HeaderEntry = {
+export const headerEntry17: HeaderEntry = {
   title: 'Compare models side-by-side',
   description:
     'Compare the top models in one unified playground. Evaluate quality, cost, and speed — and pick what’s best for your product.',
@@ -110,7 +110,7 @@ export const seventeenthNewHeaderEntry: HeaderEntry = {
   url: 'https://workflowai.com/docs/agents/flight-info-extractor/3?versionId=89ed288ccfc7a3ef813119713d50683d&showDiffMode=true&show2ColumnLayout=false&taskRunId2=019620b6-0076-73b5-cb3a-d12cbbce7957&taskRunId3=019620b6-0072-7046-298f-c912681cedf6&taskRunId1=019620b6-3115-7045-ce28-5b33263c527b',
 };
 
-export const seventeenthNewImageEntry: ImageEntry = {
+export const imageEntry17: ImageEntry = {
   imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration38.jpg',
   width: 1168,
   height: 390,
@@ -121,7 +121,7 @@ export const seventeenthNewImageEntry: ImageEntry = {
 
 // Sixteenth new component data
 
-export const sixteenthNewHeaderEntry: HeaderEntry = {
+export const headerEntry16: HeaderEntry = {
   title: 'Find the best model',
   description:
     'Validate your AI decisions with real numbers. WorkflowAI benchmarks accuracy, speed, and cost — helping you select the best model with confidence.',
@@ -130,7 +130,7 @@ export const sixteenthNewHeaderEntry: HeaderEntry = {
   url: 'https://workflowai.com/docs/agents/flight-info-extractor/3/benchmarks',
 };
 
-export const sixteenthNewImageEntry: ImageEntry = {
+export const imageEntry16: ImageEntry = {
   imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration37.jpg',
   width: 1168,
   height: 337,
@@ -141,14 +141,14 @@ export const sixteenthNewImageEntry: ImageEntry = {
 
 // Fifteenth new component data
 
-export const fifteenthNewHeaderEntry: HeaderEntry = {
+export const headerEntry15: HeaderEntry = {
   title: 'See how your AI performs in the real world',
   description:
     'No more black-box behavior. WorkflowAI gives you full visibility into every input and output, so you can trust what’s happening in production, spot issues early, and make improvements faster.',
   descriptionMaxWidth: 'max-w-[750px]',
 };
 
-export const fifteenthNewImageEntry: ImageEntry = {
+export const imageEntry15: ImageEntry = {
   imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration36.jpg',
   width: 1168,
   height: 337,
@@ -159,14 +159,14 @@ export const fifteenthNewImageEntry: ImageEntry = {
 
 // Fourteenth new component data
 
-export const fourteenthNewHeaderEntry: HeaderEntry = {
+export const headerEntry14: HeaderEntry = {
   title: 'An AI that improves your AI',
   description:
     'Think of it as your built-in AI prompt engineer. It reviews real outputs, finds what went wrong, and writes the fix — so you don’t have to.',
   descriptionMaxWidth: 'max-w-[750px]',
 };
 
-export const fourteenthNewImageEntry: ImageEntry = {
+export const imageEntry14: ImageEntry = {
   imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration35.jpg',
   width: 1168,
   height: 496,
@@ -177,14 +177,14 @@ export const fourteenthNewImageEntry: ImageEntry = {
 
 // Thirteenth new component data
 
-export const thirteenthNewHeaderEntry: HeaderEntry = {
+export const headerEntry13: HeaderEntry = {
   title: 'Deploy updates instantly — without touching code',
   description:
     'Once the prompt is improved, anyone on the team can ship it to production with a single click. No back and forth, no downtime — just seamless updates that keep your AI performing at its best.',
   descriptionMaxWidth: 'max-w-[840px]',
 };
 
-export const thirteenthNewImageEntry: ImageEntry = {
+export const imageEntry13: ImageEntry = {
   imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration34.jpg',
   width: 1168,
   height: 368,
@@ -195,12 +195,12 @@ export const thirteenthNewImageEntry: ImageEntry = {
 
 // Twelfth new component data
 
-export const twelfthNewHeaderEntry: HeaderEntry = {
+export const headerEntry12: HeaderEntry = {
   title: 'Hey Product Managers and Designers out there, here are some things you might like:',
   titleSizeClassName: 'max-w-[650px]',
 };
 
-export const twelfthNewFeaturesEntries: FeatureEntry[] = [
+export const featuresEntries12: FeatureEntry[] = [
   {
     title: 'Go from idea to AI feature. No code needed.',
     description:
@@ -243,12 +243,12 @@ export const twelfthNewFeaturesEntries: FeatureEntry[] = [
 
 // Eleventh new component data
 
-export const eleventhNewHeaderEntry: HeaderEntry = {
+export const headerEntry11: HeaderEntry = {
   title: 'Engineers we got you too...',
   description: 'We’re engineers building for engineers.',
 };
 
-export const eleventhNewFeaturesEntries: FeatureEntry[] = [
+export const featuresEntries11: FeatureEntry[] = [
   {
     title: 'One SDK to run them all (80, to be exact).',
     description:
@@ -283,7 +283,7 @@ export const eleventhNewFeaturesEntries: FeatureEntry[] = [
 
 // Tenth new component data
 
-export const tenthNewFeaturesEntries: FeatureEntry[] = [
+export const featuresEntries10: FeatureEntry[] = [
   {
     title: 'Write code only when you want to',
     description:
@@ -294,7 +294,7 @@ export const tenthNewFeaturesEntries: FeatureEntry[] = [
   },
 ];
 
-export const tenthNewQuoteEntry: QuoteEntry = {
+export const quoteEntry10: QuoteEntry = {
   quote: (
     <div>
       “WorkflowAI lets me rapidly prototype AI concepts right in the browser, but still allows full code-level
@@ -312,7 +312,7 @@ export const tenthNewQuoteEntry: QuoteEntry = {
 
 // Ninth new component data
 
-export const ninthNewFeaturesEntries: FeatureEntry[] = [
+export const featuresEntries9: FeatureEntry[] = [
   {
     title: 'Integrate with the language you already use',
     description:
@@ -347,7 +347,7 @@ export const ninthNewFeaturesEntries: FeatureEntry[] = [
 
 // Eighth new component data
 
-export const eighthNewHeaderEntry: HeaderEntry = {
+export const headerEntry8: HeaderEntry = {
   title: 'Open Source. Self-Host. Customize. Contribute.',
   description:
     'WorkflowAI is fully open source — giving you the freedom to self-host, customize, or contribute. No hidden logic. No lock-in. Just powerful tooling you control.',
@@ -357,7 +357,7 @@ export const eighthNewHeaderEntry: HeaderEntry = {
   url: 'https://github.com/WorkflowAI/workflowai',
 };
 
-export const eighthNewImageEntry: ImageEntry = {
+export const imageEntry8: ImageEntry = {
   imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration31.jpg',
   width: 1168,
   height: 496,
@@ -365,7 +365,7 @@ export const eighthNewImageEntry: ImageEntry = {
 
 // Seventh new component data
 
-export const seventhNewHeaderEntry: HeaderEntry = {
+export const headerEntry7: HeaderEntry = {
   title: 'Get all of the above, without paying more',
   description:
     'You pay exactly what you’d pay the model providers — billed per token, with no minimums and no per-seat fees. No markups. We make our margin from provider discounts, not by charging you extra.',
@@ -374,7 +374,7 @@ export const seventhNewHeaderEntry: HeaderEntry = {
   url: 'https://docs.workflowai.com/workflowai-cloud/pricing',
 };
 
-export const seventhNewQuoteEntry: QuoteEntry = {
+export const quoteEntry7: QuoteEntry = {
   quote: `“The fact that WorkflowAI matches provider pricing was a no-brainer for us. We get the same models at the same cost, but with better tools, observability, and reliability. And since there are no per-seat fees, our whole team can jump in and help build great AI features. It’s like getting a whole AI platform for free.”`,
   quoteMaxWidth: 'max-w-[750px]',
   authorImageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/author6.jpg',
@@ -386,13 +386,13 @@ export const seventhNewQuoteEntry: QuoteEntry = {
 
 // Sixth new component data
 
-export const sixthNewHeaderEntry: HeaderEntry = {
+export const headerEntry6: HeaderEntry = {
   title: 'Want Proof? You can hear it from our users',
 };
 
 // Fifth new component data
 
-export const fifthNewHeaderEntry: HeaderEntry = {
+export const headerEntry5: HeaderEntry = {
   logoURL: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingCompanyLogo2.png',
   logoLink: 'https://www.berrystreet.co',
   logoWidth: 188,
@@ -403,7 +403,7 @@ export const fifthNewHeaderEntry: HeaderEntry = {
   descriptionMaxWidth: 'max-w-[900px]',
 };
 
-export const fifthNewFeaturesEntries: FeatureEntry[] = [
+export const featuresEntries5: FeatureEntry[] = [
   {
     imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration28.jpg',
     imageWidth: 372,
@@ -453,7 +453,7 @@ export const fifthNewFeaturesEntries: FeatureEntry[] = [
 
 // Fourth new component data
 
-export const fourthNewHeaderEntry: HeaderEntry = {
+export const headerEntry4: HeaderEntry = {
   logoURL: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingCompanyLogo1.png',
   logoLink: 'https://www.hellom1.com/',
   logoWidth: 94,
@@ -464,7 +464,7 @@ export const fourthNewHeaderEntry: HeaderEntry = {
   descriptionMaxWidth: 'max-w-[900px]',
 };
 
-export const fourthNewFeaturesEntries: FeatureEntry[] = [
+export const featuresEntries4: FeatureEntry[] = [
   {
     imageSrc: 'https://workflowai.blob.core.windows.net/workflowai-public/landing/LandingIllustration25.jpg',
     imageWidth: 372,
@@ -514,17 +514,17 @@ export const fourthNewFeaturesEntries: FeatureEntry[] = [
 
 // Third new component data
 
-export const thirdNewHeaderEntry: HeaderEntry = {
+export const headerEntry3: HeaderEntry = {
   title: 'Infrastructure you can trust — backed by data',
 };
 
 // Second new component data
 
-export const secondNewHeaderEntry: HeaderEntry = {
+export const headerEntry2: HeaderEntry = {
   title: '...all while keeping your data safe',
 };
 
-export const secondNewFeaturesEntries: FeatureEntry[] = [
+export const featuresEntries2: FeatureEntry[] = [
   {
     title: 'No Model Training.',
     description:
@@ -543,7 +543,7 @@ export const secondNewFeaturesEntries: FeatureEntry[] = [
 
 // First new component data
 
-export const firstNewFeaturesEntries: HeaderEntry = {
+export const featuresEntries1: HeaderEntry = {
   title: 'Build AI features your users will love.',
   description: 'AI is redefining every product.  What’s your AI roadmap?',
   buttonText: 'Start building for free',
