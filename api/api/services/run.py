@@ -255,6 +255,11 @@ class RunService:
             return run
 
         if store_inline:
+            self._logger.warning(
+                "Storing runs inline is deprecated and will be removed in a future release",
+                extra={"task_id": task.id, "task_uid": task.task_uid, "run_id": run.id, "tenant": self._storage.tenant},
+            )
+
             # Soon we will no longer store runs inline + this class will be removed
             # For now, let's just use the runs service static method to store the run
             from api.services.runs import RunsService

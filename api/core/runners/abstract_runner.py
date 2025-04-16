@@ -8,7 +8,7 @@ from pydantic import BaseModel, ValidationError
 
 from core.domain.agent_run import AgentRun
 from core.domain.errors import InvalidRunnerOptionsError, MissingCacheError, ProviderError
-from core.domain.metrics import send_counter
+from core.domain.metrics import measure_time, send_counter
 from core.domain.run_output import RunOutput
 from core.domain.task_group_properties import TaskGroupProperties
 from core.domain.task_run_builder import TaskRunBuilder
@@ -278,7 +278,8 @@ class AbstractRunner(
         The main runner function that is called when an input is provided
         """
 
-        cached = await self._prepare_builder(builder, cache)
+        with measure_time("prepare_builder", **{"task_id": builder.task.id, "task_uid": builder.task.task_uid}):
+            cached = await self._prepare_builder(builder, cache)
         if cached is not None:
             return cached
 
