@@ -20,7 +20,7 @@ from core.agents.chat_task_schema_generation.schema_generation_agent import (
     run_agent_schema_generation,
 )
 from core.agents.company_agent_suggestion_agent import (
-    INSTUCTIONS as AGENT_SUGGESTION_INSTRUCTIONS,
+    INSTRUCTIONS as AGENT_SUGGESTION_INSTRUCTIONS,
 )
 from core.agents.company_agent_suggestion_agent import (
     CompanyContext as CompanyContextInput,

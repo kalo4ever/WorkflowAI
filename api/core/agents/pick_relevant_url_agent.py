@@ -16,7 +16,7 @@ class PickRelevantUrlAgentsOutput(BaseModel):
     picked_url_indexes: list[int] | None = None
 
 
-INSTUCTIONS = """You are a specialist at picking the 'num_urls' most relevant URL in a sitemap for a given 'purpose'.
+INSTRUCTIONS = """You are a specialist at picking the 'num_urls' most relevant URL in a sitemap for a given 'purpose'.
     Based on the 'url', try to infer what are the most relevant URLs for the 'purpose'.
     """
 
@@ -25,7 +25,7 @@ INSTUCTIONS = """You are a specialist at picking the 'num_urls' most relevant UR
     id="pick-relevant-url-agents",
     version=workflowai.VersionProperties(
         model=workflowai.Model.GEMINI_2_0_FLASH_001,
-        instructions=INSTUCTIONS,
+        instructions=INSTRUCTIONS,
     ),
 )
 async def pick_relevant_url_agents(
