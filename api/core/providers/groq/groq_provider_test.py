@@ -36,13 +36,6 @@ class TestGroqProvider(unittest.TestCase):
         expected_vars = ["GROQ_API_KEY"]
         self.assertEqual(GroqProvider.required_env_vars(), expected_vars)
 
-    def test_supports_model(self):
-        """Test the supports_model method returns True for a supported model
-        and False for an unsupported model"""
-        provider = GroqProvider()
-        self.assertTrue(provider.supports_model(Model.LLAMA3_70B_8192))
-        self.assertFalse(provider.supports_model(Model.GPT_4O_2024_05_13))
-
 
 @pytest.mark.parametrize(
     "model, expected_model_str",
@@ -51,7 +44,7 @@ class TestGroqProvider(unittest.TestCase):
         (Model.LLAMA_3_1_8B, "llama-3.1-8b-instant"),
         (Model.LLAMA3_70B_8192, "llama3-70b-8192"),
         (Model.LLAMA3_8B_8192, "llama3-8b-8192"),
-        (Model.MIXTRAL_8X7B_32768, "mixtral-8x7b-32768"),
+        # (Model.MIXTRAL_8X7B_32768, "mixtral-8x7b-32768"),
     ],
 )
 def test_model_str(model: Model, expected_model_str: str):

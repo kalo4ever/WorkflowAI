@@ -803,10 +803,11 @@ class AbstractProvider(ABC, Generic[ProviderConfigVar, ProviderRequestVar]):
         options: ProviderOptions,
     ):
         if remaining is None or total is None:
-            self.logger.warning(
-                "Rate limit remaining or total is None while logging rate limit",
-                extra={"remaining": remaining, "total": total, "model": options.model.value},
-            )
+            # Rate limits are often not sent...
+            # self.logger.warning(
+            #     "Rate limit remaining or total is None while logging rate limit",
+            #     extra={"remaining": remaining, "total": total, "model": options.model.value},
+            # )
             return
         try:
             remaining = float(remaining)

@@ -225,49 +225,49 @@ OPENAI_PROVIDER_DATA: ProviderDataByModel = {
     ),
     Model.O3_2025_04_16_HIGH_REASONING_EFFORT: ModelProviderData(
         text_price=TextPricePerToken(
-            prompt_cost_per_token=0,
-            prompt_cached_tokens_discount=0.5,
-            completion_cost_per_token=0,
+            prompt_cost_per_token=10 * ONE_MILLION_TH,
+            prompt_cached_tokens_discount=0.75,
+            completion_cost_per_token=40 * ONE_MILLION_TH,
             source="https://openai.com/api/pricing/",
         ),
     ),
     Model.O3_2025_04_16_MEDIUM_REASONING_EFFORT: ModelProviderData(
         text_price=TextPricePerToken(
-            prompt_cost_per_token=0,
-            prompt_cached_tokens_discount=0.5,
-            completion_cost_per_token=0,
+            prompt_cost_per_token=10 * ONE_MILLION_TH,
+            prompt_cached_tokens_discount=0.75,
+            completion_cost_per_token=40 * ONE_MILLION_TH,
             source="https://openai.com/api/pricing/",
         ),
     ),
     Model.O3_2025_04_16_LOW_REASONING_EFFORT: ModelProviderData(
         text_price=TextPricePerToken(
-            prompt_cost_per_token=0,
-            prompt_cached_tokens_discount=0.5,
-            completion_cost_per_token=0,
+            prompt_cost_per_token=10 * ONE_MILLION_TH,
+            prompt_cached_tokens_discount=0.75,
+            completion_cost_per_token=40 * ONE_MILLION_TH,
             source="https://openai.com/api/pricing/",
         ),
     ),
     Model.O4_MINI_2025_04_16_HIGH_REASONING_EFFORT: ModelProviderData(
         text_price=TextPricePerToken(
-            prompt_cost_per_token=0,
-            prompt_cached_tokens_discount=0.5,
-            completion_cost_per_token=0,
+            prompt_cost_per_token=1.1 * ONE_MILLION_TH,
+            prompt_cached_tokens_discount=0.75,
+            completion_cost_per_token=4.4 * ONE_MILLION_TH,
             source="https://openai.com/api/pricing/",
         ),
     ),
     Model.O4_MINI_2025_04_16_MEDIUM_REASONING_EFFORT: ModelProviderData(
         text_price=TextPricePerToken(
-            prompt_cost_per_token=0,
-            prompt_cached_tokens_discount=0.5,
-            completion_cost_per_token=0,
+            prompt_cost_per_token=1.1 * ONE_MILLION_TH,
+            prompt_cached_tokens_discount=0.75,
+            completion_cost_per_token=4.4 * ONE_MILLION_TH,
             source="https://openai.com/api/pricing/",
         ),
     ),
     Model.O4_MINI_2025_04_16_LOW_REASONING_EFFORT: ModelProviderData(
         text_price=TextPricePerToken(
-            prompt_cost_per_token=0,
-            prompt_cached_tokens_discount=0.5,
-            completion_cost_per_token=0,
+            prompt_cost_per_token=1.1 * ONE_MILLION_TH,
+            prompt_cached_tokens_discount=0.75,
+            completion_cost_per_token=4.4 * ONE_MILLION_TH,
             source="https://openai.com/api/pricing/",
         ),
     ),
@@ -516,33 +516,33 @@ AMAZON_BEDROCK_PROVIDER_DATA: ProviderDataByModel = {
 }
 
 GROQ_PROVIDER_DATA: ProviderDataByModel = {
-    Model.LLAMA3_70B_8192: ModelProviderData(
-        text_price=TextPricePerToken(
-            prompt_cost_per_token=0.000_000_59,
-            completion_cost_per_token=0.000_000_79,
-            source="https://console.groq.com/settings/billing",
-        ),
-        # native tools calls are not implemented on Groq for now as we will decommssion the provider for now.
-        # see [WOR-1968: Disable `Groq` ?](https://linear.app/workflowai/issue/WOR-1968/disable-groq)
-    ),
-    Model.LLAMA3_8B_8192: ModelProviderData(
-        text_price=TextPricePerToken(
-            prompt_cost_per_token=0.000_000_05,
-            completion_cost_per_token=0.000_000_08,
-            source="https://console.groq.com/settings/billing",
-        ),
-        # native tools calls are not implemented on Groq for now as we will decommssion the provider for now.
-        # see [WOR-1968: Disable `Groq` ?](https://linear.app/workflowai/issue/WOR-1968/disable-groq)
-    ),
-    Model.MIXTRAL_8X7B_32768: ModelProviderData(
-        text_price=TextPricePerToken(
-            prompt_cost_per_token=0.000_000_24,
-            completion_cost_per_token=0.000_000_24,
-            source="https://console.groq.com/settings/billing",
-        ),
-        # native tools calls are not implemented on Groq for now as we will decommssion the provider for now.
-        # see [WOR-1968: Disable `Groq` ?](https://linear.app/workflowai/issue/WOR-1968/disable-groq)
-    ),
+    # Model.LLAMA3_70B_8192: ModelProviderData(
+    #     text_price=TextPricePerToken(
+    #         prompt_cost_per_token=0.000_000_59,
+    #         completion_cost_per_token=0.000_000_79,
+    #         source="https://console.groq.com/settings/billing",
+    #     ),
+    #     # native tools calls are not implemented on Groq for now as we will decommssion the provider for now.
+    #     # see [WOR-1968: Disable `Groq` ?](https://linear.app/workflowai/issue/WOR-1968/disable-groq)
+    # ),
+    # Model.LLAMA3_8B_8192: ModelProviderData(
+    #     text_price=TextPricePerToken(
+    #         prompt_cost_per_token=0.000_000_05,
+    #         completion_cost_per_token=0.000_000_08,
+    #         source="https://console.groq.com/settings/billing",
+    #     ),
+    #     # native tools calls are not implemented on Groq for now as we will decommssion the provider for now.
+    #     # see [WOR-1968: Disable `Groq` ?](https://linear.app/workflowai/issue/WOR-1968/disable-groq)
+    # ),
+    # Model.MIXTRAL_8X7B_32768: ModelProviderData(
+    #     text_price=TextPricePerToken(
+    #         prompt_cost_per_token=0.000_000_24,
+    #         completion_cost_per_token=0.000_000_24,
+    #         source="https://console.groq.com/settings/billing",
+    #     ),
+    #     # native tools calls are not implemented on Groq for now as we will decommssion the provider for now.
+    #     # see [WOR-1968: Disable `Groq` ?](https://linear.app/workflowai/issue/WOR-1968/disable-groq)
+    # ),
     Model.LLAMA_3_1_8B: ModelProviderData(
         text_price=TextPricePerToken(
             prompt_cost_per_token=0.000_000_05,
@@ -584,15 +584,15 @@ GROQ_PROVIDER_DATA: ProviderDataByModel = {
         # native tools calls are not implemented on Groq for now as we will decommssion the provider for now.
         # see [WOR-1968: Disable `Groq` ?](https://linear.app/workflowai/issue/WOR-1968/disable-groq)
     ),
-    Model.LLAMA_3_2_90B_VISION_PREVIEW: ModelProviderData(
-        text_price=TextPricePerToken(
-            prompt_cost_per_token=0.000_000_90,
-            completion_cost_per_token=0.000_000_90,
-            source="https://groq.com/pricing",
-        ),
-        # native tools calls are not implemented on Groq for now as we will decommssion the provider for now.
-        # see [WOR-1968: Disable `Groq` ?](https://linear.app/workflowai/issue/WOR-1968/disable-groq)
-    ),
+    # Model.LLAMA_3_2_90B_VISION_PREVIEW: ModelProviderData(
+    #     text_price=TextPricePerToken(
+    #         prompt_cost_per_token=0.000_000_90,
+    #         completion_cost_per_token=0.000_000_90,
+    #         source="https://groq.com/pricing",
+    #     ),
+    #     # native tools calls are not implemented on Groq for now as we will decommssion the provider for now.
+    #     # see [WOR-1968: Disable `Groq` ?](https://linear.app/workflowai/issue/WOR-1968/disable-groq)
+    # ),
 }
 
 MISTRAL_PROVIDER_DATA: ProviderDataByModel = {
@@ -933,22 +933,22 @@ GOOGLE_GEMINI_API_PROVIDER_DATA: ProviderDataByModel = {
 }
 
 FIREWORKS_PROVIDER_DATA: ProviderDataByModel = {
-    Model.LLAMA3_70B_8192: ModelProviderData(
-        text_price=TextPricePerToken(
-            prompt_cost_per_token=0.90 / 1_000_000,
-            completion_cost_per_token=0.90 / 1_000_000,
-            source="https://fireworks.ai/pricing",
-        ),
-        # see: https://docs.fireworks.ai/guides/function-calling#supported-models
-    ),
-    Model.LLAMA3_8B_8192: ModelProviderData(
-        text_price=TextPricePerToken(
-            prompt_cost_per_token=0.20 / 1_000_000,
-            completion_cost_per_token=0.20 / 1_000_000,
-            source="https://fireworks.ai/pricing",
-        ),
-        # see: https://docs.fireworks.ai/guides/function-calling#supported-models
-    ),
+    # Model.LLAMA3_70B_8192: ModelProviderData(
+    #     text_price=TextPricePerToken(
+    #         prompt_cost_per_token=0.90 / 1_000_000,
+    #         completion_cost_per_token=0.90 / 1_000_000,
+    #         source="https://fireworks.ai/pricing",
+    #     ),
+    #     # see: https://docs.fireworks.ai/guides/function-calling#supported-models
+    # ),
+    # Model.LLAMA3_8B_8192: ModelProviderData(
+    #     text_price=TextPricePerToken(
+    #         prompt_cost_per_token=0.20 / 1_000_000,
+    #         completion_cost_per_token=0.20 / 1_000_000,
+    #         source="https://fireworks.ai/pricing",
+    #     ),
+    #     # see: https://docs.fireworks.ai/guides/function-calling#supported-models
+    # ),
     Model.LLAMA_3_1_8B: ModelProviderData(
         text_price=TextPricePerToken(
             prompt_cost_per_token=0.20 / 1_000_000,
@@ -996,23 +996,23 @@ FIREWORKS_PROVIDER_DATA: ProviderDataByModel = {
         ),
         # see: https://docs.fireworks.ai/guides/function-calling#supported-models
     ),
-    Model.LLAMA_3_2_11B_VISION: ModelProviderData(
-        text_price=TextPricePerToken(
-            prompt_cost_per_token=0.20 / 1_000_000,
-            completion_cost_per_token=0.20 / 1_000_000,
-            source="https://fireworks.ai/pricing",
-        ),
-        # see: https://docs.fireworks.ai/guides/function-calling#supported-models
-    ),
-    Model.LLAMA_3_2_90B_VISION_PREVIEW: ModelProviderData(
-        text_price=TextPricePerToken(
-            prompt_cost_per_token=0.90 / 1_000_000,
-            completion_cost_per_token=0.90 / 1_000_000,
-            source="https://fireworks.ai/pricing",
-            # LLAMA_3_2_90B_VISION_PREVIEW is not a MoE model, so in 16.1B+ category
-        ),
-        # see: https://docs.fireworks.ai/guides/function-calling#supported-models
-    ),
+    # Model.LLAMA_3_2_11B_VISION: ModelProviderData(
+    #     text_price=TextPricePerToken(
+    #         prompt_cost_per_token=0.20 / 1_000_000,
+    #         completion_cost_per_token=0.20 / 1_000_000,
+    #         source="https://fireworks.ai/pricing",
+    #     ),
+    #     # see: https://docs.fireworks.ai/guides/function-calling#supported-models
+    # ),
+    # Model.LLAMA_3_2_90B_VISION_PREVIEW: ModelProviderData(
+    #     text_price=TextPricePerToken(
+    #         prompt_cost_per_token=0.90 / 1_000_000,
+    #         completion_cost_per_token=0.90 / 1_000_000,
+    #         source="https://fireworks.ai/pricing",
+    #         # LLAMA_3_2_90B_VISION_PREVIEW is not a MoE model, so in 16.1B+ category
+    #     ),
+    #     # see: https://docs.fireworks.ai/guides/function-calling#supported-models
+    # ),
     Model.QWEN_QWQ_32B_PREVIEW: ModelProviderData(
         text_price=TextPricePerToken(
             prompt_cost_per_token=0.90 / 1_000_000,
@@ -1022,14 +1022,14 @@ FIREWORKS_PROVIDER_DATA: ProviderDataByModel = {
         ),
         # see: https://docs.fireworks.ai/guides/function-calling#supported-models
     ),
-    Model.MIXTRAL_8X7B_32768: ModelProviderData(
-        text_price=TextPricePerToken(
-            prompt_cost_per_token=0.50 / 1_000_000,
-            completion_cost_per_token=0.50 / 1_000_000,
-            source="https://fireworks.ai/pricing",
-        ),
-        # see: https://docs.fireworks.ai/guides/function-calling#supported-models
-    ),
+    # Model.MIXTRAL_8X7B_32768: ModelProviderData(
+    #     text_price=TextPricePerToken(
+    #         prompt_cost_per_token=0.50 / 1_000_000,
+    #         completion_cost_per_token=0.50 / 1_000_000,
+    #         source="https://fireworks.ai/pricing",
+    #     ),
+    #     # see: https://docs.fireworks.ai/guides/function-calling#supported-models
+    # ),
     Model.DEEPSEEK_V3_2412: ModelProviderData(
         text_price=TextPricePerToken(
             prompt_cost_per_token=0.90 / 1_000_000,

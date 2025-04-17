@@ -196,6 +196,7 @@ async def test_list_models_pdfs(test_client: IntegrationTestClient):
 
     # gpt4o does not support pdfs directly but since it supports images it can handle pdfs
     assert not models_by_id["gpt-4o-latest"].get("is_not_supported_reason")
-    # llama3-70b-8192 does not support pdfs or images, but since its available through
-    # fireworks with document inlining it is not marked as unsupported
-    assert not models_by_id["llama3-70b-8192"].get("is_not_supported_reason")
+    # # llama3-70b-8192 does not support pdfs or images, but since its available through
+    # TODO: add another test for a fireworks model
+    # # fireworks with document inlining it is not marked as unsupported
+    # assert not models_by_id["llama3-70b-8192"].get("is_not_supported_reason")

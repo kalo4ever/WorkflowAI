@@ -8,24 +8,8 @@ from core.domain.models.providers import Provider
 
 def mistral_models() -> dict[Model, ModelData | LatestModel | DeprecatedModel]:
     return {
-        Model.MIXTRAL_8X7B_32768: ModelData(
-            display_name="Mixtral (8x7B)",
-            supports_json_mode=True,
-            supports_input_image=False,
-            supports_multiple_images_in_input=False,
-            supports_input_pdf=False,
-            supports_input_audio=False,
-            supports_structured_output=True,
-            max_tokens_data=MaxTokensData(
-                max_tokens=32768,
-                source="https://api.fireworks.ai/v1/accounts/fireworks/models/mixtral-8x7b-instruct",
-            ),
-            provider_for_pricing=Provider.FIREWORKS,
-            icon_url="https://workflowai.blob.core.windows.net/workflowai-public/mistral.svg",
-            release_date=date(2023, 12, 11),
-            quality_index=468,  # MMLU=70.60, GPQA=39.00
-            provider_name=DisplayedProvider.MISTRAL_AI.value,
-            supports_tool_calling=False,
+        Model.MIXTRAL_8X7B_32768: DeprecatedModel(
+            replacement_model=Model.MISTRAL_SMALL_2503,
         ),
         Model.MISTRAL_LARGE_2_LATEST: LatestModel(
             model=Model.MISTRAL_LARGE_2_2407,
