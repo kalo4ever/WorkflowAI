@@ -26,7 +26,7 @@ class CustomerService:
         self._storage = storage
 
     async def _get_or_create_slack_channel(self, clt: SlackApiClient, retries: int = 3):
-        org = await self._storage.organizations.get_organization(include={"slack_channel_id", "slug"})
+        org = await self._storage.organizations.get_organization(include={"slack_channel_id", "slug", "uid"})
         if org.slack_channel_id:
             return org.slack_channel_id
 

@@ -21,13 +21,21 @@ def assert_all_responses_were_requested() -> bool:
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_environment():
+    CLICKHOUSE_TEST_CONNECTION_STRING = os.environ.get(
+        "CLICKHOUSE_TEST_CONNECTION_STRING",
+        "clickhouse://default:admin@localhost:8123/db_int_test",
+    )
+    MONGO_TEST_CONNECTION_STRING = os.environ.get(
+        "WORKFLOWAI_MONGO_INT_CONNECTION_STRING",
+        f"mongodb://admin:admin@localhost:27017/{_INT_DB_NAME}",
+    )
     with patch.dict(
         os.environ,
         {
-            "WORKFLOWAI_MONGO_CONNECTION_STRING": "mongodb://admin:admin@localhost:27017/workflowai_int_test",
-            "WORKFLOWAI_MONGO_INT_CONNECTION_STRING": "mongodb://admin:admin@localhost:27017/workflowai_int_test",
+            "WORKFLOWAI_MONGO_CONNECTION_STRING": MONGO_TEST_CONNECTION_STRING,
+            "WORKFLOWAI_MONGO_INT_CONNECTION_STRING": MONGO_TEST_CONNECTION_STRING,
             "CLICKHOUSE_TEST_CONNECTION_STRING": "clickhouse://default:admin@localhost:8123/db_test",
-            "CLICKHOUSE_CONNECTION_STRING": "clickhouse://default:admin@localhost:8123/db_test",
+            "CLICKHOUSE_CONNECTION_STRING": CLICKHOUSE_TEST_CONNECTION_STRING,
             "STORAGE_AES": "ruQBOB/yrSJYw+hozAGewJx5KAadHAMPnATttB2dmig=",
             "STORAGE_HMAC": "ATWcst2v/c/KEypN99ujwOySMzpwCqdaXvHLGDqBt+c=",
             "AWS_BEDROCK_MODEL_REGION_MAP": "{}",
@@ -61,7 +69,12 @@ def setup_environment():
             "PAYMENT_FAILURE_EMAIL_ID": "123",
             "LOW_CREDITS_EMAIL_ID": "123",
             "XAI_API_KEY": "xai-123",
+            "AMPLITUDE_API_KEY": "test_api_key",
+            "AMPLITUDE_URL": "https://amplitude-mock",
+            "WORKFLOWAI_JWK": "eyJrdHkiOiJFQyIsIngiOiJLVUpZYzd2V0R4Um55NW5BdC1VNGI4MHRoQ1ZuaERUTDBzUmZBRjR2cDdVIiwieSI6IjM0dWx1VDgyT0RFRFJXVU9KNExrZzFpanljclhqMWc1MmZRblpqeFc5cTAiLCJjcnYiOiJQLTI1NiIsImlkIjoiMSJ9Cg==",
+            "BETTER_STACK_API_KEY": "test_bs_api_key",
         },
+        clear=True,
     ):
         yield
 
@@ -74,16 +87,9 @@ def patched_broker():
 
 
 @pytest.fixture(scope="function", autouse=True)
-def patched_amplitude(httpx_mock: HTTPXMock):
-    httpx_mock.add_response(url="https://amplitude-mock", status_code=200)
-    with mock.patch.dict(
-        os.environ,
-        {
-            "AMPLITUDE_API_KEY": "test_api_key",
-            "AMPLITUDE_URL": "https://amplitude-mock",
-        },
-    ):
-        yield
+def patched_amplitude(httpx_mock: HTTPXMock, setup_environment: None):
+    httpx_mock.add_response(url=os.environ["AMPLITUDE_URL"], status_code=200)
+    return
 
 
 @pytest.fixture(scope="function", autouse=True)
@@ -109,17 +115,6 @@ def patched_google_auth():
 _TEST_JWT = "eyJhbGciOiJFUzI1NiJ9.eyJ0ZW5hbnQiOiJjaGllZm9mc3RhZmYuYWkiLCJzdWIiOiJndWlsbGF1bWVAY2hpZWZvZnN0YWZmLmFpIiwib3JnSWQiOiJvcmdfMmlQbGZKNVg0THdpUXliTTlxZVQwMFlQZEJlIiwib3JnU2x1ZyI6InRlc3QtMjEiLCJpYXQiOjE3MTU5ODIzNTEsImV4cCI6MTgzMjE2NjM1MX0.QH1D8ppCYT4LONE0XzR11mvyZ7n4Ljc9MC0eJYM2FBtqSoGnr4_GCdcMEZb3NZZI5dKXbjTUk_8kRU1vrn7n2A"
 
 
-@pytest.fixture(scope="function", autouse=True)
-def patch_environment_variables():
-    with mock.patch.dict(
-        os.environ,
-        {
-            "WORKFLOWAI_JWK": "eyJrdHkiOiJFQyIsIngiOiJLVUpZYzd2V0R4Um55NW5BdC1VNGI4MHRoQ1ZuaERUTDBzUmZBRjR2cDdVIiwieSI6IjM0dWx1VDgyT0RFRFJXVU9KNExrZzFpanljclhqMWc1MmZRblpqeFc5cTAiLCJjcnYiOiJQLTI1NiIsImlkIjoiMSJ9Cg==",
-        },
-    ):
-        yield
-
-
 _INT_DB_NAME = "workflowai_int_test"
 
 
@@ -140,41 +135,23 @@ def _build_storage(mock_encryption: Mock):
 async def int_clickhouse_client():
     from core.storage.clickhouse.clickhouse_client_test import fresh_clickhouse_client
 
-    with patch.dict(
-        os.environ,
-        {
-            "CLICKHOUSE_CONNECTION_STRING": os.environ.get(
-                "CLICKHOUSE_TEST_CONNECTION_STRING",
-                "clickhouse://default:admin@localhost:8123/db_int_test",
-            ),
-        },
-    ):
-        # After the reviews
-        yield await fresh_clickhouse_client(dsn=os.environ["CLICKHOUSE_CONNECTION_STRING"])
+    # After the reviews
+    return await fresh_clickhouse_client(dsn=os.environ["CLICKHOUSE_CONNECTION_STRING"])
 
 
 @pytest.fixture(scope="session", autouse=True)
 async def wrap_db_cleanup(mock_encryption_session: Mock):
     from core.storage.mongo.migrations.migrate import migrate
 
-    with patch.dict(
-        os.environ,
-        {
-            "WORKFLOWAI_MONGO_CONNECTION_STRING": os.environ.get(
-                "WORKFLOWAI_MONGO_INT_CONNECTION_STRING",
-                f"mongodb://admin:admin@localhost:27017/{_INT_DB_NAME}",
-            ),
-        },
-    ):
-        # Deleting the db and running migrations
-        base_storage = _build_storage(mock_encryption=mock_encryption_session)
+    # Deleting the db and running migrations
+    base_storage = _build_storage(mock_encryption=mock_encryption_session)
 
-        # Clean up the database
-        await base_storage.client.drop_database(_INT_DB_NAME)  # type: ignore
+    # Clean up the database
+    await base_storage.client.drop_database(_INT_DB_NAME)  # type: ignore
 
-        await migrate(base_storage)
+    await migrate(base_storage)
 
-        yield base_storage
+    return base_storage
 
 
 @pytest.fixture(autouse=True)
@@ -208,28 +185,15 @@ async def integration_storage(
 
 @pytest.fixture(scope="module")
 def test_storage_container():
-    with mock.patch.dict(
-        os.environ,
-        {
-            "WORKFLOWAI_STORAGE_TASK_RUNS_CONTAINER": "workflowai-test-task-runs",
-            "GOOGLE_VERTEX_AI_LOCATION": "us-central1",
-            "GOOGLE_VERTEX_AI_PROJECT": "test_project_id",
-            "GOOGLE_VERTEX_AI_CREDENTIALS": '{"type":"service_account","project_id":"worfklowai","private_key_id":"9a24c7bc5e8c94cef69bb714d48a796fc8f530f8","private_key":"","client_email":"llm-runner@worfklowai.iam.gserviceaccount.com","client_id":"112189683594878284966","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_x509_cert_url":"https://www.googleapis.com/robot/v1/metadata/x509/llm-runner%40worfklowai.iam.gserviceaccount.com","universe_domain":"googleapis.com"}',
-        },
-    ):
-        from core.storage.azure.azure_blob_file_storage import AzureBlobFileStorage
+    from core.storage.azure.azure_blob_file_storage import AzureBlobFileStorage
 
-        blob_storage = AzureBlobFileStorage(
-            connection_string=os.environ["WORKFLOWAI_STORAGE_CONNECTION_STRING"],
-            container_name=os.environ["WORKFLOWAI_STORAGE_TASK_RUNS_CONTAINER"],
-        )
-        yield blob_storage
+    blob_storage = AzureBlobFileStorage(
+        connection_string=os.environ["WORKFLOWAI_STORAGE_CONNECTION_STRING"],
+        container_name=os.environ["WORKFLOWAI_STORAGE_TASK_RUNS_CONTAINER"],
+    )
+    yield blob_storage
 
 
-@patch.dict(
-    os.environ,
-    {"BETTER_STACK_API_KEY": "test_bs_api_key"},
-)
 @pytest.fixture(scope="function")
 async def int_api_client(
     patched_broker: InMemoryBroker,

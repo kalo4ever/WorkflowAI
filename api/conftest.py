@@ -41,8 +41,6 @@ if "WORKFLOWAI_TEST_MONGO_CONNECTION_STRING" not in os.environ:
     os.environ["WORKFLOWAI_TEST_MONGO_CONNECTION_STRING"] = "mongodb://admin:admin@localhost:27017/workflowai_test"
 if "WORKFLOWAI_MONGO_CONNECTION_STRING" not in os.environ:
     os.environ["WORKFLOWAI_MONGO_CONNECTION_STRING"] = "mongodb://admin:admin@localhost:27017/workflowai_test"
-if "WORKFLOWAI_TENANT" not in os.environ:
-    os.environ["WORKFLOWAI_TENANT"] = "test"
 if "STORAGE_HMAC" not in os.environ:
     os.environ["STORAGE_AES"] = "ruQBOB/yrSJYw+hozAGewJx5KAadHAMPnATttB2dmig="
 if "STORAGE_HMAC" not in os.environ:
