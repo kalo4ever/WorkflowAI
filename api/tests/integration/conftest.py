@@ -73,6 +73,9 @@ def setup_environment():
             "AMPLITUDE_URL": "https://amplitude-mock",
             "WORKFLOWAI_JWK": "eyJrdHkiOiJFQyIsIngiOiJLVUpZYzd2V0R4Um55NW5BdC1VNGI4MHRoQ1ZuaERUTDBzUmZBRjR2cDdVIiwieSI6IjM0dWx1VDgyT0RFRFJXVU9KNExrZzFpanljclhqMWc1MmZRblpqeFc5cTAiLCJjcnYiOiJQLTI1NiIsImlkIjoiMSJ9Cg==",
             "BETTER_STACK_API_KEY": "test_bs_api_key",
+            "SERPER_API_KEY": "serper-api-key",
+            "PERPLEXITY_API_KEY": "perplexity-api-key",
+            "ENRICH_SO_API_KEY": "enrich-so-api-key",
         },
         clear=True,
     ):
