@@ -92,6 +92,19 @@ class TestGetOrganizationSettings:
         with pytest.raises(DuplicateKeyError):
             await org_col.insert_one(dump_model(self._org_settings()))
 
+    async def test_include(
+        self,
+        organization_storage: MongoOrganizationStorage,
+        org_col: AsyncCollection,
+    ) -> None:
+        org_settings = self._org_settings()
+        org_settings.slug = "test-slug"
+        await org_col.insert_one(dump_model(org_settings))
+
+        org = await organization_storage.get_organization(include={"slug"})
+        assert org.slug == "test-slug"
+        assert org.uid == 0
+
 
 class TestAddProviderConfig:
     async def test_create_and_add(
@@ -1908,6 +1921,7 @@ class TestClearPaymentFailure:
                 dump_model(d)
                 for d in [
                     OrganizationDocument(
+                        uid=1,
                         tenant=TENANT,
                         current_credits_usd=10,
                         added_credits_usd=20,
@@ -1919,6 +1933,7 @@ class TestClearPaymentFailure:
                     ),
                     OrganizationDocument(
                         tenant="other_tenant",
+                        uid=2,
                         current_credits_usd=10,
                         added_credits_usd=20,
                         payment_failure=PaymentFailureSchema(

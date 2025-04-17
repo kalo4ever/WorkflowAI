@@ -36,7 +36,7 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
     def _projection(cls, dict: dict[str, Any] | None) -> dict[str, Any]:
         if dict is None:
             return {"api_keys.hashed_key": 0}
-        if "api_keys.hashed_key" not in dict:
+        if "api_keys.hashed_key" not in dict and not any(v == 1 for v in dict.values()):
             return {"api_keys.hashed_key": 0, **dict}
         return dict
 

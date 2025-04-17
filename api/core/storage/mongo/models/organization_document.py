@@ -108,7 +108,7 @@ class PaymentFailureSchema(BaseModel):
 
 
 class OrganizationDocument(BaseDocumentWithID):
-    uid: int = Field(default_factory=id_uint32)
+    uid: int = 0
     anonymous_user_id: str | None = None
     previous_anonymous_user_id: str | None = None
     # Organization slug to be used in URLs
