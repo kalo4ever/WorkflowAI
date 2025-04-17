@@ -5,6 +5,7 @@ import os
 import re
 from contextlib import contextmanager
 
+from api.services.customer_assessment_service import CustomerAssessmentService
 from core.domain.analytics_events.analytics_events import UserProperties
 from core.domain.consts import WORKFLOWAI_APP_URL
 from core.domain.errors import InternalError
@@ -105,6 +106,10 @@ class CustomerService:
 
             await self._update_channel_purpose(clt, channel_id, org.slug if org else slug, user, org)
 
+            if user:
+                assessment = await CustomerAssessmentService.run_customer_assessment(user.email)
+                await clt.set_channel_topic(channel_id, str(assessment))
+
     @contextmanager
     def _slack_client(self):
         bot_token = os.environ.get("SLACK_BOT_TOKEN")
@@ -128,6 +133,8 @@ class CustomerService:
 
         with self._slack_client() as clt:
             await clt.rename_channel(org.slack_channel_id, self._channel_name(org.slug, org.uid))
+
+        add_background_task(self._on_channel_created(org.slack_channel_id, org.slug, org.org_id, org.owner_id))
 
     async def send_chat_started(self, user: UserProperties | None, existing_task_name: str | None, user_message: str):
         username = _readable_name(user)
