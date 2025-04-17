@@ -76,7 +76,8 @@ def redis_cached(expiration_seconds: int = 60 * 60 * 24) -> Callable[[F], F]:  #
                 )
                 await shared_redis_client.setex(cache_key, expiration_seconds, pickle.dumps(result))  # pyright: ignore
                 return result
-            except Exception:
+            except Exception as e:
+                _logger.exception("Exception in redis_cached", exc_info=e)
                 return await func(*args, **kwargs)
 
         return async_wrapper  # type: ignore

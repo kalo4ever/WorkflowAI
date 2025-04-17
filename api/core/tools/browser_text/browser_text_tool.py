@@ -123,3 +123,33 @@ async def browser_text(url: str) -> str:
     """Browses the URL passed as argument and extracts the web page content in markdown format."""
 
     return await browser_text_with_proxy_setting(url, proxy_setting="stealth")
+
+
+async def get_sitemap(url: str, limit: int = 50) -> set[str]:
+    """Get the sitemap of the URL passed as argument."""
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            "https://api.firecrawl.dev/v1/map",
+            headers={"Content-Type": "application/json", "Authorization": f"Bearer {os.environ['FIRECRAWL_API_KEY']}"},
+            json={"url": url, "includeSubdomains": True, "limit": limit},
+            timeout=TIMEOUT_SECONDS,
+        )
+        reponse_json = response.json()
+
+        if not reponse_json.get("success", False):
+            logger.warning(
+                "Failed to fetch sitemap for url",
+                extra={"url": url},
+            )
+            return set()
+
+        links = reponse_json.get("links", [])
+        if not links:
+            logger.warning(
+                "No links found in sitemap for url",
+                extra={"url": url},
+            )
+            return set()
+
+        return set(str(link) for link in links)

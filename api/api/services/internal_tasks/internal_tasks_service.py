@@ -625,7 +625,7 @@ class InternalTasksService:
         if picked_tools == {ToolKind.WEB_BROWSER_TEXT}:
             sanitized_picked_tools: set[ToolKind] = set()
 
-            # If the only required tool is WEB_BROWSER_TEXT, we need to check if the agent is a 'scrapping' agent
+            # If the only required tool is WEB_BROWSER_TEXT, we need to check if the agent is a 'scraping' agent
             # In order not to add WEB_BROWSER_TEXT for wrong reasons
             try:
                 url_finder_run = await url_finder_agent(

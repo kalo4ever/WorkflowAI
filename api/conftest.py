@@ -125,8 +125,12 @@ if "SCRAPINGBEE_API_KEY" not in os.environ:
 if "SERPER_API_KEY" not in os.environ:
     os.environ["SERPER_API_KEY"] = "serper-api-key"
 
+
 if "PERPLEXITY_API_KEY" not in os.environ:
     os.environ["PERPLEXITY_API_KEY"] = "perplexity-api-key"
+
+if "ENRICH_SO_API_KEY" not in os.environ:
+    os.environ["ENRICH_SO_API_KEY"] = "enrich-so-api-key"
 
 if "MODERATION_ENABLED" not in os.environ:
     os.environ["MODERATION_ENABLED"] = "false"
