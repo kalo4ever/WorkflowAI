@@ -70,7 +70,7 @@ function FeatureCardTwo(props: FeatureCardProps) {
           )}
         </div>
         <div className='sm:text-[18px] text-[16px] font-semibold text-gray-900 sm:pb-4 pb-1'>
-          <span className='text-gray-500'>OpenAI</span> without WorkflowAI
+          <span className='text-gray-500'>OpenAI</span> with WorkflowAI
         </div>
         <div className='sm:text-[16px] text-[13px] font-normal text-gray-500'>
           If OpenAI goes down, WorkflowAI instantly reroutes traffic to a backup provider (like Azure OpenAI). Your
