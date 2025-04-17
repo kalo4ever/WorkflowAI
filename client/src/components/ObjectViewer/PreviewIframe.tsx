@@ -1,6 +1,6 @@
 import { cx } from 'class-variance-authority';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useToggle } from 'usehooks-ts';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useIsMounted } from 'usehooks-ts';
 
 const DEFAULT_CONTENT_HEIGHT = 100;
 
@@ -39,7 +39,18 @@ export function PreviewIframe(props: PreviewIframeProps) {
   const currentMainValueRef = useRef(mainValue);
   currentMainValueRef.current = mainValue;
 
+  const isMounted = useIsMounted();
+  const isMountedRef = useRef(isMounted);
+  isMountedRef.current = isMounted;
+
   useEffect(() => {
+    if (!isMountedRef.current) {
+      setShowSecondaryIframe(false);
+      setIsRendering(false);
+      setMainValue(value);
+      return;
+    }
+
     // For first render let's just display the value
     if (!currentMainValueRef.current) {
       setMainValue(value);
@@ -55,11 +66,25 @@ export function PreviewIframe(props: PreviewIframeProps) {
     setSecondaryValue(currentRenderingValueRef.current);
     // We need to wait for the secondary iframe to be rendered before we can swap the main iframe
     setTimeout(() => {
+      if (!isMountedRef.current) {
+        setShowSecondaryIframe(false);
+        setIsRendering(false);
+        setMainValue(value);
+        return;
+      }
+
       setShowSecondaryIframe(true);
 
       // Now let's do the same for the main iframe
       setMainValue(currentRenderingValueRef.current);
       setTimeout(() => {
+        if (!isMountedRef.current) {
+          setShowSecondaryIframe(false);
+          setIsRendering(false);
+          setMainValue(value);
+          return;
+        }
+
         setShowSecondaryIframe(false);
         setIsRendering(false);
       }, 1000);
