@@ -454,5 +454,9 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
         await self._update_one({}, {"$unset": {"payment_failure": ""}})
 
     @override
-    async def set_slack_channel_id(self, channel_id: str) -> None:
-        await self._update_one({"slack_channel_id": {"$exists": False}}, {"$set": {"slack_channel_id": channel_id}})
+    async def set_slack_channel_id(self, channel_id: str | None, force: bool = False) -> None:
+        if channel_id is None:
+            await self._update_one({}, {"$unset": {"slack_channel_id": ""}})
+        else:
+            filter = {"slack_channel_id": {"$exists": False}} if not force else {}
+            await self._update_one(filter, {"$set": {"slack_channel_id": channel_id}})

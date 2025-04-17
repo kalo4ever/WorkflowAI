@@ -4,6 +4,10 @@ export PYTHONPATH := $(PWD)/api
 api.lock:
 	poetry lock --no-update
 
+.PHONY: api.start
+api.start:
+	poetry run uvicorn api.main:app --reload
+
 .PHONY: api.install.deps
 api.install.deps:
 	poetry install

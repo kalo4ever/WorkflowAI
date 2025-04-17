@@ -314,8 +314,8 @@ def payment_system_service_dep(storage: SystemStorageDep, email_service: EmailSe
 PaymentSystemServiceDep = Annotated[PaymentSystemService, TaskiqDepends(payment_system_service_dep)]
 
 
-def customer_service_dep(storage: StorageDep) -> CustomerService:
-    return CustomerService(storage)
+def customer_service_dep(storage: StorageDep, user_service: UserServiceDep) -> CustomerService:
+    return CustomerService(storage, user_service)
 
 
 CustomerServiceDep = Annotated[CustomerService, TaskiqDepends(customer_service_dep)]

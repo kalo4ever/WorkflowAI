@@ -5,7 +5,7 @@ from typing import Generic, List, TypedDict, TypeVar
 import httpx
 from typing_extensions import NotRequired, override
 
-from core.services.users.user_service import UserDetails, UserService
+from core.services.users.user_service import OrganizationDetails, UserDetails, UserService
 
 _logger = logging.getLogger(__name__)
 
@@ -28,6 +28,14 @@ class ClerkUserService(UserService):
         response.raise_for_status()
         data: ClerkUserDict = response.json()
         return UserDetails(email=_find_primary_email(data), name=_full_name(data))
+
+    @override
+    async def get_organization(self, org_id: str) -> OrganizationDetails:
+        async with self._client() as client:
+            response = await client.get(f"/organizations/{org_id}")
+        response.raise_for_status()
+        data = response.json()
+        return OrganizationDetails(name=data["name"], slug=data["slug"], id=data["id"])
 
     async def _get_org_admin_ids(self, client: httpx.AsyncClient, org_id: str, max_users: int) -> list[str]:
         # https://clerk.com/docs/reference/backend-api/tag/Organization-Memberships#operation/ListOrganizationMemberships

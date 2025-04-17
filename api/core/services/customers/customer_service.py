@@ -2,9 +2,11 @@ import asyncio
 import json
 import logging
 import os
+import re
 from contextlib import contextmanager
 
 from core.domain.analytics_events.analytics_events import UserProperties
+from core.domain.consts import WORKFLOWAI_APP_URL
 from core.domain.errors import InternalError
 from core.domain.events import (
     Event,
@@ -12,10 +14,12 @@ from core.domain.events import (
     MetaAgentChatMessagesSent,
     TaskSchemaCreatedEvent,
 )
+from core.services.users.user_service import OrganizationDetails, UserDetails, UserService
 from core.storage import ObjectNotFoundException
 from core.storage.backend_storage import BackendStorage
 from core.storage.slack.slack_api_client import SlackApiClient
 from core.storage.slack.utils import get_slack_hyperlink
+from core.utils.background import add_background_task
 
 _logger = logging.getLogger(__name__)
 
@@ -23,11 +27,24 @@ _logger = logging.getLogger(__name__)
 class CustomerService:
     _SLEEP_BETWEEN_RETRIES = 0.1
 
-    def __init__(self, storage: BackendStorage):
+    def __init__(self, storage: BackendStorage, user_service: UserService):
         self._storage = storage
+        self._user_service = user_service
+
+    def _channel_name(self, slug: str, uid: int):
+        if slug:
+            # Remove any non-alphanumeric characters
+            slug = re.sub(r"[^a-zA-Z0-9-]", "", slug)
+            return f"customer-{slug}"
+        return f"customer-{uid}"
+
+    async def _get_organization(self):
+        return await self._storage.organizations.get_organization(
+            include={"slack_channel_id", "slug", "uid", "org_id", "owner_id"},
+        )
 
     async def _get_or_create_slack_channel(self, clt: SlackApiClient, retries: int = 3):
-        org = await self._storage.organizations.get_organization(include={"slack_channel_id", "slug", "uid"})
+        org = await self._get_organization()
         if org.slack_channel_id:
             return org.slack_channel_id
 
@@ -44,12 +61,49 @@ class CustomerService:
 
             raise InternalError("Failed to get or create slack channel", extra={"org_id": org.uid, "slug": org.slug})
 
-        channel_id = await clt.create_channel(f"customer-{org.slug or org.uid}")
-        await self._storage.organizations.set_slack_channel_id(channel_id)
-        if invitees := os.environ.get("SLACK_BOT_INVITEES"):
-            await clt.invite_users(channel_id, invitees.split(","))
-        # TODO: trigger initial message and set channel description
+        try:
+            channel_id = await clt.create_channel(self._channel_name(org.slug, org.uid))
+        except Exception as e:
+            await self._storage.organizations.set_slack_channel_id(None)
+            raise InternalError("Failed to create slack channel", extra={"org_id": org.uid, "slug": org.slug}) from e
+
+        await self._storage.organizations.set_slack_channel_id(channel_id, force=True)
+        add_background_task(self._on_channel_created(channel_id, org.slug, org.org_id, org.owner_id))
         return channel_id
+
+    async def _update_channel_purpose(
+        self,
+        clt: SlackApiClient,
+        channel_id: str,
+        slug: str,
+        user: UserDetails | None,
+        org: OrganizationDetails | None,
+    ):
+        if not slug:
+            # That can happen for anonymous users for example
+            return
+
+        components = ["Customer", f"WorkflowAI: {WORKFLOWAI_APP_URL}/{slug}/agents"]
+        if user:
+            components.append(f"User: {user.name} ({user.email})")
+        if org:
+            components.append(f"Organization: {org.name})")
+
+        await clt.set_channel_purpose(channel_id, "\n".join(components))
+
+    async def _on_channel_created(self, channel_id: str, slug: str, org_id: str | None, owner_id: str | None):
+        with self._slack_client() as clt:
+            if invitees := os.environ.get("SLACK_BOT_INVITEES"):
+                await clt.invite_users(channel_id, invitees.split(","))
+
+            if not slug or org_id:
+                # That can happen for anonymous users for example
+                return
+
+            user = await self._user_service.get_user(owner_id) if owner_id else None
+            org = await self._user_service.get_organization(org_id) if org_id else None
+
+            await self._update_channel_purpose(clt, channel_id, org.slug if org else slug, user, org)
 
     @contextmanager
     def _slack_client(self):
@@ -67,13 +121,13 @@ class CustomerService:
 
     async def handle_customer_migrated(self, from_user_id: str | None, from_anon_id: str | None):
         # TODO: rename slack channel
-        org = await self._storage.organizations.get_organization(include={"slack_channel_id", "uid", "slug"})
+        org = await self._get_organization()
         if not org.slack_channel_id:
             _logger.warning("No slack channel id found for organization", extra={"org_uid": org.uid, "slug": org.slug})
             return
 
         with self._slack_client() as clt:
-            await clt.rename_channel(org.slack_channel_id, f"customer-{org.slug or org.uid}")
+            await clt.rename_channel(org.slack_channel_id, self._channel_name(org.slug, org.uid))
 
     async def send_chat_started(self, user: UserProperties | None, existing_task_name: str | None, user_message: str):
         username = _readable_name(user)

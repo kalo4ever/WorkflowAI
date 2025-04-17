@@ -2050,3 +2050,40 @@ class TestSetSlackChannelId:
         # Try to set the slack channel ID again
         with pytest.raises(ObjectNotFoundException):
             await organization_storage.set_slack_channel_id("C1234567890")
+
+    async def test_set_slack_channel_id_none(
+        self,
+        organization_storage: MongoOrganizationStorage,
+        org_col: AsyncCollection,
+    ):
+        # Insert an organization with a slack channel ID
+        await org_col.insert_one(
+            dump_model(
+                OrganizationDocument(
+                    tenant=TENANT,
+                    slug="simple_slug",
+                ),
+            ),
+        )
+        # I can set the channel id to an empty string
+        await organization_storage.set_slack_channel_id("")
+        doc = await org_col.find_one({"tenant": TENANT})
+        assert doc is not None
+        assert doc["slack_channel_id"] == ""
+
+        # now I can't set it again
+        with pytest.raises(ObjectNotFoundException):
+            await organization_storage.set_slack_channel_id("hello")
+
+        # But i can reset it by using None
+        await organization_storage.set_slack_channel_id(None)
+
+        doc = await org_col.find_one({"tenant": TENANT})
+        assert doc is not None
+        assert "slack_channel_id" not in doc
+
+        # Which allows me to set it again
+        await organization_storage.set_slack_channel_id("hello")
+        doc = await org_col.find_one({"tenant": TENANT})
+        assert doc is not None
+        assert doc["slack_channel_id"] == "hello"
