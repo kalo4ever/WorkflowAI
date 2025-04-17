@@ -34,7 +34,6 @@ class ExtendedCustomerAssessementAgentOutput(CustomerAssessementAgentOutput):
     def __str__(self) -> str:  # noqa: C901
         """A cool presentation of the company with emojis and all"""
         parts: list[str] = []
-        parts.append("FIRST USER")
         if self.base_user_name:
             parts.append(self.base_user_name)
         if self.base_user_title:
@@ -44,9 +43,8 @@ class ExtendedCustomerAssessementAgentOutput(CustomerAssessementAgentOutput):
         if self.base_user_linkedin_url:
             parts.append(self.base_user_linkedin_url)
 
-        parts.append("\n\nCOMPANY")
         if self.company_name:
-            parts.append(f"🏢 {self.company_name}")
+            parts.append(f"🏢 Company Name: {self.company_name}")
         if self.company_industry:
             parts.append(f"🏭 Industry: {self.company_industry}")
 
