@@ -85,14 +85,12 @@ class SlackApiClient:
 
     async def rename_channel(self, channel_id: str, name: str):
         """Rename a slack channel"""
-        parsed = await self.post(
+        await self.post(
             "/conversations.rename",
             json_data={"channel": channel_id, "name": name},
             operation_name="rename slack channel",
             error_context={"channel_id": channel_id, "name": name},
         )
-        # Optional: keep the print if needed for debugging
-        print(parsed)
 
     async def invite_users(self, channel_id: str, user_ids: list[str]):
         """Invite users to a slack channel"""
