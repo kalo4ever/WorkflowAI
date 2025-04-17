@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 import os
+from contextlib import contextmanager
 
 from core.domain.analytics_events.analytics_events import UserProperties
 from core.domain.errors import InternalError
@@ -37,36 +38,42 @@ class CustomerService:
             # Slack channel already set so we can just try to get it again
             for _ in range(retries):
                 await asyncio.sleep(self._SLEEP_BETWEEN_RETRIES)
-                org = await self._storage.organizations.get_organization(include={"slack_channel_id", "slug"})
-                if org.slack_channel_id:
-                    return org.slack_channel_id
+                updated_org = await self._storage.organizations.get_organization(include={"slack_channel_id"})
+                if updated_org.slack_channel_id:
+                    return updated_org.slack_channel_id
 
-            raise InternalError("Failed to get or create slack channel", extra={"org_id": org.org_id, "slug": org.slug})
+            raise InternalError("Failed to get or create slack channel", extra={"org_id": org.uid, "slug": org.slug})
 
-        channel_id = await clt.create_channel(f"customer-{org.slug}")
+        channel_id = await clt.create_channel(f"customer-{org.slug or org.uid}")
         await self._storage.organizations.set_slack_channel_id(channel_id)
         if invitees := os.environ.get("SLACK_BOT_INVITEES"):
             await clt.invite_users(channel_id, invitees.split(","))
         # TODO: trigger initial message and set channel description
         return channel_id
 
-    async def _send_message(self, message: str):
+    @contextmanager
+    def _slack_client(self):
         bot_token = os.environ.get("SLACK_BOT_TOKEN")
         if not bot_token:
             _logger.warning("SLACK_BOT_TOKEN is not set, skipping message sending")
             return
 
-        clt = SlackApiClient(bot_token=bot_token)
-        channel_id = await self._get_or_create_slack_channel(clt)
+        yield SlackApiClient(bot_token=bot_token)
 
-        await clt.send_message(channel_id, {"text": message})
-
-    async def handle_customer_created(self):
-        pass
+    async def _send_message(self, message: str):
+        with self._slack_client() as clt:
+            channel_id = await self._get_or_create_slack_channel(clt)
+            await clt.send_message(channel_id, {"text": message})
 
     async def handle_customer_migrated(self, from_user_id: str | None, from_anon_id: str | None):
         # TODO: rename slack channel
-        pass
+        org = await self._storage.organizations.get_organization(include={"slack_channel_id", "uid", "slug"})
+        if not org.slack_channel_id:
+            _logger.warning("No slack channel id found for organization", extra={"org_uid": org.uid, "slug": org.slug})
+            return
+
+        with self._slack_client() as clt:
+            await clt.rename_channel(org.slack_channel_id, f"customer-{org.slug or org.uid}")
 
     async def send_chat_started(self, user: UserProperties | None, existing_task_name: str | None, user_message: str):
         username = _readable_name(user)
