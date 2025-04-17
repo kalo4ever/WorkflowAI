@@ -1,4 +1,4 @@
-from typing import Any
+from datetime import datetime
 
 from pydantic import BaseModel
 
@@ -23,14 +23,25 @@ class TaskInfo(BaseModel):
     description: str | None = None
     is_public: bool = False
     hidden_schema_ids: list[int] | None = None
-    schema_details: list[dict[str, Any]] | None = None
+
+    class SchemaDetails(BaseModel):
+        schema_id: int = 0
+        last_active_at: datetime | None = None
+
+    schema_details: list[SchemaDetails] | None = None
     ban: Ban | None = None
 
-    def get_schema_details(self, schema_id: int) -> dict[str, Any] | None:
+    def get_schema_details(self, schema_id: int) -> SchemaDetails | None:
         try:
-            return next(detail for detail in self.schema_details or [] if detail["schema_id"] == schema_id)
+            return next(detail for detail in self.schema_details or [] if detail.schema_id == schema_id)
         except StopIteration:
             return None
+
+    @property
+    def is_active(self) -> bool:
+        if not self.schema_details:
+            return False
+        return any(detail.last_active_at for detail in self.schema_details)
 
     @property
     def id_tuple(self) -> TaskTuple:

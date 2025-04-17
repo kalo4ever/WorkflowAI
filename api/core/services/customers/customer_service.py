@@ -176,6 +176,10 @@ class CustomerService:
 
             await self._send_message(message_str)
 
+    async def send_became_active(self, task_id: str):
+        message = f"Task {task_id} became active"
+        await self._send_message(message)
+
 
 def _readable_name(user: UserProperties | None) -> str:
     if user:
