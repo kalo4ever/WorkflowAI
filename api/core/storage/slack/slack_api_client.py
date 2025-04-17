@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Optional
+from typing import Any
 
 import httpx
 from pydantic import BaseModel
@@ -38,7 +38,6 @@ class SlackApiClient:
         endpoint: str,
         json_data: dict[str, Any],
         operation_name: str,
-        error_context: Optional[dict[str, Any]] = None,
     ) -> dict[str, Any]:
         """Make a POST request to Slack API and check response"""
         async with self._client() as client:
@@ -58,7 +57,6 @@ class SlackApiClient:
         endpoint: str,
         params: dict[str, str],
         operation_name: str,
-        error_context: Optional[dict[str, Any]] = None,
     ) -> dict[str, Any]:
         """Make a GET request to Slack API and check response"""
         async with self._client() as client:
@@ -79,7 +77,6 @@ class SlackApiClient:
             "/conversations.create",
             json_data={"name": name, "is_private": False},
             operation_name="create slack channel",
-            error_context={"name": name},
         )
         return parsed["channel"]["id"]
 
@@ -89,7 +86,6 @@ class SlackApiClient:
             "/conversations.rename",
             json_data={"channel": channel_id, "name": name},
             operation_name="rename slack channel",
-            error_context={"channel_id": channel_id, "name": name},
         )
 
     async def invite_users(self, channel_id: str, user_ids: list[str]):
@@ -98,7 +94,6 @@ class SlackApiClient:
             "/conversations.invite",
             json_data={"channel": channel_id, "users": ",".join(user_ids)},
             operation_name="invite users to slack channel",
-            error_context={"channel_id": channel_id, "user_ids": user_ids},
         )
 
     async def send_message(self, channel_id: str, message: SlackMessage) -> dict[str, Any]:
@@ -107,7 +102,6 @@ class SlackApiClient:
             "/chat.postMessage",
             json_data={"channel": channel_id, **message},
             operation_name="send slack message",
-            error_context={"channel_id": channel_id},
         )
 
     # TODO: not user yet, we need to add 'pins:write' scope to the bot token
@@ -118,7 +112,6 @@ class SlackApiClient:
             "/pins.add",
             json_data={"channel": channel_id, "timestamp": message_payload["ts"]},
             operation_name="pin slack message",
-            error_context={"channel_id": channel_id, "message": message},
         )
 
     async def set_channel_topic(self, channel_id: str, topic: str):
@@ -127,7 +120,6 @@ class SlackApiClient:
             "/conversations.setTopic",
             json_data={"channel": channel_id, "topic": topic},
             operation_name="set slack channel topic",
-            error_context={"channel_id": channel_id, "topic": topic},
         )
 
     async def set_channel_purpose(self, channel_id: str, purpose: str):
@@ -136,7 +128,6 @@ class SlackApiClient:
             "/conversations.setPurpose",
             json_data={"channel": channel_id, "purpose": purpose},
             operation_name="set slack channel purpose",
-            error_context={"channel_id": channel_id, "purpose": purpose},
         )
 
     class ChannelInfo(BaseModel):
@@ -152,6 +143,5 @@ class SlackApiClient:
             "/conversations.info",
             params={"channel": channel_id},
             operation_name="get slack channel info",
-            error_context={"channel_id": channel_id},
         )
         return self.ChannelInfo.model_validate(parsed["channel"])
