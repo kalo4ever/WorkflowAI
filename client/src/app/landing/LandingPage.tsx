@@ -9,6 +9,7 @@ import { signUpRoute } from '@/lib/routeFormatter';
 import { useOrFetchUptime } from '@/store/fetchers';
 import { LandingPageContainer } from './container/LandingPageContainer';
 import { CompaniesMoneyComponent } from './sections/Components/CompaniesMoneyComponent';
+import { ComparePriceComponent } from './sections/Components/ComparePriceComponent';
 import { ComparisionComponent } from './sections/Components/ComparisionComponent';
 import { GraphComponent } from './sections/Components/GraphComponent';
 import { GridComponent } from './sections/Components/GridComponent';
@@ -67,71 +68,74 @@ export function LandingPage() {
       <VideosComponent className='sm:mt-10 mt-7' />
       <CompaniesMoneyComponent className='sm:mt-20 mt-14' />
 
-      <SubheaderComponent entry={LandingStaticData.eighteenthNewHeaderEntry} className='sm:mt-20 mt-14' />
-      <ImageComponent entry={LandingStaticData.eighteenthNewImageEntry} className='mt-10' isMobile={isMobile} />
+      <SubheaderComponent entry={LandingStaticData.headerEntry18} className='sm:mt-20 mt-14' />
+      <ImageComponent entry={LandingStaticData.imageEntry18} className='mt-10' isMobile={isMobile} />
 
-      <SubheaderComponent entry={LandingStaticData.seventeenthNewHeaderEntry} className='sm:mt-20 mt-14' />
-      <ImageComponent entry={LandingStaticData.seventeenthNewImageEntry} className='mt-10' isMobile={isMobile} />
+      <SubheaderComponent entry={LandingStaticData.headerEntry17} className='sm:mt-20 mt-14' />
+      <ImageComponent entry={LandingStaticData.imageEntry17} className='mt-10' isMobile={isMobile} />
 
-      <SubheaderComponent entry={LandingStaticData.sixteenthNewHeaderEntry} className='sm:mt-20 mt-14' />
-      <ImageComponent entry={LandingStaticData.sixteenthNewImageEntry} className='mt-10' isMobile={isMobile} />
+      <SubheaderComponent entry={LandingStaticData.headerEntry16} className='sm:mt-20 mt-14' />
+      <ImageComponent entry={LandingStaticData.imageEntry16} className='mt-10' isMobile={isMobile} />
 
-      <SubheaderComponent entry={LandingStaticData.fifteenthNewHeaderEntry} className='sm:mt-20 mt-14' />
-      <ImageComponent entry={LandingStaticData.fifteenthNewImageEntry} className='mt-10' isMobile={isMobile} />
+      <SubheaderComponent entry={LandingStaticData.headerEntry15} className='sm:mt-20 mt-14' />
+      <ImageComponent entry={LandingStaticData.imageEntry15} className='mt-10' isMobile={isMobile} />
 
-      <SubheaderComponent entry={LandingStaticData.fourteenthNewHeaderEntry} className='sm:mt-20 mt-14' />
-      <ImageComponent entry={LandingStaticData.fourteenthNewImageEntry} className='mt-10' isMobile={isMobile} />
+      <SubheaderComponent entry={LandingStaticData.headerEntry14} className='sm:mt-20 mt-14' />
+      <ImageComponent entry={LandingStaticData.imageEntry14} className='mt-10' isMobile={isMobile} />
 
-      <SubheaderComponent entry={LandingStaticData.thirteenthNewHeaderEntry} className='sm:mt-20 mt-14' />
-      <ImageComponent entry={LandingStaticData.thirteenthNewImageEntry} className='mt-10' isMobile={isMobile} />
+      <SubheaderComponent entry={LandingStaticData.headerEntry13} className='sm:mt-20 mt-14' />
+      <ImageComponent entry={LandingStaticData.imageEntry13} className='mt-10' isMobile={isMobile} />
 
-      <SubheaderComponent entry={LandingStaticData.twelfthNewHeaderEntry} className='sm:mt-20 mt-14' />
+      <SubheaderComponent entry={LandingStaticData.headerEntry12} className='sm:mt-20 mt-14' />
       <GridComponent
-        entries={LandingStaticData.twelfthNewFeaturesEntries}
+        entries={LandingStaticData.featuresEntries12}
         className='mt-10'
         scrollToSuggestedFeatures={scrollToSuggestedFeatures}
       />
 
-      <SubheaderComponent entry={LandingStaticData.eleventhNewHeaderEntry} className='sm:mt-20 mt-14' />
+      <SubheaderComponent entry={LandingStaticData.headerEntry11} className='sm:mt-20 mt-14' />
       <GridComponent
-        entries={LandingStaticData.eleventhNewFeaturesEntries}
+        entries={LandingStaticData.featuresEntries11}
         className='mt-10'
         scrollToSuggestedFeatures={scrollToSuggestedFeatures}
       />
 
-      <RowsComponent entries={LandingStaticData.tenthNewFeaturesEntries} className='sm:mt-20 mt-14' />
-      <QuoteComponent entry={LandingStaticData.tenthNewQuoteEntry} className='mt-10' />
+      <RowsComponent entries={LandingStaticData.featuresEntries10} className='sm:mt-20 mt-14' />
+      <QuoteComponent entry={LandingStaticData.quoteEntry10} className='mt-10' />
 
       <GridComponent
-        entries={LandingStaticData.ninthNewFeaturesEntries}
+        entries={LandingStaticData.featuresEntries9}
         className='sm:mt-20 mt-14'
         scrollToSuggestedFeatures={scrollToSuggestedFeatures}
       />
 
-      <SubheaderComponent entry={LandingStaticData.eighthNewHeaderEntry} className='sm:mt-20 mt-14' />
-      <ImageComponent entry={LandingStaticData.eighthNewImageEntry} className='mt-10' isMobile={isMobile} />
+      <SubheaderComponent entry={LandingStaticData.headerEntry8} className='sm:mt-20 mt-14' />
+      <ImageComponent entry={LandingStaticData.imageEntry8} className='mt-10' isMobile={isMobile} />
 
-      <SubheaderComponent entry={LandingStaticData.seventhNewHeaderEntry} className='sm:mt-20 mt-14' id='pricing' />
+      <SubheaderComponent entry={LandingStaticData.headerEntry7} className='sm:mt-20 mt-14' id='pricing' />
       <PriceComponent className='mt-10' />
-      <QuoteComponent entry={LandingStaticData.seventhNewQuoteEntry} className='mt-10' />
+      <QuoteComponent entry={LandingStaticData.quoteEntry7} className='mt-10' />
 
-      <SubheaderComponent entry={LandingStaticData.sixthNewHeaderEntry} className='sm:mt-20 mt-12' />
+      <SubheaderComponent entry={LandingStaticData.headerEntry19} className='sm:mt-20 mt-14' />
+      <ComparePriceComponent className='mt-10' />
 
-      <SubheaderComponent entry={LandingStaticData.fifthNewHeaderEntry} className='sm:mt-20 mt-12' />
-      <GridComponent entries={LandingStaticData.fifthNewFeaturesEntries} className='mt-12' showThreeColumns />
+      <SubheaderComponent entry={LandingStaticData.headerEntry6} className='sm:mt-20 mt-12' />
 
-      <SubheaderComponent entry={LandingStaticData.fourthNewHeaderEntry} className='sm:mt-40 mt-28' />
-      <GridComponent entries={LandingStaticData.fourthNewFeaturesEntries} className='mt-10' showThreeColumns />
+      <SubheaderComponent entry={LandingStaticData.headerEntry5} className='sm:mt-20 mt-12' />
+      <GridComponent entries={LandingStaticData.featuresEntries5} className='mt-12' showThreeColumns />
 
-      <SubheaderComponent entry={LandingStaticData.thirdNewHeaderEntry} className='sm:mt-20 mt-12' />
+      <SubheaderComponent entry={LandingStaticData.headerEntry4} className='sm:mt-40 mt-28' />
+      <GridComponent entries={LandingStaticData.featuresEntries4} className='mt-10' showThreeColumns />
+
+      <SubheaderComponent entry={LandingStaticData.headerEntry3} className='sm:mt-20 mt-12' />
 
       <SubheaderComponent entry={LandingStaticData.comparisionHeaderEntry} className='sm:mt-20 mt-12' />
       <ComparisionComponent className='mt-10' workflowUptime={workflowUptime} openaiUptime={openaiUptime} />
       <GraphComponent className='mt-16 sm:mt-10' workflowUptime={workflowUptime} />
 
-      <SubheaderComponent entry={LandingStaticData.secondNewHeaderEntry} className='sm:mt-20 mt-14' />
+      <SubheaderComponent entry={LandingStaticData.headerEntry2} className='sm:mt-20 mt-14' />
       <GridComponent
-        entries={LandingStaticData.secondNewFeaturesEntries}
+        entries={LandingStaticData.featuresEntries2}
         className='mt-10'
         scrollToSuggestedFeatures={scrollToSuggestedFeatures}
       />
@@ -139,7 +143,7 @@ export function LandingPage() {
       <InvestorLogosComponent className='sm:mt-20 mt-14' />
 
       <SubheaderComponent
-        entry={LandingStaticData.firstNewFeaturesEntries}
+        entry={LandingStaticData.featuresEntries1}
         className='sm:mt-20 mt-14 sm:mb-20 mb-14'
         routeForSignUp={routeForSignUp}
       />
