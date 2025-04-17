@@ -123,6 +123,9 @@ class CustomerService:
     async def _send_message(self, message: str):
         with self._slack_client() as clt:
             channel_id = await self._get_or_create_slack_channel(clt)
+            if channel_id == "skipped":
+                return
+
             await clt.send_message(channel_id, {"text": message})
 
     async def handle_customer_migrated(self, from_user_id: str | None, from_anon_id: str | None):
