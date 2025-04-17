@@ -83,11 +83,11 @@ async def update_task_schema_last_active_at(
         update=TaskUpdate(schema_last_active_at=(event.run.task_schema_id, datetime.now(timezone.utc))),
         before=True,
     )
-    if not before_update.is_active:
+    if before_update.is_active:
+        # task was active before the update, so we don't need to send a message
         return
 
-    # TODO: not sending message since it triggers a lot of messages in the channel for now
-    # await customer_service.send_became_active(event.run.task_id)
+    await customer_service.send_became_active(event.run.task_id)
 
 
 def _should_run_task_run_moderation() -> bool:
