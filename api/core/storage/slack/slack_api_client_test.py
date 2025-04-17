@@ -1,6 +1,6 @@
 import json
 from typing import Any
-from unittest.mock import patch
+from unittest.mock import Mock
 
 import pytest
 from pytest_httpx import HTTPXMock
@@ -17,29 +17,35 @@ def slack_api_client():
 
 class TestCheckResponse:
     @pytest.mark.parametrize(
-        "parsed,expected_error",
+        "json_data",
         [
-            ({"ok": False, "error": "channel_not_found"}, "channel_not_found"),
-            ({"ok": False}, "Unknown error"),
+            {"ok": False, "error": "channel_not_found"},
+            {"ok": False},
         ],
     )
     async def test_check_response_error(
         self,
         slack_api_client: SlackApiClient,
-        parsed: dict[str, Any],
-        expected_error: str,
+        json_data: dict[str, Any],
     ) -> None:
         # Using _ prefix since we're deliberately testing a protected method
-        with patch("core.storage.slack.slack_api_client._logger") as mock_logger:
-            with pytest.raises(InternalError):
-                slack_api_client._check_response(parsed, "test operation")  # type: ignore[reportPrivateUsage]
+        mock_response = Mock()
+        mock_response.json.return_value = json_data
+        mock_response.raise_for_status.return_value = None
 
-            mock_logger.error.assert_called_once()
+        with pytest.raises(InternalError) as exc_info:
+            slack_api_client._check_response(mock_response, "test operation")  # type: ignore[reportPrivateUsage]
+
+        assert "test operation" in str(exc_info.value)
 
     async def test_check_response_success(self, slack_api_client: SlackApiClient) -> None:
-        parsed: dict[str, Any] = {"ok": True}
+        mock_response = Mock()
+        mock_response.json.return_value = {"ok": True}
+        mock_response.raise_for_status.return_value = None
+
         # Should not raise any exception
-        slack_api_client._check_response(parsed, "test operation")  # type: ignore[reportPrivateUsage]
+        result = slack_api_client._check_response(mock_response, "test operation")  # type: ignore[reportPrivateUsage]
+        assert result == {"ok": True}
 
 
 class TestCreateChannel:

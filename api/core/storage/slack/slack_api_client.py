@@ -22,15 +22,19 @@ class SlackApiClient:
 
     def _check_response(
         self,
-        parsed: dict[str, Any],
+        response: httpx.Response,
         operation_name: str,
-    ) -> None:
+    ) -> dict[str, Any]:
         """Check if Slack API response has ok=True, log and possibly raise error if not"""
+        parsed = response.json()
+        response.raise_for_status()
         if not parsed.get("ok", False):
             error_msg = f"Slack client failed to {operation_name}"
             error = parsed.get("error", "Unknown error")
 
             raise InternalError(error_msg, extra={"error_msg": error})
+
+        return parsed
 
     async def post(
         self,
@@ -41,15 +45,11 @@ class SlackApiClient:
         """Make a POST request to Slack API and check response"""
         async with self._client() as client:
             response = await client.post(endpoint, json=json_data)
-            parsed = response.json()
 
-            self._check_response(
-                parsed,
+            return self._check_response(
+                response,
                 operation_name,
             )
-
-            response.raise_for_status()
-            return parsed
 
     async def get(
         self,
@@ -60,15 +60,11 @@ class SlackApiClient:
         """Make a GET request to Slack API and check response"""
         async with self._client() as client:
             response = await client.get(endpoint, params=params)
-            parsed = response.json()
 
-            self._check_response(
-                parsed,
+            return self._check_response(
+                response,
                 operation_name,
             )
-
-            response.raise_for_status()
-            return parsed
 
     async def create_channel(self, name: str) -> str:
         """Create a slack channel and return a channel id"""
