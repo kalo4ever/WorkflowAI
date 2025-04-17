@@ -85,7 +85,6 @@ async def get_task_schema(task_variant: TaskVariantDep, storage: StorageDep) -> 
     task_info = await storage.tasks.get_task_info(task_variant.task_id)
     is_hidden = task_variant.task_schema_id in task_info.hidden_schema_ids if task_info.hidden_schema_ids else False
     schema_details = task_info.get_schema_details(task_variant.task_schema_id)
-    schema_last_active_at = schema_details["last_active_at"] if schema_details else None
 
     return TaskSchemaResponse(
         name=task_variant.name,
@@ -94,7 +93,7 @@ async def get_task_schema(task_variant: TaskVariantDep, storage: StorageDep) -> 
         input_schema=task_variant.input_schema,
         output_schema=task_variant.output_schema,
         is_hidden=is_hidden,
-        last_active_at=schema_last_active_at,
+        last_active_at=schema_details.last_active_at if schema_details else None,
         latest_variant_id=task_variant.id,
     )
 
