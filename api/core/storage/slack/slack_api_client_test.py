@@ -1,8 +1,11 @@
 import json
+from typing import Any
+from unittest.mock import Mock
 
 import pytest
 from pytest_httpx import HTTPXMock
 
+from core.domain.errors import InternalError
 from core.storage.slack.slack_api_client import SlackApiClient
 from tests.utils import fixtures_json
 
@@ -10,6 +13,39 @@ from tests.utils import fixtures_json
 @pytest.fixture()
 def slack_api_client():
     return SlackApiClient(bot_token="xoxb-1234567890")
+
+
+class TestCheckResponse:
+    @pytest.mark.parametrize(
+        "json_data",
+        [
+            {"ok": False, "error": "channel_not_found"},
+            {"ok": False},
+        ],
+    )
+    async def test_check_response_error(
+        self,
+        slack_api_client: SlackApiClient,
+        json_data: dict[str, Any],
+    ) -> None:
+        # Using _ prefix since we're deliberately testing a protected method
+        mock_response = Mock()
+        mock_response.json.return_value = json_data
+        mock_response.raise_for_status.return_value = None
+
+        with pytest.raises(InternalError) as exc_info:
+            slack_api_client._check_response(mock_response, "test operation")  # type: ignore[reportPrivateUsage]
+
+        assert "test operation" in str(exc_info.value)
+
+    async def test_check_response_success(self, slack_api_client: SlackApiClient) -> None:
+        mock_response = Mock()
+        mock_response.json.return_value = {"ok": True}
+        mock_response.raise_for_status.return_value = None
+
+        # Should not raise any exception
+        result = slack_api_client._check_response(mock_response, "test operation")  # type: ignore[reportPrivateUsage]
+        assert result == {"ok": True}
 
 
 class TestCreateChannel:

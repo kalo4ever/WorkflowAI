@@ -109,7 +109,7 @@ class CustomerService:
 
             if user:
                 assessment = await CustomerAssessmentService.run_customer_assessment(user.email)
-                await clt.set_channel_topic(channel_id, str(assessment))
+                await clt.send_message(channel_id, {"text": str(assessment)})
 
     @contextmanager
     def _slack_client(self):
