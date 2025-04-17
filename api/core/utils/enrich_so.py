@@ -92,7 +92,7 @@ async def get_enriched_email_data(user_email: str) -> EnrichSoEnrichedEmailData:
 
     response.raise_for_status()
 
-    return EnrichSoEnrichedEmailData(**response.json())
+    return EnrichSoEnrichedEmailData.model_validate(response.json())
 
 
 class Founded(BaseModel):
@@ -217,4 +217,4 @@ async def get_enriched_company_profile_data(linkedin_company_domain: str) -> Enr
 
     response.raise_for_status()
 
-    return EnrichSoEnrichedCompanyData(**response.json())
+    return EnrichSoEnrichedCompanyData.model_validate(response.json())

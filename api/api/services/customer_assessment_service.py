@@ -126,7 +126,7 @@ async def _get_enrichment_data(client_email: str) -> EnrichmentData:
 
                 enriched_contents.append(
                     URLContent(
-                        url=f"enrich.so company API response for {client_email}",
+                        url=f"enrich.so company API response for {linked_url}",
                         content=enrich_so_company_data.model_dump_json(),
                     ),
                 )
