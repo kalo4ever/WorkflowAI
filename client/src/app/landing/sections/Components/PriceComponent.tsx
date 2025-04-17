@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { AIProviderIcon } from '@/components/icons/models/AIProviderIcon';
 import { cn } from '@/lib/utils';
 import { useOrFetchModels } from '@/store/fetchers';
