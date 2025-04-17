@@ -93,9 +93,16 @@ class CustomerService:
 
         await clt.set_channel_purpose(channel_id, "\n".join(components))
 
-    async def _on_channel_created(self, channel_id: str, slug: str, org_id: str | None, owner_id: str | None):
+    async def _on_channel_created(
+        self,
+        channel_id: str,
+        slug: str,
+        org_id: str | None,
+        owner_id: str | None,
+        invite_users: bool = True,
+    ):
         with self._slack_client() as clt:
-            if invitees := os.environ.get("SLACK_BOT_INVITEES"):
+            if invite_users and (invitees := os.environ.get("SLACK_BOT_INVITEES")):
                 await clt.invite_users(channel_id, invitees.split(","))
 
             if not slug or org_id:
@@ -138,7 +145,15 @@ class CustomerService:
         with self._slack_client() as clt:
             await clt.rename_channel(org.slack_channel_id, self._channel_name(org.slug, org.uid))
 
-        add_background_task(self._on_channel_created(org.slack_channel_id, org.slug, org.org_id, org.owner_id))
+        add_background_task(
+            self._on_channel_created(
+                org.slack_channel_id,
+                org.slug,
+                org.org_id,
+                org.owner_id,
+                invite_users=False,  # We don't need to invite staff users again, as they should already be in the channel
+            ),
+        )
 
     async def send_chat_started(self, user: UserProperties | None, existing_task_name: str | None, user_message: str):
         username = _readable_name(user)
