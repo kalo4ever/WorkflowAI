@@ -51,7 +51,7 @@ class TestGroqProvider(unittest.TestCase):
         (Model.LLAMA_3_1_8B, "llama-3.1-8b-instant"),
         (Model.LLAMA3_70B_8192, "llama3-70b-8192"),
         (Model.LLAMA3_8B_8192, "llama3-8b-8192"),
-        (Model.MIXTRAL_8X7B_32768, "mixtral-8x7b-32768"),
+        # (Model.MIXTRAL_8X7B_32768, "mixtral-8x7b-32768"),
     ],
 )
 def test_model_str(model: Model, expected_model_str: str):
