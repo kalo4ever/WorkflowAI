@@ -1,10 +1,10 @@
+import logging
 import os
+from contextlib import asynccontextmanager
 from typing import Any, Dict, List
 
 import httpx
 from pydantic import BaseModel
-
-ENRICH_SO_API_KEY = os.environ["ENRICH_SO_API_KEY"]
 
 
 class DateInfo(BaseModel):
@@ -76,14 +76,27 @@ class EnrichSoEnrichedEmailData(BaseModel):
         return self.firstName or self.lastName
 
 
+@asynccontextmanager
+async def _enrich_client():
+    api_key = os.environ.get("ENRICH_SO_API_KEY")
+    if not api_key:
+        logging.getLogger(__name__).warning("ENRICH_SO_API_KEY is not set")
+        return
+
+    async with httpx.AsyncClient(
+        base_url="https://api.enrich.so/v1/api",
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+    ) as client:
+        yield client
+
+
 async def get_enriched_email_data(user_email: str) -> EnrichSoEnrichedEmailData:
-    async with httpx.AsyncClient() as client:
+    async with _enrich_client() as client:
         response = await client.get(
-            "https://api.enrich.so/v1/api/person",
-            headers={
-                "Authorization": f"Bearer {ENRICH_SO_API_KEY}",
-                "Content-Type": "application/json",
-            },
+            "/person",
             params={
                 "email": user_email,
             },
@@ -201,13 +214,9 @@ class EnrichSoEnrichedCompanyData(BaseModel):
 
 
 async def get_enriched_company_profile_data(linkedin_company_domain: str) -> EnrichSoEnrichedCompanyData:
-    async with httpx.AsyncClient() as client:
+    async with _enrich_client() as client:
         response = await client.get(
-            "https://api.enrich.so/v1/api/linkedin-by-url",
-            headers={
-                "Authorization": f"Bearer {ENRICH_SO_API_KEY}",
-                "Content-Type": "application/json",
-            },
+            "/linkedin-by-url",
             params={
                 "url": linkedin_company_domain,
                 "type": "company",
