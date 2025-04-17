@@ -125,7 +125,7 @@ function PriceSectionModelSelector(props: PriceSectionModelSelectorProps) {
   const numberOfModels = models?.length ?? 0;
 
   return (
-    <div className='flex flex-row items-center sm:justify-center justify-start overflow-x-auto w-full scrollbar-hide border-b border-gray-200'>
+    <div className='flex flex-row items-center sm:justify-center justify-start overflow-x-auto w-full border-b border-gray-200 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-track]:bg-gray-100'>
       <div className='flex flex-row items-center sm:justify-center justify-start w-max'>
         {models?.map((model, index) => (
           <PriceSectionModelSelectorItem
