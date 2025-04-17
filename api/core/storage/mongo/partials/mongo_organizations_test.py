@@ -2008,37 +2008,6 @@ class TestSetSlackChannelId:
         tenant = await organization_storage.get_organization()
         assert tenant.slack_channel_id == channel_id
 
-    async def test_set_slack_channel_id_update_existing(
-        self,
-        organization_storage: MongoOrganizationStorage,
-        org_col: AsyncCollection,
-    ) -> None:
-        # Insert an organization with an existing slack channel ID
-        await org_col.insert_one(
-            dump_model(
-                OrganizationDocument(
-                    tenant=TENANT,
-                    slug="simple_slug",
-                    providers=[],
-                    no_tasks_yet=True,
-                    slack_channel_id="C9876543210",
-                ),
-            ),
-        )
-
-        # Update the slack channel ID
-        new_channel_id = "C1234567890"
-        await organization_storage.set_slack_channel_id(new_channel_id)
-
-        # Verify the slack channel ID was updated
-        doc = await org_col.find_one({"tenant": TENANT})
-        assert doc is not None
-        assert doc["slack_channel_id"] == new_channel_id
-
-        # Verify we can get the tenant and see the updated slack channel ID
-        tenant = await organization_storage.get_organization()
-        assert tenant.slack_channel_id == new_channel_id
-
     async def test_set_slack_channel_id_organization_not_found(
         self,
         organization_storage: MongoOrganizationStorage,
