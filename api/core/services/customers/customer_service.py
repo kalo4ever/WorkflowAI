@@ -7,7 +7,7 @@ from contextlib import contextmanager
 
 from api.services.customer_assessment_service import CustomerAssessmentService
 from core.domain.analytics_events.analytics_events import UserProperties
-from core.domain.consts import WORKFLOWAI_APP_URL
+from core.domain.consts import ENV_NAME, WORKFLOWAI_APP_URL
 from core.domain.errors import InternalError
 from core.domain.events import (
     Event,
@@ -33,11 +33,12 @@ class CustomerService:
         self._user_service = user_service
 
     def _channel_name(self, slug: str, uid: int):
+        prefix = "customer" if ENV_NAME == "prod" else f"customer-{ENV_NAME}"
         if slug:
             # Remove any non-alphanumeric characters
             slug = re.sub(r"[^a-zA-Z0-9-]", "", slug)
-            return f"customer-{slug}"
-        return f"customer-{uid}"
+            return f"{prefix}-{slug}"
+        return f"{prefix}-{uid}"
 
     async def _get_organization(self):
         return await self._storage.organizations.get_organization(

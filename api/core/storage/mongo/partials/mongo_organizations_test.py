@@ -184,8 +184,8 @@ class TestUpdateSlug:
         org_col: AsyncCollection,
     ) -> None:
         # Ensure both organizations exist before updating the slug
-        org_settings_1 = OrganizationDocument(tenant=TENANT, org_id="o1", slug="unique_slug_1", providers=[])
-        org_settings_2 = OrganizationDocument(tenant="tenant_2", org_id="o2", slug="unique_slug_2", providers=[])
+        org_settings_1 = OrganizationDocument(tenant=TENANT, org_id="o1", slug="unique_slug_1", providers=[], uid=1)
+        org_settings_2 = OrganizationDocument(tenant="tenant_2", org_id="o2", slug="unique_slug_2", providers=[], uid=2)
 
         # Insert both organizations with unique slugs
         await org_col.insert_one(dump_model(org_settings_1))
@@ -376,21 +376,27 @@ class TestFindTenantForOwnerId:
     ) -> None:
         # Insert two tenants with the same owner_id but one with org_id
         owner_id = "owner123"
-        await org_col.insert_one(dump_model(OrganizationDocument(tenant="t6", owner_id=owner_id)))
+        await org_col.insert_one(dump_model(OrganizationDocument(tenant="t6", owner_id=owner_id, uid=1)))
 
         # Try to insert another tenant with the same owner_id
         with pytest.raises(DuplicateKeyError):
-            await org_col.insert_one(dump_model(OrganizationDocument(tenant="t7", owner_id=owner_id)))
+            await org_col.insert_one(dump_model(OrganizationDocument(tenant="t7", owner_id=owner_id, uid=2)))
 
         # But should be able to insert one with org_id
-        await org_col.insert_one(dump_model(OrganizationDocument(tenant="t7", owner_id=owner_id, org_id="org123")))
+        await org_col.insert_one(
+            dump_model(OrganizationDocument(tenant="t7", owner_id=owner_id, org_id="org123", uid=3)),
+        )
 
         # But should be able to insert one with a different org_id
-        await org_col.insert_one(dump_model(OrganizationDocument(tenant="t8", owner_id=owner_id, org_id="org456")))
+        await org_col.insert_one(
+            dump_model(OrganizationDocument(tenant="t8", owner_id=owner_id, org_id="org456", uid=4)),
+        )
 
         # But should be able to insert one with a same org_id
         with pytest.raises(DuplicateKeyError):
-            await org_col.insert_one(dump_model(OrganizationDocument(tenant="t9", owner_id=owner_id, org_id="org456")))
+            await org_col.insert_one(
+                dump_model(OrganizationDocument(tenant="t9", owner_id=owner_id, org_id="org456", uid=5)),
+            )
 
 
 class TestIncrementCredits:
@@ -582,10 +588,10 @@ class TestDeleteOrganization:
         org_col: AsyncCollection,
         frozen_time: FrozenDateTimeFactory,
     ) -> None:
-        await org_col.insert_one(dump_model(OrganizationDocument(tenant="t1", slug="slug1", org_id="o1")))
+        await org_col.insert_one(dump_model(OrganizationDocument(tenant="t1", slug="slug1", org_id="o1", uid=1)))
 
         # Check that it's not possible to insert another organization with the same slug
-        same_slug_org = OrganizationDocument(tenant="t2", slug="slug1", org_id="o2")
+        same_slug_org = OrganizationDocument(tenant="t2", slug="slug1", org_id="o2", uid=2)
         with pytest.raises(DuplicateKeyError):
             await org_col.insert_one(dump_model(same_slug_org))
 
@@ -733,6 +739,7 @@ class TestGetAPIKeysForOrganization:
                     slug="simple_slug",
                     providers=[],
                     no_tasks_yet=True,
+                    uid=1,
                     api_keys=[
                         APIKeyDocument(
                             name="test key 4",
@@ -760,6 +767,7 @@ class TestGetAPIKeysForOrganization:
                     slug="tenant2_slug",
                     providers=[],
                     no_tasks_yet=True,
+                    uid=2,
                     api_keys=[
                         APIKeyDocument(
                             name="test key 6",
