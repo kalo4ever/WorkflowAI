@@ -548,7 +548,7 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
     [findAbortController]
   );
 
-  const onStopAllRuns = useCallback(() => {
+  const stopAllRuns = useCallback(() => {
     abortControllerRun0.current?.abort();
     abortControllerRun1.current?.abort();
     abortControllerRun2.current?.abort();
@@ -774,7 +774,7 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
     [handleGeneratePlaygroundInput, toggleSettingsModal]
   );
 
-  const singleTaskLoading = useMemo(() => taskIndexesLoading.some((l) => l), [taskIndexesLoading]);
+  const areTasksRunning = useMemo(() => taskIndexesLoading.some((l) => l), [taskIndexesLoading]);
 
   // Load the initial task run or trigger the generation of the input and runs
   const { taskRun1, taskRun2, taskRun3, taskRun1Loading, taskRun2Loading, taskRun3Loading } = usePlaygroundEffects({
@@ -1076,11 +1076,11 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
     cancelImproveInstructions();
     onStopGeneratingInput();
     cancelScheduledPlaygroundMessage();
-    onStopAllRuns();
+    stopAllRuns();
     setTimeout(() => {
-      onStopAllRuns();
+      stopAllRuns();
     }, 1000);
-  }, [cancelScheduledPlaygroundMessage, cancelImproveInstructions, onStopGeneratingInput, onStopAllRuns]);
+  }, [cancelScheduledPlaygroundMessage, cancelImproveInstructions, onStopGeneratingInput, stopAllRuns]);
 
   const isMobile = useIsMobile();
 
@@ -1111,12 +1111,12 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
               {!isMobile && (
                 <RunAgentsButton
                   showSaveAllVersions={showSaveAllVersions && !noCreditsLeft}
-                  singleTaskLoading={singleTaskLoading}
+                  areTasksRunning={areTasksRunning}
                   inputLoading={inputLoading}
                   areInstructionsLoading={areInstructionsLoading}
                   onSaveAllVersions={onSaveAllVersions}
                   onTryPromptClick={onTryPromptClick}
-                  onStopAllRuns={onStopAllRuns}
+                  onStopAllRuns={stopAllRuns}
                 />
               )}
             </div>
@@ -1142,7 +1142,7 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
                 oldInstructions={oldInstructions}
                 onEdit={onEdit}
                 onImportInput={onImportInput}
-                singleTaskLoading={singleTaskLoading}
+                areTasksRunning={areTasksRunning}
                 toggleSettingsModal={toggleSettingsModal}
                 instructions={instructions}
                 setInstructions={onSetInstructions}
@@ -1171,6 +1171,7 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
                 onToolsChange={updateTaskInstructions}
                 onStopGeneratingInput={onStopGeneratingInput}
                 isInDemoMode={isInDemoMode}
+                stopAllRuns={stopAllRuns}
               />
               <div ref={playgroundOutputRef} className='flex w-full'>
                 <PlaygroundOutput
@@ -1218,12 +1219,12 @@ export function PlaygroundContent(props: PlaygroundContentBodyProps) {
             <div className='fixed bottom-0 left-0 right-0 z-10 bg-white border-t border-gray-200 p-4 sm:hidden flex w-full'>
               <RunAgentsButton
                 showSaveAllVersions={showSaveAllVersions && !noCreditsLeft}
-                singleTaskLoading={singleTaskLoading}
+                areTasksRunning={areTasksRunning}
                 inputLoading={inputLoading}
                 areInstructionsLoading={areInstructionsLoading}
                 onSaveAllVersions={onSaveAllVersions}
                 onTryPromptClick={onTryPromptClick}
-                onStopAllRuns={onStopAllRuns}
+                onStopAllRuns={stopAllRuns}
                 className='flex w-full'
               />
             </div>
