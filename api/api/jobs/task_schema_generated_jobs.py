@@ -54,6 +54,7 @@ def _get_notification_text_content(
     return message
 
 
+# TODO: remove ?
 @broker.task(retry_on_error=True, max_retries=1)
 async def notify_slack_on_task_schema_generated(
     event: TaskSchemaGeneratedEvent,

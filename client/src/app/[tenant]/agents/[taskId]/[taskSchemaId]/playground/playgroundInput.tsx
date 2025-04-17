@@ -20,7 +20,7 @@ type PlaygroundInputProps = {
   areInstructionsLoading: boolean;
   onEdit: (keyPath: string, newVal: unknown) => void;
   onImportInput: (importedInput: string) => Promise<void>;
-  singleTaskLoading: boolean;
+  areTasksRunning: boolean;
   toggleSettingsModal: () => void;
   isPreviousAvailable: boolean;
   isNextAvailable: boolean;
@@ -37,6 +37,7 @@ type PlaygroundInputProps = {
   ) => Promise<string | undefined>;
   onStopGeneratingInput: () => void;
   isInDemoMode: boolean;
+  stopAllRuns: () => void;
 };
 
 export function PlaygroundInput(props: PlaygroundInputProps) {
@@ -48,7 +49,7 @@ export function PlaygroundInput(props: PlaygroundInputProps) {
     areInstructionsLoading,
     onEdit,
     onImportInput,
-    singleTaskLoading,
+    areTasksRunning,
     toggleSettingsModal,
     isPreviousAvailable,
     isNextAvailable,
@@ -61,6 +62,7 @@ export function PlaygroundInput(props: PlaygroundInputProps) {
     handleUploadFile,
     onStopGeneratingInput,
     isInDemoMode,
+    stopAllRuns,
   } = props;
 
   const [importModalOpen, setImportModalOpen] = useState(false);
@@ -73,14 +75,17 @@ export function PlaygroundInput(props: PlaygroundInputProps) {
 
   const handleEdit = useCallback(
     (keyPath: string, newVal: unknown) => {
-      if (singleTaskLoading) return;
+      if (areTasksRunning) {
+        stopAllRuns();
+      }
 
       if (inputLoading) {
         onStopGeneratingInput();
       }
+
       onEdit(keyPath, newVal);
     },
-    [onEdit, singleTaskLoading, inputLoading, onStopGeneratingInput]
+    [onEdit, areTasksRunning, inputLoading, onStopGeneratingInput, stopAllRuns]
   );
 
   const voidInput = useMemo(() => {
@@ -136,7 +141,7 @@ export function PlaygroundInput(props: PlaygroundInputProps) {
               variant='newDesign'
               icon={<ArrowUpload16Regular className='h-4 w-4' />}
               onClick={openImportModal}
-              disabled={singleTaskLoading || areInstructionsLoading || inputLoading}
+              disabled={areTasksRunning || areInstructionsLoading || inputLoading}
               className='h-7 w-7 mr-2 sm:block hidden'
               size='none'
             />
@@ -144,7 +149,7 @@ export function PlaygroundInput(props: PlaygroundInputProps) {
             <GenerateInputControls
               onQuickGenerateInput={onQuickGenerateInput}
               inputLoading={inputLoading}
-              singleTaskLoading={singleTaskLoading}
+              singleTaskLoading={areTasksRunning}
               areInstructionsLoading={areInstructionsLoading}
               toggleSettingsModal={toggleSettingsModal}
               onStopGeneratingInput={onStopGeneratingInput}

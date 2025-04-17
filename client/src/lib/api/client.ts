@@ -309,6 +309,10 @@ export async function SSEClient<R, T>(
   let lastMessage: T | undefined;
   const headers = await requestHeaders('application/json');
 
+  if (signal?.aborted) {
+    return undefined as T;
+  }
+
   await fetchEventSource(path, {
     onopen: onOpenStream,
     onmessage: (event: EventSourceMessage) => {

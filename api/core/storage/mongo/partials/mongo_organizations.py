@@ -21,7 +21,7 @@ from core.storage.mongo.models.organization_document import (
 )
 from core.storage.mongo.mongo_types import AsyncCollection
 from core.storage.mongo.partials.base_partial_storage import PartialStorage
-from core.storage.mongo.utils import dump_model
+from core.storage.mongo.utils import dump_model, projection
 from core.storage.organization_storage import OrganizationStorage
 from core.utils.encryption import Encryption
 from core.utils.fields import datetime_factory
@@ -36,7 +36,7 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
     def _projection(cls, dict: dict[str, Any] | None) -> dict[str, Any]:
         if dict is None:
             return {"api_keys.hashed_key": 0}
-        if "api_keys.hashed_key" not in dict:
+        if "api_keys.hashed_key" not in dict and not any(v == 1 for v in dict.values()):
             return {"api_keys.hashed_key": 0, **dict}
         return dict
 
@@ -48,8 +48,8 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
         )
 
     @override
-    async def get_organization(self) -> TenantData:
-        doc = await self._find_one({}, projection=self._projection(None))
+    async def get_organization(self, include: set[str] | None = None) -> TenantData:
+        doc = await self._find_one({}, projection=self._projection(projection(include=include)))
         return doc.to_domain(self.encryption)
 
     async def _get_public_org(self, filter: dict[str, Any]):
@@ -452,3 +452,11 @@ class MongoOrganizationStorage(PartialStorage[OrganizationDocument], Organizatio
     @override
     async def clear_payment_failure(self) -> None:
         await self._update_one({}, {"$unset": {"payment_failure": ""}})
+
+    @override
+    async def set_slack_channel_id(self, channel_id: str | None, force: bool = False) -> None:
+        if channel_id is None:
+            await self._update_one({}, {"$unset": {"slack_channel_id": ""}})
+        else:
+            filter = {"slack_channel_id": {"$exists": False}} if not force else {}
+            await self._update_one(filter, {"$set": {"slack_channel_id": channel_id}})

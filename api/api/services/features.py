@@ -7,7 +7,6 @@ from typing import Any, NamedTuple
 from pydantic import BaseModel
 
 from api.services.internal_tasks._internal_tasks_utils import OFFICIALLY_SUGGESTED_TOOLS, officially_suggested_tools
-from api.services.slack_notifications import SlackNotificationDestination, get_user_and_org_str, send_slack_notification
 from core.agents.agent_output_example import SuggestedAgentOutputExampleInput, stream_suggested_agent_output_example
 from core.agents.agent_suggestion_validator_agent import SuggestedAgentValidationInput, run_suggested_agent_validation
 from core.agents.chat_task_schema_generation.chat_task_schema_generation_task import (
@@ -20,7 +19,7 @@ from core.agents.chat_task_schema_generation.schema_generation_agent import (
     run_agent_schema_generation,
 )
 from core.agents.company_agent_suggestion_agent import (
-    INSTUCTIONS as AGENT_SUGGESTION_INSTRUCTIONS,
+    INSTRUCTIONS as AGENT_SUGGESTION_INSTRUCTIONS,
 )
 from core.agents.company_agent_suggestion_agent import (
     CompanyContext as CompanyContextInput,
@@ -348,16 +347,6 @@ class FeatureService:
 
         async for chunk in self._stream_feature_suggestions(company_context.public, agent_suggestion_input):
             yield chunk
-
-    async def notify_features_by_domain_generation_started(self, event: FeaturesByDomainGenerationStarted):
-        user_and_org_str = get_user_and_org_str(event=event)
-        message = f"{user_and_org_str} started to generate features for domain: {event.company_domain}"
-
-        await send_slack_notification(
-            message=message,
-            user_email=event.user_properties.user_email if event.user_properties else None,
-            destination=SlackNotificationDestination.CUSTOMER_JOURNEY,
-        )
 
     @classmethod
     async def get_agent_preview(

@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 
 type Props = {
   showSaveAllVersions: boolean;
-  singleTaskLoading: boolean;
+  areTasksRunning: boolean;
   inputLoading: boolean;
   areInstructionsLoading: boolean;
   className?: string;
@@ -18,7 +18,7 @@ type Props = {
 export function RunAgentsButton(props: Props) {
   const {
     showSaveAllVersions,
-    singleTaskLoading,
+    areTasksRunning,
     inputLoading,
     areInstructionsLoading,
     className,
@@ -37,7 +37,7 @@ export function RunAgentsButton(props: Props) {
         <Button
           variant='newDesignIndigo'
           icon={<Save16Filled />}
-          loading={singleTaskLoading}
+          loading={areTasksRunning}
           disabled={isSaveButtonDisabled}
           onClick={onSaveAllVersions}
           className={cn('min-h-8', className)}
@@ -55,7 +55,7 @@ export function RunAgentsButton(props: Props) {
       <Button
         variant='newDesignIndigo'
         icon={<Play16Filled />}
-        loading={singleTaskLoading}
+        loading={areTasksRunning}
         disabled={isNormalButtonDisabled}
         onClick={onTryPromptClick}
         className={cn('min-h-8', className)}
@@ -78,7 +78,7 @@ export function RunAgentsButton(props: Props) {
 
   return (
     <div onMouseEnter={() => setIsHovering(true)} onMouseLeave={() => setIsHovering(false)} className={className}>
-      {isHovering && singleTaskLoading ? stopButtonContent : normalButtonContent}
+      {isHovering && areTasksRunning ? stopButtonContent : normalButtonContent}
     </div>
   );
 }

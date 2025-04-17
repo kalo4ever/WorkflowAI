@@ -42,7 +42,7 @@ class _ClerkWebhookSigner:
             raise ValueError("Missing clerk webhook secret")
         signer = raw.split("_")
         if not len(signer) == 2:
-            _logger.warning("Invalid CLERK_WEBHOOK_SECRET")
+            _logger.warning("Invalid CLERK_WEBHOOKS_SECRET")
             return
         self._secret = base64.b64decode(signer[1])
 
@@ -141,6 +141,7 @@ async def _clerk_organization_webhook(
                 slug=organization.slug,
                 display_name=organization.name,
             )
+            # TODO: update slack channel name
         case "organization.deleted":
             await system_storage.delete_organization(organization.id)
         case _:

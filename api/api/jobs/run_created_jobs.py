@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 
 from api.broker import broker
 from api.jobs.common import (
+    CustomerServiceDep,
     InternalTasksServiceDep,
     PaymentSystemServiceDep,
     ReviewsServiceDep,
@@ -69,14 +70,23 @@ async def update_task_group_last_active_at(event: RunCreatedEvent, storage: Stor
 
 
 @broker.task(retry_on_error=False)
-async def update_task_schema_last_active_at(event: RunCreatedEvent, storage: StorageDep):
+async def update_task_schema_last_active_at(
+    event: RunCreatedEvent,
+    storage: StorageDep,
+    customer_service: CustomerServiceDep,
+):
     if not event.run.is_active:
         return
 
-    await storage.tasks.update_task(
+    before_update = await storage.tasks.update_task(
         task_id=event.run.task_id,
         update=TaskUpdate(schema_last_active_at=(event.run.task_schema_id, datetime.now(timezone.utc))),
+        before=True,
     )
+    if not before_update.is_active:
+        return
+
+    await customer_service.send_became_active(event.run.task_id)
 
 
 def _should_run_task_run_moderation() -> bool:

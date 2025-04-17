@@ -1,5 +1,6 @@
 import logging
 import os
+import time
 import uuid
 from collections.abc import Sequence
 from typing import Annotated, Any, Literal, override
@@ -34,6 +35,7 @@ from api.tags import RouteTags
 from api.utils import get_start_time
 from core.domain.agent_run import AgentRun
 from core.domain.major_minor import MajorMinor
+from core.domain.metrics import send_gauge
 from core.domain.run_output import RunOutput
 from core.domain.task_group import TaskGroupIdentifier
 from core.domain.task_group_properties import TaskGroupProperties
@@ -43,6 +45,7 @@ from core.domain.types import CacheUsage
 from core.domain.version_environment import VersionEnvironment
 from core.domain.version_reference import VersionReference as DomainVersionReference
 from core.storage import TenantTuple
+from core.utils.background import add_background_task
 from core.utils.fields import id_factory
 from core.utils.iter_utils import safe_map_optional
 from core.utils.models.previews import compute_preview
@@ -313,6 +316,26 @@ def author_tenant(org_settings: RequiredUserOrganizationDep, url_public_org: URL
 AuthorTenantDep = Annotated[TenantTuple | None, Depends(author_tenant)]
 
 
+async def _send_overhead_metrics(
+    request_start_time: float,
+    preparation_start_time: float,
+    done_building_runner: float,
+    metric_tags: dict[str, Any],
+):
+    await send_gauge(
+        "run_overhead_prep",
+        value=preparation_start_time - request_start_time,
+        timestamp=request_start_time,
+        **metric_tags,
+    )
+    await send_gauge(
+        "run_overhead_runner",
+        value=done_building_runner - preparation_start_time,
+        timestamp=preparation_start_time,
+        **metric_tags,
+    )
+
+
 @task_router.post(
     "/v1/{tenant}/tasks/{task_id}/schemas/{task_schema_id}/run",
     responses=_RUN_RESPONSE_V1,
@@ -334,7 +357,11 @@ async def run_task(
     user_org: UserOrganizationDep,
     feedback_token_generator: RunFeedbackGeneratorDep,
     request: Request,
+    task_org: URLPublicOrganizationDep,
 ) -> Response:
+    request_start_time = get_start_time(request)
+    preparation_start_time = time.time()
+
     reference = version_reference_to_domain(body.version)
 
     with prettify_errors(user_org, task_id, task_schema_id, reference):
@@ -344,6 +371,15 @@ async def run_task(
             reference=reference,
             provider_settings=provider_settings,
         )
+    runner.metric_tags = {"tenant": task_org.slug if task_org else None, "task_id": task_id}
+    add_background_task(
+        _send_overhead_metrics(
+            request_start_time,
+            preparation_start_time,
+            time.time(),
+            runner.metric_tags,
+        ),
+    )
 
     return await run_service.run(
         task_input=body.task_input,
@@ -360,7 +396,7 @@ async def run_task(
         private_fields=body.private_fields,
         # We don't pass the source here, it is only used when storing the run inline
         is_different_version=is_different_version,
-        start_time=get_start_time(request),
+        start_time=request_start_time,
     )
 
 

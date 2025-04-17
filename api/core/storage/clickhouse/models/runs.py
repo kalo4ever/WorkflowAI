@@ -217,7 +217,10 @@ class ClickhouseRun(BaseModel):
         return value
 
     duration_ds: Annotated[int, validate_int(MAX_UINT_16, "duration_ds")] = 0
-    overhead_ms: Annotated[int, validate_int(MAX_UINT_8, "overhead_ms")] = 0
+    # Right now we are seeing high overhead values when handling large images
+    # as base64 data on some deprecated tasks. Silencing the warning for now
+    # TODO: set warning back to True when we have figured out the source of the overhead
+    overhead_ms: Annotated[int, validate_int(MAX_UINT_8, "overhead_ms", warning=False)] = 0
     cost_millionth_usd: Annotated[int, validate_int(MAX_UINT_32, "cost_millionth_usd")] = 0
     input_token_count: Annotated[int, validate_int(MAX_UINT_32, "input_token_count")] = 0
     output_token_count: Annotated[int, validate_int(MAX_UINT_32, "output_token_count")] = 0

@@ -170,8 +170,9 @@ class TestSchemaLastActiveAt:
         actual = await task_storage.get_task_info("bla")
         assert actual.schema_details is not None
         assert len(actual.schema_details) == 1
-        assert actual.schema_details[0]["schema_id"] == 1
-        assert abs(actual.schema_details[0]["last_active_at"] - now) < timedelta(seconds=1)
+        assert actual.schema_details[0].schema_id == 1
+        assert actual.schema_details[0].last_active_at
+        assert abs(actual.schema_details[0].last_active_at - now) < timedelta(seconds=1)
 
     async def test_update_last_active_at_twice(self, task_storage: MongoTaskStorage):
         now = datetime.now(timezone.utc)
@@ -182,8 +183,9 @@ class TestSchemaLastActiveAt:
         actual = await task_storage.get_task_info("bla")
         assert actual.schema_details is not None
         assert len(actual.schema_details) == 1
-        assert actual.schema_details[0]["schema_id"] == 1
-        assert abs(actual.schema_details[0]["last_active_at"] - now) < timedelta(seconds=1)
+        assert actual.schema_details[0].schema_id == 1
+        assert actual.schema_details[0].last_active_at
+        assert abs(actual.schema_details[0].last_active_at - now) < timedelta(seconds=1)
 
     async def test_update_last_active_at_with_different_schema_id(self, task_storage: MongoTaskStorage):
         now = datetime.now(timezone.utc)
@@ -193,20 +195,24 @@ class TestSchemaLastActiveAt:
         actual = await task_storage.get_task_info("bla")
         assert actual.schema_details is not None
         assert len(actual.schema_details) == 2
-        assert actual.schema_details[0]["schema_id"] == 1
-        assert actual.schema_details[1]["schema_id"] == 2
-        assert abs(actual.schema_details[0]["last_active_at"] - (now - timedelta(minutes=20))) < timedelta(seconds=1)
-        assert abs(actual.schema_details[1]["last_active_at"] - now) < timedelta(seconds=1)
+        assert actual.schema_details[0].schema_id == 1
+        assert actual.schema_details[1].schema_id == 2
+        assert actual.schema_details[0].last_active_at
+        assert abs(actual.schema_details[0].last_active_at - (now - timedelta(minutes=20))) < timedelta(seconds=1)
+        assert actual.schema_details[1].last_active_at
+        assert abs(actual.schema_details[1].last_active_at - now) < timedelta(seconds=1)
 
         await task_storage.update_task("bla", TaskUpdate(schema_last_active_at=(1, now)))
 
         actual = await task_storage.get_task_info("bla")
         assert actual.schema_details is not None
         assert len(actual.schema_details) == 2
-        assert actual.schema_details[0]["schema_id"] == 1
-        assert actual.schema_details[1]["schema_id"] == 2
-        assert abs(actual.schema_details[0]["last_active_at"] - now) < timedelta(seconds=1)
-        assert abs(actual.schema_details[1]["last_active_at"] - now) < timedelta(seconds=1)
+        assert actual.schema_details[0].schema_id == 1
+        assert actual.schema_details[1].schema_id == 2
+        assert actual.schema_details[0].last_active_at
+        assert actual.schema_details[1].last_active_at
+        assert abs(actual.schema_details[0].last_active_at - now) < timedelta(seconds=1)
+        assert abs(actual.schema_details[1].last_active_at - now) < timedelta(seconds=1)
 
 
 class TestGetPublicTaskInfo:
@@ -237,3 +243,64 @@ class TestGetPublicTaskInfo:
         with pytest.raises(ObjectNotFoundException) as exc_info:
             await task_storage.get_public_task_info(999)
         assert str(exc_info.value) == "Task with uid 999 not found"
+
+
+class TestUpdateTaskBefore:
+    async def test_update_task_before_true(self, task_storage: MongoTaskStorage, tasks_col: AsyncCollection):
+        # Insert initial task
+        initial_task = TaskDocument(
+            task_id="test_task",
+            name="Initial Name",
+            is_public=False,
+            tenant="test_tenant",
+        )
+        await tasks_col.insert_one(dump_model(initial_task))
+
+        # Update task with before=True
+        update = TaskUpdate(name="New Name", is_public=True)
+        result = await task_storage.update_task("test_task", update, before=True)
+
+        # Verify the result is the document before the update
+        assert result.name == "Initial Name"
+        assert result.is_public is False
+
+        # Verify the document in the database was actually updated
+        doc = await tasks_col.find_one({"task_id": "test_task"})
+        assert doc is not None
+        assert doc["name"] == "New Name"
+        assert doc["is_public"] is True
+
+    async def test_update_task_before_false(self, task_storage: MongoTaskStorage, tasks_col: AsyncCollection):
+        # Insert initial task
+        initial_task = TaskDocument(
+            task_id="test_task",
+            name="Initial Name",
+            is_public=False,
+            tenant="test_tenant",
+        )
+        await tasks_col.insert_one(dump_model(initial_task))
+
+        # Update task with before=False (default)
+        update = TaskUpdate(name="New Name", is_public=True)
+        result = await task_storage.update_task("test_task", update, before=False)
+
+        # Verify the result is the document after the update
+        assert result.name == "New Name"
+        assert result.is_public is True
+
+        # Verify the document in the database matches
+        doc = await tasks_col.find_one({"task_id": "test_task"})
+        assert doc is not None
+        assert doc["name"] == "New Name"
+        assert doc["is_public"] is True
+
+    async def test_update_task_before_upsert(self, task_storage: MongoTaskStorage, tasks_col: AsyncCollection):
+        # Try to update non-existent task with before=True
+        # The task wil not be upserted
+        update = TaskUpdate(name="New Task", is_public=True)
+        with pytest.raises(ObjectNotFoundException):
+            await task_storage.update_task("non_existent", update, before=True)
+
+        # Verify the document was created in the database
+        doc = await tasks_col.find_one({"task_id": "non_existent"})
+        assert doc is None

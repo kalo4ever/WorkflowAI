@@ -22,6 +22,7 @@ from core.domain.errors import (
 )
 from core.domain.fields.internal_reasoning_steps import InternalReasoningStep
 from core.domain.message import Message
+from core.domain.metrics import send_gauge
 from core.domain.models.model_data import FinalModelData, ModelData
 from core.domain.models.model_datas_mapping import MODEL_DATAS
 from core.domain.models.utils import get_model_data, get_model_provider_data
@@ -57,6 +58,7 @@ from core.runners.workflowai.utils import (
     sanitize_model_and_provider,
     split_tools,
 )
+from core.utils.background import add_background_task
 from core.utils.dicts import set_at_keypath
 from core.utils.file_utils.file_utils import extract_text_from_file_base64
 from core.utils.generics import T
@@ -421,16 +423,17 @@ class WorkflowAIRunner(AbstractRunner[WorkflowAIRunnerOptions]):
         if (builder := self._get_builder_context()) and builder.reply:
             return await self._build_messages_for_reply(builder.reply)
 
+        start_time = time.time()
         input_copy = deepcopy(input)
         input_schema = self.task_input_schema()
         output_schema = self.task_output_schema()
 
         input_schema, input_copy, files = extract_files(input_schema, input_copy)
+
         if files:
+            download_start_time = time.time()
             files = await self._convert_pdf_to_images(files, model_data)
             self._check_support_for_files(model_data, files)
-
-            download_start_time = time.time()
             try:
                 async with asyncio.TaskGroup() as tg:
                     for file in files:
@@ -439,13 +442,15 @@ class WorkflowAIRunner(AbstractRunner[WorkflowAIRunnerOptions]):
                         tg.create_task(self._download_file_and_update_input_if_needed(provider, file, input))
             except* InvalidFileError as eg:
                 raise eg.exceptions[0]
-            if builder:
-                builder.record_file_download_seconds(time.time() - download_start_time)
-
             # Here we update the input copy instead of the provided input
             # Since the data will just be provided to the provider
             files, has_inlined_files = self._inline_text_files(files, input_copy)
+
+            download_duration = time.time() - download_start_time
+            if builder:
+                builder.record_file_download_seconds(download_duration)
         else:
+            download_duration = 0
             has_inlined_files = False
 
         instructions = self._options.instructions
@@ -493,6 +498,14 @@ class WorkflowAIRunner(AbstractRunner[WorkflowAIRunnerOptions]):
                 ),
             )
 
+        add_background_task(
+            send_gauge(
+                "run_overhead_messages",
+                value=time.time() - start_time,
+                timestamp=start_time,
+                **self.metric_tags,
+            ),
+        )
         return messages
 
     @property

@@ -22,7 +22,7 @@ type PlaygroundInputContainerProps = {
   approveImprovedInstructions: () => void;
   setInstructions: (value: string) => void;
   setTemperature: (value: number) => void;
-  singleTaskLoading: boolean;
+  areTasksRunning: boolean;
   temperature: number;
   toggleSettingsModal: () => void;
   isPreviousAvailableForParameters: boolean;
@@ -48,6 +48,7 @@ type PlaygroundInputContainerProps = {
   onToolsChange: (tools: ToolKind[]) => Promise<void>;
   onStopGeneratingInput: () => void;
   isInDemoMode: boolean;
+  stopAllRuns: () => void;
 };
 
 export function PlaygroundInputContainer(props: PlaygroundInputContainerProps) {
@@ -69,7 +70,7 @@ export function PlaygroundInputContainer(props: PlaygroundInputContainerProps) {
     approveImprovedInstructions,
     setInstructions,
     setTemperature,
-    singleTaskLoading,
+    areTasksRunning,
     temperature,
     toggleSettingsModal,
     isPreviousAvailableForParameters,
@@ -91,6 +92,7 @@ export function PlaygroundInputContainer(props: PlaygroundInputContainerProps) {
     onToolsChange,
     onStopGeneratingInput,
     isInDemoMode,
+    stopAllRuns,
   } = props;
 
   return (
@@ -103,7 +105,7 @@ export function PlaygroundInputContainer(props: PlaygroundInputContainerProps) {
           inputLoading={inputLoading}
           areInstructionsLoading={areInstructionsLoading}
           onEdit={onEdit}
-          singleTaskLoading={singleTaskLoading}
+          areTasksRunning={areTasksRunning}
           toggleSettingsModal={toggleSettingsModal}
           onImportInput={onImportInput}
           isPreviousAvailable={isPreviousAvailableForInput}
@@ -117,6 +119,7 @@ export function PlaygroundInputContainer(props: PlaygroundInputContainerProps) {
           handleUploadFile={handleUploadFile}
           onStopGeneratingInput={onStopGeneratingInput}
           isInDemoMode={isInDemoMode}
+          stopAllRuns={stopAllRuns}
         />
       </div>
 

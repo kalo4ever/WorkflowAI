@@ -15,3 +15,6 @@ class URLContent(BaseModel):
         default=URLStatus.REACHABLE,
         description="The status of the URL: reachable or unreachable",
     )
+
+    def __hash__(self) -> int:
+        return hash((self.url, self.content, self.status))

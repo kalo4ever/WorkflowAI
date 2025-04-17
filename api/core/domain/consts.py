@@ -22,3 +22,5 @@ PDF_REF_NAME = "PDF"
 FILE_DEFS = {IMAGE_REF_NAME, FILE_REF_NAME, AUDIO_REF_NAME, PDF_REF_NAME}
 
 WORKFLOWAI_APP_URL = os.getenv("WORKFLOWAI_APP_URL", "https://workflowai.com")
+
+ENV_NAME = os.getenv("ENV_NAME", "local")

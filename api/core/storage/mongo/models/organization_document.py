@@ -108,7 +108,7 @@ class PaymentFailureSchema(BaseModel):
 
 
 class OrganizationDocument(BaseDocumentWithID):
-    uid: int = Field(default_factory=id_uint32)
+    uid: int = 0
     anonymous_user_id: str | None = None
     previous_anonymous_user_id: str | None = None
     # Organization slug to be used in URLs
@@ -150,6 +150,8 @@ class OrganizationDocument(BaseDocumentWithID):
 
     low_credits_email_sent: list[LowCreditsEmailSent] | None = None
 
+    slack_channel_id: str | None = None
+
     @classmethod
     def from_domain(cls, org_settings: TenantData, no_tasks_yet: bool | None = None) -> Self:
         return cls(
@@ -181,6 +183,7 @@ class OrganizationDocument(BaseDocumentWithID):
             ]
             if org_settings.low_credits_email_sent_by_threshold
             else None,
+            slack_channel_id=org_settings.slack_channel_id or None,
         )
 
     def to_domain(self, encryption: Encryption | None) -> TenantData:
@@ -210,6 +213,7 @@ class OrganizationDocument(BaseDocumentWithID):
             }
             if self.low_credits_email_sent
             else None,
+            slack_channel_id=self.slack_channel_id or None,
         )
 
     def to_domain_public(self) -> PublicOrganizationData:

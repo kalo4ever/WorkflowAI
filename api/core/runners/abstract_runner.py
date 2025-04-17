@@ -8,7 +8,7 @@ from pydantic import BaseModel, ValidationError
 
 from core.domain.agent_run import AgentRun
 from core.domain.errors import InvalidRunnerOptionsError, MissingCacheError, ProviderError
-from core.domain.metrics import send_counter
+from core.domain.metrics import measure_time, send_counter
 from core.domain.run_output import RunOutput
 from core.domain.task_group_properties import TaskGroupProperties
 from core.domain.task_run_builder import TaskRunBuilder
@@ -77,6 +77,8 @@ class AbstractRunner(
         self.properties = self._build_properties(self._options, original=properties)
         self.cache_fetcher = cache_fetcher
         self.metadata = metadata
+        # Set from the outside for analytics
+        self.metric_tags: dict[str, int | str | float | bool | None] = {}
 
     async def validate_run_options(self):
         """An opportunity to validate the run options before they are used. This method
@@ -278,7 +280,8 @@ class AbstractRunner(
         The main runner function that is called when an input is provided
         """
 
-        cached = await self._prepare_builder(builder, cache)
+        with measure_time("run_overhead_builder", **self.metric_tags):
+            cached = await self._prepare_builder(builder, cache)
         if cached is not None:
             return cached
 

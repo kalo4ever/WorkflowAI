@@ -39,4 +39,4 @@ class SerializableTask(BaseModel):
         for version in self.versions:
             version.is_hidden = version.schema_id in hidden_schema_ids
             schema_details = task_info.get_schema_details(version.schema_id)
-            version.last_active_at = schema_details["last_active_at"] if schema_details else None
+            version.last_active_at = schema_details.last_active_at if schema_details else None

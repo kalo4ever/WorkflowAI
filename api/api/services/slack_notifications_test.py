@@ -96,7 +96,7 @@ async def test_send_slack_notification_when_should_send():
 
     with (
         patch("api.services.slack_notifications._should_send_slack_notification") as mock_should_send,
-        patch("api.services.slack_notifications.SlackClient") as mock_slack_client,
+        patch("api.services.slack_notifications.SlackWebhookClient") as mock_slack_client,
         patch("api.services.slack_notifications.logger") as mock_logger,
     ):
         mock_should_send.return_value = True
@@ -116,7 +116,7 @@ async def test_send_slack_notification_when_should_not_send():
 
     with (
         patch("api.services.slack_notifications._should_send_slack_notification") as mock_should_send,
-        patch("api.services.slack_notifications.SlackClient") as mock_slack_client,
+        patch("api.services.slack_notifications.SlackWebhookClient") as mock_slack_client,
         patch("api.services.slack_notifications.logger") as mock_logger,
     ):
         mock_should_send.return_value = False
