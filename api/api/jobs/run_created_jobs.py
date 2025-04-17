@@ -86,7 +86,8 @@ async def update_task_schema_last_active_at(
     if not before_update.is_active:
         return
 
-    await customer_service.send_became_active(event.run.task_id)
+    # TODO: not sending message since it triggers a lot of messages in the channel for now
+    # await customer_service.send_became_active(event.run.task_id)
 
 
 def _should_run_task_run_moderation() -> bool:
