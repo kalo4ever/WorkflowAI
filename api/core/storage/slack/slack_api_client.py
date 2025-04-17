@@ -30,8 +30,7 @@ class SlackApiClient:
             error_msg = f"Slack client failed to {operation_name}"
             error = parsed.get("error", "Unknown error")
 
-            _logger.error(error_msg, extra={"error_msg": error})
-            raise InternalError(error_msg, extra={"error": error})
+            raise InternalError(error_msg, extra={"error_msg": error})
 
     async def post(
         self,
