@@ -3,7 +3,7 @@ import json
 import pytest
 from pytest_httpx import HTTPXMock
 
-from core.storage.slack.client import SlackClient, SlackErrorSendingError
+from core.storage.slack.webhook_client import SlackErrorSendingError, SlackWebhookClient
 
 
 async def test_send_message(httpx_mock: HTTPXMock):
@@ -13,7 +13,7 @@ async def test_send_message(httpx_mock: HTTPXMock):
 
     httpx_mock.add_response(status_code=200, text="ok")
 
-    client = SlackClient(webhook_url)
+    client = SlackWebhookClient(webhook_url)
     await client.send_message(message)
 
     request = httpx_mock.get_request()
@@ -29,7 +29,7 @@ async def test_send_message_fail(httpx_mock: HTTPXMock):
 
     httpx_mock.add_response(status_code=400, text="NOK")
 
-    client = SlackClient(webhook_url)
+    client = SlackWebhookClient(webhook_url)
     with pytest.raises(SlackErrorSendingError):
         await client.send_message(message)
 

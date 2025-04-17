@@ -21,6 +21,7 @@ from core.deprecated.workflowai import WorkflowAI
 from core.domain.analytics_events.analytics_events import UserProperties
 from core.domain.events import Event, EventRouter
 from core.domain.users import UserIdentifier
+from core.services.customers.customer_service import CustomerService
 from core.services.emails.email_service import EmailService
 from core.services.users.user_service import UserService
 from core.storage.azure.azure_blob_file_storage import FileStorage
@@ -311,3 +312,10 @@ def payment_system_service_dep(storage: SystemStorageDep, email_service: EmailSe
 
 
 PaymentSystemServiceDep = Annotated[PaymentSystemService, TaskiqDepends(payment_system_service_dep)]
+
+
+def customer_service_dep(storage: StorageDep, user_service: UserServiceDep) -> CustomerService:
+    return CustomerService(storage, user_service)
+
+
+CustomerServiceDep = Annotated[CustomerService, TaskiqDepends(customer_service_dep)]

@@ -1,8 +1,8 @@
 import logging
 
-from api.jobs.common import InternalTasksServiceDep, StorageDep
+from api.jobs.common import CustomerServiceDep, InternalTasksServiceDep, StorageDep
 from api.jobs.utils.jobs_utils import get_task_str_for_slack
-from api.services.slack_notifications import SlackNotificationDestination, get_user_and_org_str, send_slack_notification
+from api.services.slack_notifications import get_user_and_org_str
 from core.domain.events import TaskSchemaCreatedEvent
 from core.storage import ObjectNotFoundException
 
@@ -12,20 +12,8 @@ logger = logging.getLogger(__name__)
 
 
 @broker.task(retry_on_error=True, max_retries=1)
-async def send_task_update_slack_notification(event: TaskSchemaCreatedEvent):
-    user_and_org_str = get_user_and_org_str(event=event)
-    task_str = get_task_str_for_slack(event=event, task_id=event.task_id, task_schema_id=event.task_schema_id)
-
-    if event.task_schema_id == 1:  # task creation
-        message = f"{user_and_org_str} created a new task: {task_str}"
-    else:  # task update
-        message = f"{user_and_org_str} updated a task schema: {task_str} (schema #{event.task_schema_id})"
-
-    await send_slack_notification(
-        message=message,
-        user_email=event.user_properties.user_email if event.user_properties else None,
-        destination=SlackNotificationDestination.CUSTOMER_JOURNEY,
-    )
+async def send_task_update_slack_notification(event: TaskSchemaCreatedEvent, customer_service: CustomerServiceDep):
+    await customer_service.send_task_update(event=event)
 
 
 @broker.task(retry_on_error=True)

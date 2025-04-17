@@ -7,6 +7,7 @@ from core.storage.models import TaskUpdate
 from core.storage.mongo.models.task_document import TaskDocument
 from core.storage.mongo.mongo_types import AsyncCollection
 from core.storage.mongo.partials.base_partial_storage import PartialStorage
+from core.storage.mongo.utils import dump_model
 from core.storage.task_storage import TaskStorage
 from core.utils.ids import id_uint32
 
@@ -55,10 +56,12 @@ class MongoTaskStorage(PartialStorage[TaskDocument], TaskStorage):
                 filter={"task_id": task_id, "schema_details.schema_id": {"$ne": schema_id}},
                 update={
                     "$push": {
-                        "schema_details": {
-                            "schema_id": schema_id,
-                            "last_active_at": last_active_at,
-                        },
+                        "schema_details": dump_model(
+                            TaskDocument.SchemaDetails(
+                                schema_id=schema_id,
+                                last_active_at=last_active_at,
+                            ),
+                        ),
                     },
                 },
             )
@@ -66,9 +69,8 @@ class MongoTaskStorage(PartialStorage[TaskDocument], TaskStorage):
             # This can happen in race conditions
             pass
 
-    # TODO: test
     @override
-    async def update_task(self, task_id: str, update: TaskUpdate):
+    async def update_task(self, task_id: str, update: TaskUpdate, before: bool = False):
         _set: dict[str, Any] = {}
         if update.is_public is not None:
             _set["is_public"] = update.is_public
@@ -98,8 +100,8 @@ class MongoTaskStorage(PartialStorage[TaskDocument], TaskStorage):
         doc = await self._find_one_and_update(
             filter={"task_id": task_id},
             update=update_ops,
-            upsert=True,
-            return_document=True,
+            upsert=not before,
+            return_document=not before,
         )
 
         # TODO:We should not have to update the task variant here

@@ -430,7 +430,7 @@ async def test_automatic_payment_failure_with_retry_single_user(
     test_client.authenticate(USER_JWT)
 
     org = await test_client.refresh_org_data()
-    assert org["org_id"] is None, "sanity check"
+    assert "org_id" not in org, "sanity check"
     assert org["owner_id"] == "user_1234", "sanity check"
 
     payment_metadata = {

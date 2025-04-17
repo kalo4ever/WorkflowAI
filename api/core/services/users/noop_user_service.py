@@ -1,7 +1,7 @@
 import logging
 from typing import override
 
-from core.services.users.user_service import UserDetails, UserService
+from core.services.users.user_service import OrganizationDetails, UserDetails, UserService
 
 
 class NoopUserService(UserService):
@@ -18,3 +18,8 @@ class NoopUserService(UserService):
     async def get_org_admins(self, org_id: str) -> list[UserDetails]:
         self._logger.warning("NoopUserService.get_org_admins called")
         return []
+
+    @override
+    async def get_organization(self, org_id: str) -> OrganizationDetails:
+        self._logger.warning("NoopUserService.get_organization called")
+        return OrganizationDetails(name="", slug="", id="")

@@ -136,6 +136,8 @@ class RecomputeReviewBenchmarkEvent(TaskEvent):
     cached_run_id: str | None = None
 
 
+# TODO: remove, we should not go through an event router to send analytics events
+# We should do the same as metrics instead
 class SendAnalyticsEvent(Event):
     event: FullAnalyticsEvent
 
@@ -219,6 +221,16 @@ class FeedbackCreatedEvent(Event):
     run_id: str
     outcome: Literal["positive", "negative"]
     comment: str | None
+
+
+class TenantCreatedEvent(Event):
+    pass
+
+
+class TenantMigratedEvent(Event):
+    migrated_to: Literal["organization", "user"]
+    from_user_id: str | None = None
+    from_anon_id: str | None = None
 
 
 class EventRouter(Protocol):

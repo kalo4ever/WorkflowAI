@@ -11,7 +11,7 @@ class SlackErrorSendingError(Exception):
     pass
 
 
-class SlackClient:
+class SlackWebhookClient:
     def __init__(self, webhook_url: str | None):
         self.webhook_url = webhook_url
         if self.webhook_url is None:

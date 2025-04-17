@@ -2,8 +2,8 @@ from api.broker import broker
 from api.jobs.common import SystemStorageDep
 from core.domain import consts
 from core.domain.events import FeedbackCreatedEvent
-from core.storage.slack.client import SlackClient
 from core.storage.slack.slack_types import SlackBlock
+from core.storage.slack.webhook_client import SlackWebhookClient
 
 
 @broker.task(retry_on_error=True, max_retries=1)
@@ -55,7 +55,7 @@ async def send_slack_message(event: FeedbackCreatedEvent, storage: SystemStorage
         },
     )
 
-    slack_client = SlackClient(slack_hook)
+    slack_client = SlackWebhookClient(slack_hook)
     await slack_client.send_message({"blocks": blocks})
 
 

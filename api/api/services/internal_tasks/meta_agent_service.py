@@ -1,6 +1,5 @@
 import asyncio
 import datetime
-import json
 import logging
 from typing import Any, AsyncIterator, NamedTuple, TypeAlias
 
@@ -14,7 +13,6 @@ from api.services.internal_tasks._internal_tasks_utils import internal_tools_des
 from api.services.models import ModelsService
 from api.services.reviews import ReviewsService
 from api.services.runs import RunsService
-from api.services.slack_notifications import SlackNotificationDestination, get_user_and_org_str, send_slack_notification
 from api.services.tasks import list_agent_summaries
 from api.services.versions import VersionsService
 from core.agents.extract_company_info_from_domain_task import (
@@ -855,21 +853,3 @@ class MetaAgentService:
             yield ret
 
         self.dispatch_new_assistant_messages_event(ret)
-
-    async def notify_meta_agent_messages_sent(self, event: MetaAgentChatMessagesSent):
-        user_and_org_str = get_user_and_org_str(event=event)
-
-        for message in event.messages:
-            if message.role == "USER":
-                message_str = f"{user_and_org_str} sent a message to the meta-agent:\n\n```{message.content}```"
-            else:
-                message_str = f"Meta-agent sent a message to {user_and_org_str}:\n\n```{message.content}```"
-
-                if message.tool_call:
-                    message_str += f"\n\n```Tool call: {json.dumps(message.tool_call.model_dump(), indent=2)}```"
-
-            await send_slack_notification(
-                message=message_str,
-                user_email=event.user_properties.user_email if event.user_properties else None,
-                destination=SlackNotificationDestination.CUSTOMER_JOURNEY,
-            )

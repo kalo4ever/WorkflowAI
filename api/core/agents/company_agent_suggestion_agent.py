@@ -101,7 +101,7 @@ class SuggestAgentForCompanyOutput(BaseModel):
 
 NUMBER_OF_SUGGESTED_AGENTS = 20
 
-INSTUCTIONS = f"""Your role is to generate a comprehensive list of exactly {NUMBER_OF_SUGGESTED_AGENTS} non overlapping agents suggestions that can be used to power features for our client based on:
+INSTRUCTIONS = f"""Your role is to generate a comprehensive list of exactly {NUMBER_OF_SUGGESTED_AGENTS} non overlapping agents suggestions that can be used to power features for our client based on:
 
     - 'company_context' (in order to understand the company and propose agents that make sense based on the company's context)
     - the 'supported_agent_input_types' and 'supported_agent_output_types' that explains the type of agents input and output that can be suggested.
@@ -246,7 +246,7 @@ INSTUCTIONS = f"""Your role is to generate a comprehensive list of exactly {NUMB
     version=workflowai.VersionProperties(
         model=workflowai.Model.CLAUDE_3_7_SONNET_20250219,
         max_tokens=2500,  # Generated suggested featuress can be lengthy, so 2500 instead of 1000 of most Claude agents
-        instructions=INSTUCTIONS,
+        instructions=INSTRUCTIONS,
         temperature=0.0,  # Nice mix between creativity and focus on the instructions
     ),
 )

@@ -41,8 +41,6 @@ if "WORKFLOWAI_TEST_MONGO_CONNECTION_STRING" not in os.environ:
     os.environ["WORKFLOWAI_TEST_MONGO_CONNECTION_STRING"] = "mongodb://admin:admin@localhost:27017/workflowai_test"
 if "WORKFLOWAI_MONGO_CONNECTION_STRING" not in os.environ:
     os.environ["WORKFLOWAI_MONGO_CONNECTION_STRING"] = "mongodb://admin:admin@localhost:27017/workflowai_test"
-if "WORKFLOWAI_TENANT" not in os.environ:
-    os.environ["WORKFLOWAI_TENANT"] = "test"
 if "STORAGE_HMAC" not in os.environ:
     os.environ["STORAGE_AES"] = "ruQBOB/yrSJYw+hozAGewJx5KAadHAMPnATttB2dmig="
 if "STORAGE_HMAC" not in os.environ:
@@ -125,8 +123,12 @@ if "SCRAPINGBEE_API_KEY" not in os.environ:
 if "SERPER_API_KEY" not in os.environ:
     os.environ["SERPER_API_KEY"] = "serper-api-key"
 
+
 if "PERPLEXITY_API_KEY" not in os.environ:
     os.environ["PERPLEXITY_API_KEY"] = "perplexity-api-key"
+
+if "ENRICH_SO_API_KEY" not in os.environ:
+    os.environ["ENRICH_SO_API_KEY"] = "enrich-so-api-key"
 
 if "MODERATION_ENABLED" not in os.environ:
     os.environ["MODERATION_ENABLED"] = "false"

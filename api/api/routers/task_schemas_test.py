@@ -169,7 +169,7 @@ class TestGetTaskSchema:
             is_public=True,
             hidden_schema_ids=[],
             schema_details=[
-                {"schema_id": 1, "last_active_at": datetime(2024, 1, 1, tzinfo=timezone.utc)},
+                TaskInfo.SchemaDetails(schema_id=1, last_active_at=datetime(2024, 1, 1, tzinfo=timezone.utc)),
             ],
         )
 
@@ -233,7 +233,7 @@ class TestGetTaskSchema:
             is_public=True,
             hidden_schema_ids=[],
             schema_details=[
-                {"schema_id": 2, "last_active_at": datetime(2024, 1, 1, tzinfo=timezone.utc)},
+                TaskInfo.SchemaDetails(schema_id=2, last_active_at=datetime(2024, 1, 1, tzinfo=timezone.utc)),
             ],
         )
 

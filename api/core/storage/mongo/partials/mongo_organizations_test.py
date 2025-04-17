@@ -92,6 +92,19 @@ class TestGetOrganizationSettings:
         with pytest.raises(DuplicateKeyError):
             await org_col.insert_one(dump_model(self._org_settings()))
 
+    async def test_include(
+        self,
+        organization_storage: MongoOrganizationStorage,
+        org_col: AsyncCollection,
+    ) -> None:
+        org_settings = self._org_settings()
+        org_settings.slug = "test-slug"
+        await org_col.insert_one(dump_model(org_settings))
+
+        org = await organization_storage.get_organization(include={"slug"})
+        assert org.slug == "test-slug"
+        assert org.uid == 0
+
 
 class TestAddProviderConfig:
     async def test_create_and_add(
@@ -171,8 +184,8 @@ class TestUpdateSlug:
         org_col: AsyncCollection,
     ) -> None:
         # Ensure both organizations exist before updating the slug
-        org_settings_1 = OrganizationDocument(tenant=TENANT, org_id="o1", slug="unique_slug_1", providers=[])
-        org_settings_2 = OrganizationDocument(tenant="tenant_2", org_id="o2", slug="unique_slug_2", providers=[])
+        org_settings_1 = OrganizationDocument(tenant=TENANT, org_id="o1", slug="unique_slug_1", providers=[], uid=1)
+        org_settings_2 = OrganizationDocument(tenant="tenant_2", org_id="o2", slug="unique_slug_2", providers=[], uid=2)
 
         # Insert both organizations with unique slugs
         await org_col.insert_one(dump_model(org_settings_1))
@@ -363,21 +376,27 @@ class TestFindTenantForOwnerId:
     ) -> None:
         # Insert two tenants with the same owner_id but one with org_id
         owner_id = "owner123"
-        await org_col.insert_one(dump_model(OrganizationDocument(tenant="t6", owner_id=owner_id)))
+        await org_col.insert_one(dump_model(OrganizationDocument(tenant="t6", owner_id=owner_id, uid=1)))
 
         # Try to insert another tenant with the same owner_id
         with pytest.raises(DuplicateKeyError):
-            await org_col.insert_one(dump_model(OrganizationDocument(tenant="t7", owner_id=owner_id)))
+            await org_col.insert_one(dump_model(OrganizationDocument(tenant="t7", owner_id=owner_id, uid=2)))
 
         # But should be able to insert one with org_id
-        await org_col.insert_one(dump_model(OrganizationDocument(tenant="t7", owner_id=owner_id, org_id="org123")))
+        await org_col.insert_one(
+            dump_model(OrganizationDocument(tenant="t7", owner_id=owner_id, org_id="org123", uid=3)),
+        )
 
         # But should be able to insert one with a different org_id
-        await org_col.insert_one(dump_model(OrganizationDocument(tenant="t8", owner_id=owner_id, org_id="org456")))
+        await org_col.insert_one(
+            dump_model(OrganizationDocument(tenant="t8", owner_id=owner_id, org_id="org456", uid=4)),
+        )
 
         # But should be able to insert one with a same org_id
         with pytest.raises(DuplicateKeyError):
-            await org_col.insert_one(dump_model(OrganizationDocument(tenant="t9", owner_id=owner_id, org_id="org456")))
+            await org_col.insert_one(
+                dump_model(OrganizationDocument(tenant="t9", owner_id=owner_id, org_id="org456", uid=5)),
+            )
 
 
 class TestIncrementCredits:
@@ -569,10 +588,10 @@ class TestDeleteOrganization:
         org_col: AsyncCollection,
         frozen_time: FrozenDateTimeFactory,
     ) -> None:
-        await org_col.insert_one(dump_model(OrganizationDocument(tenant="t1", slug="slug1", org_id="o1")))
+        await org_col.insert_one(dump_model(OrganizationDocument(tenant="t1", slug="slug1", org_id="o1", uid=1)))
 
         # Check that it's not possible to insert another organization with the same slug
-        same_slug_org = OrganizationDocument(tenant="t2", slug="slug1", org_id="o2")
+        same_slug_org = OrganizationDocument(tenant="t2", slug="slug1", org_id="o2", uid=2)
         with pytest.raises(DuplicateKeyError):
             await org_col.insert_one(dump_model(same_slug_org))
 
@@ -720,6 +739,7 @@ class TestGetAPIKeysForOrganization:
                     slug="simple_slug",
                     providers=[],
                     no_tasks_yet=True,
+                    uid=1,
                     api_keys=[
                         APIKeyDocument(
                             name="test key 4",
@@ -747,6 +767,7 @@ class TestGetAPIKeysForOrganization:
                     slug="tenant2_slug",
                     providers=[],
                     no_tasks_yet=True,
+                    uid=2,
                     api_keys=[
                         APIKeyDocument(
                             name="test key 6",
@@ -1908,6 +1929,7 @@ class TestClearPaymentFailure:
                 dump_model(d)
                 for d in [
                     OrganizationDocument(
+                        uid=1,
                         tenant=TENANT,
                         current_credits_usd=10,
                         added_credits_usd=20,
@@ -1919,6 +1941,7 @@ class TestClearPaymentFailure:
                     ),
                     OrganizationDocument(
                         tenant="other_tenant",
+                        uid=2,
                         current_credits_usd=10,
                         added_credits_usd=20,
                         payment_failure=PaymentFailureSchema(
@@ -1975,3 +1998,100 @@ class TestClearPaymentFailure:
         # Verify we can get the tenant and see no payment failure
         tenant = await organization_storage.get_organization()
         assert tenant.payment_failure is None
+
+
+class TestSetSlackChannelId:
+    async def test_set_slack_channel_id_success(
+        self,
+        organization_storage: MongoOrganizationStorage,
+        org_col: AsyncCollection,
+    ) -> None:
+        # Insert an organization without a slack channel ID
+        await org_col.insert_one(
+            dump_model(
+                OrganizationDocument(
+                    tenant=TENANT,
+                    slug="simple_slug",
+                    providers=[],
+                    no_tasks_yet=True,
+                ),
+            ),
+        )
+
+        # Set the slack channel ID
+        channel_id = "C1234567890"
+        await organization_storage.set_slack_channel_id(channel_id)
+
+        # Verify the slack channel ID was set
+        doc = await org_col.find_one({"tenant": TENANT})
+        assert doc is not None
+        assert doc["slack_channel_id"] == channel_id
+
+        # Verify we can get the tenant and see the slack channel ID
+        tenant = await organization_storage.get_organization()
+        assert tenant.slack_channel_id == channel_id
+
+    async def test_set_slack_channel_id_organization_not_found(
+        self,
+        organization_storage: MongoOrganizationStorage,
+    ) -> None:
+        # Try to set slack channel ID for non-existent organization
+        with pytest.raises(ObjectNotFoundException):
+            await organization_storage.set_slack_channel_id("C1234567890")
+
+    async def test_set_slack_channel_raises_if_already_set(
+        self,
+        organization_storage: MongoOrganizationStorage,
+        org_col: AsyncCollection,
+    ) -> None:
+        # Insert an organization with a slack channel ID
+        await org_col.insert_one(
+            dump_model(
+                OrganizationDocument(
+                    tenant=TENANT,
+                    slug="simple_slug",
+                ),
+            ),
+        )
+
+        await organization_storage.set_slack_channel_id("C1234567890")
+        # Try to set the slack channel ID again
+        with pytest.raises(ObjectNotFoundException):
+            await organization_storage.set_slack_channel_id("C1234567890")
+
+    async def test_set_slack_channel_id_none(
+        self,
+        organization_storage: MongoOrganizationStorage,
+        org_col: AsyncCollection,
+    ):
+        # Insert an organization with a slack channel ID
+        await org_col.insert_one(
+            dump_model(
+                OrganizationDocument(
+                    tenant=TENANT,
+                    slug="simple_slug",
+                ),
+            ),
+        )
+        # I can set the channel id to an empty string
+        await organization_storage.set_slack_channel_id("")
+        doc = await org_col.find_one({"tenant": TENANT})
+        assert doc is not None
+        assert doc["slack_channel_id"] == ""
+
+        # now I can't set it again
+        with pytest.raises(ObjectNotFoundException):
+            await organization_storage.set_slack_channel_id("hello")
+
+        # But i can reset it by using None
+        await organization_storage.set_slack_channel_id(None)
+
+        doc = await org_col.find_one({"tenant": TENANT})
+        assert doc is not None
+        assert "slack_channel_id" not in doc
+
+        # Which allows me to set it again
+        await organization_storage.set_slack_channel_id("hello")
+        doc = await org_col.find_one({"tenant": TENANT})
+        assert doc is not None
+        assert doc["slack_channel_id"] == "hello"

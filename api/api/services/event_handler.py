@@ -29,6 +29,8 @@ from core.domain.events import (
     TaskInstructionsGeneratedEvent,
     TaskSchemaCreatedEvent,
     TaskSchemaGeneratedEvent,
+    TenantCreatedEvent,
+    TenantMigratedEvent,
     TriggerRunEvaluationEvent,
     TriggerTaskRunEvent,
     UserReviewAddedEvent,
@@ -64,6 +66,8 @@ def _jobs():
         task_instructions_generated_jobs,
         task_schema_created_jobs,
         task_schema_generated_jobs,
+        tenant_created_jobs,
+        tenant_migrated_jobs,
         trigger_run_evaluation_jobs,
         trigger_task_run_jobs,
         user_review_added_jobs,
@@ -99,6 +103,8 @@ def _jobs():
         _JobListing(MetaAgentChatMessagesSent, meta_agent_chat_messages_sent_jobs.JOBS),
         _JobListing(FeedbackCreatedEvent, feedback_created_jobs.JOBS),
         _JobListing(FeaturesByDomainGenerationStarted, features_by_domain_generation_started_jobs.JOBS),
+        _JobListing(TenantCreatedEvent, tenant_created_jobs.JOBS),
+        _JobListing(TenantMigratedEvent, tenant_migrated_jobs.JOBS),
     ]
 
 

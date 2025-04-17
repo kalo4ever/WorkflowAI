@@ -33,7 +33,6 @@ class PublicOrganizationData(BaseModel):
 
 
 class TenantData(PublicOrganizationData):
-    owner_id: str | None = Field(default=None)
     anonymous_user_id: str | None = Field(default=None)
     stripe_customer_id: str | None = None
     providers: list[ProviderSettings] = Field(default_factory=list, description="List of provider configurations")
@@ -60,6 +59,8 @@ class TenantData(PublicOrganizationData):
         default=None,
         description="A dictionary of low credits emails sent by threshold that triggered the email",
     )
+
+    slack_channel_id: str | None = None
 
     def should_send_low_credits_email(self, threshold_usd: float) -> bool:
         if self.current_credits_usd >= threshold_usd:

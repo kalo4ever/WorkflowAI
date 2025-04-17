@@ -1,11 +1,12 @@
-from typing import Any
+from datetime import datetime
 
-from pydantic import Field
+from pydantic import BaseModel, Field
 
 from core.domain.task_info import PublicTaskInfo, TaskInfo
 from core.storage.mongo.models.base_document import BaseDocumentWithID
 from core.storage.mongo.models.task_ban import BanDocument
 from core.utils.ids import id_uint32
+from core.utils.iter_utils import safe_map_optional
 
 
 class TaskDocument(BaseDocumentWithID):
@@ -15,7 +16,18 @@ class TaskDocument(BaseDocumentWithID):
     name: str = ""
     description: str | None = None
     hidden_schema_ids: list[int] | None = None
-    schema_details: list[dict[str, Any]] | None = None
+
+    class SchemaDetails(BaseModel):
+        schema_id: int = 0
+        last_active_at: datetime | None = None
+
+        def to_domain(self) -> TaskInfo.SchemaDetails:
+            return TaskInfo.SchemaDetails(
+                schema_id=self.schema_id,
+                last_active_at=self.last_active_at,
+            )
+
+    schema_details: list[SchemaDetails] | None = None
     ban: BanDocument | None = None
 
     def to_domain(self) -> TaskInfo:
@@ -26,7 +38,7 @@ class TaskDocument(BaseDocumentWithID):
             is_public=self.is_public,
             description=self.description,
             hidden_schema_ids=self.hidden_schema_ids,
-            schema_details=self.schema_details,
+            schema_details=safe_map_optional(self.schema_details, self.SchemaDetails.to_domain),
             ban=self.ban.to_domain() if self.ban else None,
         )
 

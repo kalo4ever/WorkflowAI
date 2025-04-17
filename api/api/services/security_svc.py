@@ -11,7 +11,7 @@ from core.domain.analytics_events.analytics_events import (
     OrganizationProperties,
 )
 from core.domain.errors import DuplicateValueError
-from core.domain.events import EventRouter, SendAnalyticsEvent
+from core.domain.events import Event, EventRouter, SendAnalyticsEvent, TenantCreatedEvent, TenantMigratedEvent
 from core.domain.tenant_data import TenantData
 from core.domain.users import User
 from core.storage import ObjectNotFoundException
@@ -31,18 +31,30 @@ class SecurityService:
         self._org_storage = org_storage
         self._event_router = event_router
 
-    def _send_created_org(self, org: TenantData):
-        self._event_router(
-            SendAnalyticsEvent(
-                event=FullAnalyticsEvent(
-                    event=AnalyticsEvent(event_properties=OrganizationCreatedProperties()),
-                    organization_properties=OrganizationProperties.build(org),
-                    # TODO: set user properties here ?
-                    user_properties=None,
-                    task_properties=None,
+    def _send_tenant_created_analytics(self, org: TenantData):
+        # This is annoying, we should not go through
+        with capture_errors(_logger, "Error sending created org event"):
+            self._event_router(
+                SendAnalyticsEvent(
+                    event=FullAnalyticsEvent(
+                        event=AnalyticsEvent(event_properties=OrganizationCreatedProperties()),
+                        organization_properties=OrganizationProperties.build(org),
+                        # TODO: set user properties here ?
+                        user_properties=None,
+                        task_properties=None,
+                    ),
                 ),
-            ),
-        )
+            )
+
+    def _send_event(self, org: TenantData, builder: Callable[[], Event]):
+        # Needed wrapper since we have the system event router here
+        # So data will not be added automatically
+        with capture_errors(_logger, "Error sending created org event"):
+            event = builder()
+            event.organization_properties = OrganizationProperties.build(org)
+            event.tenant = org.tenant
+            event.tenant_uid = org.uid
+            self._event_router(event)
 
     async def _create_organization(
         self,
@@ -76,8 +88,9 @@ class SecurityService:
 
         try:
             org = await self._org_storage.create_organization(data)
-            with capture_errors(_logger, "Error sending created org event"):
-                self._send_created_org(org)
+            self._send_tenant_created_analytics(org)
+            self._send_event(org, lambda: TenantCreatedEvent())
+
             return org
         except DuplicateValueError:
             # This can happen in race conditions
@@ -105,12 +118,18 @@ class SecurityService:
             return None
 
         try:
-            return await self._org_storage.migrate_tenant_to_organization(
+            org = await self._org_storage.migrate_tenant_to_organization(
                 org_id=org_id,
                 org_slug=org_slug,
                 owner_id=user_id,
                 anon_id=anon_id,
             )
+            self._send_event(
+                org,
+                lambda: TenantMigratedEvent(migrated_to="organization", from_anon_id=anon_id, from_user_id=user_id),
+            )
+
+            return org
         except ObjectNotFoundException:
             return None
 
@@ -150,7 +169,12 @@ class SecurityService:
         if not anon_id:
             return None
         try:
-            return await self._org_storage.migrate_tenant_to_user(user_id, org_slug, anon_id)
+            migrated = await self._org_storage.migrate_tenant_to_user(user_id, org_slug, anon_id)
+            self._send_event(
+                migrated,
+                lambda: TenantMigratedEvent(migrated_to="user", from_anon_id=anon_id),
+            )
+            return migrated
         except ObjectNotFoundException:
             return None
 
