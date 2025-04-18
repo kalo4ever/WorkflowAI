@@ -192,7 +192,7 @@ variables are loaded by default (see the [sample env](.env.sample) for the avail
 
 ## Support
 
-To find answers to your questions, please refer to the [Documentation](https://docs.workflowai.com), or ask a question in the [Q&A section of our GitHub Discussions](https://github.com/WorkflowAI/WorkflowAI/discussions/categories/q-a).
+To find answers to your questions, please refer to the [Documentation](https://docs.workflowai.com), ask a question in the [Q&A section of our GitHub Discussions](https://github.com/WorkflowAI/WorkflowAI/discussions/categories/q-a) or join our [Discord](https://discord.com/invite/qcsq8Kva).
 
 ## License
 
