@@ -1,21 +1,18 @@
-# Build stage
+# syntax=docker/dockerfile:1.4   <-- tells ACR to enable BuildKit features
+
 ARG PYTHON_VERSION=3.12
 ARG ALPINE_VERSION=3.21
 ARG ARCH=linux/amd64
 ARG RELEASE_NAME=
 
 FROM --platform=${ARCH} python:${PYTHON_VERSION}-alpine${ALPINE_VERSION} AS python-base
-
+# ---------------------------------------------------------------------
 # python
 ENV PYTHONUNBUFFERED=1 \
-    # prevents python creating .pyc files
     PYTHONDONTWRITEBYTECODE=1 \
-    \
-    # pip
     PIP_DISABLE_PIP_VERSION_CHECK=on \
     PIP_DEFAULT_TIMEOUT=100
-
-# ffmpeg is needed for audio processing
+# ffmpeg … (keep the rest exactly as in the repo)
 # poppler is needed for pdf processing
 # Other upgrades are due for CVEs
 RUN apk add --no-cache ffmpeg poppler-utils && apk upgrade libssl3 libcrypto3 libxml2 xz-libs
